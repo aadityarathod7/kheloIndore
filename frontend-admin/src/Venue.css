@@ -1,0 +1,188 @@
+.container {
+  margin-top: 20px;
+  margin-bottom: 20px;
+  padding: 20px;
+  border-radius: 8px;
+  background-color: white;
+  width: 100%;
+  font-weight: 400 !important;
+}
+.stsearch-box input {
+  border: none !important;
+  transition: opacity 0.3s ease, border 0.3s ease;
+}
+.stsearch-box input:focus {
+  border: none !important;
+  /* display: none !important; */
+}
+.css-1nmdiq5-menu {
+  z-index: 100 !important;
+}
+.swal2-popup .swal2-styled {
+  margin: 0 5px 0 !important;
+}
+.swal2-popup .swal2-styled:focus {
+  border: none !important;
+  display: none !important;
+}
+
+.css-d7l1ni-option {
+  background-color: rgb(245, 140, 91) !important;
+}
+
+.css-tr4s17-option {
+  background-color: rgb(245, 140, 91) !important;
+}
+
+.highlightOption {
+  background: rgb(245, 140, 91) !important;
+}
+
+.multiSelectContainer li:hover {
+  background: rgb(245, 140, 91) !important;
+}
+.stdropdown-container {
+  height: 38px !important;
+  border-color: hsl(0, 0%, 80%) !important;
+  border-width: 1px !important;
+}
+.stdropdown-item {
+  color: black !important;
+}
+.stdropdown-container.error {
+  border: 1px solid red !important;
+}
+.chip {
+  background: rgb(245, 140, 91) !important;
+}
+.form-group {
+  margin-bottom: 15px;
+}
+
+/* .form-control {
+  
+} */
+.add-venue-form-custom-class {
+  border-radius: 5px;
+  border-color: #ced4da;
+  padding: 6px 15px !important;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.add-venue-form-custom-class:focus {
+  box-shadow: none;
+}
+
+.submit-button {
+  background-color: rgb(255, 95, 21);
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: background-color 0.3s ease-in-out;
+  font-weight: bold;
+  margin-right: 1%;
+}
+
+.cancel {
+  background-color: black;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: background-color 0.3s ease-in-out;
+  font-weight: bold;
+  margin-left: 1%;
+}
+
+.drag-drop-container {
+  border: 2px dashed #ccc;
+  border-radius: 5px;
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.uploaded-files-container {
+  margin-top: 20px;
+}
+
+.uploaded-file {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.uploaded-file span {
+  flex: 1;
+  padding: 5px;
+}
+
+.uploaded-file button {
+  background: #ff5f15;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 3px;
+  cursor: pointer;
+  margin-left: 10px;
+}
+
+.uploaded-file button:hover {
+  background: #e44d12;
+}
+
+/* Style the file input button */
+input[type="file"] {
+  display: none;
+}
+
+.drag-drop-container h3 {
+  margin: 0;
+}
+
+.drag-drop-container .fa-file-upload {
+  font-size: 24px;
+  margin-right: 10px;
+}
+
+/* Style the select from files button */
+.select-files-button {
+  background: #ff5f15;
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.select-files-button:hover {
+  background: #e44d12;
+}
+
+.slot-container {
+  padding: 15px;
+  border: 1px solid #d1d1d1;
+  border-radius: 8px;
+  background-color: #ffffff;
+  margin-bottom: 15px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.slot-input {
+  margin-top: 10px;
+  width: 90%;
+  padding: 10px;
+  border: 1px solid #ced4da;
+  border-radius: 5px;
+  box-sizing: border-box;
+}
+
+.slot-input:focus {
+  border-color: #80bdff;
+  outline: 0;
+  box-shadow: 0 0 5px rgba(128, 189, 255, 0.5);
+}

@@ -1,0 +1,88 @@
+
+.cnt {
+  width: 100%;
+  box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.2);
+  margin-top: 3%;
+}
+
+h1 {
+  font-size: 30px;
+}
+
+
+.subheader-row {
+  margin-bottom: 20px;
+}
+
+
+.search-input {
+  width: 100%;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 8px 12px;
+  font-size: 16px;
+}
+
+
+.data-table {
+  font-size: 16px;
+}
+
+
+.pagination {
+  margin-top: 20px;
+}
+
+/* Styles for the table rows */
+.table-row {
+  cursor: pointer;
+}
+
+/* Styles for the table header */
+.table-header {
+  background-color: #f0f0f0;
+  font-weight: bold;
+}
+
+/* Example CSS */
+.warning-button {
+  background-color: #ff9c07; /* Warning variant color */
+  color: white; /* Text color */
+  border: none;
+  border-radius: 4px;
+  padding: 8px 16px;
+  width: 40%;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.warning-button:hover {
+  background-color: #ffca28; /* Lighter shade of warning variant color on hover */
+}
+
+/* Margin on the right side */
+.mr-2 {
+  margin-right: 8px; /* Adjust as needed */
+  margin-bottom: 20px;
+}
+
+.search-button {
+  background-color: #edf1f4; /* Change to desired background color */
+  color: black; 
+  border: none;
+  padding: 12px 24px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-left: 3px;
+
+}
+
+.searchInput {
+  width: 100%;
+  border-radius: 5px;
+  border: 1px solid #ced4da;
+  padding: 10px;
+  font-size: 16px;
+  margin-left: 70%;
+}

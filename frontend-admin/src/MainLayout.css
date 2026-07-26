@@ -1,0 +1,41 @@
+.lg-logo {
+    height: 100%;
+    max-width: 210px; 
+    width: auto; 
+  }
+
+.sm-logo{
+    height: 100%;
+    max-width: 50px; 
+    width: auto; 
+}
+
+.sidelogo{
+  background-color: #ff5f15;
+}
+
+.dropdown-menu {
+  --bs-dropdown-link-active-bg:rgb(255, 95, 21) !important;
+
+} 
+
+.ant-menu-dark:not(.ant-menu-horizontal) .ant-menu-item-selected {
+    background-color: rgb(255, 95, 21) !important; 
+}
+
+.notification{
+  font-size: 25px;
+}
+
+@media (max-width: 768px) {
+  .footer {
+    padding: 10px;
+  }
+
+  .footer p {
+    font-size: 12px;
+  }
+}
+
+
+

@@ -1,0 +1,201 @@
+.info_icon{
+    font-size: 20px;
+    color: #fcfcfa;
+    border-radius: 5px;
+    padding: 5px;
+    background-color: #ff5f15;
+    cursor: pointer;
+    margin-right: 2%;
+}
+
+.delete_icon{
+    font-size: 20px;
+    color: #E7F3FF;
+    border-radius: 5px;
+    padding: 5px;
+    background-color: #ff5f15;
+    cursor: pointer;
+    margin-left: 2px;
+}
+
+.edit_icon{
+    font-size: 20px;
+    color: #E7F3FF;
+    border-radius: 5px;
+    padding: 5px;
+    background-color: #3d9c06;
+    cursor: pointer;
+}
+
+.download_icon{
+    font-size: 20px;
+    color: #fcfcfa;
+    border-radius: 5px;
+    padding: 5px;
+    background-color: #ff5f15;
+    cursor: pointer;
+
+}
+
+/* Styling for the "Add User" button */
+.add-button {
+    margin-bottom: 20px;
+    margin-right: 10px; /* Shift the button to the left */
+    padding: 8px 16px;
+    background-color: #ff5f15;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  .down-button{
+    width: 101.08px; 
+    height: 37px;
+    margin-bottom: 20px;
+    margin-right: 10px; /* Shift the button to the left */
+    padding: 8px 16px;
+    background-color: #3d9c06;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .title {
+    margin-bottom: 20px;
+    font-size: 24px;
+    color: #333;
+  }
+  
+  .cnt {
+    margin-bottom: 20px;
+  }
+  
+  .table-container {
+    overflow-x: auto;
+  }
+  
+  .pagination-container {
+    margin-top: 20px;
+  }
+  
+  .pagination {
+    display: flex;
+    list-style-type: none;
+    padding: 0;
+    justify-content: center;
+  }
+  
+  .pagination li {
+    margin-right: 5px;
+  }
+  
+  .pagination li.active button {
+    background-color: #ff5f15;
+    color: #fff;
+  }
+  
+  .pagination li button {
+    padding: 5px 10px;
+    border: 1px solid #ff5f15;
+    border-radius: 4px;
+    background-color: transparent;
+    color: #ff5f15;
+    cursor: pointer;
+  }
+  
+  .pagination li button:hover {
+    background-color: #ff5f15;
+    color: #fff;
+  }
+  
+  /* Styling for the search input */
+  .form-control {
+    border-radius: 4px;
+  }
+  
+  /* Styling for the action icons */
+  .anticon {
+    cursor: pointer;
+  }
+  
+  /* Styling for the SweetAlert popup */
+  .swal2-container {
+    z-index: 10000; /* Ensure it appears above other elements */
+  }
+  
+  /* Optional: Add a border radius to table cells */
+  .table tbody tr td,
+  .table thead tr th {
+    border-radius: 8px;
+  }
+  
+  /* Userlist.css or your custom CSS file */
+  .custom-table {
+    background-color: white
+  }
+  
+  .search-input {
+    width: 50%; /* Adjust the width as needed */
+  }
+  
+  .page-item.active .page-link{
+    background-color: #ff5f15;
+  }
+  
+  .active>.page-link{
+    border: #ff5f15;
+  }
+  
+  .table {
+    border-collapse: collapse;
+    width: 100%;
+    }
+  
+  .table th, .table td {
+    border: 1px solid #ddd; 
+    padding: 8px;
+    text-align: left;
+  }
+  
+  /* .table th {
+    background-color: #f2f2f2; 
+  }
+   */
+  div:where(.swal2-container) button:where(.swal2-styled).swal2-confirm {
+    background-color: rgb(255, 95, 21) !important;
+  }
+  
+
+  .dropdown button#dropdown-basic {
+    background-color: #ff5f15;
+    border: none;
+}
+  
+.btn-success.dropdown-toggle:focus {
+  box-shadow:none;
+}
+
+.btn-check:active+.btn-success:focus, .btn-check:checked+.btn-success:focus, .btn-success.active:focus, .btn-success:active:focus, .show>.btn-success.dropdown-toggle:focus {
+  box-shadow: none;
+}
+  
+tr.slots_table th {
+  border: 1px solid black;
+  padding: 7px 28px;
+}
+
+tr.slots_table td {
+  border: 1px solid;
+  padding: 8px 8px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.view_bnt a.SubmitButton {
+  text-decoration: none;
+  font-size: 16px;
+}
+.view_bnt a.SubmitButton:hover {
+  color: #fff;
+}

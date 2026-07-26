@@ -1,0 +1,36 @@
+version: '3'
+services:
+
+  node_app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "127.0.0.1:3037:3037"
+    depends_on:
+      - mongo
+    env_file:
+      - .env
+    restart: unless-stopped
+    volumes:
+      - uploads_volume:/app/public/uploads
+      - admin_volume:/app/public/admin
+      - site_volume:/app/public/site
+      - pdf_volume:/app/public/pdf
+
+  # MongoDB service
+  mongo:
+    image: mongo:latest
+    volumes:
+      - mongo-data:/data/db
+    restart: unless-stopped
+    env_file:
+      - .env
+
+volumes:
+  mongo-data:
+  uploads_volume:
+  admin_volume:
+  site_volume:
+  pdf_volume:
+
