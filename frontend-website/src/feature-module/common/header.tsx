@@ -31,6 +31,21 @@ const Header = () => {
   const navigate = useNavigate();
   const [userData, setUserData] = useState<JwtPayload | null>(null);
   const [isActive, setIsActive] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 50) {
+        setIsScrolled(true);
+      } else {
+        setIsScrolled(false);
+      }
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
 
   const [visible, setVisible] = useState(false);
   const [error, setError] = useState("");
@@ -166,494 +181,35 @@ const Header = () => {
   const header = [
     {
       tittle: "Home",
-      showAsTab: false,
       separateRoute: true,
       routes: routes.home,
-      hasSubRoute: false,
-      showSubRoute: false,
     },
     {
       tittle: "Sports Venues",
-      showAsTab: false,
       separateRoute: true,
       routes: routes.blogListSidebarLeft,
-      hasSubRoute: false,
-      showSubRoute: false,
     },
     {
       tittle: "Coaches",
-      showAsTab: false,
       separateRoute: true,
       routes: routes.coachesGrid,
-      hasSubRoute: true,
-      showSubRoute: true,
-      menu: [
-        {
-          menuValue: "Coaches Map",
-          hasSubRoute: true,
-          showSubRoute: true,
-          subMenus: [
-            {
-              menuValue: "Coaches Map",
-              routes: routes.coachesMap,
-              hasSubRoute: true,
-              showSubRoute: true,
-              subMenus: [],
-            },
-            {
-              menuValue: "Coaches Map Sidebar",
-              routes: routes.coachesMapSidebar,
-              hasSubRoute: true,
-              showSubRoute: true,
-              subMenus: [],
-            },
-          ],
-        },
-        {
-          menuValue: "Coaches Grid",
-          routes: routes.coachesGrid,
-          hasSubRoute: false,
-          showSubRoute: false,
-          subMenus: [],
-        },
-        {
-          menuValue: "Coaches List",
-          routes: routes.coachesList,
-          hasSubRoute: false,
-          showSubRoute: false,
-          subMenus: [],
-        },
-        {
-          menuValue: "Coaches Grid Sidebar",
-          routes: routes.coachesGridSidebar,
-          hasSubRoute: false,
-          showSubRoute: false,
-          subMenus: [],
-        },
-        {
-          menuValue: "Coaches List Sidebar",
-          routes: routes.coachesListSidebar,
-          hasSubRoute: false,
-          showSubRoute: false,
-          subMenus: [],
-        },
-        {
-          menuValue: "Booking",
-          hasSubRoute: true,
-          showSubRoute: true,
-          subMenus: [
-            {
-              menuValue: "Book a Court",
-              routes: routes.cagedetails,
-              hasSubRoute: true,
-              showSubRoute: true,
-              subMenus: [],
-            },
-            {
-              menuValue: "Book a Coach",
-              routes: routes.coachDetails,
-              hasSubRoute: true,
-              showSubRoute: true,
-              subMenus: [],
-            },
-          ],
-        },
-        {
-          menuValue: "Coaches Details",
-          routes: routes.coachDetails,
-          hasSubRoute: false,
-          showSubRoute: false,
-          subMenus: [],
-        },
-        {
-          menuValue: "Venue",
-          hasSubRoute: true,
-          showSubRoute: true,
-          subMenus: [
-            {
-              menuValue: "Venue List",
-              routes: routes.listingList,
-              hasSubRoute: true,
-              showSubRoute: true,
-              subMenus: [],
-            },
-            {
-              menuValue: "Venue Details",
-              routes: routes.venueDetails,
-              hasSubRoute: true,
-              showSubRoute: true,
-              subMenus: [],
-            },
-          ],
-        },
-        {
-          menuValue: "Coaches Dashboard",
-          routes: routes.coachDashboard,
-          hasSubRoute: false,
-          showSubRoute: false,
-          subMenus: [],
-        },
-        {
-          menuValue: "Coach Courts",
-          routes: routes.allCourt,
-          hasSubRoute: false,
-          showSubRoute: false,
-          subMenus: [],
-        },
-        {
-          menuValue: "List Your Cart",
-          routes: routes.addCourt,
-          hasSubRoute: false,
-          showSubRoute: false,
-          subMenus: [],
-        },
-        {
-          menuValue: "Chat",
-          routes: routes.coachChat,
-          hasSubRoute: false,
-          showSubRoute: false,
-          subMenus: [],
-        },
-      ],
     },
     {
-      tittle: "Personal Trainer",
-      showAsTab: false,
+      tittle: "Personal Trainers",
       separateRoute: true,
       routes: routes.blogList,
-      hasSubRoute: false,
-      showSubRoute: false,
-      menu: [
-        {
-          menuValue: "User Dashboard",
-          routes: routes.userDashboard,
-          hasSubRoute: false,
-          showSubRoute: false,
-          subMenus: [],
-        },
-        {
-          menuValue: "Bookings",
-          routes: routes.userBookings,
-          hasSubRoute: false,
-          showSubRoute: false,
-          subMenus: [],
-        },
-        {
-          menuValue: "Chat",
-          routes: routes.userChat,
-          hasSubRoute: false,
-          showSubRoute: false,
-          subMenus: [],
-        },
-        {
-          menuValue: "Invoice",
-          routes: routes.userInvoice,
-          hasSubRoute: false,
-          showSubRoute: false,
-          subMenus: [],
-        },
-        {
-          menuValue: "Wallet",
-          routes: routes.userWallet,
-          hasSubRoute: false,
-          showSubRoute: false,
-          subMenus: [],
-        },
-        {
-          menuValue: "Profile Edit",
-          routes: routes.wallet,
-          hasSubRoute: false,
-          showSubRoute: false,
-          subMenus: [],
-        },
-        {
-          menuValue: "Change Password",
-          routes: routes.userSettingPassword,
-          hasSubRoute: false,
-          showSubRoute: false,
-          subMenus: [],
-        },
-        {
-          menuValue: "Other Settings",
-          routes: routes.settings,
-          hasSubRoute: false,
-          showSubRoute: false,
-          subMenus: [],
-        },
-      ],
-    },
-    // {
-    //   tittle: "Events",
-    //   showAsTab: false,
-    //   separateRoute: true,
-    //   routes: routes.events,
-    //   hasSubRoute: false,
-    //   showSubRoute: false,
-    //   menu: [
-    //     {
-    //       menuValue: "About Us",
-    //       routes: routes.aboutUs,
-    //       hasSubRoute: false,
-    //       showSubRoute: false,
-    //       subMenus: [],
-    //     },
-    //     {
-    //       menuValue: "Our Team",
-    //       routes: routes.ourTeams,
-    //       hasSubRoute: false,
-    //       showSubRoute: false,
-    //     },
-    //     {
-    //       menuValue: "services",
-    //       routes: routes.services,
-    //       hasSubRoute: false,
-    //       showSubRoute: false,
-    //     },
-    // {
-    //   menuValue: "Events",
-    //   routes: routes.events,
-    //   hasSubRoute: false,
-    //   showSubRoute: false,
-    // },
-    //     {
-    //       menuValue: "Authentication",
-    //       hasSubRoute: true,
-    //       showSubRoute: true,
-    //       subMenus: [
-    //         {
-    //           menuValue: "Signup",
-    //           routes: routes.register,
-    //           hasSubRoute: true,
-    //           showSubRoute: true,
-    //           subMenus: [],
-    //         },
-    //         {
-    //           menuValue: "Signin",
-    //           routes: routes.login,
-    //           hasSubRoute: true,
-    //           showSubRoute: true,
-    //           subMenus: [],
-    //         },
-    //         {
-    //           menuValue: "Forgot Password",
-    //           routes: routes.forgotPasssword,
-    //           hasSubRoute: true,
-    //           showSubRoute: true,
-    //           subMenus: [],
-    //         },
-    //         {
-    //           menuValue: "Reset Password",
-    //           routes: routes.changePassword,
-    //           hasSubRoute: true,
-    //           showSubRoute: true,
-    //           subMenus: [],
-    //         },
-    //       ],
-    //     },
-
-    //     {
-    //       menuValue: "Error Page",
-    //       hasSubRoute: true,
-    //       showSubRoute: false,
-    //       subMenus: [
-    //         {
-    //           menuValue: "404 Error",
-    //           routes: routes.error404,
-    //           hasSubRoute: false,
-    //           showSubRoute: false,
-    //           subMenus: [],
-    //         },
-    //       ],
-    //     },
-
-    //     {
-    //       menuValue: "Pricing",
-    //       routes: routes.pricing,
-    //       hasSubRoute: false,
-    //       showSubRoute: false,
-    //     },
-    //     {
-    //       menuValue: "FAQ",
-    //       routes: routes.faq,
-    //       hasSubRoute: false,
-    //       showSubRoute: false,
-    //     },
-    //     {
-    //       menuValue: "Gallery",
-    //       routes: routes.gallery,
-    //       hasSubRoute: false,
-    //       showSubRoute: false,
-    //     },
-
-    //     {
-    //       menuValue: "Testimonials",
-    //       routes: routes.testimonials,
-    //       hasSubRoute: false,
-    //       showSubRoute: false,
-    //     },
-    //     {
-    //       menuValue: "Terms & Conditions",
-    //       routes: routes.termsCondition,
-    //       hasSubRoute: false,
-    //       showSubRoute: false,
-    //     },
-    //     {
-    //       menuValue: "Privacy Policy",
-    //       routes: routes.privacyPolicy,
-    //       hasSubRoute: false,
-    //       showSubRoute: false,
-    //     },
-    //     {
-    //       menuValue: "Maintenance",
-    //       routes: routes.maintenance,
-    //       hasSubRoute: false,
-    //       showSubRoute: false,
-    //     },
-    //     {
-    //       menuValue: "Coming Soon",
-    //       routes: routes.comingSoon,
-    //       hasSubRoute: false,
-    //       showSubRoute: false,
-    //     },
-    //   ],
-    // },
-    // {
-    //   tittle: "Shop",
-    //   showAsTab: false,
-    //   separateRoute: true,
-    //   // routes: routes.shop,
-    //   hasSubRoute: false,
-    //   showSubRoute: false,
-    // },
-    // {
-    //   tittle: "Blog",
-    //   showAsTab: false,
-    //   separateRoute: true,
-    //   routes: routes.blogGrid,
-    //   hasSubRoute: false,
-    //   showSubRoute: false,
-    //   menu: [
-    //     {
-    //       menuValue: "Blog List",
-    //       routes: routes.blogList,
-    //       hasSubRoute: false,
-    //       showSubRoute: false,
-    //       subMenus: [],
-    //     },
-
-    //     {
-    //       menuValue: "Blog List Sidebar",
-    //       hasSubRoute: true,
-    //       showSubRoute: true,
-    //       subMenus: [
-    //         {
-    //           menuValue: "Blog List Sidebar Left",
-    //           routes: routes.blogListSidebarLeft,
-    //           hasSubRoute: true,
-    //           showSubRoute: true,
-    //           subMenus: [],
-    //         },
-    //         {
-    //           menuValue: "Blog List Sidebar Right",
-    //           routes: routes.blogListSidebarRight,
-    //           hasSubRoute: true,
-    //           showSubRoute: true,
-    //           subMenus: [],
-    //         },
-    //       ],
-    //     },
-    // {
-    //   menuValue: "Blog Grid",
-    //   routes: routes.blogGrid,
-    //   hasSubRoute: false,
-    //   showSubRoute: false,
-    // subMenus: [],
-    // },
-    //     {
-    //       menuValue: "Blog Grid Sidebar",
-    //       hasSubRoute: true,
-    //       showSubRoute: true,
-    //       subMenus: [
-    //         {
-    //           menuValue: "Blog Grid Sidebar Left",
-    //           routes: routes.blogGridSidebarLeft,
-    //           hasSubRoute: true,
-    //           showSubRoute: true,
-    //           subMenus: [],
-    //         },
-    //         {
-    //           menuValue: "Blog Grid Sidebar Right",
-    //           routes: routes.blogGridSidebarRight,
-    //           hasSubRoute: true,
-    //           showSubRoute: true,
-    //           subMenus: [],
-    //         },
-    //       ],
-    //     },
-    //     {
-    //       menuValue: "Blog Detail",
-    //       routes: routes.blogDetails,
-    //       hasSubRoute: false,
-    //       showSubRoute: false,
-    //       subMenus: [],
-    //     },
-    //     {
-    //       menuValue: "Blog Detail Sidebar",
-    //       hasSubRoute: true,
-    //       showSubRoute: true,
-    //       subMenus: [
-    //         {
-    //           menuValue: "Blog Detail Sidebar Left",
-    //           routes: routes.blogDetailsSidebarLeft,
-    //           hasSubRoute: true,
-    //           showSubRoute: true,
-    //           subMenus: [],
-    //         },
-    //         {
-    //           menuValue: "Blog Detail Sidebar Right",
-    //           routes: routes.personalTrainingDetails,
-    //           hasSubRoute: true,
-    //           showSubRoute: true,
-    //           subMenus: [],
-    //         },
-    //       ],
-    //     },
-    //     {
-    //       menuValue: "Blog Carousel",
-    //       routes: routes.blogCarousel,
-    //       hasSubRoute: false,
-    //       showSubRoute: false,
-    //       subMenus: [],
-    //     },
-    //   ],
-    // },
-    {
-      tittle: "Contact Us",
-      showAsTab: false,
-      separateRoute: true,
-      routes: routes.contactUs,
-      hasSubRoute: false,
-      showSubRoute: false,
     },
     {
       tittle: "Blogs",
-      routes: routes.blogGrid,
-      showAsTab: false,
       separateRoute: true,
-      hasSubRoute: false,
-      showSubRoute: false,
-      // subMenus: [],
+      routes: routes.blogGrid,
+    },
+    {
+      tittle: "Contact Us",
+      separateRoute: true,
+      routes: routes.contactUs,
     },
   ];
-
-  const customStyle = {
-    background: location.pathname.includes(routes.home)
-      ? // ? "rgb(23, 124, 130)"
-        "#ffffff"
-      : // ? "#ffffff"
-        "#ffffff",
-    borderBottom: "3px solid #ff5f1f",
-  };
 
   const profileStyle = {
     display: loginToken ? "block" : "none",
@@ -670,12 +226,9 @@ const Header = () => {
 
   return (
     <header
-      className={
-        location.pathname.includes(routes.home)
-          ? "header header-trans"
-          : "header header-sticky"
-      }
-      style={customStyle}
+      className={`header ${
+        location.pathname.includes(routes.home) ? "header-trans" : "header-sticky"
+      } ${isScrolled ? "fixed" : ""}`}
     >
       <div className="container-fluid">
         <nav className="navbar navbar-expand-lg header-nav">
@@ -962,26 +515,21 @@ const Header = () => {
 
             <li className="nav-item">
               {loginToken ? (
-                <div className="nav-link btn btn-white log-register">
-                  <a>
-                    <span>
-                      <i className="feather-users" />
-                    </span>
-                    {/* {userData?.first_name} */}
-                    <i className="fas fa-chevron-down"></i>
+                <div className="user-profile-nav">
+                  <div className="profile-trigger d-flex align-items-center gap-2">
+                    <div className="avatar-circle">
+                      {userData?.first_name ? userData.first_name[0].toUpperCase() : 'U'}
+                    </div>
+                    <span className="user-name-text">{userData?.first_name}</span>
+                    <i className="fas fa-chevron-down" style={{ fontSize: "12px", opacity: 0.7 }} />
                     <div className="lt-btn">
                       <ul className="profile-dropdown">
                         <li className="ft-colr-ffff">
                           <Link to={routes.userBookings}>
                             <i className="fas fa-user"></i> &nbsp;
-                            {userData?.first_name}
+                            My Bookings
                           </Link>
                         </li>
-                        {/* <li className="ft-colr-ffff">
-                          <Link to={routes.userProfile}>
-                            <i className="fas fa-cog"></i> Settings
-                          </Link>
-                        </li> */}
                         <li className="ft-colr-ffff" onClick={removeToken}>
                           <Link to={routes.home}>
                             <i className="fas fa-sign-out-alt"></i> Logout
@@ -989,22 +537,22 @@ const Header = () => {
                         </li>
                       </ul>
                     </div>
-                  </a>
+                  </div>
                 </div>
               ) : (
                 <div className="d-flex gap-2">
                   <Link to={"/login"}>
-                    <div className="nav-link btn btn-white log-register">
+                    <div className="nav-link btn btn-accent-outline log-register">
                       <span>
-                        <i className="feather-users" />
+                        <i className="feather-user" />
                       </span>
                       Login
                     </div>
                   </Link>{" "}
                   <Link to={"/register"}>
-                    <div className="nav-link btn btn-white log-register">
+                    <div className="nav-link btn btn-primary log-register">
                       <span>
-                        <i className="feather-users" />
+                        <i className="feather-user-plus" />
                       </span>
                       Register
                     </div>

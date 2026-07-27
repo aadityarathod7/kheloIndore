@@ -33,6 +33,30 @@ const AddCourt = () => {
   };
 
   const [images, setImages] = useState([true, true, true]);
+  const [selectedSportsConfig, setSelectedSportsConfig] = useState<Record<string, { active: boolean; price: string; size: string; surface: string }>>({});
+
+  const handleSportToggle = (sportId: string) => {
+    setSelectedSportsConfig(prev => ({
+      ...prev,
+      [sportId]: {
+        ...prev[sportId],
+        active: !prev[sportId]?.active,
+        price: prev[sportId]?.price || "",
+        size: prev[sportId]?.size || "",
+        surface: prev[sportId]?.surface || "Artificial Turf"
+      }
+    }));
+  };
+
+  const handleSportFieldChange = (sportId: string, field: string, value: string) => {
+    setSelectedSportsConfig(prev => ({
+      ...prev,
+      [sportId]: {
+        ...prev[sportId],
+        [field]: value
+      }
+    }));
+  };
 
   const removeImg = (index) => {
     const newImages = [...images];
@@ -217,6 +241,84 @@ const AddCourt = () => {
                               placeholder="Select Court Type"
                               className="select-bg w-100"
                             />
+                          </div>
+                        </div>
+                        {/* Multi-Sport Configuration Layout */}
+                        <div className="col-12 mt-4">
+                          <label className="form-label" style={{ fontWeight: "700", color: "#00E676", fontSize: "16px" }}>Multi-Sport Configuration</label>
+                          <p className="text-white-50 mb-3" style={{ fontSize: "12px" }}>Select all the sports available at this venue and specify their prices & specifications.</p>
+                          <div className="row g-3">
+                            {[
+                              { id: "cricket", label: "Cricket" },
+                              { id: "football", label: "Football" },
+                              { id: "badminton", label: "Badminton" },
+                              { id: "tennis", label: "Tennis" },
+                              { id: "swimming", label: "Swimming" },
+                              { id: "basketball", label: "Basketball" },
+                              { id: "volleyball", label: "Volleyball" }
+                            ].map(sport => {
+                              const config = selectedSportsConfig[sport.id] || { active: false, price: "", size: "", surface: "Artificial Turf" };
+                              return (
+                                <div className="col-md-6 col-lg-4 mb-3" key={sport.id}>
+                                  <div className="card p-3 border-white-15 bg-dark mb-0 h-100" style={{ borderRadius: "12px" }}>
+                                    <div className="form-check mb-2">
+                                      <input 
+                                        type="checkbox" 
+                                        className="form-check-input" 
+                                        id={`sport-checkbox-${sport.id}`}
+                                        checked={config.active}
+                                        onChange={() => handleSportToggle(sport.id)}
+                                        style={{ cursor: "pointer" }}
+                                      />
+                                      <label className="form-check-label text-white ms-2" htmlFor={`sport-checkbox-${sport.id}`} style={{ fontWeight: "600", cursor: "pointer" }}>
+                                        {sport.label}
+                                      </label>
+                                    </div>
+                                    {config.active && (
+                                      <div className="sport-fields mt-3 d-flex flex-column gap-2">
+                                        <div>
+                                          <label className="text-white-50 mb-1" style={{ fontSize: "11px" }}>Price per hour (₹)</label>
+                                          <input 
+                                            type="number" 
+                                            className="form-control form-control-sm bg-dark text-white border-white-15" 
+                                            placeholder="e.g. 800" 
+                                            value={config.price}
+                                            onChange={(e) => handleSportFieldChange(sport.id, "price", e.target.value)}
+                                            style={{ padding: "6px 8px", fontSize: "12px" }}
+                                          />
+                                        </div>
+                                        <div>
+                                          <label className="text-white-50 mb-1" style={{ fontSize: "11px" }}>Court Size / Layout</label>
+                                          <input 
+                                            type="text" 
+                                            className="form-control form-control-sm bg-dark text-white border-white-15" 
+                                            placeholder="e.g. 7v7, Double Court" 
+                                            value={config.size}
+                                            onChange={(e) => handleSportFieldChange(sport.id, "size", e.target.value)}
+                                            style={{ padding: "6px 8px", fontSize: "12px" }}
+                                          />
+                                        </div>
+                                        <div>
+                                          <label className="text-white-50 mb-1" style={{ fontSize: "11px" }}>Surface / Grass Type</label>
+                                          <select 
+                                            className="form-select form-select-sm bg-dark text-white border-white-15"
+                                            value={config.surface}
+                                            onChange={(e) => handleSportFieldChange(sport.id, "surface", e.target.value)}
+                                            style={{ padding: "6px 8px", fontSize: "12px" }}
+                                          >
+                                            <option value="Artificial Turf">Artificial Turf</option>
+                                            <option value="Natural Grass">Natural Grass</option>
+                                            <option value="Wooden Court">Wooden Court</option>
+                                            <option value="Synthetic Court">Synthetic / Acrylic</option>
+                                            <option value="Clay Court">Clay Court</option>
+                                          </select>
+                                        </div>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              );
+                            })}
                           </div>
                         </div>
                       </div>
@@ -3768,6 +3870,8 @@ const AddCourt = () => {
                                   type="file"
                                   id="file-input"
                                   className="image-upload"
+                                  accept="image/*,video/*"
+                                  multiple
                                 />
                               </div>
                             </div>

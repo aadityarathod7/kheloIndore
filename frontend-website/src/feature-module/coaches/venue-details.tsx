@@ -96,6 +96,28 @@ const VenueDetails = () => {
        document.title = `Sports Venue - ${type}/${name}/${id}}`;  
    }, []);
   
+  const handleShare = () => {
+    const shareUrl = window.location.href;
+    if (navigator.share) {
+      navigator.share({
+        title: venueData?.name || "Khelo Indore Venue",
+        text: `Check out ${venueData?.name} on Khelo Indore!`,
+        url: shareUrl,
+      }).catch((err) => console.log(err));
+    } else {
+      navigator.clipboard.writeText(shareUrl);
+      Swal.fire({
+        icon: "success",
+        title: "Link Copied!",
+        text: "Venue profile link has been copied to your clipboard.",
+        timer: 2000,
+        showConfirmButton: false,
+        background: "#0d1b2a",
+        color: "#fff",
+        confirmButtonColor: "#00E676"
+      });
+    }
+  };
   
   const handleImageClick = (index: number) => {
     const imageUrl = venueData?.images[index]?.src
@@ -164,22 +186,42 @@ const VenueDetails = () => {
                 }}
                 className="venue-space"
               >
-                {venueData?.images?.map((venue: any, index: number) => (
-                  <SwiperSlide key={index}>
-                    <div
-                      className="gallery-widget-item"
-                      onClick={() => handleImageClick(index)}
-                    >
-                      <Link to="#" data-fancybox="gallery1">
-                        <ImageWithBasePath
-                          className="img-fluid fixed-height"
-                          alt={`Image ${index + 1}`}
-                          src={`${IMG_URL}${venue?.src}`}
-                        />
-                      </Link>
-                    </div>
-                  </SwiperSlide>
-                ))}
+                {venueData?.images?.map((venue: any, index: number) => {
+                  const isVid = venue?.src && (
+                    venue.src.toLowerCase().endsWith(".mp4") ||
+                    venue.src.toLowerCase().endsWith(".webm") ||
+                    venue.src.toLowerCase().endsWith(".ogg") ||
+                    venue.src.toLowerCase().endsWith(".mov")
+                  );
+                  return (
+                    <SwiperSlide key={index}>
+                      <div
+                        className="gallery-widget-item"
+                        style={{ height: "200px", borderRadius: "12px", overflow: "hidden", position: "relative" }}
+                      >
+                        {isVid ? (
+                          <video 
+                            src={`${IMG_URL}${venue?.src}`} 
+                            className="img-fluid fixed-height w-100" 
+                            controls 
+                            playsInline
+                            style={{ objectFit: "cover", height: "100%", width: "100%" }}
+                          />
+                        ) : (
+                          <div onClick={() => handleImageClick(index)} style={{ cursor: "pointer" }}>
+                            <Link to="#" data-fancybox="gallery1">
+                              <ImageWithBasePath
+                                className="img-fluid fixed-height"
+                                alt={`Image ${index + 1}`}
+                                src={`${IMG_URL}${venue?.src}`}
+                              />
+                            </Link>
+                          </div>
+                        )}
+                      </div>
+                    </SwiperSlide>
+                  );
+                })}
               </Swiper>
             </div>
           </div>
@@ -199,26 +241,32 @@ const VenueDetails = () => {
                     </li>
                   </ul>
                 </div>
-                {/* <div className="col-12 col-sm-12 col-md-12 col-lg-6 text-right">
-          <ul className="social-options float-lg-end d-sm-flex justify-content-start align-items-center">
-            <li><Link to="#"><i className="feather-share-2" />Share</Link></li>
-            <li><Link to="#" className="favour-adds"><i className="feather-star" />Add to favourite</Link></li>
-            <li className="venue-review-info d-flex justify-content-start align-items-center">
-              <span className="d-flex justify-content-center align-items-center">5.0</span>
-              <div className="review">
-                <div className="rating">
-                  <i className="fas fa-star filled" />
-                  <i className="fas fa-star filled" />
-                  <i className="fas fa-star filled" />
-                  <i className="fas fa-star filled" />
-                  <i className="fas fa-star filled" />
+                <div className="col-12 col-sm-12 col-md-12 col-lg-6 text-lg-end mt-3 mt-lg-0">
+                  <ul className="social-options float-lg-end d-sm-flex justify-content-start align-items-center gap-3 list-unstyled" style={{ listStyle: "none", padding: 0 }}>
+                    <li style={{ display: "inline-block" }}>
+                      <button 
+                        onClick={handleShare} 
+                        className="btn btn-sm rounded-pill px-3 d-flex align-items-center gap-2 text-white"
+                        style={{ border: "1px solid rgba(255, 255, 255, 0.15)", background: "rgba(255, 255, 255, 0.05)", padding: "8px 16px" }}
+                      >
+                        <i className="feather-share-2" style={{ color: "#00E676" }} /> Share Venue
+                      </button>
+                    </li>
+                    <li className="venue-review-info d-flex justify-content-start align-items-center mt-2 mt-sm-0" style={{ display: "inline-block" }}>
+                      <span className="d-flex justify-content-center align-items-center bg-warning text-dark px-2 py-1 rounded me-2" style={{ fontSize: "14px", fontWeight: "700" }}>4.8</span>
+                      <div className="review d-inline-block vertical-align-middle">
+                        <div className="rating">
+                          <i className="fas fa-star text-warning" />
+                          <i className="fas fa-star text-warning" />
+                          <i className="fas fa-star text-warning" />
+                          <i className="fas fa-star text-warning" />
+                          <i className="fas fa-star text-warning" />
+                        </div>
+                        <p className="mb-0 text-white-50" style={{ fontSize: "12px" }}>18 Reviews</p>
+                      </div>
+                    </li>
+                  </ul>
                 </div>
-                <p className="mb-0"><Link to="#">15 Reviews</Link></p>
-              </div>
-              <i className="fa-regular fa-comments" />
-            </li>
-          </ul>
-        </div> */}
 
                 {/* <div className="col-12 col-sm-12 col-md-6 col-lg-6">
               <div className="d-flex float-sm-end align-items-center">

@@ -648,12 +648,13 @@ exports.loginUserWithMobile = async (req, res) => {
         message: "You are not active, please contact admin",
       });
     }
+    console.log("MOBILE LOGIN OTP GENERATED FOR", mobile, ":", otp);
     if (checkCoach) {
       const data = await Coach.findOneAndUpdate(
         { mobile },
         {
           last_login: Date.now(),
-          otp: 1234,
+          otp: otp,
         },
         { new: true }
       );
@@ -662,7 +663,7 @@ exports.loginUserWithMobile = async (req, res) => {
         { mobile },
         {
           last_login: Date.now(),
-          otp: 1234,
+          otp: otp,
         },
         { new: true }
       );

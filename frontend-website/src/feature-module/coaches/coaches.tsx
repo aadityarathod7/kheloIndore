@@ -117,11 +117,12 @@ const CoachesGrid = (props: { id: any }) => {
   }, []);
 
   const locationByHome = useLocation();
-  const { selectedLocationSort } = locationByHome.state || {};
+  const { selectedLocationSort, selectedSport } = locationByHome.state || {};
 
   useEffect(() => {
-    setLocation(selectedLocationSort?.name);
-  }, [coaches]);
+    setLocation(selectedLocationSort?.name || "");
+    setSelectedCategory(selectedSport?.name || null);
+  }, [locationByHome, selectedLocationSort, selectedSport]);
 
   useEffect(() => {
     // Fetch coach data from API
@@ -139,6 +140,8 @@ const CoachesGrid = (props: { id: any }) => {
           trainer_type: coach.trainer_type, // Ensure trainer_type is included
           specializations: coach.specializations,
           profile_picture: coach.profile_picture,
+          category: coach.category,
+          near_by_location: coach.near_by_location,
         }));
         setCoaches(mappedData);
       } catch (error) {
@@ -181,20 +184,23 @@ const CoachesGrid = (props: { id: any }) => {
   };
 
   useEffect(() => {
-    console.log("Selected Category:", selectedCategory); // Debugging line
     let filteredData = coaches;
 
-    if (selectedCategory) {
+    if (location) {
       filteredData = filteredData.filter((coach) =>
-        coach.trainer_type
-          ?.toLowerCase()
-          .includes(selectedCategory.toLowerCase())
+        coach.near_by_location?.toLowerCase()?.includes(location.toLowerCase())
       );
     }
 
-    console.log("Filtered Coaches:", filteredData); // Debugging line
+    if (selectedCategory) {
+      filteredData = filteredData.filter((coach) =>
+        coach.category?.toLowerCase()?.includes(selectedCategory.toLowerCase()) ||
+        coach.trainer_type?.toLowerCase()?.includes(selectedCategory.toLowerCase())
+      );
+    }
+
     setFinalFilterCoach(filteredData);
-  }, [selectedCategory, coaches]);
+  }, [location, selectedCategory, coaches]);
 
   // Handle trainer type change (you can set options here as well)
 

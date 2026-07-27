@@ -1,15 +1,29 @@
 /*-----------------
-    7. Footer
+    7. Footer — Premium Dark Sports Theme
 -----------------------*/
 
 .footer {
-  background-color: #0a1a38;
+  background-color: $__footer__bg;
   padding: 60px 0 0;
   float: $__left;
   width: $__full__width;
+  position: relative;
+
+  // Subtle gradient overlay at the top
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(0, 230, 118, 0.4), transparent);
+  }
+
   @include respond-below(custom767) {
     padding: 40px 0 0;
   }
+
   .footer-join {
     max-width: 744px;
     margin: 0 $__auto;
@@ -23,14 +37,29 @@
       color: $__white;
     }
   }
+
   .footer-title {
     font-weight: $__semibold;
     color: $__white;
     margin-bottom: 25px;
+    position: relative;
+    padding-bottom: 12px;
+
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 30px;
+      height: 2px;
+      background: $__primarycolor;
+      border-radius: 2px;
+    }
   }
+
   .footer-top {
     padding: 40px 0;
-    border-top: 1px solid #1d3563;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
     @include respond-below(custom991) {
       padding: 40px 0 20px;
     }
@@ -45,9 +74,29 @@
             margin-bottom: 0;
           }
           a {
-            color: $__darkgray;
+            color: rgba(255, 255, 255, 0.55);
+            position: relative;
+            display: inline-block;
+            transition: all 0.3s ease;
+
+            &::after {
+              content: '';
+              position: absolute;
+              bottom: -2px;
+              left: 0;
+              width: 0;
+              height: 1px;
+              background: $__primarycolor;
+              transition: width 0.3s ease;
+            }
+
             &:hover {
-              color: $__primarycolor;
+              color: $__white;
+              padding-left: 5px;
+
+              &::after {
+                width: 100%;
+              }
             }
           }
         }
@@ -57,7 +106,7 @@
           li {
             margin-bottom: 0;
             a {
-              @include transition(all 0.5s ease-in-out 0s);
+              @include transition(all 0.3s ease-in-out 0s);
               &:hover {
                 i {
                   color: $__white;
@@ -67,16 +116,19 @@
               &.linked-in {
                 &:hover {
                   background: $__facebook;
+                  box-shadow: 0 4px 15px rgba(48, 128, 248, 0.35);
                 }
               }
               &.twitter {
                 &:hover {
                   background: $__twitter;
+                  box-shadow: 0 4px 15px rgba(53, 182, 255, 0.35);
                 }
               }
               &.instagram {
                 &:hover {
                   background: $__instagram;
+                  box-shadow: 0 4px 15px rgba(255, 45, 32, 0.35);
                 }
               }
             }
@@ -85,20 +137,23 @@
       }
     }
   }
+
   .footer-bottom {
     padding: 20px 0;
-    border-top: 1px solid #1d3563;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
   }
+
   .footer-address-blk {
     .footer-call {
       p {
-        color: $__white;
+        color: rgba(255, 255, 255, 0.7);
         white-space: nowrap;
         text-overflow: ellipsis;
         overflow: hidden;
       }
     }
   }
+
   .social-icon {
     margin: 20px 0 0;
     ul {
@@ -110,27 +165,30 @@
       li {
         margin-right: 12px;
         a {
-          background: $__black__light;
+          background: rgba(255, 255, 255, 0.08);
           font-size: 18px;
-          transition: all 0.4s ease 0s;
+          transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
           border-radius: 50%;
           padding: 15px 15px;
           @extend %flex-align-center;
           height: 24px;
           width: 24px;
           i {
-            color: $__white;
+            color: rgba(255, 255, 255, 0.6);
             font-size: $__font__size__14;
+            transition: all 0.35s ease;
           }
           &:hover {
+            transform: translateY(-3px);
             i {
-              color: $__primarycolor;
+              color: $__white;
             }
           }
         }
       }
     }
   }
+
   .dropdown-blk {
     ul {
       flex-direction: row;
@@ -197,16 +255,18 @@
       }
     }
   }
+
   .copyright-text {
+    color: rgba(255, 255, 255, 0.45);
     @include respond-below(custom767) {
       text-align: center;
       margin-bottom: 10px;
     }
   }
 }
+
 .main-wrapper {
   float: left;
   width: 100%;
   overflow: clip;
-  // margin-top: 85px !important;
 }

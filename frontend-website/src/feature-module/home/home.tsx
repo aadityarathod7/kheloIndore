@@ -78,7 +78,9 @@ const Home = () => {
   const [coaches, setCoaches] = useState<Coach[]>([]);
   const [trainer, setTrainer] = useState<Trainer[]>([]);
   const [venues, setVenues] = useState<Venues[]>([]);
-  const [selectedLocationSort, setSelectedLocationSort] = useState<string>();
+  const [activeTopRatedTab, setActiveTopRatedTab] = useState("venues");
+  const [selectedLocationSort, setSelectedLocationSort] = useState<any>();
+  const [selectedSport, setSelectedSport] = useState<any>();
   const [data, setData] = useState([]);
   const [visible, setVisible] = useState(false);
   const [location, setLocation] = useState<Location | null>(null);
@@ -144,6 +146,17 @@ const Home = () => {
     { name: "Patnipura Square" },
     { name: "IT Park" },
     { name: "Rajiv Gandhi" },
+  ];
+  const sportsOptions = [
+    { name: "Cricket" },
+    { name: "Football" },
+    { name: "Badminton" },
+    { name: "Tennis" },
+    { name: "Swimming" },
+    { name: "Basketball" },
+    { name: "Volleyball" },
+    { name: "Gym & Fitness" },
+    { name: "Table Tennis" },
   ];
 
   const settings = {
@@ -292,23 +305,58 @@ const Home = () => {
     fetchTrainer();
   }, []);
 
-  const navigateToPage = () => {
-    if (selectedTimeframe?.name === "Coaches") {
-      navigate("/coaches", { state: { selectedLocationSort } });
-    } else if (selectedTimeframe?.name === "Personal Trainer") {
-      navigate("/personal-training", { state: { selectedLocationSort } });
-    } else if (selectedTimeframe?.name === "Sports Venue") {
-      navigate("/sports-venue", { state: { selectedLocationSort } });
+  const getResultCount = () => {
+    let count = 0;
+    const categoryName = selectedTimeframe?.name;
+    const sportName = selectedSport?.name?.toLowerCase();
+    const locationName = selectedLocationSort?.name;
+
+    if (categoryName === "Sports Venue") {
+      count = venues.filter(v => {
+        const matchLocation = !locationName || v.near_by_location === locationName;
+        const matchSport = !sportName || v.category?.toLowerCase()?.includes(sportName) || v.activities?.toLowerCase()?.includes(sportName);
+        return matchLocation && matchSport;
+      }).length;
+    } else if (categoryName === "Coaches") {
+      count = coaches.filter(c => {
+        const matchLocation = !locationName || c.near_by_location === locationName;
+        const matchSport = !sportName || c.category?.toLowerCase()?.includes(sportName);
+        return matchLocation && matchSport;
+      }).length;
+    } else if (categoryName === "Personal Trainer") {
+      count = trainer.filter(t => {
+        const matchLocation = !locationName || t.near_by_location === locationName;
+        const matchSport = !sportName || t.category?.toLowerCase()?.includes(sportName) || t.specializations?.toLowerCase()?.includes(sportName);
+        return matchLocation && matchSport;
+      }).length;
     }
-    // else {
-    //   Swal.fire({
-    //     title: "Invalid Selection",
-    //     text: "Please select a category before proceeding.",
-    //     icon: "warning",
-    //     timer: 5000,
-    //     showConfirmButton: false,
-    //   });
-    // }
+    return count;
+  };
+
+  const navigateToPage = (e: any) => {
+    e.preventDefault();
+    const count = getResultCount();
+
+    Swal.fire({
+      title: `${count} Results Found!`,
+      text: `We found ${count} matching registered ${selectedTimeframe?.name} profiles. Proceed to view listings?`,
+      icon: "info",
+      showCancelButton: true,
+      confirmButtonText: "Yes, View Listings",
+      cancelButtonText: "Cancel",
+      confirmButtonColor: "#FF6B2C",
+      cancelButtonColor: "#0D1B2A",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        if (selectedTimeframe?.name === "Coaches") {
+          navigate("/coaches", { state: { selectedLocationSort, selectedSport } });
+        } else if (selectedTimeframe?.name === "Personal Trainer") {
+          navigate("/personal-training", { state: { selectedLocationSort, selectedSport } });
+        } else if (selectedTimeframe?.name === "Sports Venue") {
+          navigate("/sports-venue", { state: { selectedLocationSort, selectedSport } });
+        }
+      }
+    });
   };
 
   const handleItemClick = (index: number) => {
@@ -355,29 +403,37 @@ const Home = () => {
                     Programs.
                   </p>
                   <div className="search-box">
-                    <form>
-                      <div className="search-input line">
-                        <div
-                          className="form-group mb-0"
-                          style={{ width: "219px" }}
-                        >
-                          <label>Search for</label>
+                    <form className="d-flex align-items-center gap-1 w-100 flex-wrap flex-md-nowrap">
+                      <div className="search-input line" style={{ flex: 1, minWidth: "160px" }}>
+                        <div className="form-group mb-0 w-100">
+                          <label>Category</label>
                           <Dropdown
                             value={selectedTimeframe}
                             onChange={(e) => setSelectedTimeframe(e.value)}
                             options={timeframeOptions}
                             optionLabel="name"
                             placeholder="Choose venue/coach"
-                            className="select custom-select-list"
+                            className="select custom-select-list w-100"
                           />
                         </div>
                       </div>
 
-                      <div className="search-input">
-                        <div
-                          className="form-group mb-0"
-                          style={{ width: "219px" }}
-                        >
+                      <div className="search-input line" style={{ flex: 1, minWidth: "160px" }}>
+                        <div className="form-group mb-0 w-100">
+                          <label>Sport</label>
+                          <Dropdown
+                            value={selectedSport}
+                            onChange={(e) => setSelectedSport(e.value)}
+                            options={sportsOptions}
+                            optionLabel="name"
+                            placeholder="Choose Sport"
+                            className="select custom-select-list w-100"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="search-input" style={{ flex: 1, minWidth: "160px" }}>
+                        <div className="form-group mb-0 w-100">
                           <label>Location</label>
                           <Dropdown
                             value={selectedLocationSort}
@@ -395,14 +451,20 @@ const Home = () => {
                           className="btn"
                           onClick={navigateToPage}
                           disabled={!selectedTimeframe} // Disable if no selection
-
-                          // type="submit"
                         >
                           <i className="feather-search" />
                           <span className="search-text">Search</span>
                         </button>
                       </div>
                     </form>
+                  </div>
+                  <div className="trending-searches mt-3 aos d-flex align-items-center gap-2 flex-wrap" data-aos="fade-up" data-aos-delay="100">
+                    <span className="text-white-50 me-2" style={{ fontSize: "14px" }}>Trending Searches:</span>
+                    <div className="d-inline-flex gap-2 flex-wrap">
+                      <span className="badge bg-white-10 text-white border border-white-20 rounded-pill px-3 py-2 cursor-pointer hover-lift-subtle" style={{ fontSize: "13px", cursor: "pointer", background: "rgba(255,255,255,0.08)", borderColor: "rgba(255,255,255,0.15)", transition: "all 0.2s" }} onClick={() => { setSelectedTimeframe({ name: "Sports Venue" }); setSelectedSport({ name: "Cricket" }); }}>Cricket Academy</span>
+                      <span className="badge bg-white-10 text-white border border-white-20 rounded-pill px-3 py-2 cursor-pointer hover-lift-subtle" style={{ fontSize: "13px", cursor: "pointer", background: "rgba(255,255,255,0.08)", borderColor: "rgba(255,255,255,0.15)", transition: "all 0.2s" }} onClick={() => { setSelectedTimeframe({ name: "Coaches" }); setSelectedSport({ name: "Gym & Fitness" }); }}>Dance Classes</span>
+                      <span className="badge bg-white-10 text-white border border-white-20 rounded-pill px-3 py-2 cursor-pointer hover-lift-subtle" style={{ fontSize: "13px", cursor: "pointer", background: "rgba(255,255,255,0.08)", borderColor: "rgba(255,255,255,0.15)", transition: "all 0.2s" }} onClick={() => { setSelectedTimeframe({ name: "Sports Venue" }); setSelectedSport({ name: "Swimming" }); }}>Swimming Coaching</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -419,6 +481,11 @@ const Home = () => {
           </div>
         </div>
       </section>
+      <div className="section-divider">
+        <svg data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
+          <path d="M985.66,92.83C906.67,72,823.78,31,743.84,14.19c-82.26-17.34-168.06-16.33-250.45.39-57.84,11.73-114,31.07-172,41.86C271.15,57.17,216.56,49.2,176,44.6c-31.08-4.19-59.26-10.05-91.3-18.75C57,18.3,26.9,8.75,0,0V120H1200V95.8C1132.19,118.92,1055.71,111.31,985.66,92.83Z" className="shape-fill"></path>
+        </svg>
+      </div>
       <section className="section work-section">
         <div className="work-cock-img">
           {/* <ImageWithBasePath src="assets/img/icons/work-cock.svg" alt="Icon" /> */}
@@ -439,31 +506,31 @@ const Home = () => {
           </div>
           <div className="row justify-content-center ">
             <div className="col-lg-4 col-md-6 d-flex">
-              <div className="work-grid w-100 aos" data-aos="fade-up">
+              <div className="work-grid w-100 aos hover-lift" data-aos="fade-up" data-aos-delay="100">
                 <div className="work-icon">
                   <div className="work-icon-inner">
                     <ImageWithBasePath
-                      src="assets/img/icons/work-icon1.svg"
+                      src="assets/img/icons/work-icon3.svg"
                       alt="Icon"
                     />
                   </div>
                 </div>
                 <div className="work-content">
                   <h5>
-                    <Link to="/personal-training">Select Trainer</Link>
+                    <Link to={routes.blogListSidebarLeft}>Select Venues</Link>
                   </h5>
                   <p>
-                    Transform your fitness journey with personalized workouts
-                    and expert guidance from our dedicated trainers.
+                    Easily book venues, pay, and enjoy a seamless experience on
+                    our user-friendly platform.
                   </p>
-                  <Link className="btn" to="/personal-training">
-                    Go to Trainer <i className="feather-arrow-right" />
+                  <Link className="btn" to={routes.blogListSidebarLeft}>
+                    Go To Venues <i className="feather-arrow-right" />
                   </Link>
                 </div>
               </div>
             </div>
             <div className="col-lg-4 col-md-6 d-flex">
-              <div className="work-grid w-100 aos" data-aos="fade-up">
+              <div className="work-grid w-100 aos hover-lift" data-aos="fade-up" data-aos-delay="200">
                 <div className="work-icon">
                   <div className="work-icon-inner">
                     <ImageWithBasePath
@@ -487,25 +554,25 @@ const Home = () => {
               </div>
             </div>
             <div className="col-lg-4 col-md-6 d-flex">
-              <div className="work-grid w-100 aos" data-aos="fade-up">
+              <div className="work-grid w-100 aos hover-lift" data-aos="fade-up" data-aos-delay="300">
                 <div className="work-icon">
                   <div className="work-icon-inner">
                     <ImageWithBasePath
-                      src="assets/img/icons/work-icon3.svg"
+                      src="assets/img/icons/work-icon1.svg"
                       alt="Icon"
                     />
                   </div>
                 </div>
                 <div className="work-content">
                   <h5>
-                    <Link to={routes.blogListSidebarLeft}>Select Venues</Link>
+                    <Link to="/personal-training">Select Trainer</Link>
                   </h5>
                   <p>
-                    Easily book venues, pay, and enjoy a seamless experience on
-                    our user-friendly platform.
+                    Transform your fitness journey with personalized workouts
+                    and expert guidance from our dedicated trainers.
                   </p>
-                  <Link className="btn" to={routes.blogListSidebarLeft}>
-                    Go To Venues <i className="feather-arrow-right" />
+                  <Link className="btn" to="/personal-training">
+                    Go to Trainer <i className="feather-arrow-right" />
                   </Link>
                 </div>
               </div>
@@ -514,145 +581,270 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Rental Deals */}
-      <section className="section featured-venues">
+      {/* Browse by Category */}
+      <section className="section category-section" style={{ background: "#0d1b2a", padding: "80px 0" }}>
         <div className="container">
-          <div className="section-heading aos" data-aos="fade-up">
+          <div className="section-heading text-center aos" data-aos="fade-up">
             <h2>
-              Top Rated <span>Venues</span>
+              Browse by <span>Category</span>
             </h2>
-            <p className="sub-title">
-              Advanced sports venues offer the latest facilities, dynamic and
-              unique environments for enhanced sports performance.
+            <p className="sub-title text-white-50">
+              Select a sport category to view all registered venues, coaches, and academies.
             </p>
           </div>
-          <div className="row">
-            <div className="featured-slider-group ">
-              <div className="owl-carousel featured-venues-slider owl-theme">
-                <Slider {...settings}>
-                  {/* Featured Item */}
-                  {venues.map((venue, index) => (
-                    <div className="featured-venues-item" key={index}>
-                      <div className="listing-item home-venue">
-                        <div className="listing-img">
-                          <div
-                            className="background-image"
-                            style={{
-                              backgroundImage: `url(${
-                                venue?.images[0]?.src
-                                  ? `${IMG_URL}${venue?.images[0]?.src}`
-                                  : "/assets/img/no-img.png"
-                              })`,
-                            }}
-                          ></div>
-                          <Link
-                            to={`/sports-venue/${venue.vendor_type.replace(/\s+/g, "-").toLowerCase()}/${venue.name.replace(/\s+/g, "-").toLowerCase()}/${venue._id}`}
-                          >
-                            <ImageWithBasePath
-                              src={
-                                venue?.images[0]?.src
-                                  ? `${IMG_URL}${venue?.images[0]?.src}`
-                                  : "/assets/img/no-img.png"
-                              }
-                              className="img-fluid foreground-image"
-                              alt="Venue"
-                            />
-                          </Link>
-                          <div className="fav-item-venues news-sports">
-                            <span className="tag tag-blue">
-                              {/* {venue.category &&
-                                venue.category
-                                  .split(",")
-                                  .map((category) => category.trim())
-                                  .join(", ")} */}
-                              {venue.vendor_type}
-                            </span>
+          <div className="row justify-content-center mt-5">
+            {[
+              { name: "Cricket", icon: "fas fa-baseball-ball", color: "#FF6B2C" },
+              { name: "Football", icon: "fas fa-futbol", color: "#00E676" },
+              { name: "Badminton", icon: "fas fa-table-tennis", color: "#FFD700" },
+              { name: "Tennis", icon: "fas fa-basketball-ball", color: "#FF1493" },
+              { name: "Swimming", icon: "fas fa-swimmer", color: "#00BFFF" },
+              { name: "Basketball", icon: "fas fa-basketball-ball", color: "#FF4500" },
+              { name: "Gym & Fitness", icon: "fas fa-dumbbell", color: "#8A2BE2" },
+              { name: "Volleyball", icon: "fas fa-volleyball-ball", color: "#40E0D0" }
+            ].map((cat, idx) => (
+              <div className="col-lg-3 col-md-4 col-sm-6 mb-4 d-flex" key={idx}>
+                <div 
+                  className="category-card w-100 p-4 text-center aos hover-lift d-flex flex-column align-items-center justify-content-between" 
+                  data-aos="fade-up" 
+                  data-aos-delay={100 * (idx % 4)}
+                  style={{
+                    background: "rgba(255, 255, 255, 0.04)",
+                    border: "1px solid rgba(255, 255, 255, 0.08)",
+                    borderRadius: "16px",
+                    transition: "all 0.3s ease",
+                    cursor: "pointer"
+                  }}
+                  onClick={() => navigate("/sports-venue", { state: { selectedSport: { name: cat.name } } })}
+                >
+                  <div 
+                    className="category-icon-wrap d-flex align-items-center justify-content-center mb-3"
+                    style={{
+                      width: "60px",
+                      height: "60px",
+                      borderRadius: "50%",
+                      background: `rgba(${cat.color === "#FF6B2C" ? "255,107,44" : cat.color === "#00E676" ? "0,230,118" : "255,255,255"}, 0.1)`,
+                      color: cat.color
+                    }}
+                  >
+                    <i className={`${cat.icon}`} style={{ fontSize: "24px" }} />
+                  </div>
+                  <h4 className="text-white mb-1" style={{ fontSize: "18px", fontWeight: "600" }}>{cat.name}</h4>
+                  <p className="text-white-50 mb-3" style={{ fontSize: "12px" }}>
+                    {cat.name === "Cricket" ? "12 Listings" : cat.name === "Football" ? "8 Listings" : cat.name === "Badminton" ? "6 Listings" : cat.name === "Tennis" ? "4 Listings" : "5 Listings"}
+                  </p>
+                  <button 
+                    className="btn btn-outline-light btn-sm rounded-pill px-3"
+                    style={{
+                      fontSize: "12px",
+                      borderColor: "rgba(255,255,255,0.2)",
+                      transition: "all 0.3s"
+                    }}
+                  >
+                    Explore
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
-                            {/* <div className="list-reviews coche-star">
-                              <Link
-                                to="#"
-                                className={`fav-icon ${selectedItems[3] ? "selected" : ""}`}
-                                key={3}
-                                onClick={() => handleItemClick(3)}
-                              >
-                                <i className="feather-heart" />
-                              </Link>
-                            </div> */}
-                          </div>
-                        </div>
-                        <div className="listing-content home-venue news-content">
-                          <div className="listing-venue-owner">
-                            <div className="navigation">
-                              {/* <Link to="#">
+      <div className="section-divider divider-dark">
+        <svg data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
+          <path d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,42.4V0Z" className="shape-fill"></path>
+        </svg>
+      </div>
+
+      {/* Rental Deals */}
+      <section className="section featured-venues" style={{ background: "#0d1b2a", padding: "80px 0" }}>
+        <div className="container">
+          <div className="section-heading text-center aos" data-aos="fade-up">
+            <h2>
+              Top Rated <span>Providers</span>
+            </h2>
+            <p className="sub-title text-white-50">
+              Discover top rated venues, expert coaches, and personal trainers in Indore.
+            </p>
+          </div>
+
+          {/* Unified Category Tabs */}
+          <div className="d-flex justify-content-center mb-5 aos" data-aos="fade-up">
+            <div className="btn-group p-1" style={{ background: "rgba(255, 255, 255, 0.05)", border: "1px solid rgba(255, 255, 255, 0.08)", borderRadius: "30px" }}>
+              <button 
+                type="button"
+                onClick={() => setActiveTopRatedTab("venues")} 
+                className={`btn btn-sm px-4 py-2 rounded-pill font-weight-bold transition-all ${activeTopRatedTab === "venues" ? "btn-primary text-dark" : "text-white"}`}
+                style={{ fontSize: "14px", fontWeight: "700" }}
+              >
+                Venues
+              </button>
+              <button 
+                type="button"
+                onClick={() => setActiveTopRatedTab("coaches")} 
+                className={`btn btn-sm px-4 py-2 rounded-pill font-weight-bold transition-all ${activeTopRatedTab === "coaches" ? "btn-primary text-dark" : "text-white"}`}
+                style={{ fontSize: "14px", fontWeight: "700" }}
+              >
+                Coaches
+              </button>
+              <button 
+                type="button"
+                onClick={() => setActiveTopRatedTab("trainers")} 
+                className={`btn btn-sm px-4 py-2 rounded-pill font-weight-bold transition-all ${activeTopRatedTab === "trainers" ? "btn-primary text-dark" : "text-white"}`}
+                style={{ fontSize: "14px", fontWeight: "700" }}
+              >
+                Personal Trainers
+              </button>
+            </div>
+          </div>
+
+          <div className="row">
+            <div className="featured-slider-group">
+              <div className="owl-carousel featured-venues-slider owl-theme">
+                {activeTopRatedTab === "venues" && (
+                  <Slider {...settings}>
+                    {venues.map((venue, index) => (
+                      <div className="featured-venues-item" key={index}>
+                        <div className="listing-item home-venue border-white-10 bg-dark-card" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "16px", overflow: "hidden", margin: "10px" }}>
+                          <div className="listing-img" style={{ height: "200px" }}>
+                            <div
+                              className="background-image"
+                              style={{
+                                backgroundImage: `url(${
+                                  venue?.images[0]?.src
+                                    ? `${IMG_URL}${venue?.images[0]?.src}`
+                                    : "/assets/img/no-img.png"
+                                })`,
+                              }}
+                            ></div>
+                            <Link to={`/sports-venue/${venue.vendor_type.replace(/\s+/g, "-").toLowerCase()}/${venue.name.replace(/\s+/g, "-").toLowerCase()}/${venue._id}`}>
                               <ImageWithBasePath
-                                src="assets/img/profiles/avatar-01.jpg"
-                                alt="User"
+                                src={
+                                  venue?.images[0]?.src
+                                    ? `${IMG_URL}${venue?.images[0]?.src}`
+                                    : "/assets/img/no-img.png"
+                                }
+                                className="img-fluid foreground-image"
+                                alt="Venue"
                               />
-                              Orlando Waters
-                            </Link> */}
-                              {venue.activities}
-                              <span>
-                                {/* <i className="feather-calendar" />
-                              15 May 2023 */}
+                            </Link>
+                            <div className="fav-item-venues news-sports" style={{ top: "12px", left: "12px" }}>
+                              <span className="tag tag-blue" style={{ background: "#00E676", color: "#0d1b2a", fontWeight: "700" }}>
+                                {venue.vendor_type.replace("_", " ")}
                               </span>
                             </div>
                           </div>
-                          <h3 className="listing-title">
-                            <Link
-                              to={`/sports-venue/${venue.vendor_type.replace(/\s+/g, "-").toLowerCase()}/${venue.name.replace(/\s+/g, "-").toLowerCase()}/${venue._id}`}
-                            >
-                              {venue.name}{" "}
-                            </Link>
-                          </h3>
-                          <p>
-                            <i className="feather-map-pin me-2" />
-                            {venue?.near_by_location}
-                          </p>
-                          {/* <div className="listing-button read-new">
-                          <ul className="nav">
-                            <li>
-                              <Link to="#">
-                                <i className="feather-heart" />
-                                45
+                          <div className="listing-content home-venue news-content p-3">
+                            <h3 className="listing-title" style={{ fontSize: "18px", fontWeight: "600", marginBottom: "8px" }}>
+                              <Link to={`/sports-venue/${venue.vendor_type.replace(/\s+/g, "-").toLowerCase()}/${venue.name.replace(/\s+/g, "-").toLowerCase()}/${venue._id}`} className="text-white text-truncate d-block">
+                                {venue.name}
                               </Link>
-                            </li>
-                            <li>
-                              <Link to="#">
-                                <i className="feather-message-square" />
-                                40
-                              </Link>
-                            </li>
-                          </ul>
-                          <span>
-                            <ImageWithBasePath
-                              src="assets/img/icons/clock.svg"
-                              alt=""
-                            />
-                            10 Min To Read
-                          </span>
-                        </div> */}
+                            </h3>
+                            <p className="text-white-50" style={{ fontSize: "13px" }}>
+                              <i className="feather-map-pin me-2 text-primary" />
+                              {venue?.near_by_location}
+                            </p>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                  {/* /Featured Item */}
-                </Slider>
+                    ))}
+                  </Slider>
+                )}
+
+                {activeTopRatedTab === "coaches" && (
+                  <Slider {...options}>
+                    {coaches.map((coach, index) => (
+                      <div className="featured-venues-item" key={index}>
+                        <div className="listing-item mb-0" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "16px", overflow: "hidden", margin: "10px" }}>
+                          <div className="listing-img" style={{ height: "200px" }}>
+                            <Link to={`/coaches/${coach?.category?.replace(/\s+/g, "-").toLowerCase()}/${coach?.first_name?.replace(/\s+/g, "-").toLowerCase()}/${coach?._id}`}>
+                              <ImageWithBasePath
+                                src={
+                                  coach?.profile_picture[0]?.src
+                                    ? `${IMG_URL}${coach?.profile_picture[0]?.src}`
+                                    : "/assets/img/no-img.png"
+                                }
+                                style={{ height: "100%", width: "100%", objectFit: "cover" }}
+                              />
+                            </Link>
+                            <div className="fav-item-venues" style={{ top: "12px", left: "12px" }}>
+                              <span className="tag tag-blue" style={{ background: "#FF6B2C", color: "#fff", fontWeight: "700" }}>
+                                {coach.trainer_type || "Coach"}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="listing-content list-coche-content p-3">
+                            <h3 style={{ fontSize: "18px", fontWeight: "600", marginBottom: "8px" }}>
+                              <Link to={`/coaches/${coach?.category?.replace(/\s+/g, "-").toLowerCase()}/${coach?.first_name?.replace(/\s+/g, "-").toLowerCase()}/${coach?._id}`} className="text-white text-truncate d-block">
+                                {coach?.first_name} {coach?.last_name}
+                              </Link>
+                            </h3>
+                            <p className="text-white-50" style={{ fontSize: "13px" }}>
+                              <i className="feather-map-pin me-2 text-primary" />
+                              {coach?.near_by_location || "Indore"}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </Slider>
+                )}
+
+                {activeTopRatedTab === "trainers" && (
+                  <Slider {...options}>
+                    {trainer.map((train, index) => (
+                      <div className="featured-venues-item" key={index}>
+                        <div className="listing-item mb-0" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "16px", overflow: "hidden", margin: "10px" }}>
+                          <div className="listing-img" style={{ height: "200px" }}>
+                            <Link to={`/personal-training/trainer/${train.first_name.replace(/\s+/g, "-").toLowerCase()}/${train._id}`}>
+                              <ImageWithBasePath
+                                src={
+                                  train?.profile_picture[0]?.src
+                                    ? `${IMG_URL}${train?.profile_picture[0]?.src}`
+                                    : "/assets/img/no-img.png"
+                                }
+                                style={{ height: "100%", width: "100%", objectFit: "cover" }}
+                              />
+                            </Link>
+                            <div className="fav-item-venues" style={{ top: "12px", left: "12px" }}>
+                              <span className="tag tag-blue" style={{ background: "#FFD700", color: "#0d1b2a", fontWeight: "700" }}>
+                                {train.trainer_type || "Trainer"}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="listing-content p-3">
+                            <h3 style={{ fontSize: "18px", fontWeight: "600", marginBottom: "8px" }}>
+                              <Link to={`/personal-training/trainer/${train.first_name.replace(/\s+/g, "-").toLowerCase()}/${train._id}`} className="text-white text-truncate d-block">
+                                {train.first_name} {train.last_name}
+                              </Link>
+                            </h3>
+                            <p className="text-white-50" style={{ fontSize: "13px" }}>
+                              <i className="feather-map-pin me-2 text-primary" />
+                              {train?.near_by_location || "Indore"}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </Slider>
+                )}
               </div>
             </div>
           </div>
-          {/* View More */}
-          <div className="view-all text-center aos" data-aos="fade-up">
+
+          {/* Unified View All Button */}
+          <div className="view-all text-center mt-5 aos" data-aos="fade-up">
             <Link
-              to={routes.blogListSidebarLeft}
-              className="btn btn-secondary d-inline-flex align-items-center"
+              to={activeTopRatedTab === "venues" ? routes.blogListSidebarLeft : activeTopRatedTab === "coaches" ? routes.coachesGrid : routes.blogList}
+              className="btn btn-secondary d-inline-flex align-items-center rounded-pill px-4 py-2 font-weight-bold"
+              style={{ fontWeight: "700" }}
             >
-              View All Sports Venue
+              {activeTopRatedTab === "venues" ? "View All Sports Venues" : activeTopRatedTab === "coaches" ? "View All Coaches" : "View All Personal Trainers"}
               <span className="lh-1">
                 <i className="feather-arrow-right-circle ms-2" />
               </span>
             </Link>
           </div>
-          {/* View More */}
         </div>
       </section>
       {/* /Rental Deals */}
@@ -813,93 +1005,7 @@ const Home = () => {
       </section>
       {/* /Convenient */}
 
-      {/* Featured Coaches */}
-      <section className="section featured-section">
-        <div className="container">
-          <div className="section-heading aos" data-aos="fade-up">
-            <h2>
-              Top Rated <span>Coaches</span>
-            </h2>
-            <p className="sub-title">
-              Uplift your game with our featured coaches, personalized
-              instruction, and expertise to achieve your goals.
-            </p>
-          </div>
-          <div className="row">
-            <div className="featured-slider-group aos" data-aos="fade-up">
-              <div className="owl-carousel featured-coache-slider owl-theme">
-                <Slider {...options}>
-                  {/* Featured Item */}
-                  {coaches.map((coach, index) => (
-                    <div className="featured-venues-item" key={index}>
-                      <div className="listing-item mb-0">
-                        <div
-                          className="listing-img"
-                          style={{ height: "231px" }}
-                        >
-                          <Link
-                            to={`/coaches/${coach?.category?.replace(/\s+/g, "-").toLowerCase()}/${coach?.first_name?.replace(/\s+/g, "-").toLowerCase()}/${coach?._id}`}
-                          >
-                            <ImageWithBasePath
-                              src={
-                                coach?.profile_picture[0]?.src
-                                  ? `${IMG_URL}${coach?.profile_picture[0]?.src}`
-                                  : "/assets/img/no-img.png"
-                              }
-                            />
-                          </Link>
-                          <div className="fav-item-venues">
-                            <span className="tag tag-blue">
-                              {coach.trainer_type}
-                            </span>
-                            {/* <div className="list-reviews coche-star">
-                              <Link to="#" className="fav-icon">
-                                <i className="feather-heart" />
-                              </Link>
-                            </div> */}
-                          </div>
-                        </div>
-                        <div className="listing-content list-coche-content">
-                          {/* <span><i className="feather-map-pin me-2" />{coach?.near_by_location}</span> */}
-                          <h3>
-                            {/* <Link to={routes.coachDetail}>Kevin Anderson</Link> */}
 
-                            <Link
-                              to={`/coaches/${coach?.category?.replace(/\s+/g, "-").toLowerCase()}/${coach?.first_name?.replace(/\s+/g, "-").toLowerCase()}/${coach?._id}`}
-                            >
-                              {coach?.first_name} {coach?.last_name}
-                            </Link>
-                          </h3>
-                          <Link to={`/coaches/coach-detail/${coach._id}`}>
-                            <i className="feather-arrow-right" />
-                          </Link>
-                          <Link
-                            to={`/coaches/coach-detail/${coach._id}`}
-                            className="icon-hover"
-                          >
-                            <i className="feather-calendar" />
-                          </Link>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </Slider>
-              </div>
-            </div>
-          </div>
-          <div className="view-all text-center aos" data-aos="fade-up">
-            <Link
-              to={routes.coachesGrid}
-              className="btn btn-secondary d-inline-flex align-items-center"
-            >
-              View All Coaches{" "}
-              <span className="lh-1">
-                <i className="feather-arrow-right-circle ms-2" />
-              </span>
-            </Link>
-          </div>
-        </div>
-      </section>
       {/* /Featured Coaches */}
 
       {/* Journey */}
@@ -1287,113 +1393,7 @@ const Home = () => {
       </section>
       {/* /Earn Money */}
 
-      {/* Courts Near */}
-      <section className="section court-near">
-        <div className="container">
-          <div className="section-heading aos" data-aos="fade-up">
-            <h2>
-              Top Rated <span>Personal Trainer</span>
-            </h2>
-            <p className="sub-title">
-              Discover Personal Trainer for convenient and accessible gameplay.
-            </p>
-          </div>
-          <div className="row">
-            <div className="featured-slider-group aos" data-aos="fade-up">
-              <div className="owl-carousel featured-coache-slider owl-theme">
-                <Slider {...options}>
-                  {/* Featured Item */}
-                  {trainer.map((trainer, index) => (
-                    <div className="col-lg-4 col-md-6" key={index}>
-                      <div className="featured-venues-item">
-                        <div className="listing-item listing-item-grid">
-                          <div
-                            className="listing-img"
-                            style={{ height: "240px" }}
-                          >
-                            {/* <Link to={routes.coachDetail}>
-                        <ImageWithBasePath
-                          src={`assets/img/featured/${coach.profile}`}
-                          alt="Venue"
-                        />
-                      </Link> */}
 
-                            <Link
-                              to={`/personal-training/trainer/${trainer.first_name.replace(/\s+/g, "-").toLowerCase()}/${trainer._id}`}
-                            >
-                              <ImageWithBasePath
-                                src={
-                                  trainer?.profile_picture[0]?.src
-                                    ? `${IMG_URL}${trainer?.profile_picture[0]?.src}`
-                                    : "/assets/img/no-img.png"
-                                }
-                                alt="user"
-                              />
-                            </Link>
-
-                            <div
-                              className="fav-item-venues"
-                              onClick={() => handleItemClick(index)}
-                            >
-                              <span className="tag tag-blue">
-                                {trainer.trainer_type}
-                              </span>
-                              {/* <div className="list-reviews coche-star">
-                                <Link
-                                  to="#"
-                                  className={`fav-icon ${selectedItems[index] ? "selected" : ""
-                                    }`}
-                                >
-                                  <i className="feather-heart" />
-                                </Link>
-                              </div> */}
-                            </div>
-                            {/* <div className="hour-list">
-                              <h5 className="tag tag-primary">
-                                ₹{trainer.price} <span>/hr</span>
-                              </h5>
-                            </div> */}
-                          </div>
-                          <div className="listing-content home-trainer">
-                            <h3 className="listing-title">
-                              <Link
-                                to={`/personal-training/trainer/${trainer.first_name.replace(/\s+/g, "-").toLowerCase()}/${trainer._id}`}
-                              >
-                                {trainer.first_name} {trainer.last_name}
-                              </Link>
-                            </h3>
-                            {/* <ul className="mb-2">
-                              <li>
-                                <span><i className="feather-map-pin me-2" />{trainer.near_by_location}</span>
-                              </li>
-                            </ul> */}
-                            <div className="listing-details-group">
-                              <p>specializations: {trainer.specializations}</p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </Slider>
-              </div>
-            </div>
-          </div>
-          {/* View More */}
-          <div className="view-all text-center aos" data-aos="fade-up">
-            <Link
-              to={routes.blogList}
-              className="btn btn-secondary d-inline-flex align-items-center"
-            >
-              View All Personal Trainer{" "}
-              <span className="lh-1">
-                <i className="feather-arrow-right-circle ms-2" />
-              </span>
-            </Link>
-          </div>
-          {/* View More */}
-        </div>
-      </section>
       {/* /Courts Near */}
 
       {/* Testimonials */}

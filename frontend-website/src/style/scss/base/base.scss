@@ -1,14 +1,31 @@
 /*-----------------
-	2. General
+	2. General — Sports Theme Base
 -----------------------*/
+
+html {
+	scroll-behavior: smooth;
+}
 
 body {
 	font-family: $__body__font__family;
 	font-size: $__body__font__size;
 	color: $__darkgray;
 	font-weight: $__regular;
-	line-height: 1.5;
+	line-height: 1.6;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
 }
+
+// Accent color text selection
+::selection {
+	background: rgba(0, 230, 118, 0.25);
+	color: $__secondarycolor;
+}
+::-moz-selection {
+	background: rgba(0, 230, 118, 0.25);
+	color: $__secondarycolor;
+}
+
 h1, h2, h3, h4, h5, h6 {
 	color: $__secondarycolor;
 }
@@ -16,9 +33,9 @@ a {
 	color: $__darkgray;
 	cursor: pointer;
 	text-decoration: none;
-	@include transition(all 0.5s ease-in-out 0s);
+	@include transition(all 0.3s ease-in-out 0s);
 	&:hover{
-		color: $__secondarycolor;
+		color: $__primarycolor;
 	}
 	&:focus {
 		outline: 0;
@@ -90,6 +107,7 @@ ul {
 	border-radius: $__value__10;
 	padding: 24px;
 	color: inherit;
+	@include transition(all 0.3s ease);
 	@include respond-below(custom767) {
 		padding: 20px;
 	}
@@ -116,4 +134,71 @@ ul {
 	@include respond-below(custom767) {
         font-size: $__font__size__16;
     }
+}
+
+// Scroll-to-top button
+.scroll-to-top {
+	position: fixed;
+	bottom: 30px;
+	right: 30px;
+	width: 48px;
+	height: 48px;
+	background: $__gradient__color;
+	color: $__white;
+	border: none;
+	border-radius: 50%;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 20px;
+	z-index: 999;
+	opacity: 0;
+	visibility: hidden;
+	transform: translateY(20px);
+	transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+	box-shadow: 0 4px 20px rgba(255, 107, 44, 0.35);
+
+	&.visible {
+		opacity: 1;
+		visibility: visible;
+		transform: translateY(0);
+	}
+
+	&:hover {
+		transform: translateY(-3px);
+		box-shadow: 0 8px 30px rgba(255, 107, 44, 0.5);
+	}
+}
+
+// SVG Section Wave Divider
+.section-divider {
+	position: relative;
+	width: 100%;
+	overflow: hidden;
+	line-height: 0;
+	margin-top: -1px;
+
+	svg {
+		position: relative;
+		display: block;
+		width: calc(100% + 1.3px);
+		height: 60px;
+
+		@include respond-below(custom767) {
+			height: 35px;
+		}
+	}
+
+	.shape-fill {
+		fill: $__white;
+	}
+
+	&.divider-dark .shape-fill {
+		fill: $__dull__whitesmoke;
+	}
+
+	&.divider-footer .shape-fill {
+		fill: $__footer__bg;
+	}
 }

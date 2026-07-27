@@ -1,47 +1,86 @@
 /*-----------------
-    4. Buttons
+    4. Buttons — Sports Theme
 -----------------------*/
 
 .btn {
 	font-size: $__body__font__size;
-	padding: 12px 20px;
+	padding: 12px 24px;
 	font-weight: $__medium;
-	border-radius: $__value__10;
-	@include transition(all 0.5s ease-in-out 0s);
+	border-radius: 8px;
+	position: relative;
+	overflow: hidden;
+	@include transition(all 0.3s cubic-bezier(0.4, 0, 0.2, 1));
+
+	// Ripple effect on all buttons
+	&::after {
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		width: 0;
+		height: 0;
+		background: rgba(255, 255, 255, 0.25);
+		border-radius: 50%;
+		transform: translate(-50%, -50%);
+		transition: width 0.5s ease, height 0.5s ease, opacity 0.5s ease;
+		opacity: 0;
+	}
+	&:active::after {
+		width: 300px;
+		height: 300px;
+		opacity: 0;
+		transition: 0s;
+	}
+
 	&:hover {
 		color: $__white;
+		transform: translateY(-2px);
 	}
 	a {
 		color: $__white;
 	}
 	@include respond-below(custom991) {
 		font-size: $__font__size__15;
-		padding: 10px 15px;
+		padding: 10px 18px;
 	}
 }
+
 .btn-icon {
 	display: $__inline__flex;
     align-items: $__center;
     vertical-align: $__middle;
 }
+
 .btn-primary {
 	color: $__white;
-	background: $__primarycolor;
-	border-color: $__primarycolor;
+	background: $__gradient__color;
+	border: none;
+	box-shadow: 0 4px 15px rgba(255, 107, 44, 0.3);
+
 	&:hover {
-		background: $__secondarycolor;
-		border-color: $__secondarycolor;
+		background: $__reverse__gradient__color;
+		box-shadow: 0 6px 25px rgba(255, 107, 44, 0.45);
+		transform: translateY(-2px);
+	}
+
+	&:active {
+		transform: translateY(0);
+		box-shadow: 0 2px 10px rgba(255, 107, 44, 0.3);
 	}
 }
+
 .btn-secondary {
 	color: $__white;
 	background: $__secondarycolor;
-	border-color: $__secondarycolor;
+	border: 2px solid $__secondarycolor;
+
 	&:hover {
-		background: $__primarycolor;
-		border-color: $__primarycolor;
+		background: transparent;
+		color: $__secondarycolor;
+		border-color: $__secondarycolor;
 	}
 }
+
 .btn-secondary-block {
 	color: $__white;
 	background: $__secondarycolor;
@@ -53,17 +92,31 @@
 		border-color: $__secondarycolor;
 	}
 }
+
 .btn-gradient {
 	color: $__white;
 	background: $__gradient__color;
+	border: none;
 	&:hover {
 		background: $__reverse__gradient__color;
 	}
 }
+
+// Outlined accent button
+.btn-accent-outline {
+	color: $__active_color;
+	background: transparent;
+	border: 2px solid $__active_color;
+	&:hover {
+		background: $__active_color;
+		color: $__secondarycolor;
+	}
+}
+
 .btn-load-more {
 	background: $__white;
-	border: 3px solid $__darkash;
-	border-radius: $__value__5;
+	border: 2px solid $__lightgray;
+	border-radius: 8px;
 	color: $__secondarycolor;
 	&:hover {
 		background: $__secondarycolor;
@@ -71,21 +124,23 @@
 		color: $__white;
 	}
 }
+
 .btn-white {
 	background: $__white;
-	color: #23B33A;
-	border: 2px solid #23B33A;
+	color: $__active_color;
+	border: 2px solid $__active_color;
 	&:hover {
 		background: $__primarycolor;
 		color: $__white;
+		border-color: $__primarycolor;
 	}
 }
 
-.btn-load{
+.btn-load {
 	background: $__white;
 	color: $__secondarycolor;
-	border: 3px solid $__lightgray;
-	border-radius: $__value__5;
+	border: 2px solid $__lightgray;
+	border-radius: 8px;
 	padding: 16px;
     min-width: 202px;
 	display: inline-flex;
@@ -93,7 +148,7 @@
 		background: $__secondarycolor;
 		border-color: $__secondarycolor;
 		color: $__white;
-		img{
+		img {
 			filter: brightness(0) invert(1);
 		}
 	}
@@ -102,5 +157,4 @@
 			filter: brightness(0) invert(0);
 		}
 	}
-	
 }

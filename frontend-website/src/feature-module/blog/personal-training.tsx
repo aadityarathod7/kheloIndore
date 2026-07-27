@@ -69,7 +69,7 @@ const BlogList = () => {
   const [finalFilterTrainer, setFinalFilterTrainer] = useState<Trainer[]>([]);
   const [name, setName] = useState<Trainer[]>([]);
   const [data, setData] = useState([]);
-  const [selectedlocation, setSelectedLocation] = useState<SortCriteria[]>([]);
+  const [selectedlocation, setSelectedLocation] = useState<any>("");
   const [trainerByLocation, setTrainerByLocation] = useState<Trainer[]>([]);
 
   useEffect(() => {
@@ -80,13 +80,15 @@ const BlogList = () => {
   const navigate = useNavigate()
 
   const location = useLocation();
-  const { selectedLocationSort } = location.state || {};
+  const { selectedLocationSort, selectedSport } = location.state || {};
 
   useEffect(() => {
-    setSelectedLocation(selectedLocationSort?.name);
-  }, []);
+    setSelectedLocation(selectedLocationSort?.name || "");
+    setSelectedCategory(selectedSport?.name || null);
+  }, [location, selectedLocationSort, selectedSport]);
 
   useEffect(() => {
+    // Fetch coach data from API
     const fetchTrainer = async () => {
       try {
         const response = await axios.get(
@@ -132,20 +134,24 @@ const BlogList = () => {
   };
 
   useEffect(() => {
-    console.log("Selected Category:", selectedCategory); // Debugging line
     let filteredData = trainer;
 
-    if (selectedCategory) {
-      filteredData = filteredData.filter((trainer) =>
-        trainer.trainer_type
-          ?.toLowerCase()
-          .includes(selectedCategory.toLowerCase())
+    if (selectedlocation) {
+      filteredData = filteredData.filter((t) =>
+        t.near_by_location?.toLowerCase()?.includes(selectedlocation.toLowerCase())
       );
     }
 
-    console.log("Filtered Coaches:", filteredData); // Debugging line
+    if (selectedCategory) {
+      filteredData = filteredData.filter((t) =>
+        t.category?.toLowerCase()?.includes(selectedCategory.toLowerCase()) ||
+        t.trainer_type?.toLowerCase()?.includes(selectedCategory.toLowerCase()) ||
+        t.specializations?.toLowerCase()?.includes(selectedCategory.toLowerCase())
+      );
+    }
+
     setFinalFilterTrainer(filteredData);
-  }, [selectedCategory, trainer]);
+  }, [selectedlocation, selectedCategory, trainer]);
 
   // useEffect(() => {
   //   if (location) {

@@ -14,7 +14,7 @@
 }
 .section-heading {
     text-align: center;
-    @include margin-padding(0 0 40px, null); 
+    @include margin-padding(0 0 50px, null); 
     h2 {
         position: $__relative;
         @include margin-padding(0 0 15px, null);
@@ -24,11 +24,11 @@
             background: $__gradient__color;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
         &:after {
             content: "";
             position: $__absolute;
-            // background-image: url(../../../../public/assets/img/bg/title-head.png);           
             background-position: center;
             background-repeat: no-repeat;
             left: 0;
@@ -45,6 +45,7 @@
     p {
         max-width: 700px;
         margin: $__auto;
+        color: $__darkgray;
     }
 }
 
@@ -55,6 +56,25 @@
     background-repeat: $__no_repeat;
     background-size: $__cover;
     background-position: $__center;
+
+    // Cinematic gradient overlay
+    &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: $__hero__gradient;
+        z-index: 1;
+    }
+
+    // Ensure content sits above overlay
+    .container {
+        position: relative;
+        z-index: 2;
+    }
+
     @include respond-below(custom991) {
         min-height: 660px;
     }
@@ -358,9 +378,9 @@
     border: 1px solid $__lightgray;
     box-shadow: $__listing__box__shadow;
     position: $__relative;
-    border-radius: 10px;
-    @include margin-padding(0 0 24px, 24px);
-    @include transition(all 0.5s ease);
+    border-radius: 14px;
+    @include margin-padding(0 0 24px, 28px);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     @include respond-below(custom991) {
         @include margin-padding(0 0 24px, 24px);
     }
@@ -372,21 +392,21 @@
         height: 113px;
         background: $__dull__whitesmoke;
         @extend %flex-align-center;
-        border-radius: 10px;
+        border-radius: 14px;
         margin: 0 $__auto 24px;
-        @include transition(all 0.5s ease);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         @include respond-below(custom767) {
             margin: 0 $__auto 20px;
         }
         .work-icon-inner {
             background: $__light__whitesmoke;
-            border-radius: 10px;
+            border-radius: 14px;
             padding: 20px;
             @extend %flex-align-center;
             margin: 30px $__auto;
             width: 80px;
             height: 80px;
-            @include transition(all 0.5s ease);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             -webkit-transform: rotate(-45deg);
             -moz-transform: rotate(-45deg);
             -ms-transform: rotate(-45deg);
@@ -398,7 +418,7 @@
                 -ms-transform: rotate(45deg);
                 -o-transform: rotate(45deg);
                 transform: rotate(45deg);
-                @include transition(all 0.5s ease);
+                transition: all 0.4s ease;
             }
         }
     }
@@ -430,23 +450,26 @@
             width: $__full__width;
             color: $__secondarycolor;
             background: $__white;
-            border: 1px solid $__secondarycolor;
-            @include transition(all 0.5s ease);
+            border: 2px solid $__secondarycolor;
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
             i {
                 position: $__relative;
                 left: 7px;
-                @include transition(all 0.5s ease);
+                transition: all 0.35s ease;
             }
         }
     }
     &:hover {
-        @include transition(all 0.5s ease);
+        transform: translateY(-8px);
+        box-shadow: $__card__hover__shadow;
+        border-color: rgba(0, 230, 118, 0.2);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         .work-icon {
             background: $__white;
-            @include transition(all 0.7s ease);
+            transition: all 0.5s ease;
             .work-icon-inner {
                 background: $__primarycolor;
-                @include transition(all 0.5s ease);
+                transition: all 0.4s ease;
                 -webkit-transform: rotate(45deg);
                 -moz-transform: rotate(45deg);
                 -ms-transform: rotate(45deg);
@@ -458,7 +481,7 @@
                     -ms-transform: rotate(-45deg);
                     -o-transform: rotate(-45deg);
                     transform: rotate(-45deg);
-                    @include transition(all 0.5s ease);
+                    transition: all 0.4s ease;
                     filter: invert(1) brightness(100);
                 }
             }
@@ -468,10 +491,10 @@
                 color: $__white;
                 background: $__secondarycolor;
                 border-color: $__secondarycolor;
-                @include transition(all 0.5s ease);
+                transition: all 0.35s ease;
                 i {
-                    left: 10px;
-                    @include transition(all 0.5s ease);
+                    left: 12px;
+                    transition: all 0.35s ease;
                 }
             }
         }

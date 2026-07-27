@@ -52,7 +52,22 @@ const BlogListSidebarLeft = (_props: { id: any; name: any }) => {
   const [searchCategoryData, setSearchCategoryData] = useState<Venues[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
-  
+  // Advanced filters state
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+  const [fromTime, setFromTime] = useState("");
+  const [toTime, setToTime] = useState("");
+  const [sortBy, setSortBy] = useState("");
+  const [grassType, setGrassType] = useState("");
+  const [layoutType, setLayoutType] = useState("");
+  const [floorType, setFloorType] = useState("");
+  const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
+
+  const handleAmenityChange = (amenity: string) => {
+    setSelectedAmenities(prev =>
+      prev.includes(amenity) ? prev.filter(item => item !== amenity) : [...prev, amenity]
+    );
+  };
 
   const handleItemClick = (index: number) => {
     setSelectedItems((prevSelectedItems) => {
@@ -67,11 +82,12 @@ const BlogListSidebarLeft = (_props: { id: any; name: any }) => {
   }, []);
 
   const location = useLocation();
-  const { selectedLocationSort } = location.state || {};
+  const { selectedLocationSort, selectedSport } = location.state || {};
 
   useEffect(() => {
-    setSelectedLocation(selectedLocationSort?.name);
-  }, [location]);
+    setSelectedLocation(selectedLocationSort?.name || "");
+    setSelectedCategory(selectedSport?.name || null);
+  }, [location, selectedLocationSort, selectedSport]);
   // useEffect(() => {
   //   document.title = "sports-venue"
   // }, []);
@@ -144,13 +160,69 @@ const BlogListSidebarLeft = (_props: { id: any; name: any }) => {
   };
 
   useEffect(() => {
-    if (location) {
-      const filteredData = venues.filter((t: any) =>
-        t.near_by_location?.includes(selectedLocation)
+    let filteredData = venues;
+    
+    // 1. Location Area Filter
+    if (selectedLocation) {
+      filteredData = filteredData.filter((t: any) =>
+        t.near_by_location?.toLowerCase()?.includes(selectedLocation.toLowerCase())
       );
-      setVenueByLocation(filteredData);
     }
-  }, [location, venues]);
+    
+    // 2. Category/Sport Filter
+    if (selectedCategory) {
+      filteredData = filteredData.filter((t: any) =>
+        t.vendor_type?.toLowerCase()?.replace("_", " ")?.includes(selectedCategory.toLowerCase()) ||
+        t.activities?.toLowerCase()?.includes(selectedCategory.toLowerCase())
+      );
+    }
+    
+    // 3. Grass Type Filter
+    if (grassType) {
+      filteredData = filteredData.filter((t: any) =>
+        t.description?.toLowerCase()?.includes(grassType.toLowerCase()) || 
+        t.activities?.toLowerCase()?.includes(grassType.toLowerCase())
+      );
+    }
+
+    // 4. Layout Type Filter
+    if (layoutType) {
+      filteredData = filteredData.filter((t: any) =>
+        t.description?.toLowerCase()?.includes(layoutType.toLowerCase()) ||
+        t.activities?.toLowerCase()?.includes(layoutType.toLowerCase())
+      );
+    }
+
+    // 5. Floor Type Filter
+    if (floorType) {
+      filteredData = filteredData.filter((t: any) =>
+        t.description?.toLowerCase()?.includes(floorType.toLowerCase()) ||
+        t.address?.toLowerCase()?.includes(floorType.toLowerCase())
+      );
+    }
+
+    // 6. Amenities Filters
+    if (selectedAmenities.length > 0) {
+      filteredData = filteredData.filter((t: any) => {
+        return selectedAmenities.every(amenity => 
+          t.description?.toLowerCase()?.includes(amenity.toLowerCase()) ||
+          t.activities?.toLowerCase()?.includes(amenity.toLowerCase()) ||
+          t.name?.toLowerCase()?.includes(amenity.toLowerCase())
+        );
+      });
+    }
+
+    // 7. Sorting Logic
+    if (sortBy === "price-low-high") {
+      filteredData = [...filteredData].sort((a, b) => (a.price_per_hr || 750) - (b.price_per_hr || 750));
+    } else if (sortBy === "price-high-low") {
+      filteredData = [...filteredData].sort((a, b) => (b.price_per_hr || 750) - (a.price_per_hr || 750));
+    } else if (sortBy === "name") {
+      filteredData = [...filteredData].sort((a, b) => a.name.localeCompare(b.name));
+    }
+
+    setVenueByLocation(filteredData);
+  }, [selectedLocation, selectedCategory, grassType, layoutType, floorType, selectedAmenities, sortBy, venues]);
 
   const handleCategoryClick = (categoryName: any) => {
     setSelectedCategory(categoryName);
@@ -206,93 +278,85 @@ const BlogListSidebarLeft = (_props: { id: any; name: any }) => {
             <div className="container">
               <div className="row">
                 <div className="col-sm-12 col-md-8 col-lg-8">
-                  {currentVenues.map((venue, index) => (
-                    <div className="featured-venues-item" key={index}>
-                      <div className="listing-item venue-page">
-                        <div className="listing-img">
-                          <div
-                            className="background-image"
-                            style={{
-                              backgroundImage: `url(${venue?.images[0]?.src
-                                  ? `${IMG_URL}${venue?.images[0]?.src}`
-                                  : "/assets/img/no-img.png"
-                                })`,
-                            }}
-                          ></div>
-                          <Link
-                            to={`/sports-venue/${venue.vendor_type.replace(/\s+/g, "-").toLowerCase()}/${venue.name.replace(/\s+/g, "-").toLowerCase()}/${venue._id}`}
-                          >
-                            <ImageWithBasePath
-                              src={
-                                venue?.images[0]?.src
-                                  ? `${IMG_URL}${venue?.images[0]?.src}`
-                                  : "/assets/img/no-img.png"
-                              }
-                              className="img-fluid foreground-image"
-                              alt="Venueeeeee"
-                            />
-                          </Link>
-                          <div className="fav-item-venues news-sports">
-                            <span className="tag tag-blue">
-                              {venue?.vendor_type.replace("_", " ")}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="listing-content news-content">
-                          <div className="listing-venue-owner">
-                            <div className="navigation">
-                              {/* <Link to="#">
-                              <ImageWithBasePath
-                                src="assets/img/profiles/avatar-01.jpg"
-                                alt="User"
-                              />
-                              Orlando Waters
-                            </Link> */}
-                              {/* {venue.activities} */}
-                              <span>
-                                {/* <i className="feather-calendar" />
-                              15 May 2023 */}
-                              </span>
+                  <div className="row">
+                    {currentVenues.map((venue, index) => (
+                      <div className="col-lg-6 col-md-12 col-sm-6 mb-4 d-flex" key={index}>
+                        <div className="featured-venues-item w-100 hover-lift d-flex flex-column justify-content-between" style={{ margin: 0, background: "rgba(255, 255, 255, 0.03)", border: "1px solid rgba(255, 255, 255, 0.08)", borderRadius: "16px", overflow: "hidden", transition: "all 0.3s" }}>
+                          <div className="listing-item venue-page p-0 border-0 w-100" style={{ background: "transparent" }}>
+                            <div className="listing-img" style={{ height: "180px", position: "relative" }}>
+                              <div
+                                className="background-image"
+                                style={{
+                                  backgroundImage: `url(${venue?.images[0]?.src
+                                      ? `${IMG_URL}${venue?.images[0]?.src}`
+                                      : "/assets/img/no-img.png"
+                                    })`,
+                                  height: "100%",
+                                  backgroundSize: "cover"
+                                }}
+                              ></div>
+                              <Link
+                                to={`/sports-venue/${venue.vendor_type.replace(/\s+/g, "-").toLowerCase()}/${venue.name.replace(/\s+/g, "-").toLowerCase()}/${venue._id}`}
+                                style={{ position: "absolute", inset: 0 }}
+                              >
+                                <ImageWithBasePath
+                                  src={
+                                    venue?.images[0]?.src
+                                      ? `${IMG_URL}${venue?.images[0]?.src}`
+                                      : "/assets/img/no-img.png"
+                                  }
+                                  className="img-fluid foreground-image"
+                                  alt="Venue Image"
+                                  style={{ height: "100%", width: "100%", objectFit: "cover", opacity: 0 }}
+                                />
+                              </Link>
+                              <div className="fav-item-venues news-sports" style={{ top: "12px", left: "12px" }}>
+                                <span className="tag tag-blue" style={{ background: "#00E676", color: "#0d1b2a", fontWeight: "700" }}>
+                                  {venue?.vendor_type.replace("_", " ")}
+                                </span>
+                              </div>
                             </div>
-                          </div>
-                          <h3 className="listing-title">
-                            <Link
-                              to={`/sports-venue/${venue.vendor_type.replace(/\s+/g, "-").toLowerCase()}/${venue.name.replace(/\s+/g, "-").toLowerCase()}/${venue._id}`}
-                            >
-                              {venue.name}{" "}
-                            </Link>
-                          </h3>
-                          <div className="listing-button read-new">
-                            {/* <ul className="nav">
-                            <li>
-                              <Link to="#">
-                                <i className="feather-heart" />
-                                45
-                              </Link>
-                            </li>
-                            <li>
-                              <Link to="#">
-                                <i className="feather-message-square" />
-                                40
-                              </Link>
-                            </li>
-                          </ul> */}
-                            <p>
-                              <i className="feather-map-pin me-2" />
-                              {venue.near_by_location}
-                            </p>
-                            {/* <span>
-                              <ImageWithBasePath
-                              src="assets/img/icons/clock.svg"
-                              alt=""
-                            />
-                              Starting from : ₹{venue.price_per_hr}
-                            </span> */}
+                            <div className="listing-content news-content p-3">
+                              <div className="d-flex align-items-center justify-content-between mb-2">
+                                <div className="rating-wrap d-flex align-items-center gap-1">
+                                  <i className="fas fa-star text-warning" style={{ fontSize: "12px" }} />
+                                  <span className="text-white-50" style={{ fontSize: "12px" }}>4.8 (18 reviews)</span>
+                                </div>
+                                <span className="text-white-50" style={{ fontSize: "12px" }}>
+                                  <i className="fas fa-arrows-alt me-1" style={{ color: "#00E676" }} />
+                                  Standard Size
+                                </span>
+                              </div>
+                              <h3 className="listing-title mb-2" style={{ fontSize: "18px", fontWeight: "600" }}>
+                                <Link
+                                  to={`/sports-venue/${venue.vendor_type.replace(/\s+/g, "-").toLowerCase()}/${venue.name.replace(/\s+/g, "-").toLowerCase()}/${venue._id}`}
+                                  className="text-white text-truncate d-block"
+                                >
+                                  {venue.name}
+                                </Link>
+                              </h3>
+                              <p className="text-white-50 mb-3" style={{ fontSize: "13px" }}>
+                                <i className="feather-map-pin me-2 text-primary" />
+                                {venue.near_by_location}
+                              </p>
+                              <div className="d-flex align-items-center justify-content-between pt-2 border-top border-white-10">
+                                <span className="text-white" style={{ fontSize: "14px", fontWeight: "600" }}>
+                                  ₹{venue.price_per_hr || "750"} <span className="text-white-50" style={{ fontSize: "11px", fontWeight: "normal" }}>/ hr</span>
+                                </span>
+                                <Link 
+                                  to={`/sports-venue/${venue.vendor_type.replace(/\s+/g, "-").toLowerCase()}/${venue.name.replace(/\s+/g, "-").toLowerCase()}/${venue._id}`}
+                                  className="btn btn-primary btn-sm rounded-pill px-3"
+                                  style={{ fontSize: "12px" }}
+                                >
+                                  Book Slot
+                                </Link>
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                   <ul className="pagination">
                     {venues.length > venuesPerPage &&
                       Array(Math.ceil(venues.length / venuesPerPage))
@@ -315,55 +379,123 @@ const BlogListSidebarLeft = (_props: { id: any; name: any }) => {
                   {/* /Blog */}
                 </div>
                 <div className="col-sm-12 col-md-4 col-lg-4 blog-sidebar theiaStickySidebar">
-                  <div className="stickybar">
-                    <div className="card">
-                      <h4
-                        style={{
-                          borderBottom: "none",
-                          paddingBottom: "0px",
-                          marginBottom: "20px",
-                        }}
-                      >
-                        Categories
-                      </h4>
+                  <div className="stickybar d-flex flex-column gap-4">
+                    {/* Advanced Date & Hour Filter */}
+                    <div className="card p-4 mb-0" style={{ background: "rgba(255, 255, 255, 0.03)", border: "1px solid rgba(255, 255, 255, 0.08)", borderRadius: "16px" }}>
+                      <h4 className="text-white mb-3" style={{ fontSize: "18px", borderBottom: "none", paddingBottom: 0 }}>Advanced Booking Filter</h4>
+                      <div className="row g-2 mb-3">
+                        <div className="col-6">
+                          <label className="text-white-50 mb-1" style={{ fontSize: "11px" }}>From Date</label>
+                          <input type="date" className="form-control form-control-sm bg-dark text-white border-white-10" value={fromDate} onChange={(e) => setFromDate(e.target.value)} style={{ padding: "6px 8px", fontSize: "12px" }} />
+                        </div>
+                        <div className="col-6">
+                          <label className="text-white-50 mb-1" style={{ fontSize: "11px" }}>To Date</label>
+                          <input type="date" className="form-control form-control-sm bg-dark text-white border-white-10" value={toDate} onChange={(e) => setToDate(e.target.value)} style={{ padding: "6px 8px", fontSize: "12px" }} />
+                        </div>
+                      </div>
+                      <div className="row g-2">
+                        <div className="col-6">
+                          <label className="text-white-50 mb-1" style={{ fontSize: "11px" }}>From Hour</label>
+                          <select className="form-select form-select-sm bg-dark text-white border-white-10" value={fromTime} onChange={(e) => setFromTime(e.target.value)} style={{ padding: "6px 8px", fontSize: "12px" }}>
+                            <option value="">Start</option>
+                            <option value="06:00">6:00 AM</option>
+                            <option value="08:00">8:00 AM</option>
+                            <option value="10:00">10:00 AM</option>
+                            <option value="12:00">12:00 PM</option>
+                            <option value="14:00">2:00 PM</option>
+                            <option value="16:00">4:00 PM</option>
+                            <option value="18:00">6:00 PM</option>
+                            <option value="20:00">8:00 PM</option>
+                          </select>
+                        </div>
+                        <div className="col-6">
+                          <label className="text-white-50 mb-1" style={{ fontSize: "11px" }}>To Hour</label>
+                          <select className="form-select form-select-sm bg-dark text-white border-white-10" value={toTime} onChange={(e) => setToTime(e.target.value)} style={{ padding: "6px 8px", fontSize: "12px" }}>
+                            <option value="">End</option>
+                            <option value="08:00">8:00 AM</option>
+                            <option value="10:00">10:00 AM</option>
+                            <option value="12:00">12:00 PM</option>
+                            <option value="14:00">2:00 PM</option>
+                            <option value="16:00">4:00 PM</option>
+                            <option value="18:00">6:00 PM</option>
+                            <option value="20:00">8:00 PM</option>
+                            <option value="22:00">10:00 PM</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
 
-                      <input
-                        type="text"
-                        placeholder="Search"
-                        style={{
-                          marginBottom: "0px",
-                          borderRadius: "10px",
-                          border: "2px solid #ababab",
-                          padding: "6px",
-                          fontSize: "small",
-                        }}
-                        value={seacrhCategory}
-                        onChange={(e) => searchingCategories(e)}
-                      />
+                    {/* Sorting Card */}
+                    <div className="card p-4 mb-0" style={{ background: "rgba(255, 255, 255, 0.03)", border: "1px solid rgba(255, 255, 255, 0.08)", borderRadius: "16px" }}>
+                      <h4 className="text-white mb-3" style={{ fontSize: "18px", borderBottom: "none", paddingBottom: 0 }}>Sort Results</h4>
+                      <select className="form-select form-select-sm bg-dark text-white border-white-10" value={sortBy} onChange={(e) => setSortBy(e.target.value)} style={{ padding: "8px 12px", fontSize: "13px" }}>
+                        <option value="">Default sorting</option>
+                        <option value="price-low-high">Price: Low to High</option>
+                        <option value="price-high-low">Price: High to Low</option>
+                        <option value="name">Name: A to Z</option>
+                      </select>
+                    </div>
 
-                      <hr />
-                      <ul className="categories">
-                        {/* {category.map((category, index) => ( */}
-                        {(searchCategoryData.length > 0
-                          ? searchCategoryData
-                          : venueType
-                        ).map((venue, index) => (
-                          <li key={index}>
-                            <h6>
-                              <Link
-                                to={{
-                                  pathname: `/sports-venue/${venue.toLowerCase().replace(/\s+/g, "-")}`,
-                                  state: { thisCategory: venue },
-                                }}
-                                onClick={() => handleCategoryClick(venue)}
-                              >
-                                {" "}
-                                {venue}
-                              </Link>
-                            </h6>
-                          </li>
+                    {/* Pitch Specifications */}
+                    <div className="card p-4 mb-0" style={{ background: "rgba(255, 255, 255, 0.03)", border: "1px solid rgba(255, 255, 255, 0.08)", borderRadius: "16px" }}>
+                      <h4 className="text-white mb-3" style={{ fontSize: "18px", borderBottom: "none", paddingBottom: 0 }}>Pitch Features</h4>
+                      
+                      <div className="mb-3">
+                        <label className="text-white-50 mb-1" style={{ fontSize: "12px", fontWeight: "600" }}>Grass Type</label>
+                        <select className="form-select form-select-sm bg-dark text-white border-white-10" value={grassType} onChange={(e) => setGrassType(e.target.value)} style={{ padding: "8px 12px", fontSize: "13px" }}>
+                          <option value="">Any Grass</option>
+                          <option value="natural">Natural Grass</option>
+                          <option value="artificial">Artificial Grass</option>
+                        </select>
+                      </div>
+
+                      <div className="mb-3">
+                        <label className="text-white-50 mb-1" style={{ fontSize: "12px", fontWeight: "600" }}>Layout</label>
+                        <select className="form-select form-select-sm bg-dark text-white border-white-10" value={layoutType} onChange={(e) => setLayoutType(e.target.value)} style={{ padding: "8px 12px", fontSize: "13px" }}>
+                          <option value="">Any Layout</option>
+                          <option value="covered">Covered / Indoor</option>
+                          <option value="open">Open Air / Outdoor</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="text-white-50 mb-1" style={{ fontSize: "12px", fontWeight: "600" }}>Location Level</label>
+                        <select className="form-select form-select-sm bg-dark text-white border-white-10" value={floorType} onChange={(e) => setFloorType(e.target.value)} style={{ padding: "8px 12px", fontSize: "13px" }}>
+                          <option value="">Any Level</option>
+                          <option value="ground">Ground Floor</option>
+                          <option value="terrace">Terrace / Rooftop</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* Amenities Checklist */}
+                    <div className="card p-4 mb-0" style={{ background: "rgba(255, 255, 255, 0.03)", border: "1px solid rgba(255, 255, 255, 0.08)", borderRadius: "16px" }}>
+                      <h4 className="text-white mb-3" style={{ fontSize: "18px", borderBottom: "none", paddingBottom: 0 }}>Amenities</h4>
+                      <div className="d-flex flex-column gap-2">
+                        {[
+                          { label: "Floodlights", key: "lighting" },
+                          { label: "Security / CCTV", key: "security" },
+                          { label: "Seating Stand", key: "seating" },
+                          { label: "Parking Space", key: "parking" },
+                          { label: "Cafeteria / Cafe", key: "cafeteria" },
+                          { label: "Air Conditioning", key: "ac" },
+                          { label: "Sound System", key: "sound" }
+                        ].map((amenity) => (
+                          <div className="form-check" key={amenity.key}>
+                            <input 
+                              type="checkbox" 
+                              className="form-check-input bg-dark border-white-20" 
+                              id={`amenity-${amenity.key}`}
+                              checked={selectedAmenities.includes(amenity.key)}
+                              onChange={() => handleAmenityChange(amenity.key)}
+                              style={{ cursor: "pointer" }}
+                            />
+                            <label className="form-check-label text-white-50" htmlFor={`amenity-${amenity.key}`} style={{ fontSize: "13px", cursor: "pointer" }}>
+                              {amenity.label}
+                            </label>
+                          </div>
                         ))}
-                      </ul>
+                      </div>
                     </div>
                   </div>
                 </div>

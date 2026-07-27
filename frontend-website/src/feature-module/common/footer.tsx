@@ -1,34 +1,22 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import ImageWithBasePath from "../../core/data/img/ImageWithBasePath";
 import { all_routes } from "../router/all_routes";
-import { Dropdown } from "primereact/dropdown";
 
 const Footer = () => {
   const routes = all_routes;
-
-  const [selectedLanguage, setSelectedLanguage] = useState();
-  const [selectedCurrency, setSelectedCurrency] = useState();
-
-  const languageOptions = [
-    { name: "English (US)" },
-    { name: "UK" },
-    { name: "Japan" },
-  ];
-  const currencyOptions = [{ name: "$ USD" }, { name: "$ Euro" }];
+  const loginToken = localStorage.getItem("token");
 
   useEffect(() => {
     AOS.init({ duration: 1000, once: true });
   }, []);
 
-  const loginToken=localStorage.getItem('token');
-
   return (
     <footer className="footer">
       <div className="container">
-        {/* Footer Join */}
+        {/* Footer Join CTA */}
         <div className="footer-join aos" data-aos="fade-up">
           <h2>We Welcome Your Passion And Expertise</h2>
           <p className="sub-title">
@@ -38,34 +26,35 @@ const Footer = () => {
             <i className="feather-user-plus" /> Join With Us
           </Link>
         </div>
-        {/* /Footer Join */}
-        {/* Footer Top */}
+        {/* /Footer Join CTA */}
+
+        {/* Footer Top Links */}
         <div className="footer-top">
           <div className="row">
-            <div className="col-lg-2 col-md-6">
-              {/* Footer Widget */}
-              <div className="footer-widget footer-menu">
-                <h4 className="footer-title">Contact us</h4>
-                <div className="footer-address-blk">
-                  <div className="footer-call">
-                    <span>Customer Care</span>
-                    <p>+91-7898880731</p>
-                  </div>
-                  <div className="footer-call">
-                    <span>Need Live Suppot</span>
-                    <p>info@kheloindore.in</p>
-                  </div>
+            {/* Column 1: Brand Info & Socials */}
+            <div className="col-lg-3 col-md-6 mb-4 mb-lg-0">
+              <div className="footer-widget footer-about">
+                <div className="footer-logo mb-3">
+                  <ImageWithBasePath
+                    src="/assets/img/khelo-Indore-Logo.png"
+                    className="img-fluid"
+                    alt="Khelo Indore Logo"
+                    style={{ maxHeight: "55px" }}
+                  />
                 </div>
-                {/* <div className="social-icon">
-                  <ul>
+                <p className="text-white-50 mb-3" style={{ fontSize: "14px", lineHeight: "1.6" }}>
+                  {"Indore's leading platform for booking premium sports turfs, courts, swimming pools, and hiring professional trainers & coaches."}
+                </p>
+                <div className="social-icon">
+                  <ul className="d-flex gap-2">
                     <li>
                       <Link to="#" className="facebook">
-                        <i className="fab fa-facebook-f" />{" "}
+                        <i className="fab fa-facebook-f" />
                       </Link>
                     </li>
                     <li>
                       <Link to="#" className="twitter">
-                        <i className="fab fa-twitter" />{" "}
+                        <i className="fab fa-twitter" />
                       </Link>
                     </li>
                     <li>
@@ -79,105 +68,124 @@ const Footer = () => {
                       </Link>
                     </li>
                   </ul>
-                </div> */}
+                </div>
               </div>
-              {/* /Footer Widget */}
             </div>
-            <div className="col-lg-2 col-md-6">
-              {/* Footer Widget */}
+
+            {/* Column 2: Our Services */}
+            <div className="col-lg-2 col-md-6 col-sm-6 mb-4 mb-lg-0">
               <div className="footer-widget footer-menu">
-                <h4 className="footer-title">Quick Links</h4>
+                <h4 className="footer-title">Our Services</h4>
                 <ul>
-                  {/* <li>
-                    <Link to={routes.aboutUs}>About us</Link>
-                  </li> */}
-                  {/* <li>
-                    <Link to={routes.events}>Events</Link>
-                  </li> */}
                   <li>
-                    <Link to={routes.contactUs}>Contact us</Link>
+                    <Link to={routes.blogListSidebarLeft}>Sports Venues</Link>
+                  </li>
+                  <li>
+                    <Link to={routes.coachesGrid}>Coaches & Academies</Link>
+                  </li>
+                  <li>
+                    <Link to="/personal-training">Personal Trainers</Link>
+                  </li>
+                  <li>
+                    <Link to={routes.blogGrid}>Blogs & Stories</Link>
                   </li>
                 </ul>
               </div>
-              {/* /Footer Widget */}
             </div>
-            <div className="col-lg-2 col-md-6">
-              {/* Footer Widget */}
+
+            {/* Column 3: Sports Categories */}
+            <div className="col-lg-2 col-md-6 col-sm-6 mb-4 mb-lg-0">
               <div className="footer-widget footer-menu">
-                <h4 className="footer-title">Support</h4>
+                <h4 className="footer-title">Sports</h4>
                 <ul>
-                  {/* <li>
-                    <Link to={routes.faq}>Faq</Link>
-                  </li> */}
+                  <li>
+                    <Link to="/sports-venue">Cricket Turfs</Link>
+                  </li>
+                  <li>
+                    <Link to="/sports-venue">Badminton Courts</Link>
+                  </li>
+                  <li>
+                    <Link to="/sports-venue">Football Grounds</Link>
+                  </li>
+                  <li>
+                    <Link to="/sports-venue">Swimming Pools</Link>
+                  </li>
+                  <li>
+                    <Link to="/sports-venue">Tennis Courts</Link>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            {/* Column 4: Top Locations */}
+            <div className="col-lg-2 col-md-6 col-sm-6 mb-4 mb-lg-0">
+              <div className="footer-widget footer-menu">
+                <h4 className="footer-title">Locations</h4>
+                <ul>
+                  <li>
+                    <Link to="/sports-venue">Vijay Nagar</Link>
+                  </li>
+                  <li>
+                    <Link to="/sports-venue">Palasia</Link>
+                  </li>
+                  <li>
+                    <Link to="/sports-venue">Bhawarkuan</Link>
+                  </li>
+                  <li>
+                    <Link to="/sports-venue">Rajendra Nagar</Link>
+                  </li>
+                  <li>
+                    <Link to="/sports-venue">Navlakha</Link>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            {/* Column 5: Support & Info */}
+            <div className="col-lg-3 col-md-6 col-sm-6 mb-4 mb-lg-0">
+              <div className="footer-widget footer-menu">
+                <h4 className="footer-title">Support & Info</h4>
+                <ul>
+                  <li>
+                    <Link to={routes.contactUs}>Contact Us</Link>
+                  </li>
                   <li>
                     <Link to={routes.privacyPolicy}>Privacy Policy</Link>
                   </li>
                   <li>
-                    <Link to={routes.termsCondition}>
-                      Terms &amp; Conditions
-                    </Link>
+                    <Link to={routes.termsCondition}>Terms &amp; Conditions</Link>
                   </li>
                   <li>
                     <Link to={routes.refundPolicy}>Refund Policy</Link>
                   </li>
-                </ul>
-              </div>
-              {/* /Footer Widget */}
-            </div>
-            <div className="col-lg-2 col-md-6">
-              {/* Footer Widget */}
-              <div className="footer-widget footer-menu">
-                <h4 className="footer-title">Other Links</h4>
-                <ul>
                   <li>
-                    <Link to={routes.coachesGrid}>Coaches</Link>
-                  </li>
-                  <li>
-                    <Link to={routes.blogListSidebarLeft}>Sports Venue</Link>
-                  </li>
-                  <li>
-                    <Link to={loginToken?routes.userProfile:"/login"}>My Account</Link>
+                    <Link to={loginToken ? routes.userProfile : "/login"}>My Account</Link>
                   </li>
                 </ul>
               </div>
-              {/* /Footer Widget */}
-            </div>
-            <div className="col-lg-2 col-md-6">
-              {/* Footer Widget */}
-              <div className="footer-widget footer-menu">
-                <h4 className="footer-title">Address</h4>
-                <ul>
-                  <li>
-                    <Link to="#">366/4, Samajwad Nagar, Indore, MADHYA PRADESH, INDORE ,<br/> Pin 452002</Link>
-                  </li>
-                </ul>
-              </div>
-              {/* /Footer Widget */}
             </div>
           </div>
         </div>
-        {/* /Footer Top */}
+        {/* /Footer Top Links */}
       </div>
-      {/* Footer Bottom */}
+
+      {/* Footer Bottom copyright */}
       <div className="footer-bottom">
         <div className="container">
-          {/* Copyright */}
           <div className="copyright">
             <div className="row align-items-center">
-              <div className="col-md-7">
+              <div className="col-md-12 text-center">
                 <div className="copyright-text">
                   <p className="mb-0">
-                    © 2025 All Rights Reserved By
-                    KheloIndore <br/>Powered by MANS Sports Entertainment.
+                    &copy; 2026 All Rights Reserved By <strong>KheloIndore</strong> | Powered by <strong>MANS Sports Entertainment</strong>.
                   </p>
                 </div>
               </div>
             </div>
           </div>
-          {/* /Copyright */}
         </div>
       </div>
-      {/* /Footer Bottom */}
+      {/* /Footer Bottom copyright */}
     </footer>
   );
 };

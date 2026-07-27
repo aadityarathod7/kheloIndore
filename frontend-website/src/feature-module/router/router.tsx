@@ -4,6 +4,7 @@ import { Outlet, Route, Routes } from "react-router-dom";
 import Header from "../common/header";
 import Footer from "../common/footer";
 import Loader from "../loader/loader";
+import Progress from "../common/progressbar";
 
 const AllRoutes = () => {
   const HeaderLayout = () => (
@@ -11,6 +12,7 @@ const AllRoutes = () => {
       <Header />
       <Outlet />
       <Footer />
+      <Progress />
       {/* <Loader/> */}
     </>
   );

@@ -1,0 +1,216 @@
+/*-----------------
+    Animations & Micro-Interactions — Sports Theme
+-----------------------*/
+
+// ========== KEYFRAME ANIMATIONS ==========
+
+// Pulse Glow — for CTA buttons
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(255, 107, 44, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 12px rgba(255, 107, 44, 0);
+  }
+}
+
+// Float — gentle floating for hero images/icons
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+
+// Gradient Shift — animated gradient backgrounds
+@keyframes gradient-shift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+// Subtle scale bounce
+@keyframes scale-bounce {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+// Shimmer effect for loading/skeleton
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+// Slide in from left
+@keyframes slide-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+// Slide in from right
+@keyframes slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+// Glow border pulse
+@keyframes glow-border {
+  0%, 100% {
+    box-shadow: 0 0 5px rgba(0, 230, 118, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(0, 230, 118, 0.4);
+  }
+}
+
+
+// ========== UTILITY CLASSES ==========
+
+// Hover lift — card elevates on hover with deeper shadow
+.hover-lift {
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:hover {
+    transform: translateY(-6px);
+    box-shadow: $__card__hover__shadow;
+  }
+}
+
+// Hover glow — accent border glow on hover
+.hover-glow {
+  transition: box-shadow 0.35s ease;
+
+  &:hover {
+    box-shadow: 0 0 0 3px rgba(0, 230, 118, 0.25),
+                0 8px 32px rgba(13, 27, 42, 0.08);
+  }
+}
+
+// Float animation class
+.anim-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+// Pulse glow animation
+.anim-pulse {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+// Gradient animated background
+.anim-gradient {
+  background-size: 200% 200%;
+  animation: gradient-shift 4s ease infinite;
+}
+
+// Scale on hover
+.hover-scale {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:hover {
+    transform: scale(1.03);
+  }
+}
+
+// Image zoom on hover (for containers wrapping images)
+.hover-zoom {
+  overflow: hidden;
+
+  img {
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  &:hover img {
+    transform: scale(1.08);
+  }
+}
+
+// Ripple effect on click (material-design style)
+.btn-ripple {
+  position: relative;
+  overflow: hidden;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.6s ease, height 0.6s ease, opacity 0.6s ease;
+    opacity: 0;
+  }
+
+  &:active::after {
+    width: 300px;
+    height: 300px;
+    opacity: 0;
+    transition: 0s;
+  }
+}
+
+// Underline slide — for footer/nav links
+.hover-underline {
+  position: relative;
+  display: inline-block;
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: $__primarycolor;
+    transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  &:hover::after {
+    width: 100%;
+  }
+}
+
+// Staggered entrance — for child items
+.stagger-children {
+  > * {
+    opacity: 0;
+    animation: slide-in-left 0.5s ease forwards;
+
+    @for $i from 1 through 10 {
+      &:nth-child(#{$i}) {
+        animation-delay: #{$i * 0.1}s;
+      }
+    }
+  }
+}
