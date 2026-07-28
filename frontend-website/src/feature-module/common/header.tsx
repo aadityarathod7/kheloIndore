@@ -216,6 +216,18 @@ const Header = () => {
   };
 
   const [offcanvasOpen, setOffcanvasOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+
+  useEffect(() => {
+    const handleDocumentClick = () => {
+      setIsProfileOpen(false);
+    };
+    document.addEventListener("click", handleDocumentClick);
+    return () => {
+      document.removeEventListener("click", handleDocumentClick);
+    };
+  }, []);
+
   const toggleOffcanvas = () => {
     setOffcanvasOpen(!offcanvasOpen);
   };
@@ -225,11 +237,12 @@ const Header = () => {
   };
 
   return (
-    <header
-      className={`header ${
-        location.pathname.includes(routes.home) ? "header-trans" : "header-sticky"
-      } ${isScrolled ? "fixed" : ""}`}
-    >
+    <>
+      <header
+        className={`header ${
+          location.pathname.includes(routes.home) ? "header-trans" : "header-sticky"
+        } ${isScrolled ? "fixed" : ""}`}
+      >
       <div className="container-fluid">
         <nav className="navbar navbar-expand-lg header-nav">
           <div className="navbar-header">
@@ -401,31 +414,28 @@ const Header = () => {
                 <span />
               </span>
             </Link> */}
-            <Link to="/" className="navbar-brand logo">
-              {/* <ImageWithBasePath src="assets/img/logo.svg" className="img-fluid" alt="Logo" /> */}
-
-              {location.pathname.includes(routes.home) ? (
-                <ImageWithBasePath
-                  src="/assets/img/khelo-Indore-Logo.png"
-                  className="img-fluid"
-                  alt="Logo"
-                />
-              ) : (
-                <ImageWithBasePath
-                  src="/assets/img/khelo-Indore-Logo.png"
-                  className="img-fluid"
-                  alt="Another Image"
-                />
-              )}
+            <Link to="/" className="navbar-brand logo" style={{ padding: "0", display: "flex", alignItems: "center", textDecoration: "none" }}>
+              <img
+                src="/logo.png"
+                className="img-fluid logo-navbar-3d"
+                alt="Logo"
+                style={{
+                  maxHeight: "56px",
+                  objectFit: "contain",
+                  filter: "drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15)) drop-shadow(0 1px 3px rgba(67, 182, 73, 0.3))",
+                  transition: "all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)"
+                }}
+              />
             </Link>
           </div>
           <div className="main-menu-wrapper">
             <div className="menu-header">
               <Link to="/" className="menu-logo">
-                <ImageWithBasePath
-                  src="assets/img/logo-black.svg"
+                <img
+                  src="/logo.png"
                   className="img-fluid"
                   alt="Logo"
+                  style={{ maxHeight: "36px" }}
                 />
               </Link>
               <Link id="menu_close" className="menu-close" to="#">
@@ -516,7 +526,13 @@ const Header = () => {
             <li className="nav-item">
               {loginToken ? (
                 <div className="user-profile-nav">
-                  <div className="profile-trigger d-flex align-items-center gap-2">
+                  <div 
+                    className={`profile-trigger d-flex align-items-center gap-2 cursor-pointer ${isProfileOpen ? "show" : ""}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsProfileOpen(!isProfileOpen);
+                    }}
+                  >
                     <div className="avatar-circle">
                       {userData?.first_name ? userData.first_name[0].toUpperCase() : 'U'}
                     </div>
@@ -563,18 +579,15 @@ const Header = () => {
           </ul>
         </nav>
       </div>
-      <div>
+    </header>
+    <div>
         <div className="enquiry-btn">
           <CButton
-            color="primary"
             onClick={() => setVisible(true)}
-            style={{
-              writingMode: "vertical-lr",
-              textOrientation: "upright",
-              padding: "12px 10px",
-            }}
+            className="btn btn-primary d-flex align-items-center gap-2"
           >
-            ENQUIRY
+            <i className="fas fa-envelope" />
+            <span>Enquiry Now</span>
           </CButton>
         </div>
         <COffcanvas
@@ -667,7 +680,7 @@ const Header = () => {
           </COffcanvasBody>
         </COffcanvas>
       </div>
-    </header>
+    </>
   );
 };
 

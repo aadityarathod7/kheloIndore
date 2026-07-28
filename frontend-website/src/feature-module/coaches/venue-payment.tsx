@@ -264,11 +264,11 @@ const VenuePayment = () => {
                     <div className="d-grid btn-block">
                       <button
                         type="button"
-                        className="btn btn-primary"
+                        className="ki-btn-primary w-100 text-dark"
                         data-bs-toggle="modal"
                         data-bs-target="#bookingconfirmModal"
                       >
-                        Proceed ₹200
+                        Proceed
                       </button>
                     </div>
                   </aside>
@@ -302,10 +302,10 @@ const VenuePayment = () => {
                 <p>Check your email on the booking confirmation</p>
               </div>
               <div className="modal-footer text-center d-inline-block">
-                <a to={routes.userDashboard} className="btn btn-primary">
+                <Link to="/user-bookings" className="ki-btn-primary text-dark">
                   <i className="feather-arrow-left-circle me-1" />
-                  Back to Dashboard
-                </a>
+                  Back to Bookings
+                </Link>
               </div>
             </div>
           </div>

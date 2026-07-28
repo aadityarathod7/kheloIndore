@@ -281,7 +281,7 @@ const BlogListSidebarLeft = (_props: { id: any; name: any }) => {
                   <div className="row">
                     {currentVenues.map((venue, index) => (
                       <div className="col-lg-6 col-md-12 col-sm-6 mb-4 d-flex" key={index}>
-                        <div className="featured-venues-item w-100 hover-lift d-flex flex-column justify-content-between" style={{ margin: 0, background: "rgba(255, 255, 255, 0.03)", border: "1px solid rgba(255, 255, 255, 0.08)", borderRadius: "16px", overflow: "hidden", transition: "all 0.3s" }}>
+                        <div className="ki-card ki-card-hover w-100 d-flex flex-column justify-content-between" style={{ margin: 0, overflow: "hidden" }}>
                           <div className="listing-item venue-page p-0 border-0 w-100" style={{ background: "transparent" }}>
                             <div className="listing-img" style={{ height: "180px", position: "relative" }}>
                               <div
@@ -381,7 +381,7 @@ const BlogListSidebarLeft = (_props: { id: any; name: any }) => {
                 <div className="col-sm-12 col-md-4 col-lg-4 blog-sidebar theiaStickySidebar">
                   <div className="stickybar d-flex flex-column gap-4">
                     {/* Advanced Date & Hour Filter */}
-                    <div className="card p-4 mb-0" style={{ background: "rgba(255, 255, 255, 0.03)", border: "1px solid rgba(255, 255, 255, 0.08)", borderRadius: "16px" }}>
+                    <div className="ki-card mb-0">
                       <h4 className="text-white mb-3" style={{ fontSize: "18px", borderBottom: "none", paddingBottom: 0 }}>Advanced Booking Filter</h4>
                       <div className="row g-2 mb-3">
                         <div className="col-6">
@@ -426,7 +426,7 @@ const BlogListSidebarLeft = (_props: { id: any; name: any }) => {
                     </div>
 
                     {/* Sorting Card */}
-                    <div className="card p-4 mb-0" style={{ background: "rgba(255, 255, 255, 0.03)", border: "1px solid rgba(255, 255, 255, 0.08)", borderRadius: "16px" }}>
+                    <div className="ki-card mb-0">
                       <h4 className="text-white mb-3" style={{ fontSize: "18px", borderBottom: "none", paddingBottom: 0 }}>Sort Results</h4>
                       <select className="form-select form-select-sm bg-dark text-white border-white-10" value={sortBy} onChange={(e) => setSortBy(e.target.value)} style={{ padding: "8px 12px", fontSize: "13px" }}>
                         <option value="">Default sorting</option>
@@ -437,7 +437,7 @@ const BlogListSidebarLeft = (_props: { id: any; name: any }) => {
                     </div>
 
                     {/* Pitch Specifications */}
-                    <div className="card p-4 mb-0" style={{ background: "rgba(255, 255, 255, 0.03)", border: "1px solid rgba(255, 255, 255, 0.08)", borderRadius: "16px" }}>
+                    <div className="ki-card mb-0">
                       <h4 className="text-white mb-3" style={{ fontSize: "18px", borderBottom: "none", paddingBottom: 0 }}>Pitch Features</h4>
                       
                       <div className="mb-3">
@@ -469,7 +469,7 @@ const BlogListSidebarLeft = (_props: { id: any; name: any }) => {
                     </div>
 
                     {/* Amenities Checklist */}
-                    <div className="card p-4 mb-0" style={{ background: "rgba(255, 255, 255, 0.03)", border: "1px solid rgba(255, 255, 255, 0.08)", borderRadius: "16px" }}>
+                    <div className="ki-card mb-0">
                       <h4 className="text-white mb-3" style={{ fontSize: "18px", borderBottom: "none", paddingBottom: 0 }}>Amenities</h4>
                       <div className="d-flex flex-column gap-2">
                         {[

@@ -627,13 +627,8 @@ const UserBookings = () => {
                                       </a>
                                     </td>
                                     <td>
-                                      <span className="pay-dark fs-16">
+                                      <span className={`ki-badge ${bookingData?.status === "Approved" ? "confirmed" : bookingData?.status === "Pending" ? "pending" : "cancelled"}`}>
                                         {bookingData?.status}
-                                        {/* {bookingData.verificationStatus === 0
-                                          ? 'Pending'
-                                          : bookingData.verificationStatus === 1
-                                            ? 'Approved'
-                                            : 'Rejected'} */}
                                       </span>
                                     </td>
                                     <td>
@@ -749,8 +744,9 @@ const UserBookings = () => {
                                       </a>
                                     </td>
                                     <td>
-                                      <span className="pay-dark fs-16">{bookingData.status}</span>
-                                      {/* {bookingData.paymentState} */}
+                                      <span className={`ki-badge ${bookingData?.status === "Approved" ? "confirmed" : bookingData?.status === "Pending" ? "pending" : "cancelled"}`}>
+                                        {bookingData?.status}
+                                      </span>
                                     </td>
                                     <td>
                                       {
@@ -831,8 +827,9 @@ const UserBookings = () => {
                                       </a>
                                     </td>
                                     <td>
-                                      {/* {bookingData.paymentState} */}
-                                      <span className="pay-dark fs-16">{bookingData.status}</span>
+                                      <span className={`ki-badge ${bookingData?.status === "Approved" ? "confirmed" : bookingData?.status === "Pending" ? "pending" : "cancelled"}`}>
+                                        {bookingData?.status}
+                                      </span>
                                     </td>
                                     <td>
                                       {

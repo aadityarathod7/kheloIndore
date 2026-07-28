@@ -2,9 +2,9 @@
     1. Typography — Sports Theme
 -----------------------*/
 
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
-$__body__font__family: 'Outfit', sans-serif;
+$__body__font__family: 'Inter', sans-serif;
 $__body__font__size: 16px;
 
 $__extrabold: 800;
@@ -92,4 +92,8 @@ h6 {
 	@include respond-below(custom767) {
 		font-size: 34px;
 	}
+}
+
+h1, h2, h3, h4, h5, h6, .display-heading {
+	font-family: 'Space Grotesk', sans-serif !important;
 }

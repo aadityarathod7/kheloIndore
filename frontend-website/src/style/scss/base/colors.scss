@@ -1,39 +1,52 @@
-/*-----------------
-	39. Color — Sports Theme Palette
------------------------*/
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+:root {
+	--ki-primary: #43B649;
+	--ki-primary-dark: #339B3E;
+	--ki-primary-light: #49BC4F;
+	--ki-accent: #3DAE4B;
+	--ki-accent-dark: #2EA93C;
+	--ki-bg-main: #E5ECE3;
+	--ki-bg-surface: #FBFCFB;
+	--ki-text-main: #17222D;
+	--ki-text-muted: #606D76;
+	--ki-success: #43B649;
+	--ki-warning: #F59E0B;
+	--ki-danger: #DC2626;
+}
 
 // Primary Brand Colors
-$__primarycolor: #FF6B2C;           // Vibrant orange — primary CTA
-$__secondarycolor: #0D1B2A;        // Deep navy — text & backgrounds
-$__primarylight: #00E676;           // Electric green — active/success states
-$__success: #00E676;
-$__darkgray: #6B7385;
-$__lightgray: #E8ECF1;
-$__dullgray: #F0F2F5;
-$__yellow__dark: #FFB300;
-$__red: #FF3D3D;
-$__darkash: #A0A0A0;
-$__lightash: #A8A8A8;
-$__whitesmoke: #F5F6FA;
-$__light__whitesmoke: #FAFBFC;
-$__dull__whitesmoke: #F8F9FC;
+$__primarycolor: #43B649;           // Apple/Garmin style green
+$__secondarycolor: #17222D;        // Dark charcoal
+$__primarylight: #49BC4F;           // Light brand green
+$__success: #43B649;
+$__darkgray: #17222D;
+$__lightgray: #606D76;
+$__dullgray: #FBFCFB;
+$__yellow__dark: #F59E0B;
+$__red: #DC2626;
+$__darkash: #606D76;
+$__lightash: #D6E4D8;
+$__whitesmoke: #F3F7F3;
+$__light__whitesmoke: #E5ECE3;
+$__dull__whitesmoke: #FBFCFB;
 $__white: #FFFFFF;
-$__darkblue: #0D2137;
+$__darkblue: #17222D;
 
 // Accent & Active Colors
-$__active_color: #00E676;           // Electric green accent
-$__parrot_green: #00E676;
-$__star__blue: #448AFF;             // Bright blue for ratings/badges
+$__active_color: #3DAE4B;           // Active navigation green
+$__parrot_green: #43B649;
+$__star__blue: #49BC4F;
 
 // Overlay Colors
-$__secondary__dark__rgba: rgba(13, 27, 42, 0.85);
+$__secondary__dark__rgba: rgba(229, 236, 227, 0.82);
 
-// Gradient System — Sports Energy Gradients
-$__gradient__color: linear-gradient(135deg, #FF6B2C 0%, #FF8F5E 50%, #FFB088 100%);
-$__reverse__gradient__color: linear-gradient(135deg, #FFB088 0%, #FF8F5E 50%, #FF6B2C 100%);
-$__sports__gradient: linear-gradient(135deg, #0D1B2A 0%, #1B3A5C 50%, #00E676 100%);
-$__hero__gradient: linear-gradient(135deg, rgba(13, 27, 42, 0.95) 0%, rgba(27, 58, 92, 0.85) 50%, rgba(0, 230, 118, 0.15) 100%);
-$__glass__gradient: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+// Gradient System
+$__gradient__color: linear-gradient(90deg, #49BC4F, #38A941);
+$__reverse__gradient__color: linear-gradient(90deg, #38A941, #49BC4F);
+$__sports__gradient: linear-gradient(135deg, #F3F7F3 0%, #FBFCFB 50%, #43B649 100%);
+$__hero__gradient: linear-gradient(135deg, #E5ECE3 0%, #DEE7DD 30%, #E8EFE8 70%, #D7E3DA 100%);
+$__glass__gradient: linear-gradient(135deg, rgba(253, 253, 252, 0.75) 0%, rgba(253, 253, 252, 0.45) 100%);
 
 // Shadows
 $__row__box__shadow: 0px 4px 44px rgba(13, 27, 42, 0.08);
@@ -46,7 +59,7 @@ $__head__gray: linear-gradient(135deg, #0D1B2A 0%, #1B3A5C 60%, #0D1B2A 100%);
 $__bg__gray: linear-gradient(135deg, rgba(13, 27, 42, 0.92) 0%, rgba(27, 58, 92, 0.88) 50%, rgba(0, 230, 118, 0.12) 100%);
 
 // Footer
-$__footer__bg: #060E1A;
+$__footer__bg: #17222D;
 
 // Utility Colors
 $__item__box__shadow: 0px 4px 24px rgba(13, 27, 42, 0.08);
@@ -68,15 +81,15 @@ $__dark__blue__bg: rgba(68, 138, 255, 0.15);
 $__pink: #F50366;
 $__dot__shadow: 0px 4px 14px rgba(13, 27, 42, 0.1);
 $__insta__gradient__bg: linear-gradient(315deg, #FBE18A 0.96%, #FCBB45 21.96%, #F75274 38.96%, #D53692 52.96%, #8F39CE 74.96%, #5B4FE9 100.96%);
-$__paid__color: rgba(0, 230, 118, 0.15);
-$__light__green: rgba(0, 230, 118, 0.2);
+$__paid__color: rgba(67, 182, 73, 0.15);
+$__light__green: rgba(67, 182, 73, 0.2);
 $__greycolor: #E3E2E2;
-$__text_dark: #0D1B2A;
-$__greenish__bg: rgba(0, 230, 118, 0.08);
+$__text_dark: #17222D;
+$__greenish__bg: rgba(67, 182, 73, 0.08);
 $__gray__dark: #DBDBDB;
 $__gray__light: #DEDEDE;
-$__green__light: #00E676;
+$__green__light: #43B649;
 $__red__light: #FF3D3D;
 $__light__black: #474545;
-$__chat__green: #00E676;
+$__chat__green: #43B649;
 $__dark__red: #CA0D0D;

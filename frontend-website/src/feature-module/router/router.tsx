@@ -12,7 +12,6 @@ const AllRoutes = () => {
       <Header />
       <Outlet />
       <Footer />
-      <Progress />
       {/* <Loader/> */}
     </>
   );

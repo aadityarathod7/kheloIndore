@@ -369,7 +369,7 @@ const Home = () => {
 
   return (
     <>
-      <section className="hero-section top-margin">
+      <section className="hero-section top-margin" style={{ backgroundImage: "linear-gradient(rgba(229, 236, 227, 0.92), rgba(229, 236, 227, 0.92)), url('/assets/img/bg/banner.jpg')" }}>
         <div className="banner-cock-one">
           {/* <ImageWithBasePath
             src="assets/img/icons/banner-cock1.svg"
@@ -389,68 +389,125 @@ const Home = () => {
           </div>
         </div>
         <div className="container">
-          <div className="home-banner">
+          <div className="home-banner py-5">
             <div className="row align-items-center w-100">
-              <div className="col-lg-7 col-md-10 mx-auto">
+              <div className="col-lg-7 col-md-12 mx-auto">
                 <div className="section-search aos" data-aos="fade-up">
-                  <h4>World Class Coaches &amp; Premium Courts</h4>
-                  <h1>
-                    Choose Your <span>Coaches</span> and Start Your Training
+                  {/* Badge */}
+                  <div className="d-flex align-items-center gap-2 mb-2">
+                    <span className="ki-badge">
+                      <i className="feather-star" /> WORLD CLASS COACHES &amp; PREMIUM COURTS
+                    </span>
+                  </div>
+
+                  {/* Title */}
+                  <h1 className="display-heading mb-2" style={{ color: "#17222D", fontSize: "clamp(28px, 3.4vw, 48px)", fontWeight: "800", lineHeight: "1.15", fontFamily: "Space Grotesk, sans-serif", letterSpacing: "-0.02em" }}>
+                    Choose Your <span style={{ background: "linear-gradient(90deg, #3EAF4F, #63C56B)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", color: "#42AE52", display: "inline-block", paddingBottom: "6px" }}>Coaches</span> <br /> And Start Your <span style={{ background: "linear-gradient(90deg, #3EAF4F, #63C56B)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", color: "#42AE52", display: "inline-block", paddingBottom: "6px" }}>Training</span>
                   </h1>
-                  <p className="sub-info">
-                    Unleash Your Athletic Potential with Expert Coaching,
-                    State-of-the-Art Facilities, and Personalized Training
-                    Programs.
+
+                  {/* Description */}
+                  <p className="sub-info mb-3" style={{ color: "#606D76", fontSize: "15px", fontWeight: "400", lineHeight: "1.7", maxWidth: "620px" }}>
+                    Unleash your athletic potential with expert coaching, <br />
+                    state-of-the-art facilities, and personalized training programs.
                   </p>
-                  <div className="search-box">
-                    <form className="d-flex align-items-center gap-1 w-100 flex-wrap flex-md-nowrap">
-                      <div className="search-input line" style={{ flex: 1, minWidth: "160px" }}>
-                        <div className="form-group mb-0 w-100">
+
+                  {/* Features Row */}
+                  <div className="d-flex align-items-center gap-4 mb-3 flex-wrap">
+                    <div className="d-flex align-items-center gap-2">
+                      <div className="d-flex align-items-center justify-content-center rounded-circle flex-shrink-0" style={{ width: "32px", height: "32px", background: "#EAF5EB", color: "#3CAB4B" }}>
+                        <i className="feather-user" style={{ fontSize: "13px" }} />
+                      </div>
+                      <div>
+                        <div style={{ color: "#17222D", fontWeight: "600", fontSize: "13px" }}>Expert Coaches</div>
+                        <div style={{ color: "#606D76", fontSize: "11px", fontWeight: "400" }}>Certified &amp; Experienced</div>
+                      </div>
+                    </div>
+                    
+                    <div className="d-flex align-items-center gap-2">
+                      <div className="d-flex align-items-center justify-content-center rounded-circle flex-shrink-0" style={{ width: "32px", height: "32px", background: "#EAF5EB", color: "#3CAB4B" }}>
+                        <i className="feather-grid" style={{ fontSize: "13px" }} />
+                      </div>
+                      <div>
+                        <div style={{ color: "#17222D", fontWeight: "600", fontSize: "13px" }}>Premium Facilities</div>
+                        <div style={{ color: "#606D76", fontSize: "11px", fontWeight: "400" }}>Best-in-class Venues</div>
+                      </div>
+                    </div>
+
+                    <div className="d-flex align-items-center gap-2">
+                      <div className="d-flex align-items-center justify-content-center rounded-circle flex-shrink-0" style={{ width: "32px", height: "32px", background: "#EAF5EB", color: "#3CAB4B" }}>
+                        <i className="feather-trending-up" style={{ fontSize: "13px" }} />
+                      </div>
+                      <div>
+                        <div style={{ color: "#17222D", fontWeight: "600", fontSize: "13px" }}>Personalized Training</div>
+                        <div style={{ color: "#606D76", fontSize: "11px", fontWeight: "400" }}>Tailored for You</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Search Box Capsule */}
+                  <div className="ki-search-card">
+                    <form>
+                      
+                      {/* Column 1: Category */}
+                      <div className="search-col">
+                        <div className="form-group">
                           <label>Category</label>
-                          <Dropdown
-                            value={selectedTimeframe}
-                            onChange={(e) => setSelectedTimeframe(e.value)}
-                            options={timeframeOptions}
-                            optionLabel="name"
-                            placeholder="Choose venue/coach"
-                            className="select custom-select-list w-100"
-                          />
+                          <div className="dropdown-wrapper">
+                            <i className="feather-grid" />
+                            <Dropdown
+                              value={selectedTimeframe}
+                              onChange={(e) => setSelectedTimeframe(e.value)}
+                              options={timeframeOptions}
+                              optionLabel="name"
+                              placeholder="Select"
+                              className="select custom-select-list w-100"
+                            />
+                          </div>
                         </div>
                       </div>
 
-                      <div className="search-input line" style={{ flex: 1, minWidth: "160px" }}>
-                        <div className="form-group mb-0 w-100">
+                      {/* Column 2: Sport */}
+                      <div className="search-col">
+                        <div className="form-group">
                           <label>Sport</label>
-                          <Dropdown
-                            value={selectedSport}
-                            onChange={(e) => setSelectedSport(e.value)}
-                            options={sportsOptions}
-                            optionLabel="name"
-                            placeholder="Choose Sport"
-                            className="select custom-select-list w-100"
-                          />
+                          <div className="dropdown-wrapper">
+                            <i className="feather-target" />
+                            <Dropdown
+                              value={selectedSport}
+                              onChange={(e) => setSelectedSport(e.value)}
+                              options={sportsOptions}
+                              optionLabel="name"
+                              placeholder="Select"
+                              className="select custom-select-list w-100"
+                            />
+                          </div>
                         </div>
                       </div>
 
-                      <div className="search-input" style={{ flex: 1, minWidth: "160px" }}>
-                        <div className="form-group mb-0 w-100">
+                      {/* Column 3: Location */}
+                      <div className="search-col">
+                        <div className="form-group">
                           <label>Location</label>
-                          <Dropdown
-                            value={selectedLocationSort}
-                            onChange={(e) => setSelectedLocationSort(e.value)}
-                            options={sortOptions}
-                            optionLabel="name"
-                            placeholder="Choose Location"
-                            className="select custom-select-list w-100"
-                          />
+                          <div className="dropdown-wrapper">
+                            <i className="feather-map-pin" />
+                            <Dropdown
+                              value={selectedLocationSort}
+                              onChange={(e) => setSelectedLocationSort(e.value)}
+                              options={sortOptions}
+                              optionLabel="name"
+                              placeholder="Select"
+                              className="select custom-select-list w-100"
+                            />
+                          </div>
                         </div>
                       </div>
 
-                      <div className="search-btn">
+                      {/* Column 4: Search Button */}
+                      <div className="search-btn-col">
                         <button
                           className="btn"
                           onClick={navigateToPage}
-                          disabled={!selectedTimeframe} // Disable if no selection
+                          disabled={!selectedTimeframe}
                         >
                           <i className="feather-search" />
                           <span className="search-text">Search</span>
@@ -458,23 +515,89 @@ const Home = () => {
                       </div>
                     </form>
                   </div>
-                  <div className="trending-searches mt-3 aos d-flex align-items-center gap-2 flex-wrap" data-aos="fade-up" data-aos-delay="100">
-                    <span className="text-white-50 me-2" style={{ fontSize: "14px" }}>Trending Searches:</span>
+
+                  {/* Popular Searches */}
+                  <div className="trending-searches mt-3 d-flex align-items-center gap-2 flex-wrap">
+                    <span className="ki-popular-searches me-2">Popular Searches:</span>
                     <div className="d-inline-flex gap-2 flex-wrap">
-                      <span className="badge bg-white-10 text-white border border-white-20 rounded-pill px-3 py-2 cursor-pointer hover-lift-subtle" style={{ fontSize: "13px", cursor: "pointer", background: "rgba(255,255,255,0.08)", borderColor: "rgba(255,255,255,0.15)", transition: "all 0.2s" }} onClick={() => { setSelectedTimeframe({ name: "Sports Venue" }); setSelectedSport({ name: "Cricket" }); }}>Cricket Academy</span>
-                      <span className="badge bg-white-10 text-white border border-white-20 rounded-pill px-3 py-2 cursor-pointer hover-lift-subtle" style={{ fontSize: "13px", cursor: "pointer", background: "rgba(255,255,255,0.08)", borderColor: "rgba(255,255,255,0.15)", transition: "all 0.2s" }} onClick={() => { setSelectedTimeframe({ name: "Coaches" }); setSelectedSport({ name: "Gym & Fitness" }); }}>Dance Classes</span>
-                      <span className="badge bg-white-10 text-white border border-white-20 rounded-pill px-3 py-2 cursor-pointer hover-lift-subtle" style={{ fontSize: "13px", cursor: "pointer", background: "rgba(255,255,255,0.08)", borderColor: "rgba(255,255,255,0.15)", transition: "all 0.2s" }} onClick={() => { setSelectedTimeframe({ name: "Sports Venue" }); setSelectedSport({ name: "Swimming" }); }}>Swimming Coaching</span>
+                      {["Cricket", "Football", "Badminton", "Tennis", "Basketball"].map((sportName) => (
+                        <span 
+                          key={sportName}
+                          className="ki-search-tag" 
+                          onClick={() => {
+                            setSelectedTimeframe({ name: "Sports Venue" });
+                            setSelectedSport({ name: sportName });
+                          }}
+                        >
+                          {sportName}
+                        </span>
+                      ))}
                     </div>
                   </div>
                 </div>
               </div>
-              <div className="col-lg-5">
+              <div className="col-lg-5 col-md-12 mt-4 mt-lg-0">
                 <div className="banner-imgs text-center aos" data-aos="fade-up">
-                  <ImageWithBasePath
-                    className="img-fluid"
-                    src="assets/img/khelo-Indore-Logo.png"
-                    alt="Banner"
-                  />
+                  <div className="glowing-hero-circle">
+                    <img
+                      className="img-fluid"
+                      src="/logo.png"
+                      alt="Banner"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom Statistics counter bar */}
+          <div className="stats-counter-bar mt-5 p-4 mb-4">
+            <div className="row align-items-center text-center text-md-start">
+              <div className="col-lg-3 col-md-6 mb-3 mb-lg-0">
+                <div className="d-flex align-items-center gap-3 justify-content-center justify-content-md-start">
+                  <div className="d-flex align-items-center justify-content-center rounded-circle flex-shrink-0" style={{ width: "48px", height: "48px", background: "#EAF5EB", color: "#3CAB4B" }}>
+                    <i className="feather-users" style={{ fontSize: "20px" }} />
+                  </div>
+                  <div>
+                    <h3 className="mb-0">500+</h3>
+                    <p className="mb-0">Expert Coaches <span className="d-block">Qualified &amp; Verified</span></p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="col-lg-3 col-md-6 mb-3 mb-lg-0">
+                <div className="d-flex align-items-center gap-3 justify-content-center justify-content-md-start ms-md-4">
+                  <div className="d-flex align-items-center justify-content-center rounded-circle flex-shrink-0" style={{ width: "48px", height: "48px", background: "#EAF5EB", color: "#3CAB4B" }}>
+                    <i className="feather-map-pin" style={{ fontSize: "20px" }} />
+                  </div>
+                  <div>
+                    <h3 className="mb-0">50+</h3>
+                    <p className="mb-0">Premium Venues <span className="d-block">Across Indore</span></p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="col-lg-3 col-md-6 mb-3 mb-md-0">
+                <div className="d-flex align-items-center gap-3 justify-content-center justify-content-md-start ms-md-4">
+                  <div className="d-flex align-items-center justify-content-center rounded-circle flex-shrink-0" style={{ width: "48px", height: "48px", background: "#EAF5EB", color: "#3CAB4B" }}>
+                    <i className="feather-user-check" style={{ fontSize: "20px" }} />
+                  </div>
+                  <div>
+                    <h3 className="mb-0">10K+</h3>
+                    <p className="mb-0">Happy Athletes <span className="d-block">Training With Us</span></p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="col-lg-3 col-md-6">
+                <div className="d-flex align-items-center gap-3 justify-content-center justify-content-md-start ms-md-4">
+                  <div className="d-flex align-items-center justify-content-center rounded-circle flex-shrink-0" style={{ width: "48px", height: "48px", background: "#EAF5EB", color: "#3CAB4B" }}>
+                    <i className="feather-star" style={{ fontSize: "20px" }} />
+                  </div>
+                  <div>
+                    <h3 className="mb-0">4.8/5</h3>
+                    <p className="mb-0">User Rating <span className="d-block">Top Rated Platform</span></p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -582,68 +705,75 @@ const Home = () => {
       </section>
 
       {/* Browse by Category */}
-      <section className="section category-section" style={{ background: "#0d1b2a", padding: "80px 0" }}>
+      <section className="section category-section" style={{ background: "var(--ki-bg-main)", padding: "80px 0" }}>
         <div className="container">
           <div className="section-heading text-center aos" data-aos="fade-up">
-            <h2>
-              Browse by <span>Category</span>
+            <h2 style={{ fontFamily: "Space Grotesk, sans-serif" }}>
+              Browse by <span style={{ color: "var(--ki-primary)" }}>Category</span>
             </h2>
             <p className="sub-title text-white-50">
               Select a sport category to view all registered venues, coaches, and academies.
             </p>
           </div>
-          <div className="row justify-content-center mt-5">
+          <div 
+            className="d-flex overflow-auto gap-3 pb-4 mt-5 flex-nowrap" 
+            style={{ 
+              scrollbarWidth: "thin", 
+              scrollbarColor: "var(--ki-primary) rgba(255,255,255,0.05)",
+              WebkitOverflowScrolling: "touch"
+            }}
+          >
             {[
-              { name: "Cricket", icon: "fas fa-baseball-ball", color: "#FF6B2C" },
-              { name: "Football", icon: "fas fa-futbol", color: "#00E676" },
-              { name: "Badminton", icon: "fas fa-table-tennis", color: "#FFD700" },
-              { name: "Tennis", icon: "fas fa-basketball-ball", color: "#FF1493" },
-              { name: "Swimming", icon: "fas fa-swimmer", color: "#00BFFF" },
-              { name: "Basketball", icon: "fas fa-basketball-ball", color: "#FF4500" },
-              { name: "Gym & Fitness", icon: "fas fa-dumbbell", color: "#8A2BE2" },
-              { name: "Volleyball", icon: "fas fa-volleyball-ball", color: "#40E0D0" }
+              { name: "Cricket", icon: "fas fa-baseball-ball", color: "#F97316" },
+              { name: "Football", icon: "fas fa-futbol", color: "#16A34A" },
+              { name: "Badminton", icon: "fas fa-table-tennis", color: "#F97316" },
+              { name: "Tennis", icon: "fas fa-basketball-ball", color: "#16A34A" },
+              { name: "Swimming", icon: "fas fa-swimmer", color: "#16A34A" },
+              { name: "Basketball", icon: "fas fa-basketball-ball", color: "#F97316" },
+              { name: "Gym & Fitness", icon: "fas fa-dumbbell", color: "#F97316" },
+              { name: "Volleyball", icon: "fas fa-volleyball-ball", color: "#16A34A" }
             ].map((cat, idx) => (
-              <div className="col-lg-3 col-md-4 col-sm-6 mb-4 d-flex" key={idx}>
+              <div 
+                key={idx}
+                className="ki-card ki-card-hover p-4 text-center aos d-flex flex-column align-items-center justify-content-between" 
+                data-aos="fade-up" 
+                data-aos-delay={50 * idx}
+                style={{
+                  cursor: "pointer",
+                  minWidth: "220px",
+                  maxWidth: "220px",
+                  flex: "0 0 auto",
+                  background: "var(--ki-bg-surface)",
+                  borderRadius: "24px",
+                  border: "1px solid rgba(255, 255, 255, 0.08)",
+                  transition: "all 0.3s ease"
+                }}
+                onClick={() => navigate("/sports-venue", { state: { selectedSport: { name: cat.name } } })}
+              >
                 <div 
-                  className="category-card w-100 p-4 text-center aos hover-lift d-flex flex-column align-items-center justify-content-between" 
-                  data-aos="fade-up" 
-                  data-aos-delay={100 * (idx % 4)}
+                  className="category-icon-wrap d-flex align-items-center justify-content-center mb-3"
                   style={{
-                    background: "rgba(255, 255, 255, 0.04)",
-                    border: "1px solid rgba(255, 255, 255, 0.08)",
-                    borderRadius: "16px",
-                    transition: "all 0.3s ease",
-                    cursor: "pointer"
+                    width: "60px",
+                    height: "60px",
+                    borderRadius: "50%",
+                    background: `rgba(${cat.color === "#F97316" ? "249,115,22" : "22,163,74"}, 0.1)`,
+                    color: cat.color
                   }}
-                  onClick={() => navigate("/sports-venue", { state: { selectedSport: { name: cat.name } } })}
                 >
-                  <div 
-                    className="category-icon-wrap d-flex align-items-center justify-content-center mb-3"
-                    style={{
-                      width: "60px",
-                      height: "60px",
-                      borderRadius: "50%",
-                      background: `rgba(${cat.color === "#FF6B2C" ? "255,107,44" : cat.color === "#00E676" ? "0,230,118" : "255,255,255"}, 0.1)`,
-                      color: cat.color
-                    }}
-                  >
-                    <i className={`${cat.icon}`} style={{ fontSize: "24px" }} />
-                  </div>
-                  <h4 className="text-white mb-1" style={{ fontSize: "18px", fontWeight: "600" }}>{cat.name}</h4>
-                  <p className="text-white-50 mb-3" style={{ fontSize: "12px" }}>
-                    {cat.name === "Cricket" ? "12 Listings" : cat.name === "Football" ? "8 Listings" : cat.name === "Badminton" ? "6 Listings" : cat.name === "Tennis" ? "4 Listings" : "5 Listings"}
-                  </p>
-                  <button 
-                    className="btn btn-outline-light btn-sm rounded-pill px-3"
-                    style={{
-                      fontSize: "12px",
-                      borderColor: "rgba(255,255,255,0.2)",
-                      transition: "all 0.3s"
-                    }}
-                  >
-                    Explore
-                  </button>
+                  <i className={`${cat.icon}`} style={{ fontSize: "24px" }} />
                 </div>
+                <h4 className="text-white mb-1" style={{ fontSize: "18px", fontWeight: "600", fontFamily: "Space Grotesk, sans-serif" }}>{cat.name}</h4>
+                <p className="text-white-50 mb-3" style={{ fontSize: "12px" }}>
+                  {cat.name === "Cricket" ? "12 Listings" : cat.name === "Football" ? "8 Listings" : cat.name === "Badminton" ? "6 Listings" : cat.name === "Tennis" ? "4 Listings" : "5 Listings"}
+                </p>
+                <button 
+                  className="btn btn-secondary btn-sm px-3 py-1 rounded-pill"
+                  style={{
+                    fontSize: "12px"
+                  }}
+                >
+                  Explore
+                </button>
               </div>
             ))}
           </div>
@@ -657,11 +787,11 @@ const Home = () => {
       </div>
 
       {/* Rental Deals */}
-      <section className="section featured-venues" style={{ background: "#0d1b2a", padding: "80px 0" }}>
+      <section className="section featured-venues" style={{ background: "var(--ki-bg-main)", padding: "80px 0" }}>
         <div className="container">
           <div className="section-heading text-center aos" data-aos="fade-up">
-            <h2>
-              Top Rated <span>Providers</span>
+            <h2 style={{ fontFamily: "Space Grotesk, sans-serif" }}>
+              Top Rated <span style={{ color: "var(--ki-primary)" }}>Providers</span>
             </h2>
             <p className="sub-title text-white-50">
               Discover top rated venues, expert coaches, and personal trainers in Indore.
@@ -674,7 +804,7 @@ const Home = () => {
               <button 
                 type="button"
                 onClick={() => setActiveTopRatedTab("venues")} 
-                className={`btn btn-sm px-4 py-2 rounded-pill font-weight-bold transition-all ${activeTopRatedTab === "venues" ? "btn-primary text-dark" : "text-white"}`}
+                className={`btn btn-sm px-4 py-2 rounded-pill font-weight-bold transition-all ${activeTopRatedTab === "venues" ? "btn-primary text-white" : "text-white"}`}
                 style={{ fontSize: "14px", fontWeight: "700" }}
               >
                 Venues
@@ -682,7 +812,7 @@ const Home = () => {
               <button 
                 type="button"
                 onClick={() => setActiveTopRatedTab("coaches")} 
-                className={`btn btn-sm px-4 py-2 rounded-pill font-weight-bold transition-all ${activeTopRatedTab === "coaches" ? "btn-primary text-dark" : "text-white"}`}
+                className={`btn btn-sm px-4 py-2 rounded-pill font-weight-bold transition-all ${activeTopRatedTab === "coaches" ? "btn-primary text-white" : "text-white"}`}
                 style={{ fontSize: "14px", fontWeight: "700" }}
               >
                 Coaches
@@ -690,7 +820,7 @@ const Home = () => {
               <button 
                 type="button"
                 onClick={() => setActiveTopRatedTab("trainers")} 
-                className={`btn btn-sm px-4 py-2 rounded-pill font-weight-bold transition-all ${activeTopRatedTab === "trainers" ? "btn-primary text-dark" : "text-white"}`}
+                className={`btn btn-sm px-4 py-2 rounded-pill font-weight-bold transition-all ${activeTopRatedTab === "trainers" ? "btn-primary text-white" : "text-white"}`}
                 style={{ fontSize: "14px", fontWeight: "700" }}
               >
                 Personal Trainers
@@ -705,7 +835,7 @@ const Home = () => {
                   <Slider {...settings}>
                     {venues.map((venue, index) => (
                       <div className="featured-venues-item" key={index}>
-                        <div className="listing-item home-venue border-white-10 bg-dark-card" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "16px", overflow: "hidden", margin: "10px" }}>
+                        <div className="listing-item home-venue border-white-10" style={{ background: "var(--ki-bg-surface)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "24px", overflow: "hidden", margin: "10px", boxShadow: "var(--ki-shadow-card)" }}>
                           <div className="listing-img" style={{ height: "200px" }}>
                             <div
                               className="background-image"
@@ -729,19 +859,19 @@ const Home = () => {
                               />
                             </Link>
                             <div className="fav-item-venues news-sports" style={{ top: "12px", left: "12px" }}>
-                              <span className="tag tag-blue" style={{ background: "#00E676", color: "#0d1b2a", fontWeight: "700" }}>
+                              <span className="tag tag-blue" style={{ background: "var(--ki-primary)", color: "#FFFFFF", fontWeight: "700", borderRadius: "8px", fontSize: "12px", textTransform: "uppercase" }}>
                                 {venue.vendor_type.replace("_", " ")}
                               </span>
                             </div>
                           </div>
                           <div className="listing-content home-venue news-content p-3">
-                            <h3 className="listing-title" style={{ fontSize: "18px", fontWeight: "600", marginBottom: "8px" }}>
+                            <h3 className="listing-title" style={{ fontSize: "18px", fontWeight: "600", marginBottom: "8px", fontFamily: "Space Grotesk, sans-serif" }}>
                               <Link to={`/sports-venue/${venue.vendor_type.replace(/\s+/g, "-").toLowerCase()}/${venue.name.replace(/\s+/g, "-").toLowerCase()}/${venue._id}`} className="text-white text-truncate d-block">
                                 {venue.name}
                               </Link>
                             </h3>
                             <p className="text-white-50" style={{ fontSize: "13px" }}>
-                              <i className="feather-map-pin me-2 text-primary" />
+                              <i className="feather-map-pin me-2" style={{ color: "var(--ki-primary)" }} />
                               {venue?.near_by_location}
                             </p>
                           </div>
@@ -755,7 +885,7 @@ const Home = () => {
                   <Slider {...options}>
                     {coaches.map((coach, index) => (
                       <div className="featured-venues-item" key={index}>
-                        <div className="listing-item mb-0" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "16px", overflow: "hidden", margin: "10px" }}>
+                        <div className="listing-item mb-0" style={{ background: "var(--ki-bg-surface)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "24px", overflow: "hidden", margin: "10px", boxShadow: "var(--ki-shadow-card)" }}>
                           <div className="listing-img" style={{ height: "200px" }}>
                             <Link to={`/coaches/${coach?.category?.replace(/\s+/g, "-").toLowerCase()}/${coach?.first_name?.replace(/\s+/g, "-").toLowerCase()}/${coach?._id}`}>
                               <ImageWithBasePath
@@ -768,19 +898,19 @@ const Home = () => {
                               />
                             </Link>
                             <div className="fav-item-venues" style={{ top: "12px", left: "12px" }}>
-                              <span className="tag tag-blue" style={{ background: "#FF6B2C", color: "#fff", fontWeight: "700" }}>
+                              <span className="tag tag-blue" style={{ background: "var(--ki-accent)", color: "#FFFFFF", fontWeight: "700", borderRadius: "8px", fontSize: "12px", textTransform: "uppercase" }}>
                                 {coach.trainer_type || "Coach"}
                               </span>
                             </div>
                           </div>
                           <div className="listing-content list-coche-content p-3">
-                            <h3 style={{ fontSize: "18px", fontWeight: "600", marginBottom: "8px" }}>
+                            <h3 style={{ fontSize: "18px", fontWeight: "600", marginBottom: "8px", fontFamily: "Space Grotesk, sans-serif" }}>
                               <Link to={`/coaches/${coach?.category?.replace(/\s+/g, "-").toLowerCase()}/${coach?.first_name?.replace(/\s+/g, "-").toLowerCase()}/${coach?._id}`} className="text-white text-truncate d-block">
                                 {coach?.first_name} {coach?.last_name}
                               </Link>
                             </h3>
                             <p className="text-white-50" style={{ fontSize: "13px" }}>
-                              <i className="feather-map-pin me-2 text-primary" />
+                              <i className="feather-map-pin me-2" style={{ color: "var(--ki-primary)" }} />
                               {coach?.near_by_location || "Indore"}
                             </p>
                           </div>
@@ -794,7 +924,7 @@ const Home = () => {
                   <Slider {...options}>
                     {trainer.map((train, index) => (
                       <div className="featured-venues-item" key={index}>
-                        <div className="listing-item mb-0" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "16px", overflow: "hidden", margin: "10px" }}>
+                        <div className="listing-item mb-0" style={{ background: "var(--ki-bg-surface)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "24px", overflow: "hidden", margin: "10px", boxShadow: "var(--ki-shadow-card)" }}>
                           <div className="listing-img" style={{ height: "200px" }}>
                             <Link to={`/personal-training/trainer/${train.first_name.replace(/\s+/g, "-").toLowerCase()}/${train._id}`}>
                               <ImageWithBasePath
@@ -807,19 +937,19 @@ const Home = () => {
                               />
                             </Link>
                             <div className="fav-item-venues" style={{ top: "12px", left: "12px" }}>
-                              <span className="tag tag-blue" style={{ background: "#FFD700", color: "#0d1b2a", fontWeight: "700" }}>
+                              <span className="tag tag-blue" style={{ background: "var(--ki-accent)", color: "#FFFFFF", fontWeight: "700", borderRadius: "8px", fontSize: "12px", textTransform: "uppercase" }}>
                                 {train.trainer_type || "Trainer"}
                               </span>
                             </div>
                           </div>
                           <div className="listing-content p-3">
-                            <h3 style={{ fontSize: "18px", fontWeight: "600", marginBottom: "8px" }}>
+                            <h3 style={{ fontSize: "18px", fontWeight: "600", marginBottom: "8px", fontFamily: "Space Grotesk, sans-serif" }}>
                               <Link to={`/personal-training/trainer/${train.first_name.replace(/\s+/g, "-").toLowerCase()}/${train._id}`} className="text-white text-truncate d-block">
                                 {train.first_name} {train.last_name}
                               </Link>
                             </h3>
                             <p className="text-white-50" style={{ fontSize: "13px" }}>
-                              <i className="feather-map-pin me-2 text-primary" />
+                              <i className="feather-map-pin me-2" style={{ color: "var(--ki-primary)" }} />
                               {train?.near_by_location || "Indore"}
                             </p>
                           </div>
@@ -836,8 +966,8 @@ const Home = () => {
           <div className="view-all text-center mt-5 aos" data-aos="fade-up">
             <Link
               to={activeTopRatedTab === "venues" ? routes.blogListSidebarLeft : activeTopRatedTab === "coaches" ? routes.coachesGrid : routes.blogList}
-              className="btn btn-secondary d-inline-flex align-items-center rounded-pill px-4 py-2 font-weight-bold"
-              style={{ fontWeight: "700" }}
+              className="btn btn-primary d-inline-flex align-items-center px-4 py-2"
+              style={{ borderRadius: "12px" }}
             >
               {activeTopRatedTab === "venues" ? "View All Sports Venues" : activeTopRatedTab === "coaches" ? "View All Coaches" : "View All Personal Trainers"}
               <span className="lh-1">

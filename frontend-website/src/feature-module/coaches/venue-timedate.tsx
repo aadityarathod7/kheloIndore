@@ -523,15 +523,13 @@ const VenueTimeDate = () => {
             </div>
             <div className="text-center btn-row">
               <Link
-                className="btn btn-primary me-3 btn-icon"
+                className="ki-btn-secondary me-3"
                 to={`/sports-venue`}
-              // to={`/sports-venue/venue-details/${id}`}
               >
                 <i className="feather-arrow-left-circle me-1" /> Back
               </Link>
               <Link
-                className="btn btn-secondary btn-icon"
-                // to={`/coaches/coach-order-confirm/${id}`}
+                className="ki-btn-primary text-dark"
                 onClick={handleSubmit}
                 to={""}
               >

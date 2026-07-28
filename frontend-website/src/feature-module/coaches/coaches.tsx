@@ -504,11 +504,8 @@ const CoachesGrid = (props: { id: any }) => {
                             <ul>
                               <li>
                                 <Link
-                                  // to={
-                                  //   routes.coachDetail
-                                  // }
                                   to={`/coaches/${coach.trainer_type?.replace(/\s+/g, "-").toLowerCase()}/${coach.first_name?.replace(/\s+/g, "-").toLowerCase()}/${coach._id}`}
-                                  className="btn btn-primary w-100"
+                                  className="ki-btn-primary w-100 text-dark"
                                 >
                                   <i className="feather-eye me-2" />
                                   View Profile
@@ -518,7 +515,7 @@ const CoachesGrid = (props: { id: any }) => {
                                 <div onClick={() => checkToken(coach._id)}>
                                   <Link
                                     to={``}
-                                    className="btn btn-secondary w-100"
+                                    className="ki-btn-secondary w-100"
                                   >
                                     <i className="feather-calendar me-2" />
                                     Book Now
@@ -618,7 +615,7 @@ const CoachesGrid = (props: { id: any }) => {
                                 //   routes.coachDetail
                                 // }
                                 to={`/coaches/${coach?.trainer_type?.replace(/\s+/g, "-").toLowerCase()}/${coach?.first_name?.replace(/\s+/g, "-").toLowerCase()}/${coach?._id}`}
-                                className="btn btn-primary w-100"
+                                className="ki-btn-primary w-100"
                               >
                                 <i className="feather-eye me-2" />
                                 View Profile
@@ -628,7 +625,7 @@ const CoachesGrid = (props: { id: any }) => {
                               <div onClick={() => checkToken(coach?._id)}>
                                 <Link
                                   to={``}
-                                  className="btn btn-secondary w-100"
+                                  className="ki-btn-secondary w-100"
                                 >
                                   <i className="feather-calendar me-2" />
                                   Book Now

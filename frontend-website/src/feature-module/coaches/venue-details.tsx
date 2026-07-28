@@ -978,12 +978,11 @@ const VenueDetails = () => {
                         </ul> */}
                       <div className="d-grid btn-block mt-3">
                         <Link
-                          className="btn btn-secondary d-inline-flex justify-content-center align-items-center"
+                          className="ki-btn-primary d-inline-flex justify-content-center align-items-center"
                           onClick={handleBookNow}
                           to={""}
-                          // to={`/sports-venue/venue-timedate/${id}`}
                         >
-                          <i className="feather-calendar" />
+                          <i className="feather-calendar me-2" />
                           Book Now
                         </Link>
                       </div>

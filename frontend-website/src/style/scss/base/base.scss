@@ -6,11 +6,12 @@ html {
 	scroll-behavior: smooth;
 }
 
-body {
-	font-family: $__body__font__family;
-	font-size: $__body__font__size;
-	color: $__darkgray;
-	font-weight: $__regular;
+body, html, input, button, select, textarea {
+	font-family: 'Inter', sans-serif !important;
+	font-size: 18px;
+	color: #606D76;
+	background: linear-gradient(135deg, #E5ECE3 0%, #DEE7DD 30%, #E8EFE8 70%, #D7E3DA 100%) !important;
+	font-weight: 500;
 	line-height: 1.6;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
@@ -18,16 +19,18 @@ body {
 
 // Accent color text selection
 ::selection {
-	background: rgba(0, 230, 118, 0.25);
-	color: $__secondarycolor;
+	background: rgba(67, 182, 73, 0.2) !important;
+	color: #17222D !important;
 }
 ::-moz-selection {
-	background: rgba(0, 230, 118, 0.25);
-	color: $__secondarycolor;
+	background: rgba(67, 182, 73, 0.2) !important;
+	color: #17222D !important;
 }
 
-h1, h2, h3, h4, h5, h6 {
-	color: $__secondarycolor;
+h1, h2, h3, h4, h5, h6, .display-heading {
+	font-family: 'Space Grotesk', sans-serif !important;
+	font-weight: 800 !important;
+	color: #17222D !important;
 }
 a {
 	color: $__darkgray;
@@ -200,5 +203,1017 @@ ul {
 
 	&.divider-footer .shape-fill {
 		fill: $__footer__bg;
+	}
+}
+
+/*============================
+  SPORTS DARK THEME SYSTEM OVERRIDES
+============================*/
+
+body {
+	background-color: #080A0F !important;
+	color: #E8ECF1 !important;
+}
+
+h1, h2, h3, h4, h5, h6, 
+.section-heading h2, 
+.listing-title a, 
+.listing-title, 
+.card h4, 
+.card h3,
+.dashboard-title,
+.about-us h2,
+.checkout-title {
+	color: #FFFFFF !important;
+}
+
+p, span, li, label, .text-white-50 {
+	color: rgba(255, 255, 255, 0.7) !important;
+}
+
+.text-white, .text-light, .white-text, .text-white-80 {
+	color: #FFFFFF !important;
+}
+
+.white-bg, 
+.dull-pg, 
+.shadow-card, 
+.card, 
+.stickybar,
+.dashboard-sidebar,
+.user-sidebar,
+.booking-steps,
+.user-profile,
+.blog-sidebar,
+.invoice-card {
+	background: #121620 !important;
+	border: 1px solid rgba(255, 255, 255, 0.08) !important;
+	color: #E8ECF1 !important;
+}
+
+.featured-venues-item, 
+.listing-item, 
+.service-grid, 
+.coaching-grid, 
+.work-grid, 
+.about-grid,
+.blog-grid-item {
+	background: rgba(255, 255, 255, 0.03) !important;
+	border: 1px solid rgba(255, 255, 255, 0.08) !important;
+	border-radius: 16px !important;
+	overflow: hidden !important;
+	transition: all 0.3s ease !important;
+
+	&:hover {
+		transform: translateY(-5px) !important;
+		border-color: #00E676 !important;
+		box-shadow: 0 12px 30px rgba(0, 230, 118, 0.15) !important;
+	}
+}
+
+// Form Inputs & Controls
+input[type="text"], 
+input[type="email"], 
+input[type="password"], 
+input[type="number"], 
+input[type="tel"], 
+input[type="date"],
+textarea, 
+select, 
+.form-control,
+.form-select {
+	background-color: #162A45 !important;
+	border: 1px solid rgba(255, 255, 255, 0.12) !important;
+	color: #FFFFFF !important;
+	border-radius: 8px !important;
+
+	&:focus {
+		border-color: #00E676 !important;
+		box-shadow: 0 0 0 3px rgba(0, 230, 118, 0.25) !important;
+		outline: none !important;
+	}
+}
+
+// Active Buttons and Links
+.btn-primary, 
+.btn-limegreen,
+.bg-primary {
+	background: #F97316 !important;
+	border: none !important;
+	color: #FFFFFF !important;
+	font-weight: 700 !important;
+	border-radius: 12px !important;
+	box-shadow: 0 4px 15px rgba(249, 115, 22, 0.25) !important;
+	transition: all 0.2s ease !important;
+
+	&:hover {
+		background: #C2410C !important;
+		transform: translateY(-1px) !important;
+		box-shadow: 0 6px 20px rgba(249, 115, 22, 0.4) !important;
+	}
+	&:active {
+		transform: scale(0.97) !important;
+	}
+}
+
+.btn-secondary,
+.btn-outline-light {
+	background: transparent !important;
+	border: 2px solid #16A34A !important;
+	color: #F1F5F9 !important;
+	font-weight: 600 !important;
+	border-radius: 12px !important;
+	transition: all 0.2s ease !important;
+
+	&:hover {
+		background: rgba(22, 163, 74, 0.08) !important;
+		border-color: #16A34A !important;
+		color: #4ADE80 !important;
+	}
+	&:active {
+		transform: scale(0.97) !important;
+	}
+}
+
+// Navbar Active State Link Underlines
+.main-nav > li.active > a, 
+.main-nav > li > a:hover {
+	color: #16A34A !important;
+}
+
+// Breadcrumb banner
+.breadcrumb-list {
+	background: linear-gradient(180deg, #060E1A 0%, #0D1B2A 100%) !important;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+// SVG Wave Divider Fills
+.section-divider .shape-fill {
+	fill: #0D1B2A !important;
+}
+.section-divider.divider-dark .shape-fill {
+	fill: #0D1B2A !important;
+}
+.section-divider.divider-footer .shape-fill {
+	fill: #060E1A !important;
+}
+
+// Table Styling Overrides
+table, 
+.table {
+	background-color: #112237 !important;
+	color: #E8ECF1 !important;
+	border-color: rgba(255, 255, 255, 0.08) !important;
+
+	th, td {
+		background-color: #112237 !important;
+		color: #E8ECF1 !important;
+		border-color: rgba(255, 255, 255, 0.08) !important;
+	}
+
+	thead th {
+		background-color: #162A45 !important;
+		color: #FFFFFF !important;
+	}
+}
+
+// PrimeReact Dropdown Styling Overrides
+.p-dropdown {
+	background: #162A45 !important;
+	border: 1px solid rgba(255, 255, 255, 0.12) !important;
+	
+	.p-dropdown-label {
+		color: #FFFFFF !important;
+	}
+	
+	.p-dropdown-trigger {
+		color: #FFFFFF !important;
+	}
+}
+
+.p-dropdown-panel {
+	background: #112237 !important;
+	border: 1px solid rgba(255, 255, 255, 0.08) !important;
+
+	.p-dropdown-items {
+		.p-dropdown-item {
+			color: #E8ECF1 !important;
+			
+			&:hover, &.p-highlight {
+				background: #162A45 !important;
+				color: #00E676 !important;
+			}
+		}
+	}
+}
+
+/*============================
+  KHELO INDORE - REUSABLE DESIGN SYSTEM UI COMPONENTS
+============================*/
+
+// Reusable Buttons
+.ki-btn-primary {
+	background: linear-gradient(135deg, var(--ki-brand) 0%, #00B0FF 100%) !important;
+	border: none !important;
+	color: #0D1B2A !important;
+	font-weight: 700 !important;
+	border-radius: 30px !important;
+	padding: 12px 28px !important;
+	font-size: 14px !important;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+	box-shadow: 0 4px 15px rgba(0, 230, 118, 0.25) !important;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+
+	&:hover {
+		background: linear-gradient(135deg, #00B0FF 0%, var(--ki-brand) 100%) !important;
+		transform: translateY(-2px) !important;
+		box-shadow: 0 8px 25px rgba(0, 230, 118, 0.4) !important;
+	}
+
+	&:active {
+		transform: translateY(0) scale(0.96) !important;
+	}
+}
+
+.ki-btn-secondary {
+	background: rgba(255, 255, 255, 0.04) !important;
+	border: 1px solid rgba(255, 255, 255, 0.12) !important;
+	color: #FFFFFF !important;
+	border-radius: 30px !important;
+	padding: 12px 28px !important;
+	font-size: 14px !important;
+	font-weight: 600 !important;
+	transition: all 0.2s ease !important;
+
+	&:hover {
+		background: rgba(255, 255, 255, 0.08) !important;
+		border-color: var(--ki-brand) !important;
+		color: var(--ki-brand) !important;
+	}
+}
+
+// Reusable Glassmorphism Cards
+.ki-card {
+	background: rgba(255, 255, 255, 0.03) !important;
+	backdrop-filter: blur(12px) !important;
+	-webkit-backdrop-filter: blur(12px) !important;
+	border: 1px solid rgba(255, 255, 255, 0.08) !important;
+	border-radius: 16px !important;
+	padding: 24px !important;
+	color: #FFFFFF !important;
+	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+
+	&.ki-card-hover:hover {
+		transform: translateY(-6px) !important;
+		border-color: var(--ki-brand) !important;
+		box-shadow: 0 12px 30px rgba(0, 230, 118, 0.15) !important;
+	}
+}
+
+// Status Badges & Pills
+.ki-badge {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 6px 14px !important;
+	border-radius: 30px !important;
+	font-size: 12px !important;
+	font-weight: 700 !important;
+	text-transform: uppercase;
+	
+	&.confirmed {
+		background: rgba(0, 230, 118, 0.12) !important;
+		color: var(--ki-success) !important;
+		border: 1px solid rgba(0, 230, 118, 0.2) !important;
+	}
+
+	&.pending {
+		background: rgba(255, 179, 0, 0.12) !important;
+		color: var(--ki-warning) !important;
+		border: 1px solid rgba(255, 179, 0, 0.2) !important;
+	}
+
+	&.cancelled {
+		background: rgba(255, 61, 61, 0.12) !important;
+		color: var(--ki-error) !important;
+		border: 1px solid rgba(255, 61, 61, 0.2) !important;
+	}
+}
+
+// Input Fields
+.ki-input {
+	background-color: #162A45 !important;
+	border: 1px solid rgba(255, 255, 255, 0.12) !important;
+	color: #FFFFFF !important;
+	border-radius: 12px !important;
+	padding: 14px 18px !important;
+	font-size: 14px !important;
+	transition: all 0.2s ease !important;
+
+	&:focus {
+		border-color: var(--ki-brand) !important;
+		box-shadow: 0 0 0 3px rgba(0, 230, 118, 0.25) !important;
+	}
+}
+
+// Illustrated Empty State
+.ki-empty-state {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+	padding: 60px 20px !important;
+	background: rgba(255, 255, 255, 0.02) !important;
+	border: 1px dashed rgba(255, 255, 255, 0.12) !important;
+	border-radius: 16px !important;
+	
+	.empty-icon {
+		font-size: 48px;
+		color: var(--ki-text-muted);
+		margin-bottom: 16px;
+	}
+	
+	h4 {
+		color: #FFFFFF !important;
+		margin-bottom: 8px !important;
+	}
+	
+	p {
+		color: var(--ki-text-muted) !important;
+		max-width: 320px;
+		margin-bottom: 24px !important;
+		font-size: 14px !important;
+	}
+}
+
+// Skeleton Shimmer loader
+.ki-skeleton {
+	background: linear-gradient(90deg, #112237 25%, #182F4B 50%, #112237 75%);
+	background-size: 200% 100%;
+	animation: ki-shimmer 1.5s infinite;
+	border-radius: 8px;
+	width: 100%;
+	height: 16px;
+}
+
+@keyframes ki-shimmer {
+	0% { background-position: 200% 0; }
+	100% { background-position: -200% 0; }
+}
+
+// Time Slot Calendar Grid Styles
+.time-slot {
+	background: rgba(255, 255, 255, 0.03) !important;
+	border: 1px solid rgba(255, 255, 255, 0.08) !important;
+	border-radius: 12px !important;
+	padding: 14px !important;
+	text-align: center !important;
+	cursor: pointer !important;
+	transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+	margin-bottom: 16px !important;
+	display: block !important;
+
+	.booking-info {
+		display: flex !important;
+		flex-direction: column !important;
+		align-items: center !important;
+		gap: 6px !important;
+	}
+
+	.time {
+		font-weight: 600 !important;
+		color: #FFFFFF !important;
+		font-size: 14px !important;
+	}
+
+	.price {
+		font-size: 16px !important;
+		font-weight: 700 !important;
+		color: var(--ki-brand) !important;
+	}
+
+	&:hover {
+		border-color: var(--ki-brand) !important;
+		background: rgba(0, 230, 118, 0.06) !important;
+		transform: translateY(-2px) !important;
+	}
+
+	&.checked {
+		background: rgba(0, 230, 118, 0.15) !important;
+		border-color: var(--ki-brand) !important;
+		box-shadow: 0 0 15px rgba(0, 230, 118, 0.35) !important;
+		
+		.time {
+			color: #FFFFFF !important;
+		}
+		
+		.price {
+			color: #FFFFFF !important;
+		}
+	}
+
+	&.disabled {
+		opacity: 0.45 !important;
+		background: rgba(255, 255, 255, 0.01) !important;
+		border-color: rgba(255, 255, 255, 0.04) !important;
+		cursor: not-allowed !important;
+		pointer-events: none !important;
+
+		.time {
+			color: var(--ki-text-muted) !important;
+		}
+		.price {
+			color: var(--ki-text-muted) !important;
+		}
+	}
+}
+
+/*============================
+  V2 VISUAL POLISH & CONTRAST FIXES
+============================*/
+
+// Rebuilt work-grid ("How It Works") cards
+.work-grid {
+	background: #1E293B !important; // Ink 700
+	border: 1px solid rgba(255, 255, 255, 0.08) !important;
+	
+	.work-icon {
+		background: rgba(22, 163, 74, 0.1) !important; // Translucent green wrapper
+		border-radius: 50% !important;
+		
+		.work-icon-inner {
+			background: rgba(22, 163, 74, 0.2) !important;
+			border-radius: 50% !important;
+		}
+	}
+	
+	.work-content {
+		h5 {
+			a, span {
+				color: #FFFFFF !important;
+				font-family: 'Space Grotesk', sans-serif !important;
+				font-weight: 700 !important;
+				transition: color 0.2s ease;
+				
+				&:hover {
+					color: #16A34A !important;
+				}
+			}
+		}
+		p {
+			color: #CBD5E1 !important; // Ink 300
+			font-size: 14px !important;
+		}
+		.btn {
+			background: transparent !important;
+			border: 2px solid #16A34A !important;
+			color: #FFFFFF !important;
+			border-radius: 30px !important;
+			font-weight: 700 !important;
+			transition: all 0.2s ease !important;
+			padding: 10px 20px !important;
+			
+			&:hover {
+				background: #16A34A !important;
+				color: #FFFFFF !important;
+				transform: translateY(-2px) !important;
+			}
+		}
+	}
+}
+
+// Rebuilt venue/coach listing cards (.listing-content) solid white boxes fix
+.listing-item, .featured-venues-item {
+	.listing-content {
+		background: #1E293B !important; // Ink 700
+		border: 1px solid rgba(255, 255, 255, 0.08) !important;
+		border-top: none !important;
+		color: #F1F5F9 !important;
+		
+		h3, h3 a, h4, h4 a, h5, h5 a, .listing-title, .listing-title a {
+			color: #FFFFFF !important;
+			font-family: 'Space Grotesk', sans-serif !important;
+		}
+		
+		p, span, li, label, .text-white-50, .text-muted {
+			color: #CBD5E1 !important; // Ink 300
+		}
+	}
+}
+
+// Enquiry Button Floating FAB styling
+.enquiry-btn {
+	position: fixed !important;
+	bottom: 30px !important;
+	right: 30px !important;
+	top: auto !important;
+	left: auto !important;
+	z-index: 9999 !important;
+	
+	.btn {
+		background: linear-gradient(90deg, #56C24A, #2EA93C) !important;
+		color: #FFFFFF !important;
+		border: none !important;
+		border-radius: 50px !important;
+		padding: 12px 24px !important;
+		font-weight: 700 !important;
+		box-shadow: 0 15px 40px rgba(70,180,70,.30) !important;
+		display: flex !important;
+		align-items: center !important;
+		gap: 8px !important;
+		transition: all 0.3s ease !important;
+		writing-mode: horizontal-tb !important;
+		text-orientation: mixed !important;
+		
+		&:hover {
+			transform: translateY(-2px) !important;
+			background: linear-gradient(90deg, #2EA93C, #56C24A) !important;
+			box-shadow: 0 15px 40px rgba(70,180,70,.45) !important;
+		}
+	}
+}
+
+// Testimonials card design re-theme & contrast fixes
+.testimonial-group {
+	.testimonial-review {
+		background: #1E293B !important; // Ink 700
+		border: 1px solid rgba(255, 255, 255, 0.08) !important;
+		color: #F1F5F9 !important;
+		box-shadow: var(--ki-shadow-card) !important;
+		
+		h5 {
+			color: #FFFFFF !important;
+			font-family: 'Space Grotesk', sans-serif !important;
+			font-weight: 700 !important;
+		}
+		
+		p {
+			color: #CBD5E1 !important; // Ink 300
+		}
+	}
+	
+	.listing-venue-owner {
+		.testimonial-content {
+			h5 {
+				a, span {
+					color: #FFFFFF !important;
+					font-family: 'Space Grotesk', sans-serif !important;
+					font-weight: 700 !important;
+					transition: color 0.2s ease;
+					
+					&:hover {
+						color: #16A34A !important;
+					}
+				}
+			}
+			p, span {
+				color: #CBD5E1 !important;
+			}
+		}
+	}
+}
+
+// Search Box inputs & dropdown spacing fixes
+.search-box-v2 {
+	.search-input {
+		width: auto !important;
+		flex: 1 1 0% !important;
+		min-width: 140px !important;
+		
+		.form-group {
+			width: 100% !important;
+		}
+	}
+	
+	// PrimeReact Dropdown overrides
+	.p-dropdown {
+		background: transparent !important;
+		border: none !important;
+		box-shadow: none !important;
+		width: 100% !important;
+		
+		.p-dropdown-label {
+			padding: 8px 4px !important;
+			font-size: 13px !important;
+			color: #FFFFFF !important;
+			font-weight: 500 !important;
+			font-family: 'Inter', sans-serif !important;
+			text-align: left !important;
+		}
+		
+		.p-dropdown-trigger {
+			width: 20px !important;
+			color: rgba(255, 255, 255, 0.6) !important;
+		}
+	}
+}
+
+// Premium Modern SaaS Search Card
+.ki-search-card {
+	background: #FFFFFF !important;
+	backdrop-filter: blur(20px) !important;
+	-webkit-backdrop-filter: blur(20px) !important;
+	border: 1px solid #D9E5DC !important;
+	border-radius: 22px !important;
+	padding: 16px 24px !important;
+	box-shadow: 0 15px 50px rgba(0, 0, 0, 0.08) !important;
+	margin-top: 16px !important;
+	display: block !important;
+	box-sizing: border-box !important;
+	
+	form {
+		display: flex !important;
+		align-items: center !important;
+		gap: 20px !important;
+		width: 100% !important;
+		flex-wrap: nowrap !important;
+		box-sizing: border-box !important;
+		
+		@media (max-width: 991px) {
+			flex-wrap: wrap !important;
+			gap: 12px !important;
+		}
+	}
+	
+	.search-col {
+		flex: 1 !important;
+		min-width: 130px !important;
+		border-right: 1px solid #D9E5DC !important;
+		padding-right: 20px !important;
+		box-sizing: border-box !important;
+		
+		@media (max-width: 991px) {
+			border-right: none !important;
+			padding-right: 0 !important;
+			width: 100% !important;
+			flex: none !important;
+			border-bottom: 1px solid #D9E5DC !important;
+			padding-bottom: 12px !important;
+		}
+		
+		&:last-of-type {
+			border-right: none !important;
+			padding-right: 0 !important;
+			
+			@media (max-width: 991px) {
+				border-bottom: none !important;
+				padding-bottom: 0 !important;
+			}
+		}
+	}
+	
+	.form-group {
+		margin-bottom: 0 !important;
+		width: 100% !important;
+		
+		label {
+			display: block !important;
+			color: #64748B !important;
+			font-size: 11px !important;
+			font-weight: 600 !important;
+			text-transform: uppercase !important;
+			letter-spacing: 0.08em !important;
+			margin-bottom: 4px !important;
+		}
+	}
+	
+	.dropdown-wrapper {
+		display: flex !important;
+		align-items: center !important;
+		gap: 12px !important;
+		background: transparent !important;
+		height: 38px !important;
+		
+		i {
+			display: flex !important;
+			align-items: center !important;
+			justify-content: center !important;
+			width: 28px !important;
+			height: 28px !important;
+			border-radius: 50% !important;
+			background: #EAF5EB !important;
+			color: #3CAB4B !important;
+			font-size: 12px !important;
+			flex-shrink: 0 !important;
+		}
+	}
+	
+	.p-dropdown {
+		border: none !important;
+		background: transparent !important;
+		box-shadow: none !important;
+		outline: none !important;
+		width: 100% !important;
+		
+		.p-dropdown-label {
+			font-weight: 500 !important;
+			color: #17222D !important;
+			font-size: 14px !important;
+			padding: 0 !important;
+			font-family: 'Inter', sans-serif !important;
+		}
+		
+		.p-dropdown-trigger {
+			color: rgba(30, 41, 59, 0.5) !important;
+		}
+	}
+	
+	.search-btn-col {
+		flex-shrink: 0 !important;
+		min-width: 140px !important;
+		box-sizing: border-box !important;
+		
+		@media (max-width: 991px) {
+			width: 100% !important;
+			margin-top: 8px !important;
+		}
+		
+		.btn {
+			height: 40px !important;
+			border-radius: 12px !important;
+			background: linear-gradient(90deg, #49BC4F, #38A941) !important;
+			color: #FFFFFF !important;
+			font-weight: 600 !important;
+			font-size: 14px !important;
+			display: flex !important;
+			align-items: center !important;
+			justify-content: center !important;
+			gap: 8px !important;
+			box-shadow: 0 4px 15px rgba(67, 182, 73, 0.2) !important;
+			transition: all 0.3s ease !important;
+			border: none !important;
+			width: 100% !important;
+			
+			&:hover {
+				background: #339B3E !important;
+				box-shadow: 0 6px 20px rgba(67, 182, 73, 0.3) !important;
+				transform: translateY(-1px) !important;
+			}
+		}
+	}
+
+	// Override global select.custom-select-list styles for transparent dropdowns
+	.select.custom-select-list.p-dropdown.p-component.p-inputwrapper {
+		border: none !important;
+		background: transparent !important;
+		box-shadow: none !important;
+		height: 38px !important;
+		line-height: normal !important;
+		padding: 0 !important;
+		min-width: auto !important;
+
+		.p-dropdown-label {
+			font-weight: 700 !important;
+			color: #1E293B !important;
+			font-size: 15px !important;
+			padding: 0 !important;
+			line-height: 38px !important;
+			font-family: 'Space Grotesk', sans-serif !important;
+		}
+
+		.p-dropdown-trigger {
+			padding: 0 !important;
+			width: 16px !important;
+			
+			svg {
+				right: 0 !important;
+				color: rgba(30, 41, 59, 0.5) !important;
+				position: relative !important;
+			}
+		}
+	}
+}
+
+// Remove box borders and backgrounds inside search bar inputs
+.search-box {
+	.p-dropdown,
+	.select,
+	.custom-select-list,
+	select,
+	.p-inputwrapper {
+		border: none !important;
+		background: transparent !important;
+		background-color: transparent !important;
+		box-shadow: none !important;
+		outline: none !important;
+	}
+}
+
+// PrimeReact Dropdown Panel (the popover list of options)
+.p-dropdown-panel {
+	background: #11212A !important; // Card surface
+	border: 1px solid rgba(255, 255, 255, 0.08) !important;
+	box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
+	z-index: 11000 !important;
+	
+	.p-dropdown-items-wrapper {
+		background: #11212A !important;
+	}
+	
+	.p-dropdown-items {
+		padding: 4px !important;
+		background: #11212A !important;
+		list-style: none !important;
+		margin: 0 !important;
+	}
+	
+	.p-dropdown-item {
+		color: rgba(255, 255, 255, 0.8) !important;
+		font-family: 'Inter', sans-serif !important;
+		font-size: 14px !important;
+		padding: 8px 12px !important;
+		border-radius: 6px !important;
+		transition: all 0.2s ease !important;
+		background: transparent !important;
+		
+		&:hover, &.p-highlight {
+			background: #5DFF5A !important; // Neon green
+			color: #000000 !important;
+			font-weight: 600 !important;
+		}
+	}
+}
+
+// Sleek Search container column dividers & alignment
+.search-box {
+	.search-input-col {
+		position: relative;
+		border-right: 1px solid rgba(255, 255, 255, 0.08);
+		padding-right: 20px;
+		
+		@media (max-width: 767px) {
+			border-right: none !important;
+			padding-right: 0 !important;
+			border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+			padding-bottom: 12px;
+			margin-bottom: 8px;
+		}
+	}
+	
+	.dropdown-input-wrapper {
+		transition: all 0.2s ease;
+		
+		&:hover {
+			opacity: 0.85;
+		}
+	}
+	
+	.p-dropdown {
+		.p-dropdown-label {
+			font-weight: 600 !important;
+			color: #FFFFFF !important;
+			font-size: 14px !important;
+			padding-left: 0 !important;
+		}
+		.p-dropdown-trigger {
+			color: rgba(255, 255, 255, 0.5) !important;
+		}
+	}
+}
+
+// Override legacy display: none / absolute overrides on user profile dropdown list
+.user-profile-nav {
+	ul.profile-dropdown {
+		display: block !important;
+		position: static !important;
+		background: transparent !important;
+		box-shadow: none !important;
+		width: 100% !important;
+		padding: 0 !important;
+		margin: 0 !important;
+		
+		li {
+			display: block !important;
+			margin: 0 !important;
+			padding: 0 !important;
+			
+			a {
+				display: flex !important;
+				align-items: center !important;
+				padding: 10px 16px !important;
+				color: rgba(255, 255, 255, 0.7) !important;
+				font-size: 14px !important;
+				text-decoration: none !important;
+				
+				i {
+					color: #16A34A !important; // Turf Green
+				}
+				
+				&:hover {
+					background: rgba(255, 255, 255, 0.05) !important;
+					color: #FFFFFF !important;
+				}
+			}
+		}
+	}
+}
+
+// Glowing map circle on home banner
+.glowing-hero-circle {
+	position: relative;
+	width: 420px;
+	height: 420px;
+	display: flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	background: radial-gradient(circle, rgba(98, 215, 84, 0.22) 0%, rgba(98, 215, 84, 0) 70%) !important;
+	margin: 0 auto;
+	animation: floatCircle 6s ease-in-out infinite;
+	
+	img {
+		max-height: 380px !important;
+		width: auto !important;
+		object-fit: contain !important;
+		filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.16)) drop-shadow(0 5px 15px rgba(67, 182, 73, 0.28)) !important;
+		z-index: 2;
+		transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+	}
+
+	&:hover {
+		img {
+			transform: scale(1.04) !important;
+			filter: drop-shadow(0 30px 55px rgba(0, 0, 0, 0.22)) drop-shadow(0 8px 20px rgba(67, 182, 73, 0.38)) !important;
+		}
+	}
+}
+
+@keyframes floatCircle {
+	0% { transform: translateY(0); }
+	50% { transform: translateY(-8px); }
+	100% { transform: translateY(0); }
+}
+
+// Override style.css text colors inside hero section
+.hero-section {
+	background-repeat: no-repeat !important;
+	background-size: cover !important;
+	background-position: center !important;
+
+	.section-search {
+		h1 {
+			color: #17222D !important;
+			font-family: 'Plus Jakarta Sans', sans-serif !important;
+			
+			span {
+				color: #42AE52 !important;
+			}
+		}
+		
+		p {
+			color: #606D76 !important;
+			font-size: 18px !important;
+			font-weight: 500 !important;
+		}
+	}
+}
+
+// Stats Counter Bar Divider adjustments
+.stats-counter-bar {
+	background: #FBFCFB !important;
+	border: 1px solid #E2E8E3 !important;
+	border-radius: 28px !important;
+	box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08) !important;
+
+	h3 {
+		color: #17222D !important;
+		font-size: 22px !important;
+		font-weight: 800 !important;
+		font-family: 'Space Grotesk', sans-serif !important;
+		margin-bottom: 0 !important;
+	}
+
+	p {
+		color: #17222D !important;
+		font-size: 13px !important;
+		font-weight: 700 !important;
+		font-family: 'Inter', sans-serif !important;
+		margin-bottom: 0 !important;
+		line-height: 1.25 !important;
+
+		span {
+			color: #606D76 !important;
+			font-size: 11px !important;
+			font-weight: 400 !important;
+			font-family: 'Inter', sans-serif !important;
+			display: block !important;
+			margin-top: 2px !important;
+		}
+	}
+
+	.row {
+		& > div:not(:first-child) {
+			border-left: 1px solid #E2E8E3 !important;
+			@media (max-width: 991px) {
+				border-left: none !important;
+				margin-top: 15px;
+				padding-top: 15px;
+				border-top: 1px solid #E2E8E3 !important;
+			}
+		}
 	}
 }

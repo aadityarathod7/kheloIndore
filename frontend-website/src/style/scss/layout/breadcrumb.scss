@@ -3,7 +3,7 @@
 -----------------------*/
 
 .breadcrumb {
-	background: url('../../../../public/assets/img/bg/breadcrumb-bg.png') $__secondary__dark__rgba no-repeat;
+	background: radial-gradient(circle at 30% 50%, rgba(0, 230, 118, 0.08) 0%, transparent 60%), #112237 !important;
 	background-size: cover;
 		background-blend-mode: multiply;
 		padding: 60px 0;
@@ -14,7 +14,7 @@
 			border-radius: $__full__width;
 		}
 		&.breadcrumb-list {
-			background: url('../../../../public/assets/img/bg/breadcrumb.jpg') $__secondary__dark__rgba no-repeat;
+			background: radial-gradient(circle at 70% 50%, rgba(0, 230, 118, 0.08) 0%, transparent 60%), #112237 !important;
 			background-size: cover;
 			.container {
 				position: relative;

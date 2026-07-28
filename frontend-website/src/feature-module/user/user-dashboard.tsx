@@ -159,10 +159,10 @@ const UserDashboard = () => {
                     <div className="convenient-btns">
                       <Link
                         to={routes.userProfile}
-                        className="btn btn-secondary d-inline-flex align-items-center"
+                        className="ki-btn-secondary d-inline-flex align-items-center"
                       >
                         <span>
-                          <i className="feather-edit" />
+                          <i className="feather-edit me-2" />
                         </span>
                         Edit Profile
                       </Link>

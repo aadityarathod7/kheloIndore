@@ -537,7 +537,7 @@ const Signin = () => {
 
                                 <button
                                   type="submit"
-                                  className="btn btn-secondary w-100"
+                                  className="ki-btn-primary w-100 text-dark"
                                 >
                                   Create Account
                                 </button>

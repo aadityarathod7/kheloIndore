@@ -8,6 +8,7 @@ This document lists the tasks and detailed code changes implemented dynamically 
 
 | Task Description | Status | Files Modified / Added |
 | :--- | :---: | :--- |
+| **Global Sports Dark Theme System**<br>- Overhauled body, headers, links, sidebars, buttons, inputs, and cards globally into a cohesive, high-contrast sports dark theme. | **Completed** | - [base.scss](file:///C:/Users/Dell/Downloads/kheloindore-project/frontend-website/src/style/scss/base/base.scss)<br>- [header.scss](file:///C:/Users/Dell/Downloads/kheloindore-project/frontend-website/src/style/scss/layout/header.scss) |
 | **Navbar & Profile Redesign**<br>- Redesigned user profile dropdown into a circular initials avatar.<br>- Added center-expanding sliding underline hover indicators. | **Completed** | - [header.tsx](file:///C:/Users/Dell/Downloads/kheloindore-project/frontend-website/src/feature-module/common/header.tsx)<br>- [header.scss](file:///C:/Users/Dell/Downloads/kheloindore-project/frontend-website/src/style/scss/layout/header.scss) |
 | **"How It Works" Re-sequencing**<br>- Changed cards order to: Venues ➔ Coaches ➔ Trainer.<br>- Swapped icons and corresponding links. | **Completed** | - [home.tsx](file:///C:/Users/Dell/Downloads/kheloindore-project/frontend-website/src/feature-module/home/home.tsx) |
 | **3-Step Search Bar Flow**<br>- Replaced 2-dropdown search with a 3-dropdown layout (`Category` ➔ `Sport` ➔ `Location`).<br>- Placed input line dividers. | **Completed** | - [home.tsx](file:///C:/Users/Dell/Downloads/kheloindore-project/frontend-website/src/feature-module/home/home.tsx) |
@@ -23,6 +24,13 @@ This document lists the tasks and detailed code changes implemented dynamically 
 | **Multi-Sport Profiles Layout**<br>- Built dynamic input configurations for multiple sports pricing, size, and surfaces. | **Completed** | - [add-court.tsx](file:///C:/Users/Dell/Downloads/kheloindore-project/frontend-website/src/feature-module/coaches/add-court.tsx) |
 | **Category Listings Counts**<br>- Added listing count badges for each category card. | **Completed** | - [home.tsx](file:///C:/Users/Dell/Downloads/kheloindore-project/frontend-website/src/feature-module/home/home.tsx) |
 | **Unified Top Rated Slide Deck**<br>- Combined venues, coaches, and trainers sliders into a tabbed dashboard. | **Completed** | - [home.tsx](file:///C:/Users/Dell/Downloads/kheloindore-project/frontend-website/src/feature-module/home/home.tsx) |
+| **Dropdown & Table Styling Overrides**<br>- Configured PrimeReact dropdowns and data tables to match the dark theme. | **Completed** | - [base.scss](file:///C:/Users/Dell/Downloads/kheloindore-project/frontend-website/src/style/scss/base/base.scss) |
+| **Complete UI/UX Redesign System**<br>- Declared CSS variables and reusable custom elements (.ki-btn-primary, .ki-card, .ki-badge, .ki-input, .ki-empty-state, .ki-skeleton). | **Completed** | - [colors.scss](file:///C:/Users/Dell/Downloads/kheloindore-project/frontend-website/src/style/scss/base/colors.scss)<br>- [base.scss](file:///C:/Users/Dell/Downloads/kheloindore-project/frontend-website/src/style/scss/base/base.scss) |
+| **Homepage Hero & Tiles Modernization**<br>- Refactored hero headers to use display scales, updated sport category grids, and primary slider view all CTAs. | **Completed** | - [home.tsx](file:///C:/Users/Dell/Downloads/kheloindore-project/frontend-website/src/feature-module/home/home.tsx) |
+| **Listings & Sidebar Card Integrations**<br>- Replaced custom cards and widgets across sports-venue.tsx and coaches.tsx listings with design system components. | **Completed** | - [sports-venue.tsx](file:///C:/Users/Dell/Downloads/kheloindore-project/frontend-website/src/feature-module/blog/sports-venue.tsx)<br>- [coaches.tsx](file:///C:/Users/Dell/Downloads/kheloindore-project/frontend-website/src/feature-module/coaches/coaches.tsx) |
+| **Details Sticky CTA & Payment Overhaul**<br>- Re-styled details booking sidebar, proceeds payment screen, and transaction redirects with consistent sports branding. | **Completed** | - [venue-details.tsx](file:///C:/Users/Dell/Downloads/kheloindore-project/frontend-website/src/feature-module/coaches/venue-details.tsx)<br>- [venue-payment.tsx](file:///C:/Users/Dell/Downloads/kheloindore-project/frontend-website/src/feature-module/coaches/venue-payment.tsx) |
+| **Glow-State Slots Grid Selector**<br>- Visual time slot grid with green (available), blue (selected), and grey (booked/disabled) indicator states. | **Completed** | - [venue-timedate.tsx](file:///C:/Users/Dell/Downloads/kheloindore-project/frontend-website/src/feature-module/coaches/venue-timedate.tsx) |
+| **Auth & Bookings Status Pill Badges**<br>- Restyled login/signup buttons and integrated color-coded booking status indicators. | **Completed** | - [login.tsx](file:///C:/Users/Dell/Downloads/kheloindore-project/frontend-website/src/feature-module/auth/login.tsx)<br>- [register.tsx](file:///C:/Users/Dell/Downloads/kheloindore-project/frontend-website/src/feature-module/auth/register.tsx)<br>- [user-bookings.tsx](file:///C:/Users/Dell/Downloads/kheloindore-project/frontend-website/src/feature-module/user/user-bookings.tsx) |
 
 ---
 
@@ -48,5 +56,11 @@ This document lists the tasks and detailed code changes implemented dynamically 
 ### 3. Backend Security Improvement
 * **6-Digit Dynamic OTP Verification:** Configured `loginUserWithMobile` to generate unique OTPs using `otpGenerator` and save them to the database while outputting the active OTP code to the console for testing.
 
+### 4. Complete UI/UX Redesign System (Nike/ESPN energy)
+* **Custom UI Component Library:** Formulated standardized visual classes (`.ki-btn-primary`, `.ki-btn-secondary`, `.ki-card`, `.ki-badge`, `.ki-input`, `.ki-empty-state`, `.ki-skeleton`) to enforce high-contrast layouts.
+* **Glow-State Slots Selector:** Color-coded slot blocks to reflect Available, Booked (disabled inputs), and Selected (neon blur borders) booking parameters.
+* **Auth Page Action Enhancements:** Overhauled credentials cards, submit triggers, and option button overlays in auth components.
+* **Status Badges Tab Panels:** Replaced plain text list values in bookings tables with glowing status pill indicators.
+
 ---
-*Last updated: 2026-07-27 by Antigravity*
+*Last updated: 2026-07-28 by Antigravity*

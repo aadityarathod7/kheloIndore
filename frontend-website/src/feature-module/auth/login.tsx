@@ -257,7 +257,7 @@ const Login = () => {
                           {showPasswordField && (
                             <button
                               type="submit"
-                              className="btn btn-primary btn-sm register-btn d-inline-flex justify-content-center align-items-center w-100 btn-block"
+                              className="ki-btn-primary w-100 text-dark"
                               onClick={handleConfirmPasswordOtp}
                             >
                               Login
@@ -266,7 +266,7 @@ const Login = () => {
                         </form>
                         {showOtpField && (
                           <button
-                            className="btn btn-primary btn-sm text-capitalize mt-3 w-100"
+                            className="ki-btn-primary text-capitalize mt-3 w-100 text-dark"
                             onClick={handleConfirmPasswordOtp}
                           >
                             Login
@@ -276,10 +276,8 @@ const Login = () => {
                           {!(showOtpField || showPasswordField) && (
                             <>
                               <button
-                                className="btn btn-secondary btn-sm col-5"
+                                className="ki-btn-secondary col-5"
                                 onClick={() => {
-                                  // setShowOtpField(true);
-                                  // setShowPasswordField(false);
                                   handleLoginWithMobile("OTP");
                                 }}
                                 disabled={
@@ -289,10 +287,8 @@ const Login = () => {
                                 Login with OTP
                               </button>
                               <button
-                                className="btn btn-secondary btn-sm col-5"
+                                className="ki-btn-secondary col-5"
                                 onClick={() => {
-                                  // setShowOtpField(false);
-                                  // setShowPasswordField(true);
                                   handleLoginWithMobile("Password");
                                 }}
                                 disabled={

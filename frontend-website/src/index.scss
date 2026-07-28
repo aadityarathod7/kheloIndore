@@ -474,3 +474,315 @@ margin-top: -85PX !important;
   min-width: 100%;
   font-size: 14px;
 }
+
+// Override search card dropdown styles to remove background and border
+.ki-search-card {
+  .select.custom-select-list.p-dropdown.p-component.p-inputwrapper {
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    height: 38px !important;
+    line-height: normal !important;
+    padding: 0 !important;
+    min-width: auto !important;
+
+    .p-dropdown-label {
+      font-weight: 700 !important;
+      color: #1E293B !important;
+      font-size: 15px !important;
+      padding: 0 !important;
+      line-height: 38px !important;
+      font-family: 'Space Grotesk', sans-serif !important;
+    }
+
+    .p-dropdown-trigger {
+      padding: 0 !important;
+      width: 16px !important;
+      
+      svg {
+        right: 0 !important;
+        color: rgba(30, 41, 59, 0.5) !important;
+        position: relative !important;
+      }
+    }
+  }
+}
+
+// Custom badge styling to override Bootstrap and force color visibility
+.ki-badge {
+  font-family: 'Space Grotesk', sans-serif !important;
+  border-color: rgba(60, 171, 75, 0.2) !important;
+  background-color: #EAF5EB !important;
+  color: #3CAB4B !important;
+  font-weight: 600 !important;
+  font-size: 12px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  padding: 8px 16px !important;
+  border-radius: 50px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  border: 1px solid rgba(60, 171, 75, 0.2) !important;
+
+  i {
+    color: #3CAB4B !important;
+  }
+}
+
+// Popular Searches Styling
+.ki-popular-searches {
+  color: #606D76 !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+}
+
+.ki-search-tag {
+  background-color: #F3F7F3 !important;
+  color: #3CAB4B !important;
+  border: 1px solid rgba(60, 171, 75, 0.15) !important;
+  border-radius: 50px !important;
+  padding: 5px 12px !important;
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  display: inline-flex !important;
+  align-items: center !important;
+
+  &:hover {
+    background-color: #F3F7F3 !important;
+    border-color: #339B3E !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(67, 182, 73, 0.1) !important;
+    color: #339B3E !important;
+  }
+}
+
+// Light Theme User Profile Nav and Dropdown overrides
+.user-profile-nav {
+  .profile-trigger {
+    background: rgba(0, 0, 0, 0.04) !important;
+    border: 1px solid rgba(0, 0, 0, 0.06) !important;
+    
+    &:hover {
+      background: rgba(0, 0, 0, 0.08) !important;
+      border-color: rgba(22, 163, 74, 0.2) !important;
+    }
+  }
+
+  .user-name-text {
+    color: #1E293B !important; // Visible dark charcoal text
+  }
+
+  .fa-chevron-down {
+    color: rgba(30, 41, 59, 0.6) !important; // Visible dark chevron arrow
+  }
+
+  .lt-btn {
+    background: #FFFFFF !important; // Floating white panel
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08) !important;
+    position: absolute !important;
+    top: calc(100% + 12px) !important;
+    right: 0 !important;
+    opacity: 0;
+    visibility: hidden;
+    display: block !important;
+    width: 180px !important;
+    
+    &::before {
+      background: #FFFFFF !important;
+      border-left: 1px solid rgba(0, 0, 0, 0.08) !important;
+      border-top: 1px solid rgba(0, 0, 0, 0.08) !important;
+    }
+  }
+
+  // Handle visibility on hover/show
+  &.show .lt-btn, &:hover .lt-btn {
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+
+  ul.profile-dropdown {
+    background: #FFFFFF !important;
+    position: static !important;
+    display: block !important;
+    box-shadow: none !important;
+    padding: 4px 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+
+    li {
+      display: block !important;
+      margin: 0 !important;
+      padding: 0 !important;
+
+      a {
+        display: flex !important;
+        align-items: center !important;
+        padding: 10px 16px !important;
+        color: #4B5563 !important; // Dark text links
+        font-size: 14px !important;
+        font-weight: 500 !important;
+        text-decoration: none !important;
+        transition: all 0.2s ease !important;
+
+        i {
+          color: #16A34A !important; // Emerald green icon
+          margin-right: 8px !important;
+        }
+
+        &:hover {
+          background: rgba(22, 163, 74, 0.06) !important; // Light green hover bg
+          color: #16A34A !important; // Forest green hover text
+          padding-left: 20px !important;
+        }
+      }
+    }
+  }
+}
+
+// Override search card dropdown styles to remove background and border
+.ki-search-card {
+  .select.custom-select-list.p-dropdown.p-component.p-inputwrapper {
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    height: 38px !important;
+    line-height: normal !important;
+    padding: 0 !important;
+    min-width: auto !important;
+
+    .p-dropdown-label {
+      font-weight: 500 !important;
+      color: #17222D !important;
+      font-size: 14px !important;
+      padding: 0 !important;
+      line-height: 38px !important;
+      font-family: 'Inter', sans-serif !important;
+    }
+
+    .p-dropdown-trigger {
+      padding: 0 !important;
+      width: 16px !important;
+      
+      svg {
+        right: 0 !important;
+        color: rgba(30, 41, 59, 0.5) !important;
+        position: relative !important;
+      }
+    }
+  }
+}
+
+// Force hero section and banner container to stretch dynamically to content
+.hero-section {
+  min-height: auto !important;
+  padding-top: 50px !important;
+  padding-bottom: 60px !important;
+  
+  .home-banner {
+    min-height: auto !important;
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
+}
+
+// Hover bounce and shadow expansion for 3D logo
+.logo-navbar-3d {
+  &:hover {
+    transform: translateY(-2px) scale(1.05) !important;
+    filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.22)) drop-shadow(0 2px 6px rgba(67, 182, 73, 0.4)) !important;
+  }
+}
+
+// Global visual theme enforcement to align other pages with the hero layout
+body, html, .main-wrapper, .page-wrapper {
+  background: linear-gradient(135deg, #E5ECE3 0%, #DEE7DD 30%, #E8EFE8 70%, #D7E3DA 100%) !important;
+}
+
+.main-wrapper, .content, .inner-content, .page-wrapper, .section, section {
+  background: transparent !important;
+}
+
+.card, .listing-card, .venue-card, .coach-card, .blog-card, .trainer-card, .mini-card, .booking-card, .profile-card, .dashboard-card, .listing-item, .item-details, .login-wrapper, .login-body, .login-card, .sidebar-filter, .filter-widget, .listing-filter, .filter-card, .listing-header, .sort-by, .grid-list-view {
+  background-color: #FBFCFB !important;
+  border: 1px solid #E2E8E3 !important;
+  border-radius: 28px !important;
+  box-shadow: 0 15px 45px rgba(0, 0, 0, 0.06) !important;
+  color: #606D76 !important;
+  transition: all 0.3s ease !important;
+
+  h1, h2, h3, h4, h5, h6, .card-title, .title, a, p, span, div, li, strong, b, label, td, th, i {
+    color: #17222D !important;
+    
+    &.sub-title, &.desc, &.text-muted, &.subtext, &.description, &.time, &.location, .feather-map-pin, .feather-user {
+      color: #606D76 !important;
+    }
+  }
+
+  .badge, .ki-badge, .btn-primary, .btn-primary * {
+    color: #FFFFFF !important;
+  }
+}
+
+input, select, textarea, .form-control {
+  background-color: #FBFCFB !important;
+  border: 1px solid #E2E8E3 !important;
+  color: #17222D !important;
+  border-radius: 12px !important;
+  font-family: 'Inter', sans-serif !important;
+  &:focus {
+    border-color: #43B649 !important;
+    box-shadow: 0 0 0 3px rgba(67, 182, 73, 0.15) !important;
+  }
+}
+
+// PrimeReact & Dropdown theme overrides to eliminate indigo/blue colors
+.p-highlight, .p-highlight * {
+  background-color: #EAF5EB !important;
+  color: #3CAB4B !important;
+}
+
+.p-dropdown-panel {
+  background: #FBFCFB !important;
+  border: 1px solid #E2E8E3 !important;
+  border-radius: 16px !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08) !important;
+  
+  .p-dropdown-items {
+    background: #FBFCFB !important;
+    padding: 6px 0 !important;
+    
+    .p-dropdown-item {
+      color: #17222D !important;
+      font-family: 'Inter', sans-serif !important;
+      font-weight: 500 !important;
+      font-size: 14px !important;
+      padding: 10px 16px !important;
+      background: transparent !important;
+      
+      &.p-highlight {
+        background-color: #EAF5EB !important;
+        color: #3CAB4B !important;
+      }
+      
+      &:hover {
+        background-color: #F3F7F3 !important;
+        color: #3CAB4B !important;
+      }
+    }
+  }
+}
+
+.p-checkbox-box.p-highlight, .p-radiobutton-box.p-highlight {
+  background: #43B649 !important;
+  border-color: #43B649 !important;
+}
+
+.p-focus, .p-inputwrapper-focus {
+  border-color: #43B649 !important;
+  box-shadow: 0 0 0 3px rgba(67, 182, 73, 0.15) !important;
+}
