@@ -401,14 +401,14 @@ const Home = () => {
                   </div>
 
                   {/* Title */}
-                  <h1 className="display-heading mb-2" style={{ color: "#17222D", fontSize: "clamp(28px, 3.4vw, 48px)", fontWeight: "800", lineHeight: "1.15", fontFamily: "Space Grotesk, sans-serif", letterSpacing: "-0.02em" }}>
-                    Choose Your <span style={{ background: "linear-gradient(90deg, #3EAF4F, #63C56B)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", color: "#42AE52", display: "inline-block", paddingBottom: "6px" }}>Coaches</span> <br /> And Start Your <span style={{ background: "linear-gradient(90deg, #3EAF4F, #63C56B)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", color: "#42AE52", display: "inline-block", paddingBottom: "6px" }}>Training</span>
+                  <h1 className="display-heading mb-2" style={{ color: "#17222D", fontSize: "clamp(26px, 3.1vw, 42px)", fontWeight: "800", lineHeight: "1.15", fontFamily: "Space Grotesk, sans-serif", letterSpacing: "-0.02em" }}>
+                    Everything You Need for <span style={{ background: "linear-gradient(90deg, #3EAF4F, #63C56B)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", color: "#42AE52", display: "inline-block", paddingBottom: "6px" }}>Sports</span> <br />
+                    <span style={{ background: "linear-gradient(90deg, #3EAF4F, #63C56B)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", color: "#42AE52", display: "inline-block", paddingBottom: "6px" }}>All in One Place</span>
                   </h1>
 
                   {/* Description */}
-                  <p className="sub-info mb-3" style={{ color: "#606D76", fontSize: "15px", fontWeight: "400", lineHeight: "1.7", maxWidth: "620px" }}>
-                    Unleash your athletic potential with expert coaching, <br />
-                    state-of-the-art facilities, and personalized training programs.
+                  <p className="sub-info mb-3" style={{ color: "#0F172A", fontSize: "14.5px", fontWeight: "600", lineHeight: "1.7", maxWidth: "620px" }}>
+                    Book venues, connect with expert coaches, join training programs, and discover exciting sports activities near you.
                   </p>
 
                   {/* Features Row */}
@@ -418,8 +418,8 @@ const Home = () => {
                         <i className="feather-user" style={{ fontSize: "13px" }} />
                       </div>
                       <div>
-                        <div style={{ color: "#17222D", fontWeight: "600", fontSize: "13px" }}>Expert Coaches</div>
-                        <div style={{ color: "#606D76", fontSize: "11px", fontWeight: "400" }}>Certified &amp; Experienced</div>
+                        <div style={{ color: "#0F172A", fontWeight: "700", fontSize: "13px" }}>Expert Coaches</div>
+                        <div style={{ color: "#334155", fontSize: "11.5px", fontWeight: "600" }}>Certified &amp; Experienced</div>
                       </div>
                     </div>
                     
@@ -428,8 +428,8 @@ const Home = () => {
                         <i className="feather-grid" style={{ fontSize: "13px" }} />
                       </div>
                       <div>
-                        <div style={{ color: "#17222D", fontWeight: "600", fontSize: "13px" }}>Premium Facilities</div>
-                        <div style={{ color: "#606D76", fontSize: "11px", fontWeight: "400" }}>Best-in-class Venues</div>
+                        <div style={{ color: "#0F172A", fontWeight: "700", fontSize: "13px" }}>Premium Facilities</div>
+                        <div style={{ color: "#334155", fontSize: "11.5px", fontWeight: "600" }}>Best-in-class Venues</div>
                       </div>
                     </div>
 
@@ -438,8 +438,8 @@ const Home = () => {
                         <i className="feather-trending-up" style={{ fontSize: "13px" }} />
                       </div>
                       <div>
-                        <div style={{ color: "#17222D", fontWeight: "600", fontSize: "13px" }}>Personalized Training</div>
-                        <div style={{ color: "#606D76", fontSize: "11px", fontWeight: "400" }}>Tailored for You</div>
+                        <div style={{ color: "#0F172A", fontWeight: "700", fontSize: "13px" }}>Personalized Training</div>
+                        <div style={{ color: "#334155", fontSize: "11.5px", fontWeight: "600" }}>Tailored for You</div>
                       </div>
                     </div>
                   </div>
@@ -544,6 +544,11 @@ const Home = () => {
                       src="/logo.png"
                       alt="Banner"
                     />
+                    {/* Floating green leaves */}
+                    <div className="floating-leaf leaf-1"><i className="fas fa-leaf" /></div>
+                    <div className="floating-leaf leaf-2"><i className="fas fa-leaf" /></div>
+                    <div className="floating-leaf leaf-3"><i className="fas fa-leaf" /></div>
+                    <div className="floating-leaf leaf-4"><i className="fas fa-leaf" /></div>
                   </div>
                 </div>
               </div>
@@ -620,10 +625,10 @@ const Home = () => {
         </div>
         <div className="container">
           <div className="section-heading aos" data-aos="fade-up">
-            <h2>
-              How It <span>Works</span>
+            <h2 style={{ color: "#17222D", fontFamily: "Space Grotesk, sans-serif" }}>
+              How It <span style={{ color: "var(--ki-primary)" }}>Works</span>
             </h2>
-            <p className="sub-title">
+            <p className="sub-title" style={{ color: "#606D76" }}>
               Simplifying the booking process for coaches, venues, and athletes.
             </p>
           </div>
@@ -705,21 +710,21 @@ const Home = () => {
       </section>
 
       {/* Browse by Category */}
-      <section className="section category-section" style={{ background: "var(--ki-bg-main)", padding: "80px 0" }}>
+      <section className="section category-section" style={{ background: "transparent", padding: "80px 0" }}>
         <div className="container">
           <div className="section-heading text-center aos" data-aos="fade-up">
-            <h2 style={{ fontFamily: "Space Grotesk, sans-serif" }}>
+            <h2 style={{ fontFamily: "Space Grotesk, sans-serif", color: "#17222D" }}>
               Browse by <span style={{ color: "var(--ki-primary)" }}>Category</span>
             </h2>
-            <p className="sub-title text-white-50">
+            <p className="sub-title" style={{ color: "#606D76" }}>
               Select a sport category to view all registered venues, coaches, and academies.
             </p>
           </div>
           <div 
-            className="d-flex overflow-auto gap-3 pb-4 mt-5 flex-nowrap" 
+            className="d-flex overflow-auto gap-3 pt-3 pb-4 mt-4 flex-nowrap ki-category-scroll" 
             style={{ 
               scrollbarWidth: "thin", 
-              scrollbarColor: "var(--ki-primary) rgba(255,255,255,0.05)",
+              scrollbarColor: "var(--ki-primary) rgba(0,0,0,0.05)",
               WebkitOverflowScrolling: "touch"
             }}
           >
@@ -745,7 +750,7 @@ const Home = () => {
                   flex: "0 0 auto",
                   background: "var(--ki-bg-surface)",
                   borderRadius: "24px",
-                  border: "1px solid rgba(255, 255, 255, 0.08)",
+                  border: "1px solid #E2E8E3",
                   transition: "all 0.3s ease"
                 }}
                 onClick={() => navigate("/sports-venue", { state: { selectedSport: { name: cat.name } } })}
@@ -762,14 +767,19 @@ const Home = () => {
                 >
                   <i className={`${cat.icon}`} style={{ fontSize: "24px" }} />
                 </div>
-                <h4 className="text-white mb-1" style={{ fontSize: "18px", fontWeight: "600", fontFamily: "Space Grotesk, sans-serif" }}>{cat.name}</h4>
-                <p className="text-white-50 mb-3" style={{ fontSize: "12px" }}>
+                <h4 className="mb-1" style={{ fontSize: "18px", fontWeight: "700", fontFamily: "Space Grotesk, sans-serif", color: "#17222D" }}>{cat.name}</h4>
+                <p className="mb-3" style={{ fontSize: "12px", color: "#606D76" }}>
                   {cat.name === "Cricket" ? "12 Listings" : cat.name === "Football" ? "8 Listings" : cat.name === "Badminton" ? "6 Listings" : cat.name === "Tennis" ? "4 Listings" : "5 Listings"}
                 </p>
                 <button 
-                  className="btn btn-secondary btn-sm px-3 py-1 rounded-pill"
+                  className="btn rounded-pill"
                   style={{
-                    fontSize: "12px"
+                    fontSize: "12px",
+                    border: "1.5px solid #43B649",
+                    color: "#3CAB4B",
+                    background: "transparent",
+                    fontWeight: "600",
+                    padding: "4px 16px"
                   }}
                 >
                   Explore
@@ -787,41 +797,41 @@ const Home = () => {
       </div>
 
       {/* Rental Deals */}
-      <section className="section featured-venues" style={{ background: "var(--ki-bg-main)", padding: "80px 0" }}>
+      <section className="section featured-venues" style={{ background: "var(--ki-bg-main)", padding: "80px 0 50px 0" }}>
         <div className="container">
           <div className="section-heading text-center aos" data-aos="fade-up">
-            <h2 style={{ fontFamily: "Space Grotesk, sans-serif" }}>
+            <h2 style={{ fontFamily: "Space Grotesk, sans-serif", color: "#17222D" }}>
               Top Rated <span style={{ color: "var(--ki-primary)" }}>Providers</span>
             </h2>
-            <p className="sub-title text-white-50">
+            <p className="sub-title" style={{ color: "#606D76" }}>
               Discover top rated venues, expert coaches, and personal trainers in Indore.
             </p>
           </div>
 
           {/* Unified Category Tabs */}
           <div className="d-flex justify-content-center mb-5 aos" data-aos="fade-up">
-            <div className="btn-group p-1" style={{ background: "rgba(255, 255, 255, 0.05)", border: "1px solid rgba(255, 255, 255, 0.08)", borderRadius: "30px" }}>
+            <div className="btn-group p-1" style={{ background: "#F3F7F3", border: "1px solid #D6E4D8", borderRadius: "30px" }}>
               <button 
                 type="button"
                 onClick={() => setActiveTopRatedTab("venues")} 
-                className={`btn btn-sm px-4 py-2 rounded-pill font-weight-bold transition-all ${activeTopRatedTab === "venues" ? "btn-primary text-white" : "text-white"}`}
-                style={{ fontSize: "14px", fontWeight: "700" }}
+                className={`btn btn-sm px-4 py-2 rounded-pill font-weight-bold transition-all ${activeTopRatedTab === "venues" ? "btn-primary text-white" : ""}`}
+                style={{ fontSize: "14px", fontWeight: "700", color: activeTopRatedTab === "venues" ? "#FFFFFF" : "#17222D", background: activeTopRatedTab === "venues" ? "linear-gradient(90deg, #49BC4F, #38A941)" : "transparent" }}
               >
                 Venues
               </button>
               <button 
                 type="button"
                 onClick={() => setActiveTopRatedTab("coaches")} 
-                className={`btn btn-sm px-4 py-2 rounded-pill font-weight-bold transition-all ${activeTopRatedTab === "coaches" ? "btn-primary text-white" : "text-white"}`}
-                style={{ fontSize: "14px", fontWeight: "700" }}
+                className={`btn btn-sm px-4 py-2 rounded-pill font-weight-bold transition-all ${activeTopRatedTab === "coaches" ? "btn-primary text-white" : ""}`}
+                style={{ fontSize: "14px", fontWeight: "700", color: activeTopRatedTab === "coaches" ? "#FFFFFF" : "#17222D", background: activeTopRatedTab === "coaches" ? "linear-gradient(90deg, #49BC4F, #38A941)" : "transparent" }}
               >
                 Coaches
               </button>
               <button 
                 type="button"
                 onClick={() => setActiveTopRatedTab("trainers")} 
-                className={`btn btn-sm px-4 py-2 rounded-pill font-weight-bold transition-all ${activeTopRatedTab === "trainers" ? "btn-primary text-white" : "text-white"}`}
-                style={{ fontSize: "14px", fontWeight: "700" }}
+                className={`btn btn-sm px-4 py-2 rounded-pill font-weight-bold transition-all ${activeTopRatedTab === "trainers" ? "btn-primary text-white" : ""}`}
+                style={{ fontSize: "14px", fontWeight: "700", color: activeTopRatedTab === "trainers" ? "#FFFFFF" : "#17222D", background: activeTopRatedTab === "trainers" ? "linear-gradient(90deg, #49BC4F, #38A941)" : "transparent" }}
               >
                 Personal Trainers
               </button>
@@ -835,7 +845,7 @@ const Home = () => {
                   <Slider {...settings}>
                     {venues.map((venue, index) => (
                       <div className="featured-venues-item" key={index}>
-                        <div className="listing-item home-venue border-white-10" style={{ background: "var(--ki-bg-surface)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "24px", overflow: "hidden", margin: "10px", boxShadow: "var(--ki-shadow-card)" }}>
+                        <div className="listing-item home-venue border-white-10" style={{ background: "var(--ki-bg-surface)", border: "1px solid #E2E8E3", borderRadius: "24px", overflow: "hidden", margin: "10px", boxShadow: "var(--ki-shadow-card)" }}>
                           <div className="listing-img" style={{ height: "200px" }}>
                             <div
                               className="background-image"
@@ -866,11 +876,11 @@ const Home = () => {
                           </div>
                           <div className="listing-content home-venue news-content p-3">
                             <h3 className="listing-title" style={{ fontSize: "18px", fontWeight: "600", marginBottom: "8px", fontFamily: "Space Grotesk, sans-serif" }}>
-                              <Link to={`/sports-venue/${venue.vendor_type.replace(/\s+/g, "-").toLowerCase()}/${venue.name.replace(/\s+/g, "-").toLowerCase()}/${venue._id}`} className="text-white text-truncate d-block">
+                              <Link to={`/sports-venue/${venue.vendor_type.replace(/\s+/g, "-").toLowerCase()}/${venue.name.replace(/\s+/g, "-").toLowerCase()}/${venue._id}`} className="text-truncate d-block" style={{ color: "#17222D" }}>
                                 {venue.name}
                               </Link>
                             </h3>
-                            <p className="text-white-50" style={{ fontSize: "13px" }}>
+                            <p style={{ fontSize: "13px", color: "#606D76" }}>
                               <i className="feather-map-pin me-2" style={{ color: "var(--ki-primary)" }} />
                               {venue?.near_by_location}
                             </p>
@@ -885,7 +895,7 @@ const Home = () => {
                   <Slider {...options}>
                     {coaches.map((coach, index) => (
                       <div className="featured-venues-item" key={index}>
-                        <div className="listing-item mb-0" style={{ background: "var(--ki-bg-surface)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "24px", overflow: "hidden", margin: "10px", boxShadow: "var(--ki-shadow-card)" }}>
+                        <div className="listing-item mb-0" style={{ background: "var(--ki-bg-surface)", border: "1px solid #E2E8E3", borderRadius: "24px", overflow: "hidden", margin: "10px", boxShadow: "var(--ki-shadow-card)" }}>
                           <div className="listing-img" style={{ height: "200px" }}>
                             <Link to={`/coaches/${coach?.category?.replace(/\s+/g, "-").toLowerCase()}/${coach?.first_name?.replace(/\s+/g, "-").toLowerCase()}/${coach?._id}`}>
                               <ImageWithBasePath
@@ -905,11 +915,11 @@ const Home = () => {
                           </div>
                           <div className="listing-content list-coche-content p-3">
                             <h3 style={{ fontSize: "18px", fontWeight: "600", marginBottom: "8px", fontFamily: "Space Grotesk, sans-serif" }}>
-                              <Link to={`/coaches/${coach?.category?.replace(/\s+/g, "-").toLowerCase()}/${coach?.first_name?.replace(/\s+/g, "-").toLowerCase()}/${coach?._id}`} className="text-white text-truncate d-block">
+                              <Link to={`/coaches/${coach?.category?.replace(/\s+/g, "-").toLowerCase()}/${coach?.first_name?.replace(/\s+/g, "-").toLowerCase()}/${coach?._id}`} className="text-truncate d-block" style={{ color: "#17222D" }}>
                                 {coach?.first_name} {coach?.last_name}
                               </Link>
                             </h3>
-                            <p className="text-white-50" style={{ fontSize: "13px" }}>
+                            <p style={{ fontSize: "13px", color: "#606D76" }}>
                               <i className="feather-map-pin me-2" style={{ color: "var(--ki-primary)" }} />
                               {coach?.near_by_location || "Indore"}
                             </p>
@@ -924,7 +934,7 @@ const Home = () => {
                   <Slider {...options}>
                     {trainer.map((train, index) => (
                       <div className="featured-venues-item" key={index}>
-                        <div className="listing-item mb-0" style={{ background: "var(--ki-bg-surface)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "24px", overflow: "hidden", margin: "10px", boxShadow: "var(--ki-shadow-card)" }}>
+                        <div className="listing-item mb-0" style={{ background: "var(--ki-bg-surface)", border: "1px solid #E2E8E3", borderRadius: "24px", overflow: "hidden", margin: "10px", boxShadow: "var(--ki-shadow-card)" }}>
                           <div className="listing-img" style={{ height: "200px" }}>
                             <Link to={`/personal-training/trainer/${train.first_name.replace(/\s+/g, "-").toLowerCase()}/${train._id}`}>
                               <ImageWithBasePath
@@ -944,11 +954,11 @@ const Home = () => {
                           </div>
                           <div className="listing-content p-3">
                             <h3 style={{ fontSize: "18px", fontWeight: "600", marginBottom: "8px", fontFamily: "Space Grotesk, sans-serif" }}>
-                              <Link to={`/personal-training/trainer/${train.first_name.replace(/\s+/g, "-").toLowerCase()}/${train._id}`} className="text-white text-truncate d-block">
+                              <Link to={`/personal-training/trainer/${train.first_name.replace(/\s+/g, "-").toLowerCase()}/${train._id}`} className="text-truncate d-block" style={{ color: "#17222D" }}>
                                 {train.first_name} {train.last_name}
                               </Link>
                             </h3>
-                            <p className="text-white-50" style={{ fontSize: "13px" }}>
+                            <p style={{ fontSize: "13px", color: "#606D76" }}>
                               <i className="feather-map-pin me-2" style={{ color: "var(--ki-primary)" }} />
                               {train?.near_by_location || "Indore"}
                             </p>
@@ -963,7 +973,7 @@ const Home = () => {
           </div>
 
           {/* Unified View All Button */}
-          <div className="view-all text-center mt-5 aos" data-aos="fade-up">
+          <div className="view-all text-center mt-5 mb-5 aos" data-aos="fade-up">
             <Link
               to={activeTopRatedTab === "venues" ? routes.blogListSidebarLeft : activeTopRatedTab === "coaches" ? routes.coachesGrid : routes.blogList}
               className="btn btn-primary d-inline-flex align-items-center px-4 py-2"
@@ -1105,8 +1115,8 @@ const Home = () => {
         </div>
         <div className="container">
           <div className="convenient-content aos" data-aos="fade-up">
-            <h2>Convenient &amp; Flexible Scheduling</h2>
-            <p>
+            <h2 style={{ color: "#17222D", fontFamily: "Space Grotesk, sans-serif" }}>Convenient &amp; Flexible Scheduling</h2>
+            <p style={{ color: "#606D76" }}>
               Find and book coaches conveniently with our online system that
               matches your schedule and location.
             </p>
@@ -1399,123 +1409,82 @@ const Home = () => {
           </div>
         </div>
         <div className="container">
-          <div className="row">
-            <div className="col-md-6">
-              <div className="private-venue aos" data-aos="fade-up">
-                <div className="convenient-btns become-owner " role="tablist">
-                  <Link
-                    to={routes.register}
-                    className="btn btn-secondary become-venue d-inline-flex align-items-center nav-link active"
-                    id="nav-Recent-tab"
-                    data-bs-toggle="tab"
-                    data-bs-target="#nav-Recent"
-                    role="tab"
-                    aria-controls="nav-Recent"
-                    aria-selected="true"
-                  >
-                    Become A Venue Member
-                  </Link>
-                  <Link
-                    to={routes.register}
-                    className="btn btn-primary become-coche d-inline-flex align-items-center nav-link"
-                    id="nav-RecentCoaching-tab"
-                    data-bs-toggle="tab"
-                    data-bs-target="#nav-RecentCoaching"
-                    role="tab"
-                    aria-controls="nav-RecentCoaching"
-                    aria-selected="false"
-                  >
-                    Become A Coach
-                  </Link>
-                </div>
-                <div className="tab-content">
-                  <div
-                    className="tab-pane fade show active"
-                    id="nav-Recent"
-                    role="tabpanel"
-                    aria-labelledby="nav-Recent-tab"
-                    tabIndex={0}
-                  >
-                    <h2>
-                      Earn Money Renting Out Your Private Venues On KheloIndore
-                    </h2>
-                    <p>
-                      Join our network of private facility owners, offering
-                      rentals to local players, coaches, and teams.
-                    </p>
-                    <div className="earn-list">
-                      <ul>
-                        <li>
-                          <i className="fa-solid fa-circle-check " />
-                          ₹1,000,000 liability insurance{" "}
-                        </li>
-                        <li>
-                          <i className="fa-solid fa-circle-check " />
-                          Build of Trust
-                        </li>
-                        <li>
-                          <i className="fa-solid fa-circle-check " />
-                          Protected Environment for Your Activities{" "}
-                        </li>
-                      </ul>
-                    </div>
-                    <div className="convenient-btns">
-                      <Link
-                        to={routes.register}
-                        className="btn btn-secondary d-inline-flex align-items-center"
-                      >
-                        <span className="lh-1">
-                          <i className="feather-user-plus me-2" />
-                        </span>
-                        Join With Us
-                      </Link>
-                    </div>
+          <div className="row g-4 justify-content-center">
+            {/* Venue Partner Card */}
+            <div className="col-lg-5 col-md-6 d-flex">
+              <div className="private-venue w-100 d-flex flex-column justify-content-between p-4 aos" data-aos="fade-up" style={{ borderRadius: "28px" }}>
+                <div>
+                  <div className="icon-badge mb-3 d-flex align-items-center justify-content-center" style={{ width: "50px", height: "50px", borderRadius: "12px", background: "rgba(67, 182, 73, 0.1)", color: "#3CAB4B" }}>
+                    <i className="fa-solid fa-building-circle-check" style={{ fontSize: "22px" }} />
                   </div>
+                  <h3 style={{ fontSize: "22px", color: "#17222D", fontFamily: "Space Grotesk, sans-serif", fontWeight: "700", marginBottom: "16px" }}>
+                    Become a Venue Member
+                  </h3>
+                  <p style={{ color: "#606D76", fontSize: "14px", lineHeight: "1.6", marginBottom: "20px" }}>
+                    Earn money renting out your private fields, turf, pool, or gym on {"Indore's"} largest local sports search platform.
+                  </p>
+                  <ul className="list-unstyled mb-4" style={{ paddingLeft: 0 }}>
+                    <li className="d-flex align-items-center mb-2" style={{ color: "#606D76", fontSize: "14px" }}>
+                      <i className="fa-solid fa-circle-check me-2" style={{ color: "#43B649" }} />
+                      ₹1,000,000 liability insurance
+                    </li>
+                    <li className="d-flex align-items-center mb-2" style={{ color: "#606D76", fontSize: "14px" }}>
+                      <i className="fa-solid fa-circle-check me-2" style={{ color: "#43B649" }} />
+                      Build of Trust with validation
+                    </li>
+                    <li className="d-flex align-items-center mb-2" style={{ color: "#606D76", fontSize: "14px" }}>
+                      <i className="fa-solid fa-circle-check me-2" style={{ color: "#43B649" }} />
+                      Protected booking environment
+                    </li>
+                  </ul>
                 </div>
-                <div className="tab-content">
-                  <div
-                    className="tab-pane fade show "
-                    id="nav-RecentCoaching"
-                    role="tabpanel"
-                    aria-labelledby="nav-Recent-tab"
-                    tabIndex={0}
-                  >
-                    <h2>
-                      Earn Money Renting Out Your Private Coaches On KheloIndore
-                    </h2>
-                    <p>
-                      Join our network of private facility owners, offering
-                      rentals to local players, coaches, and teams.
-                    </p>
-                    <div className="earn-list">
-                      <ul>
-                        <li>
-                          <i className="fa-solid fa-circle-check " />
-                          ₹1,000,000 liability insurance{" "}
-                        </li>
-                        <li>
-                          <i className="fa-solid fa-circle-check " />
-                          Build of Trust
-                        </li>
-                        <li>
-                          <i className="fa-solid fa-circle-check " />
-                          Protected Environment for Your Activities{" "}
-                        </li>
-                      </ul>
-                    </div>
-                    <div className="convenient-btns">
-                      <Link
-                        to={routes.register}
-                        className="btn btn-secondary d-inline-flex align-items-center"
-                      >
-                        <span className="lh-1">
-                          <i className="feather-user-plus me-2" />
-                        </span>
-                        Join With Us
-                      </Link>
-                    </div>
+                <Link
+                  to={routes.register}
+                  className="btn btn-primary w-100 d-flex align-items-center justify-content-center py-2"
+                  style={{ background: "linear-gradient(90deg, #49BC4F, #38A941)", border: "none", borderRadius: "12px", fontWeight: "700" }}
+                >
+                  Join With Us
+                  <i className="feather-arrow-right-circle ms-2" />
+                </Link>
+              </div>
+            </div>
+
+            {/* Coach Partner Card */}
+            <div className="col-lg-5 col-md-6 d-flex">
+              <div className="private-venue w-100 d-flex flex-column justify-content-between p-4 aos" data-aos="fade-up" data-aos-delay="100" style={{ borderRadius: "28px" }}>
+                <div>
+                  <div className="icon-badge mb-3 d-flex align-items-center justify-content-center" style={{ width: "50px", height: "50px", borderRadius: "12px", background: "rgba(67, 182, 73, 0.1)", color: "#3CAB4B" }}>
+                    <i className="fa-solid fa-user-graduate" style={{ fontSize: "22px" }} />
                   </div>
+                  <h3 style={{ fontSize: "22px", color: "#17222D", fontFamily: "Space Grotesk, sans-serif", fontWeight: "700", marginBottom: "16px" }}>
+                    Become a Certified Coach
+                  </h3>
+                  <p style={{ color: "#606D76", fontSize: "14px", lineHeight: "1.6", marginBottom: "20px" }}>
+                    Grow your training business, reach local players, schedule sessions, and manage bookings securely.
+                  </p>
+                  <ul className="list-unstyled mb-4" style={{ paddingLeft: 0 }}>
+                    <li className="d-flex align-items-center mb-2" style={{ color: "#606D76", fontSize: "14px" }}>
+                      <i className="fa-solid fa-circle-check me-2" style={{ color: "#43B649" }} />
+                      Connect with students in Indore
+                    </li>
+                    <li className="d-flex align-items-center mb-2" style={{ color: "#606D76", fontSize: "14px" }}>
+                      <i className="fa-solid fa-circle-check me-2" style={{ color: "#43B649" }} />
+                      Flexible calendar scheduling
+                    </li>
+                    <li className="d-flex align-items-center mb-2" style={{ color: "#606D76", fontSize: "14px" }}>
+                      <i className="fa-solid fa-circle-check me-2" style={{ color: "#43B649" }} />
+                      Fast, secured online payouts
+                    </li>
+                  </ul>
                 </div>
+                <Link
+                  to={routes.register}
+                  className="btn btn-primary w-100 d-flex align-items-center justify-content-center py-2"
+                  style={{ background: "linear-gradient(90deg, #49BC4F, #38A941)", border: "none", borderRadius: "12px", fontWeight: "700" }}
+                >
+                  Join With Us
+                  <i className="feather-arrow-right-circle ms-2" />
+                </Link>
               </div>
             </div>
           </div>
@@ -1568,7 +1537,7 @@ const Home = () => {
                       </Link>
                       <div className="testimonial-content">
                         <h5>
-                          <Link to="#">Ariyan Rusov</Link>
+                          <Link to="#">Aarav Mehta</Link>
                         </h5>
                       </div>
                     </div>
@@ -1600,7 +1569,7 @@ const Home = () => {
                       </Link>
                       <div className="testimonial-content">
                         <h5>
-                          <Link to="#">Darren Valdez</Link>
+                          <Link to="#">Rohan Sharma</Link>
                         </h5>
                       </div>
                     </div>
@@ -1632,7 +1601,7 @@ const Home = () => {
                       </Link>
                       <div className="testimonial-content">
                         <h5>
-                          <Link to="#">Elinor Dunn</Link>
+                          <Link to="#">Neha Singhal</Link>
                         </h5>
                       </div>
                     </div>
@@ -1664,7 +1633,7 @@ const Home = () => {
                       </Link>
                       <div className="testimonial-content">
                         <h5>
-                          <Link to="#">Darren Valdez</Link>
+                          <Link to="#">Karan Verma</Link>
                         </h5>
                       </div>
                     </div>

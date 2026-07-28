@@ -450,9 +450,9 @@ const Header = () => {
                     <li
                       key={mainIndex}
                       className={
-                        location.pathname.includes(mainMenus.routes)
-                          ? "active"
-                          : ""
+                        mainMenus.routes === "/"
+                          ? (location.pathname === "/" ? "active" : "")
+                          : (location.pathname.startsWith(mainMenus.routes) ? "active" : "")
                       }
                     >
                       <Link to={mainMenus.routes}>{mainMenus.tittle}</Link>

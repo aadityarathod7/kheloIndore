@@ -311,7 +311,7 @@ const BlogListSidebarLeft = (_props: { id: any; name: any }) => {
                                 />
                               </Link>
                               <div className="fav-item-venues news-sports" style={{ top: "12px", left: "12px" }}>
-                                <span className="tag tag-blue" style={{ background: "#00E676", color: "#0d1b2a", fontWeight: "700" }}>
+                                <span className="tag tag-blue" style={{ background: "linear-gradient(90deg, #49BC4F, #38A941)", color: "#FFFFFF", fontWeight: "700", boxShadow: "0 2px 8px rgba(60,171,75,0.2)" }}>
                                   {venue?.vendor_type.replace("_", " ")}
                                 </span>
                               </div>
@@ -320,28 +320,28 @@ const BlogListSidebarLeft = (_props: { id: any; name: any }) => {
                               <div className="d-flex align-items-center justify-content-between mb-2">
                                 <div className="rating-wrap d-flex align-items-center gap-1">
                                   <i className="fas fa-star text-warning" style={{ fontSize: "12px" }} />
-                                  <span className="text-white-50" style={{ fontSize: "12px" }}>4.8 (18 reviews)</span>
+                                  <span style={{ fontSize: "12px", color: "#606D76" }}>4.8 (18 reviews)</span>
                                 </div>
-                                <span className="text-white-50" style={{ fontSize: "12px" }}>
-                                  <i className="fas fa-arrows-alt me-1" style={{ color: "#00E676" }} />
+                                <span style={{ fontSize: "12px", color: "#606D76" }}>
+                                  <i className="fas fa-arrows-alt me-1" style={{ color: "#3CAB4B" }} />
                                   Standard Size
                                 </span>
                               </div>
                               <h3 className="listing-title mb-2" style={{ fontSize: "18px", fontWeight: "600" }}>
                                 <Link
                                   to={`/sports-venue/${venue.vendor_type.replace(/\s+/g, "-").toLowerCase()}/${venue.name.replace(/\s+/g, "-").toLowerCase()}/${venue._id}`}
-                                  className="text-white text-truncate d-block"
+                                  className="text-truncate d-block" style={{ color: "#17222D" }}
                                 >
                                   {venue.name}
                                 </Link>
                               </h3>
-                              <p className="text-white-50 mb-3" style={{ fontSize: "13px" }}>
-                                <i className="feather-map-pin me-2 text-primary" />
+                              <p className="mb-3" style={{ fontSize: "13px", color: "#606D76" }}>
+                                <i className="feather-map-pin me-2" style={{ color: "#3CAB4B" }} />
                                 {venue.near_by_location}
                               </p>
-                              <div className="d-flex align-items-center justify-content-between pt-2 border-top border-white-10">
-                                <span className="text-white" style={{ fontSize: "14px", fontWeight: "600" }}>
-                                  ₹{venue.price_per_hr || "750"} <span className="text-white-50" style={{ fontSize: "11px", fontWeight: "normal" }}>/ hr</span>
+                              <div className="d-flex align-items-center justify-content-between pt-2" style={{ borderTop: "1px solid #E2E8E3" }}>
+                                <span style={{ fontSize: "14px", fontWeight: "600", color: "#17222D" }}>
+                                  ₹{venue.price_per_hr || "750"} <span style={{ fontSize: "11px", fontWeight: "normal", color: "#606D76" }}>/ hr</span>
                                 </span>
                                 <Link 
                                   to={`/sports-venue/${venue.vendor_type.replace(/\s+/g, "-").toLowerCase()}/${venue.name.replace(/\s+/g, "-").toLowerCase()}/${venue._id}`}
@@ -382,21 +382,21 @@ const BlogListSidebarLeft = (_props: { id: any; name: any }) => {
                   <div className="stickybar d-flex flex-column gap-4">
                     {/* Advanced Date & Hour Filter */}
                     <div className="ki-card mb-0">
-                      <h4 className="text-white mb-3" style={{ fontSize: "18px", borderBottom: "none", paddingBottom: 0 }}>Advanced Booking Filter</h4>
+                      <h4 className="mb-3" style={{ fontSize: "18px", borderBottom: "none", paddingBottom: 0, color: "#17222D" }}>Advanced Booking Filter</h4>
                       <div className="row g-2 mb-3">
                         <div className="col-6">
-                          <label className="text-white-50 mb-1" style={{ fontSize: "11px" }}>From Date</label>
-                          <input type="date" className="form-control form-control-sm bg-dark text-white border-white-10" value={fromDate} onChange={(e) => setFromDate(e.target.value)} style={{ padding: "6px 8px", fontSize: "12px" }} />
+                          <label className="mb-1" style={{ fontSize: "11px", color: "#606D76" }}>From Date</label>
+                          <input type="date" className="form-control form-control-sm" value={fromDate} onChange={(e) => setFromDate(e.target.value)} style={{ padding: "6px 8px", fontSize: "12px" }} />
                         </div>
                         <div className="col-6">
-                          <label className="text-white-50 mb-1" style={{ fontSize: "11px" }}>To Date</label>
-                          <input type="date" className="form-control form-control-sm bg-dark text-white border-white-10" value={toDate} onChange={(e) => setToDate(e.target.value)} style={{ padding: "6px 8px", fontSize: "12px" }} />
+                          <label className="mb-1" style={{ fontSize: "11px", color: "#606D76" }}>To Date</label>
+                          <input type="date" className="form-control form-control-sm" value={toDate} onChange={(e) => setToDate(e.target.value)} style={{ padding: "6px 8px", fontSize: "12px" }} />
                         </div>
                       </div>
                       <div className="row g-2">
                         <div className="col-6">
-                          <label className="text-white-50 mb-1" style={{ fontSize: "11px" }}>From Hour</label>
-                          <select className="form-select form-select-sm bg-dark text-white border-white-10" value={fromTime} onChange={(e) => setFromTime(e.target.value)} style={{ padding: "6px 8px", fontSize: "12px" }}>
+                          <label className="mb-1" style={{ fontSize: "11px", color: "#606D76" }}>From Hour</label>
+                          <select className="form-select form-select-sm" value={fromTime} onChange={(e) => setFromTime(e.target.value)} style={{ padding: "6px 8px", fontSize: "12px" }}>
                             <option value="">Start</option>
                             <option value="06:00">6:00 AM</option>
                             <option value="08:00">8:00 AM</option>
@@ -409,8 +409,8 @@ const BlogListSidebarLeft = (_props: { id: any; name: any }) => {
                           </select>
                         </div>
                         <div className="col-6">
-                          <label className="text-white-50 mb-1" style={{ fontSize: "11px" }}>To Hour</label>
-                          <select className="form-select form-select-sm bg-dark text-white border-white-10" value={toTime} onChange={(e) => setToTime(e.target.value)} style={{ padding: "6px 8px", fontSize: "12px" }}>
+                          <label className="mb-1" style={{ fontSize: "11px", color: "#606D76" }}>To Hour</label>
+                          <select className="form-select form-select-sm" value={toTime} onChange={(e) => setToTime(e.target.value)} style={{ padding: "6px 8px", fontSize: "12px" }}>
                             <option value="">End</option>
                             <option value="08:00">8:00 AM</option>
                             <option value="10:00">10:00 AM</option>
@@ -427,8 +427,8 @@ const BlogListSidebarLeft = (_props: { id: any; name: any }) => {
 
                     {/* Sorting Card */}
                     <div className="ki-card mb-0">
-                      <h4 className="text-white mb-3" style={{ fontSize: "18px", borderBottom: "none", paddingBottom: 0 }}>Sort Results</h4>
-                      <select className="form-select form-select-sm bg-dark text-white border-white-10" value={sortBy} onChange={(e) => setSortBy(e.target.value)} style={{ padding: "8px 12px", fontSize: "13px" }}>
+                      <h4 className="mb-3" style={{ fontSize: "18px", borderBottom: "none", paddingBottom: 0, color: "#17222D" }}>Sort Results</h4>
+                      <select className="form-select form-select-sm" value={sortBy} onChange={(e) => setSortBy(e.target.value)} style={{ padding: "8px 12px", fontSize: "13px" }}>
                         <option value="">Default sorting</option>
                         <option value="price-low-high">Price: Low to High</option>
                         <option value="price-high-low">Price: High to Low</option>
@@ -438,11 +438,11 @@ const BlogListSidebarLeft = (_props: { id: any; name: any }) => {
 
                     {/* Pitch Specifications */}
                     <div className="ki-card mb-0">
-                      <h4 className="text-white mb-3" style={{ fontSize: "18px", borderBottom: "none", paddingBottom: 0 }}>Pitch Features</h4>
+                      <h4 className="mb-3" style={{ fontSize: "18px", borderBottom: "none", paddingBottom: 0, color: "#17222D" }}>Pitch Features</h4>
                       
                       <div className="mb-3">
-                        <label className="text-white-50 mb-1" style={{ fontSize: "12px", fontWeight: "600" }}>Grass Type</label>
-                        <select className="form-select form-select-sm bg-dark text-white border-white-10" value={grassType} onChange={(e) => setGrassType(e.target.value)} style={{ padding: "8px 12px", fontSize: "13px" }}>
+                        <label className="mb-1" style={{ fontSize: "12px", fontWeight: "600", color: "#606D76" }}>Grass Type</label>
+                        <select className="form-select form-select-sm" value={grassType} onChange={(e) => setGrassType(e.target.value)} style={{ padding: "8px 12px", fontSize: "13px" }}>
                           <option value="">Any Grass</option>
                           <option value="natural">Natural Grass</option>
                           <option value="artificial">Artificial Grass</option>
@@ -450,8 +450,8 @@ const BlogListSidebarLeft = (_props: { id: any; name: any }) => {
                       </div>
 
                       <div className="mb-3">
-                        <label className="text-white-50 mb-1" style={{ fontSize: "12px", fontWeight: "600" }}>Layout</label>
-                        <select className="form-select form-select-sm bg-dark text-white border-white-10" value={layoutType} onChange={(e) => setLayoutType(e.target.value)} style={{ padding: "8px 12px", fontSize: "13px" }}>
+                        <label className="mb-1" style={{ fontSize: "12px", fontWeight: "600", color: "#606D76" }}>Layout</label>
+                        <select className="form-select form-select-sm" value={layoutType} onChange={(e) => setLayoutType(e.target.value)} style={{ padding: "8px 12px", fontSize: "13px" }}>
                           <option value="">Any Layout</option>
                           <option value="covered">Covered / Indoor</option>
                           <option value="open">Open Air / Outdoor</option>
@@ -459,8 +459,8 @@ const BlogListSidebarLeft = (_props: { id: any; name: any }) => {
                       </div>
 
                       <div>
-                        <label className="text-white-50 mb-1" style={{ fontSize: "12px", fontWeight: "600" }}>Location Level</label>
-                        <select className="form-select form-select-sm bg-dark text-white border-white-10" value={floorType} onChange={(e) => setFloorType(e.target.value)} style={{ padding: "8px 12px", fontSize: "13px" }}>
+                        <label className="mb-1" style={{ fontSize: "12px", fontWeight: "600", color: "#606D76" }}>Location Level</label>
+                        <select className="form-select form-select-sm" value={floorType} onChange={(e) => setFloorType(e.target.value)} style={{ padding: "8px 12px", fontSize: "13px" }}>
                           <option value="">Any Level</option>
                           <option value="ground">Ground Floor</option>
                           <option value="terrace">Terrace / Rooftop</option>
@@ -470,7 +470,7 @@ const BlogListSidebarLeft = (_props: { id: any; name: any }) => {
 
                     {/* Amenities Checklist */}
                     <div className="ki-card mb-0">
-                      <h4 className="text-white mb-3" style={{ fontSize: "18px", borderBottom: "none", paddingBottom: 0 }}>Amenities</h4>
+                      <h4 className="mb-3" style={{ fontSize: "18px", borderBottom: "none", paddingBottom: 0, color: "#17222D" }}>Amenities</h4>
                       <div className="d-flex flex-column gap-2">
                         {[
                           { label: "Floodlights", key: "lighting" },
@@ -484,13 +484,13 @@ const BlogListSidebarLeft = (_props: { id: any; name: any }) => {
                           <div className="form-check" key={amenity.key}>
                             <input 
                               type="checkbox" 
-                              className="form-check-input bg-dark border-white-20" 
+                              className="form-check-input" 
                               id={`amenity-${amenity.key}`}
                               checked={selectedAmenities.includes(amenity.key)}
                               onChange={() => handleAmenityChange(amenity.key)}
                               style={{ cursor: "pointer" }}
                             />
-                            <label className="form-check-label text-white-50" htmlFor={`amenity-${amenity.key}`} style={{ fontSize: "13px", cursor: "pointer" }}>
+                            <label className="form-check-label" htmlFor={`amenity-${amenity.key}`} style={{ fontSize: "13px", cursor: "pointer", color: "#606D76" }}>
                               {amenity.label}
                             </label>
                           </div>

@@ -941,17 +941,17 @@ header {
         top: calc(100% + 12px);
         right: 0;
         width: 180px;
-        background: #0D1B2A;
-        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: #FFFFFF;
+        border: 1px solid #E2E8E3;
         border-radius: 12px;
-        box-shadow: 0 8px 32px rgba(13, 27, 42, 0.45);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
         padding: 8px 0;
         opacity: 0;
         visibility: hidden;
         transform: translateY(10px);
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         z-index: 1000;
-        backdrop-filter: blur(12px);
+        backdrop-filter: none;
 
         &::before {
             content: '';
@@ -960,9 +960,9 @@ header {
             right: 20px;
             width: 12px;
             height: 12px;
-            background: #0D1B2A;
-            border-left: 1px solid rgba(255, 255, 255, 0.08);
-            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            background: #FFFFFF;
+            border-left: 1px solid #E2E8E3;
+            border-top: 1px solid #E2E8E3;
             transform: rotate(45deg);
         }
 

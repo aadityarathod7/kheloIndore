@@ -57,10 +57,10 @@
 			    position: fixed;
 			    width: 50%;
 			    &.register {
-					background: radial-gradient(circle at 50% 50%, rgba(0, 230, 118, 0.1) 0%, transparent 70%), #0D1B2A !important;
+					background: radial-gradient(circle at 50% 50%, rgba(60, 171, 75, 0.08) 0%, transparent 70%), #EDF3EE !important;
 			    }
 			    &.login {
-					background: radial-gradient(circle at 50% 50%, rgba(255, 107, 44, 0.08) 0%, transparent 70%), #0D1B2A !important;
+					background: radial-gradient(circle at 50% 50%, rgba(60, 171, 75, 0.06) 0%, transparent 70%), #EDF3EE !important;
 			    }
 				@include respond-below(custom991) {
 					display: none;

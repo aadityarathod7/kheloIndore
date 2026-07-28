@@ -74,8 +74,10 @@ ul {
 	color: $__secondarycolor;
 }
 .tag-blue {
-	background: $__star__blue;
-	color: $__white;
+	background: linear-gradient(90deg, #49BC4F, #38A941) !important;
+	color: #FFFFFF !important;
+	font-weight: 700 !important;
+	box-shadow: 0 2px 8px rgba(60, 171, 75, 0.2) !important;
 }
 .py-60 {
 	padding-top: $__value__60;
@@ -282,14 +284,14 @@ textarea,
 select, 
 .form-control,
 .form-select {
-	background-color: #162A45 !important;
-	border: 1px solid rgba(255, 255, 255, 0.12) !important;
-	color: #FFFFFF !important;
+	background-color: #FBFCFB !important;
+	border: 1px solid #E2E8E3 !important;
+	color: #17222D !important;
 	border-radius: 8px !important;
 
 	&:focus {
-		border-color: #00E676 !important;
-		box-shadow: 0 0 0 3px rgba(0, 230, 118, 0.25) !important;
+		border-color: #43B649 !important;
+		box-shadow: 0 0 0 3px rgba(67, 182, 73, 0.15) !important;
 		outline: none !important;
 	}
 }
@@ -298,18 +300,18 @@ select,
 .btn-primary, 
 .btn-limegreen,
 .bg-primary {
-	background: #F97316 !important;
+	background: linear-gradient(90deg, #49BC4F, #38A941) !important;
 	border: none !important;
 	color: #FFFFFF !important;
 	font-weight: 700 !important;
 	border-radius: 12px !important;
-	box-shadow: 0 4px 15px rgba(249, 115, 22, 0.25) !important;
+	box-shadow: 0 4px 15px rgba(67, 182, 73, 0.25) !important;
 	transition: all 0.2s ease !important;
 
 	&:hover {
-		background: #C2410C !important;
+		background: linear-gradient(90deg, #38A941, #49BC4F) !important;
 		transform: translateY(-1px) !important;
-		box-shadow: 0 6px 20px rgba(249, 115, 22, 0.4) !important;
+		box-shadow: 0 6px 20px rgba(67, 182, 73, 0.4) !important;
 	}
 	&:active {
 		transform: scale(0.97) !important;
@@ -319,16 +321,16 @@ select,
 .btn-secondary,
 .btn-outline-light {
 	background: transparent !important;
-	border: 2px solid #16A34A !important;
-	color: #F1F5F9 !important;
+	border: 2px solid #3CAB4B !important;
+	color: #3CAB4B !important;
 	font-weight: 600 !important;
 	border-radius: 12px !important;
 	transition: all 0.2s ease !important;
 
 	&:hover {
-		background: rgba(22, 163, 74, 0.08) !important;
-		border-color: #16A34A !important;
-		color: #4ADE80 !important;
+		background: rgba(67, 182, 73, 0.08) !important;
+		border-color: #339B3E !important;
+		color: #339B3E !important;
 	}
 	&:active {
 		transform: scale(0.97) !important;
@@ -338,70 +340,71 @@ select,
 // Navbar Active State Link Underlines
 .main-nav > li.active > a, 
 .main-nav > li > a:hover {
-	color: #16A34A !important;
+	color: #3CAB4B !important;
 }
 
-// Breadcrumb banner
+// Breadcrumb banner — Light daylight theme
 .breadcrumb-list {
-	background: linear-gradient(180deg, #060E1A 0%, #0D1B2A 100%) !important;
-	border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+	background: linear-gradient(180deg, #EDF3EE 0%, #E2E8E3 100%) !important;
+	border-bottom: 1px solid #D6E4D8 !important;
 }
 
-// SVG Wave Divider Fills
+// SVG Wave Divider Fills — Light theme
 .section-divider .shape-fill {
-	fill: #0D1B2A !important;
+	fill: #E2E8E3 !important;
 }
 .section-divider.divider-dark .shape-fill {
-	fill: #0D1B2A !important;
+	fill: #E2E8E3 !important;
 }
 .section-divider.divider-footer .shape-fill {
-	fill: #060E1A !important;
+	fill: #D7E3DA !important;
 }
 
-// Table Styling Overrides
+// Table Styling Overrides — Light theme
 table, 
 .table {
-	background-color: #112237 !important;
-	color: #E8ECF1 !important;
-	border-color: rgba(255, 255, 255, 0.08) !important;
+	background-color: #FBFCFB !important;
+	color: #17222D !important;
+	border-color: #E2E8E3 !important;
 
 	th, td {
-		background-color: #112237 !important;
-		color: #E8ECF1 !important;
-		border-color: rgba(255, 255, 255, 0.08) !important;
+		background-color: #FBFCFB !important;
+		color: #17222D !important;
+		border-color: #E2E8E3 !important;
 	}
 
 	thead th {
-		background-color: #162A45 !important;
-		color: #FFFFFF !important;
+		background-color: #EDF3EE !important;
+		color: #17222D !important;
 	}
 }
 
-// PrimeReact Dropdown Styling Overrides
+// PrimeReact Dropdown Styling Overrides — Light theme
 .p-dropdown {
-	background: #162A45 !important;
-	border: 1px solid rgba(255, 255, 255, 0.12) !important;
+	background: #FBFCFB !important;
+	border: 1px solid #E2E8E3 !important;
 	
 	.p-dropdown-label {
-		color: #FFFFFF !important;
+		color: #17222D !important;
 	}
 	
 	.p-dropdown-trigger {
-		color: #FFFFFF !important;
+		color: #606D76 !important;
 	}
 }
 
 .p-dropdown-panel {
-	background: #112237 !important;
-	border: 1px solid rgba(255, 255, 255, 0.08) !important;
+	background: #FBFCFB !important;
+	border: 1px solid #E2E8E3 !important;
+	box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08) !important;
 
 	.p-dropdown-items {
 		.p-dropdown-item {
-			color: #E8ECF1 !important;
+			color: #17222D !important;
 			
 			&:hover, &.p-highlight {
-				background: #162A45 !important;
-				color: #00E676 !important;
+				background: #EAF5EB !important;
+				color: #3CAB4B !important;
 			}
 		}
 	}
@@ -456,21 +459,22 @@ table,
 	}
 }
 
-// Reusable Glassmorphism Cards
+// Reusable Daylight Cards
 .ki-card {
-	background: rgba(255, 255, 255, 0.03) !important;
-	backdrop-filter: blur(12px) !important;
-	-webkit-backdrop-filter: blur(12px) !important;
-	border: 1px solid rgba(255, 255, 255, 0.08) !important;
-	border-radius: 16px !important;
+	background: #FBFCFB !important;
+	backdrop-filter: none !important;
+	-webkit-backdrop-filter: none !important;
+	border: 1px solid #E2E8E3 !important;
+	border-radius: 20px !important;
 	padding: 24px !important;
-	color: #FFFFFF !important;
+	color: #17222D !important;
+	box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04) !important;
 	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
 
 	&.ki-card-hover:hover {
 		transform: translateY(-6px) !important;
-		border-color: var(--ki-brand) !important;
-		box-shadow: 0 12px 30px rgba(0, 230, 118, 0.15) !important;
+		border-color: #3CAB4B !important;
+		box-shadow: 0 12px 30px rgba(60, 171, 75, 0.12) !important;
 	}
 }
 
@@ -504,19 +508,19 @@ table,
 	}
 }
 
-// Input Fields
+// Input Fields — Light theme
 .ki-input {
-	background-color: #162A45 !important;
-	border: 1px solid rgba(255, 255, 255, 0.12) !important;
-	color: #FFFFFF !important;
+	background-color: #FBFCFB !important;
+	border: 1px solid #E2E8E3 !important;
+	color: #17222D !important;
 	border-radius: 12px !important;
 	padding: 14px 18px !important;
 	font-size: 14px !important;
 	transition: all 0.2s ease !important;
 
 	&:focus {
-		border-color: var(--ki-brand) !important;
-		box-shadow: 0 0 0 3px rgba(0, 230, 118, 0.25) !important;
+		border-color: #3CAB4B !important;
+		box-shadow: 0 0 0 3px rgba(60, 171, 75, 0.15) !important;
 	}
 }
 
@@ -551,9 +555,9 @@ table,
 	}
 }
 
-// Skeleton Shimmer loader
+// Skeleton Shimmer loader — Light theme
 .ki-skeleton {
-	background: linear-gradient(90deg, #112237 25%, #182F4B 50%, #112237 75%);
+	background: linear-gradient(90deg, #E2E8E3 25%, #EDF3EE 50%, #E2E8E3 75%);
 	background-size: 200% 100%;
 	animation: ki-shimmer 1.5s infinite;
 	border-radius: 8px;
@@ -566,10 +570,10 @@ table,
 	100% { background-position: -200% 0; }
 }
 
-// Time Slot Calendar Grid Styles
+// Time Slot Calendar Grid Styles — Light theme
 .time-slot {
-	background: rgba(255, 255, 255, 0.03) !important;
-	border: 1px solid rgba(255, 255, 255, 0.08) !important;
+	background: #FBFCFB !important;
+	border: 1px solid #E2E8E3 !important;
 	border-radius: 12px !important;
 	padding: 14px !important;
 	text-align: center !important;
@@ -587,26 +591,26 @@ table,
 
 	.time {
 		font-weight: 600 !important;
-		color: #FFFFFF !important;
+		color: #17222D !important;
 		font-size: 14px !important;
 	}
 
 	.price {
 		font-size: 16px !important;
 		font-weight: 700 !important;
-		color: var(--ki-brand) !important;
+		color: #3CAB4B !important;
 	}
 
 	&:hover {
-		border-color: var(--ki-brand) !important;
-		background: rgba(0, 230, 118, 0.06) !important;
+		border-color: #3CAB4B !important;
+		background: #EAF5EB !important;
 		transform: translateY(-2px) !important;
 	}
 
 	&.checked {
-		background: rgba(0, 230, 118, 0.15) !important;
-		border-color: var(--ki-brand) !important;
-		box-shadow: 0 0 15px rgba(0, 230, 118, 0.35) !important;
+		background: linear-gradient(135deg, #49BC4F, #38A941) !important;
+		border-color: #3CAB4B !important;
+		box-shadow: 0 4px 15px rgba(60, 171, 75, 0.3) !important;
 		
 		.time {
 			color: #FFFFFF !important;
@@ -619,16 +623,16 @@ table,
 
 	&.disabled {
 		opacity: 0.45 !important;
-		background: rgba(255, 255, 255, 0.01) !important;
-		border-color: rgba(255, 255, 255, 0.04) !important;
+		background: #F5F7F5 !important;
+		border-color: #E2E8E3 !important;
 		cursor: not-allowed !important;
 		pointer-events: none !important;
 
 		.time {
-			color: var(--ki-text-muted) !important;
+			color: #9BA5AE !important;
 		}
 		.price {
-			color: var(--ki-text-muted) !important;
+			color: #9BA5AE !important;
 		}
 	}
 }
@@ -690,18 +694,20 @@ table,
 // Rebuilt venue/coach listing cards (.listing-content) solid white boxes fix
 .listing-item, .featured-venues-item {
 	.listing-content {
-		background: #1E293B !important; // Ink 700
-		border: 1px solid rgba(255, 255, 255, 0.08) !important;
+		background: #FBFCFB !important;
+		border: 1px solid #E2E8E3 !important;
 		border-top: none !important;
-		color: #F1F5F9 !important;
+		color: #606D76 !important;
+		border-bottom-left-radius: 24px !important;
+		border-bottom-right-radius: 24px !important;
 		
 		h3, h3 a, h4, h4 a, h5, h5 a, .listing-title, .listing-title a {
-			color: #FFFFFF !important;
+			color: #17222D !important;
 			font-family: 'Space Grotesk', sans-serif !important;
 		}
 		
 		p, span, li, label, .text-white-50, .text-muted {
-			color: #CBD5E1 !important; // Ink 300
+			color: #606D76 !important;
 		}
 	}
 }
@@ -738,41 +744,68 @@ table,
 	}
 }
 
-// Testimonials card design re-theme & contrast fixes
+// Testimonials card design re-theme & contrast fixes (compact small sizes)
 .testimonial-group {
 	.testimonial-review {
-		background: #1E293B !important; // Ink 700
-		border: 1px solid rgba(255, 255, 255, 0.08) !important;
-		color: #F1F5F9 !important;
+		background: #FBFCFB !important;
+		border: 1px solid #E2E8E3 !important;
+		color: #606D76 !important;
 		box-shadow: var(--ki-shadow-card) !important;
+		border-radius: 16px !important;
+		padding: 16px 20px !important; // More compact padding
+		margin-bottom: 16px !important; // Tighter vertical gap
 		
+		.rating-point {
+			font-size: 12px !important;
+			margin-bottom: 6px !important;
+			
+			i {
+				font-size: 11px !important;
+			}
+		}
+
 		h5 {
-			color: #FFFFFF !important;
+			color: #17222D !important;
 			font-family: 'Space Grotesk', sans-serif !important;
 			font-weight: 700 !important;
+			font-size: 15px !important; // Smaller heading
+			margin-bottom: 6px !important;
 		}
 		
 		p {
-			color: #CBD5E1 !important; // Ink 300
+			color: #606D76 !important;
+			font-size: 13px !important; // Smaller text font size
+			line-height: 1.5 !important;
+			margin-bottom: 0 !important;
 		}
 	}
 	
 	.listing-venue-owner {
+		img {
+			width: 44px !important; // Smaller avatar
+			height: 44px !important;
+			margin-right: 12px !important;
+		}
+		
 		.testimonial-content {
 			h5 {
+				margin-bottom: 2px !important;
+				
 				a, span {
-					color: #FFFFFF !important;
+					color: #17222D !important;
 					font-family: 'Space Grotesk', sans-serif !important;
 					font-weight: 700 !important;
+					font-size: 14px !important; // Smaller reviewer name
 					transition: color 0.2s ease;
 					
 					&:hover {
-						color: #16A34A !important;
+						color: #3CAB4B !important;
 					}
 				}
 			}
 			p, span {
-				color: #CBD5E1 !important;
+				color: #606D76 !important;
+				font-size: 12px !important;
 			}
 		}
 	}

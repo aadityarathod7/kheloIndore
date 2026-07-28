@@ -3,18 +3,19 @@
 -----------------------*/
 
 .breadcrumb {
-	background: radial-gradient(circle at 30% 50%, rgba(0, 230, 118, 0.08) 0%, transparent 60%), #112237 !important;
+	background: linear-gradient(180deg, #EDF3EE 0%, #E2E8E3 100%) !important;
 	background-size: cover;
 		background-blend-mode: multiply;
-		padding: 60px 0;
+		padding: 40px 0;
 		position: $__relative;
+		border-bottom: 1px solid #D6E4D8;
 		&:before, &:after {
 			content: '';
-			background: $__gradient__color;
+			background: rgba(60, 171, 75, 0.15);
 			border-radius: $__full__width;
 		}
 		&.breadcrumb-list {
-			background: radial-gradient(circle at 70% 50%, rgba(0, 230, 118, 0.08) 0%, transparent 60%), #112237 !important;
+			background: linear-gradient(180deg, #EDF3EE 0%, #E2E8E3 100%) !important;
 			background-size: cover;
 			.container {
 				position: relative;
@@ -40,7 +41,7 @@
 				@include position($__absolute,null,50px,50px,null);
 				width: 13px;
 				height: 13px;
-				background: $__primarylight;
+				background: #3CAB4B;
 				border-radius: 13px;
 				@include respond-below(custom1200) {
 					top: 80px;
@@ -49,39 +50,43 @@
 		}
 		h1 {
 			margin-bottom: $__value__15;
+			color: #17222D !important;
+			font-family: 'Space Grotesk', sans-serif !important;
+			font-weight: 800 !important;
 		}
 		ul {
 			position: $__relative;
-			color: $__white;
+			color: #606D76;
   		li {
   			padding-right: $__value__30;
   			display: inline-block;
   			position: $__relative;
   			z-index: 1;
+			color: #606D76;
   			&:after {
   				@include position($__absolute,7px,10px,auto,auto);
 			    content: "\f105";
 			    font: normal normal normal 14px/1 FontAwesome;
-			    color: $__white;
+			    color: #9BA5AE;
   			}
   			&:last-child {
   				&:after {
   					display: none;
   				}
   			}
-	  		a {
-	  			color: $__white;
+		  	a {
+		  		color: #3CAB4B;
 				&:hover {
-					color: $__primarycolor;
+					color: #2D8C35;
 				}
-	  		}
+		  	}
   		}
   		&:after{
   			@include position($__absolute,null,0,-60px,null);
   			width: 147px;
   			height: 74px;
   			content: '';
-  			background: $__gradient__color;
+  			background: rgba(60, 171, 75, 0.1);
   			border-top-left-radius: 84px;
 			border-top-right-radius: 84px;
   		}
