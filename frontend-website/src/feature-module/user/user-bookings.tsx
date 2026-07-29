@@ -333,88 +333,41 @@ const UserBookings = () => {
 
   return (
     <>
-      {/* Breadcrumb */}
-      <section className="breadcrumb breadcrumb-list mb-0 top-margin">
-        <span className="primary-right-round" />
-        <div className="container">
-          <h1 className="text-white">My Bookings</h1>
-          <ul>
-            <li>
-              <Link to={routes.home}>Home</Link>
-            </li>
-            <li>My Bookings</li>
-          </ul>
-        </div>
-      </section>
-      {/* /Breadcrumb */}
-      {/* Dashboard Menu */}
-      <div className="dashboard-section">
-        <div className="container">
-          <div className="row">
-            <div className="col-lg-12">
-              <div className="dashboard-menu">
-                <ul>
-                  {/* <li>
-                    <Link to={routes.userDashboard}>
-                      <ImageWithBasePath
-                        src="/assets/img/icons/dashboard-icon.svg"
-                        alt="Icon"
-                      />
-                      <span>Dashboard</span>
-                    </Link>
-                  </li> */}
-                  <li>
-                    <Link to={routes.userBookings} className="active">
-                      <ImageWithBasePath
-                        src="/assets/img/icons/booking-icon.svg"
-                        alt="Icon"
-                      />
-                      <span>My Bookings</span>
-                    </Link>
-                  </li>
-                  {/* <li>
-                    <Link to={routes.userChat}>
-                      <ImageWithBasePath
-                        src="/assets/img/icons/chat-icon.svg"
-                        alt="Icon"
-                      />
-                      <span>Chat</span>
-                    </Link>
-                  </li> */}
-                  {/* <li>
-                    <Link to={routes.userInvoice}>
-                      <ImageWithBasePath
-                        src="/assets/img/icons/invoice-icon.svg"
-                        alt="Icon"
-                      />
-                      <span>Invoices</span>
-                    </Link>
-                  </li> */}
-                  {/* <li>
-                    <Link to={routes.userWallet}>
-                      <ImageWithBasePath
-                        src="/assets/img/icons/wallet-icon.svg"
-                        alt="Icon"
-                      />
-                      <span>Wallet</span>
-                    </Link>
-                  </li> */}
-                  <li>
-                    <Link to={routes.userProfile}>
-                      <ImageWithBasePath
-                        src="/assets/img/icons/profile-icon.svg"
-                        alt="Icon"
-                      />
-                      <span>Profile Settings</span>
-                    </Link>
-                  </li>
-                </ul>
+      {/* Hero Section */}
+      <div className="hero-booking-section" style={{ background: "linear-gradient(135deg, #F0FDF4 0%, #ECFDF5 100%)", paddingTop: "175px", paddingBottom: "40px", position: "relative", overflow: "hidden", borderBottom: "1px solid #E5E7EB" }}>
+        <div className="hero-artwork-blend" style={{ position: "absolute", right: "-60px", top: 0, bottom: 0, width: "55%", backgroundImage: "url('/assets/img/bg/banner-illustration.png')", backgroundSize: "cover", backgroundPosition: "left center", backgroundRepeat: "no-repeat", maskImage: "linear-gradient(to left, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%)", WebkitMaskImage: "linear-gradient(to left, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%)", opacity: 0.9 }}></div>
+        
+        <div className="container" style={{ position: "relative", zIndex: 2 }}>
+          <div className="row align-items-center">
+            <div className="col-lg-7 text-start">
+              <span className="font-weight-bold" style={{ fontSize: "13px", letterSpacing: "1.5px", display: "block", marginBottom: "12px", color: "#22C55E", fontWeight: "700" }}>USER DASHBOARD</span>
+              <h1 className="d-flex align-items-center flex-wrap" style={{ fontSize: "48px", fontWeight: "800", color: "#0F172A", lineHeight: "1.1", marginBottom: "16px" }}>
+                My <span style={{ color: "#22C55E", marginLeft: "12px" }}>Bookings</span>
+              </h1>
+              <p style={{ color: "#64748B", fontSize: "18px", marginBottom: "20px", fontWeight: "500", maxWidth: "480px" }}>Manage and track all your venue & coach bookings</p>
+              
+              <div className="d-flex align-items-center flex-wrap gap-2 mt-3">
+                <div className="d-inline-flex align-items-center bg-white px-3 py-2 rounded-pill shadow-sm" style={{ fontSize: "13px", border: "1px solid #E5E7EB" }}>
+                  <Link to="/" style={{ color: "#64748B", textDecoration: "none", fontWeight: "500" }}><i className="fas fa-home me-1" style={{ color: "#64748B" }} /> Home</Link>
+                  <span style={{ margin: "0 10px", color: "#64748B" }}><i className="fas fa-chevron-right" style={{ fontSize: "10px", color: "#64748B" }} /></span>
+                  <span style={{ color: "#22C55E", fontWeight: "600" }}>My Bookings</span>
+                </div>
+
+                <div className="d-inline-flex align-items-center gap-2 ms-sm-2">
+                  <Link to={routes.userBookings} className="ki-tab-btn active">
+                    <i className="fas fa-calendar-alt me-2" />
+                    <span>My Bookings</span>
+                  </Link>
+                  <Link to={routes.userProfile} className="ki-tab-btn">
+                    <i className="fas fa-user-edit me-2" />
+                    <span>Profile Settings</span>
+                  </Link>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-      {/* /Dashboard Menu */}
       {/* Page Content */}
       <div className="content court-bg">
         <div className="container">
@@ -579,22 +532,36 @@ const UserBookings = () => {
                                 <th />
                               </tr>
                             </thead>
-                            <tbody>
-                              {
-                                venueBookingData?.map((bookingData, index) => (
+                             <tbody>
+                              {(!venueBookingData || venueBookingData.length === 0) ? (
+                                <tr>
+                                  <td colSpan={7} className="text-center py-5">
+                                    <div className="d-flex flex-column align-items-center justify-content-center py-4">
+                                      <div
+                                        className="d-flex align-items-center justify-content-center mb-3"
+                                        style={{ width: "56px", height: "56px", borderRadius: "50%", background: "rgba(34, 197, 94, 0.1)", color: "#22C55E" }}
+                                      >
+                                        <i className="fas fa-calendar-times fs-4" />
+                                      </div>
+                                      <h6 className="font-weight-bold text-dark mb-1" style={{ fontSize: "16px" }}>No Venue Bookings Found</h6>
+                                      <p className="text-muted mb-3" style={{ fontSize: "13px", maxWidth: "360px" }}>
+                                        You haven&apos;t booked any sports venues yet. Explore top venues in Indore and book your slots!
+                                      </p>
+                                      <Link
+                                        to={routes.blogListSidebarLeft}
+                                        className="btn text-white px-4 py-2"
+                                        style={{ background: "linear-gradient(135deg, #22C55E 0%, #16A34A 100%)", borderRadius: "50px", fontSize: "13px", fontWeight: "600", boxShadow: "0 4px 12px rgba(34, 197, 94, 0.25)" }}
+                                      >
+                                        <i className="fas fa-calendar-plus me-2" /> Book a Venue Now
+                                      </Link>
+                                    </div>
+                                  </td>
+                                </tr>
+                              ) : (
+                                venueBookingData.map((bookingData, index) => (
                                   <tr key={index}>
                                     <td>
                                       <h2 className="table-avatar">
-                                        {/* <Link
-                                          to="#"
-                                          className="avatar avatar-sm flex-shrink-0"
-                                        >
-                                          <ImageWithBasePath
-                                            className="avatar-img"
-                                            src="/assets/img/featured/featured-05.jpg"
-                                            alt="User"
-                                          />
-                                        </Link> */}
                                         <span className="table-head-name flex-grow-1">
                                           <Link
                                             to="#"
@@ -603,9 +570,6 @@ const UserBookings = () => {
                                           >
                                             {bookingData?.name}
                                           </Link>
-                                          {/* <span className="book-active">
-                                            Booked on : 25 May 2023
-                                          </span> */}
                                         </span>
                                       </h2>
                                     </td>
@@ -649,31 +613,9 @@ const UserBookings = () => {
                                       }
 
                                     </td>
-                                    {/* <td className="text-end">
-                                  <div className="dropdown dropdown-action table-drop-action">
-                                    <Link
-                                      to="#"
-                                      className="action-icon dropdown-toggle"
-                                      data-bs-toggle="dropdown"
-                                      aria-expanded="false"
-                                    >
-                                      <i className="fas fa-ellipsis-h" />
-                                    </Link>
-                                    <div className="dropdown-menu dropdown-menu-end">
-                                      <Link className="dropdown-item" to="#">
-                                        <i className="feather-edit" />
-                                        Edit
-                                      </Link>
-                                      <Link className="dropdown-item" to="#">
-                                        <i className="feather-trash" />
-                                        Delete
-                                      </Link>
-                                    </div>
-                                  </div>
-                                </td> */}
                                   </tr>
                                 ))
-                              }
+                              )}
 
                             </tbody>
                           </table>
@@ -700,21 +642,35 @@ const UserBookings = () => {
                               </tr>
                             </thead>
                             <tbody>
-                              {
-                                coachBookingData?.map((bookingData, index) => (
+                              {(!coachBookingData || coachBookingData.length === 0) ? (
+                                <tr>
+                                  <td colSpan={7} className="text-center py-5">
+                                    <div className="d-flex flex-column align-items-center justify-content-center py-4">
+                                      <div
+                                        className="d-flex align-items-center justify-content-center mb-3"
+                                        style={{ width: "56px", height: "56px", borderRadius: "50%", background: "rgba(34, 197, 94, 0.1)", color: "#22C55E" }}
+                                      >
+                                        <i className="fas fa-user-ninja fs-4" />
+                                      </div>
+                                      <h6 className="font-weight-bold text-dark mb-1" style={{ fontSize: "16px" }}>No Coach Bookings Found</h6>
+                                      <p className="text-muted mb-3" style={{ fontSize: "13px", maxWidth: "360px" }}>
+                                        You haven&apos;t hired any coaches yet. Find certified coaches in your area and start training!
+                                      </p>
+                                      <Link
+                                        to={routes.coachesGrid}
+                                        className="btn text-white px-4 py-2"
+                                        style={{ background: "linear-gradient(135deg, #22C55E 0%, #16A34A 100%)", borderRadius: "50px", fontSize: "13px", fontWeight: "600", boxShadow: "0 4px 12px rgba(34, 197, 94, 0.25)" }}
+                                      >
+                                        <i className="fas fa-user-plus me-2" /> Find a Coach
+                                      </Link>
+                                    </div>
+                                  </td>
+                                </tr>
+                              ) : (
+                                coachBookingData.map((bookingData, index) => (
                                   <tr key={index}>
                                     <td>
                                       <h2 className="table-avatar">
-                                        {/* <Link
-                                          to="#"
-                                          className="avatar avatar-sm flex-shrink-0"
-                                        >
-                                          <ImageWithBasePath
-                                            className="avatar-img"
-                                            src="/assets/img/featured/featured-05.jpg"
-                                            alt="User"
-                                          />
-                                        </Link> */}
                                         <span className="table-head-name flex-grow-1">
                                           <Link
                                             to="#"
@@ -723,9 +679,6 @@ const UserBookings = () => {
                                           >
                                             {bookingData.first_name} {bookingData.last_name}
                                           </Link>
-                                          {/* <span className="book-active">
-                                            Booked on : 25 May 2023
-                                          </span> */}
                                         </span>
                                       </h2>
                                     </td>
@@ -767,7 +720,7 @@ const UserBookings = () => {
                                     </td>
                                   </tr>
                                 ))
-                              }
+                              )}
                             </tbody>
                           </table>
                         </div>
@@ -793,8 +746,32 @@ const UserBookings = () => {
                               </tr>
                             </thead>
                             <tbody>
-                              {
-                                tarinerBookingData?.map((bookingData, index) => (
+                              {(!tarinerBookingData || tarinerBookingData.length === 0) ? (
+                                <tr>
+                                  <td colSpan={7} className="text-center py-5">
+                                    <div className="d-flex flex-column align-items-center justify-content-center py-4">
+                                      <div
+                                        className="d-flex align-items-center justify-content-center mb-3"
+                                        style={{ width: "56px", height: "56px", borderRadius: "50%", background: "rgba(34, 197, 94, 0.1)", color: "#22C55E" }}
+                                      >
+                                        <i className="fas fa-dumbbell fs-4" />
+                                      </div>
+                                      <h6 className="font-weight-bold text-dark mb-1" style={{ fontSize: "16px" }}>No Personal Trainer Bookings Found</h6>
+                                      <p className="text-muted mb-3" style={{ fontSize: "13px", maxWidth: "360px" }}>
+                                        You haven&apos;t booked any personal trainers yet. Level up your fitness with expert trainers!
+                                      </p>
+                                      <Link
+                                        to={routes.blogList}
+                                        className="btn text-white px-4 py-2"
+                                        style={{ background: "linear-gradient(135deg, #22C55E 0%, #16A34A 100%)", borderRadius: "50px", fontSize: "13px", fontWeight: "600", boxShadow: "0 4px 12px rgba(34, 197, 94, 0.25)" }}
+                                      >
+                                        <i className="fas fa-dumbbell me-2" /> Explore Personal Trainers
+                                      </Link>
+                                    </div>
+                                  </td>
+                                </tr>
+                              ) : (
+                                tarinerBookingData.map((bookingData, index) => (
                                   <tr key={index}>
                                     <td>
                                       <h2 className="table-avatar">
@@ -806,9 +783,6 @@ const UserBookings = () => {
                                           >
                                             {bookingData.first_name} {bookingData.last_name}
                                           </Link>
-                                          {/* <span className="book-active">
-                                            Booked on : 25 May 2023
-                                          </span> */}
                                         </span>
                                       </h2>
                                     </td>
@@ -850,7 +824,7 @@ const UserBookings = () => {
                                     </td>
                                   </tr>
                                 ))
-                              }
+                              )}
                             </tbody>
                           </table>
                         </div>

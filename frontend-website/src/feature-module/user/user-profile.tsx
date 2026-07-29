@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import ImageWithBasePath from "../../core/data/img/ImageWithBasePath";
 import { all_routes } from "../router/all_routes";
-import { Dropdown } from "primereact/dropdown";
 import axios from "axios";
 import { API_URL, IMG_URL } from "../../ApiUrl";
 import { jwtDecode } from "jwt-decode";
@@ -43,12 +42,6 @@ const UserProfile = () => {
     profile_image: [],
   });
 
-
-  // useEffect(() => {
-  //   window.scrollTo(0, 0)
-  // }, [])
-
-
   const handleInputChange = (e: any) => {
     const { name, value } = e.target;
     setUserData((prevData: any) => ({
@@ -63,8 +56,6 @@ const UserProfile = () => {
       if (token) {
         const decodedToken = jwtDecode<JwtPayload>(token);
         setUserDataId(decodedToken);
-      } else {
-        return;
       }
     };
     getTokenFromStorage();
@@ -77,12 +68,14 @@ const UserProfile = () => {
 
   useEffect(() => {
     const fetchUser = async () => {
+      if (!userId) return;
       try {
         const response = await axios.get(
           `${API_URL}/user/fetch-user-by-id/${userId}`
         );
-        console.log(response.data.data, "user dtaaa");
-        setUserData(response.data.data);
+        if (response.data?.data) {
+          setUserData(response.data.data);
+        }
       } catch (error) {
         console.error("Error fetching user data:", error);
       }
@@ -96,15 +89,10 @@ const UserProfile = () => {
     const file = event.target.files?.[0];
 
     if (!file) {
-      Swal.fire(
-        "No file selected",
-        "Please select a file to upload.",
-        "warning"
-      );
+      Swal.fire("No file selected", "Please select a file to upload.", "warning");
       return;
     }
 
-    // Validate file size (max 5MB)
     const MAX_SIZE_MB = 5;
     const maxSize = MAX_SIZE_MB * 1024 * 1024;
     if (file.size > maxSize) {
@@ -116,7 +104,6 @@ const UserProfile = () => {
       return;
     }
 
-    // Validate file type
     const allowedTypes = ["image/jpeg", "image/png", "image/svg+xml"];
     if (!allowedTypes.includes(file.type)) {
       Swal.fire(
@@ -127,57 +114,44 @@ const UserProfile = () => {
       return;
     }
 
-    // Display preview
     const fileReader = new FileReader();
     fileReader.onload = () => {
       setPreviewUrl(fileReader.result as string);
     };
     fileReader.readAsDataURL(file);
 
-    // Prepare form data
     const formData = new FormData();
     formData.append("uploadFile", file);
 
     try {
-      // Make the API request
       const response: any = await axios.post(
-        ` ${API_URL}/upload-file?types=user`,
+        `${API_URL}/upload-file?types=user`,
         formData
       );
 
       if (response.status === 200) {
-        // const { data } = response;
-
         if (response.data.status) {
-          console.log(response.data, "all response");
           setUploadedFileUrl(response.data.file_data);
-          Swal.fire("Success", "File uploaded successfully!", "success");
+          Swal.fire({
+            icon: "success",
+            title: "Photo Uploaded!",
+            text: "Profile image uploaded successfully.",
+            timer: 2000,
+            showConfirmButton: false
+          });
         } else {
           Swal.fire("Upload Successful", "File uploaded successfully", "info");
         }
-      } else {
-        console.error("Unexpected response:", response);
-        Swal.fire(
-          "Unexpected Error",
-          "An unexpected error occurred. Please try again.",
-          "error"
-        );
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        console.error("Axios error:", error.response?.data || error.message);
         Swal.fire(
           "Upload Error",
           `Error: ${error.response?.data?.message || "Something went wrong with the upload."}`,
           "error"
         );
       } else {
-        console.error("Unexpected error:", error);
-        Swal.fire(
-          "Unexpected Error",
-          "An unexpected error occurred. Please try again.",
-          "error"
-        );
+        Swal.fire("Unexpected Error", "An unexpected error occurred.", "error");
       }
     }
   };
@@ -215,31 +189,26 @@ const UserProfile = () => {
       setLoading(true);
       setError("");
 
-      const response = await axios.put(saveApiUrl, payload);
-
+      await axios.put(saveApiUrl, payload);
       localStorage.setItem("profileCompleted", "true");
 
       Swal.fire({
         icon: "success",
-        title: "Profile Completed!",
-        text: "Your profile details have been saved successfully.",
+        title: "Profile Saved!",
+        text: "Your profile details have been updated successfully.",
         confirmButtonText: "Go to Home",
         confirmButtonColor: "#22C55E",
       }).then(() => {
         navigate("/");
       });
-
-      console.log("Response:", response.data);
     } catch (err) {
       console.error("Error:", err);
-
       Swal.fire({
         icon: "error",
         title: "Update Failed",
         text: "Failed to update profile. Please try again.",
         confirmButtonText: "OK",
       });
-
       setError("Failed to update profile. Please try again.");
     } finally {
       setLoading(false);
@@ -275,26 +244,15 @@ const UserProfile = () => {
     { value: "Uttar Pradesh", label: "Uttar Pradesh" },
     { value: "Uttarakhand", label: "Uttarakhand" },
     { value: "West Bengal", label: "West Bengal" },
-    { value: "Jammu and Kashmir", label: "Jammu and Kashmir" },
-    { value: "Ladakh", label: "Ladakh" },
     { value: "Delhi", label: "Delhi" },
-    { value: "Lakshadweep", label: "Lakshadweep" },
-    { value: "Chandigarh", label: "Chandigarh" },
-    { value: "Puducherry", label: "Puducherry" },
-    { value: "Andaman and Nicobar Islands", label: "Andaman and Nicobar Islands" },
   ];
 
   const cityOption = [
-    { value: "Aurangabad", label: "Aurangabad" },
-    { value: "Jehanabad", label: "Jehanabad" },
-    { value: "Kavali", label: "Kavali" },
-    { value: "Tadepalligudem", label: "Tadepalligudem" },
-    { value: "Amaravati", label: "Amaravati" },
-    { value: "Buxar", label: "Buxar" },
-    { value: "Kishanganj", label: "Kishanganj" },
-    { value: "Karaikudi", label: "Karaikudi" },
-    { value: "Suryapet", label: "Suryapet" },
-    { value: "Jamalpur", label: "Jamalpur" },
+    { value: "Indore", label: "Indore" },
+    { value: "Bhopal", label: "Bhopal" },
+    { value: "Gwalior", label: "Gwalior" },
+    { value: "Jabalpur", label: "Jabalpur" },
+    { value: "Ujjain", label: "Ujjain" },
     { value: "Mumbai", label: "Mumbai" },
     { value: "Delhi", label: "Delhi" },
     { value: "Bangalore", label: "Bangalore" },
@@ -302,402 +260,332 @@ const UserProfile = () => {
     { value: "Ahmedabad", label: "Ahmedabad" },
     { value: "Chennai", label: "Chennai" },
     { value: "Kolkata", label: "Kolkata" },
-    { value: "Surat", label: "Surat" },
     { value: "Pune", label: "Pune" },
     { value: "Jaipur", label: "Jaipur" },
-    { value: "Lucknow", label: "Lucknow" },
-    { value: "Kanpur", label: "Kanpur" },
-    { value: "Nagpur", label: "Nagpur" },
-    { value: "Indore", label: "Indore" },
-    { value: "Thane", label: "Thane" },
-    { value: "Bhopal", label: "Bhopal" },
-    { value: "Visakhapatnam", label: "Visakhapatnam" },
-    { value: "Pimpri-Chinchwad", label: "Pimpri-Chinchwad" },
-    { value: "Patna", label: "Patna" },
-    { value: "Vadodara", label: "Vadodara" },
-    { value: "Ghaziabad", label: "Ghaziabad" },
-    { value: "Ludhiana", label: "Ludhiana" },
-    { value: "Agra", label: "Agra" },
-    { value: "Nashik", label: "Nashik" },
-    { value: "Faridabad", label: "Faridabad" },
-    { value: "Meerut", label: "Meerut" },
-    { value: "Rajkot", label: "Rajkot" },
-    { value: "Kalyan-Dombivali", label: "Kalyan-Dombivali" },
-    { value: "Vasai-Virar", label: "Vasai-Virar" },
-    { value: "Varanasi", label: "Varanasi" },
-    { value: "Srinagar", label: "Srinagar" },
-    { value: "Dhanbad", label: "Dhanbad" },
-    { value: "Amritsar", label: "Amritsar" },
-    { value: "Navi Mumbai", label: "Navi Mumbai" },
-    { value: "Prayagraj", label: "Prayagraj" },
-    { value: "Howrah", label: "Howrah" },
-    { value: "Ranchi", label: "Ranchi" },
-    { value: "Jabalpur", label: "Jabalpur" },
-    { value: "Gwalior", label: "Gwalior" },
-    { value: "Coimbatore", label: "Coimbatore" },
-    { value: "Vijayawada", label: "Vijayawada" },
-    { value: "Jodhpur", label: "Jodhpur" },
-    { value: "Madurai", label: "Madurai" },
-    { value: "Raipur", label: "Raipur" },
-    { value: "Kota", label: "Kota" },
-    { value: "Guwahati", label: "Guwahati" },
-    { value: "Chandigarh", label: "Chandigarh" },
-    { value: "Solapur", label: "Solapur" },
-    { value: "Hubballi-Dharwad", label: "Hubballi-Dharwad" },
-    { value: "Tiruchirappalli", label: "Tiruchirappalli" },
-    { value: "Tiruppur", label: "Tiruppur" },
-    { value: "Moradabad", label: "Moradabad" },
-    { value: "Mysore", label: "Mysore" },
-    { value: "Bareilly", label: "Bareilly" },
-    { value: "Gurgaon", label: "Gurgaon" },
-    { value: "Aligarh", label: "Aligarh" },
-    { value: "Jalandhar", label: "Jalandhar" },
-    { value: "Bhubaneswar", label: "Bhubaneswar" },
-    { value: "Salem", label: "Salem" },
-    { value: "Mira-Bhayandar", label: "Mira-Bhayandar" },
-    { value: "Warangal", label: "Warangal" },
-    { value: "Thiruvananthapuram", label: "Thiruvananthapuram" },
-    { value: "Guntur", label: "Guntur" },
-    { value: "Bhiwandi", label: "Bhiwandi" },
-    { value: "Saharanpur", label: "Saharanpur" },
-    { value: "Gorakhpur", label: "Gorakhpur" },
-    { value: "Bikaner", label: "Bikaner" },
-    { value: "Amravati", label: "Amravati" },
-    { value: "Noida", label: "Noida" },
-    { value: "Jamshedpur", label: "Jamshedpur" },
-    { value: "Bhilai", label: "Bhilai" },
-    { value: "Cuttack", label: "Cuttack" },
-    { value: "Firozabad", label: "Firozabad" },
-    { value: "Kochi", label: "Kochi" },
-    { value: "Nellore", label: "Nellore" },
-    { value: "Bhavnagar", label: "Bhavnagar" },
-    { value: "Dehradun", label: "Dehradun" },
-    { value: "Durgapur", label: "Durgapur" },
-    { value: "Asansol", label: "Asansol" },
-    { value: "Rourkela", label: "Rourkela" },
-    { value: "Nanded", label: "Nanded" },
-    { value: "Kolhapur", label: "Kolhapur" },
-    { value: "Ajmer", label: "Ajmer" },
-    { value: "Akola", label: "Akola" },
-    { value: "Gulbarga", label: "Gulbarga" },
-    { value: "Jamnagar", label: "Jamnagar" },
-    { value: "Ujjain", label: "Ujjain" },
-    { value: "Loni", label: "Loni" },
-    { value: "Siliguri", label: "Siliguri" },
-    { value: "Jhansi", label: "Jhansi" },
-    { value: "Ulhasnagar", label: "Ulhasnagar" },
-    { value: "Jammu", label: "Jammu" },
-    { value: "Sangli-Miraj & Kupwad", label: "Sangli-Miraj & Kupwad" },
-    { value: "Mangalore", label: "Mangalore" },
-    { value: "Erode", label: "Erode" },
-    { value: "Belgaum", label: "Belgaum" },
-    { value: "Ambattur", label: "Ambattur" },
-    { value: "Tirunelveli", label: "Tirunelveli" },
-    { value: "Malegaon", label: "Malegaon" },
-    { value: "Gaya", label: "Gaya" },
-    { value: "Jalgaon", label: "Jalgaon" },
-    { value: "Udaipur", label: "Udaipur" },
-    { value: "Maheshtala", label: "Maheshtala" },
-    { value: "Davanagere", label: "Davanagere" },
-    { value: "Kozhikode", label: "Kozhikode" },
-    { value: "Kurnool", label: "Kurnool" },
-    { value: "Rajpur Sonarpur", label: "Rajpur Sonarpur" },
-    { value: "Rajahmundry", label: "Rajahmundry" },
-    { value: "Bardhaman", label: "Bardhaman" }
-];
-
+  ];
 
   const handleSelectChange = (selectedOption: any) => {
     setUserData((prevData: any) => ({
       ...prevData,
-      state: selectedOption ? selectedOption.value : '',
+      state: selectedOption ? selectedOption.value : "",
     }));
   };
+
   const handleCitySelectChange = (selectedOption: any) => {
     setUserData((prevData: any) => ({
       ...prevData,
-      city: selectedOption ? selectedOption.value : '',
+      city: selectedOption ? selectedOption.value : "",
     }));
   };
 
+  const customSelectStyles = {
+    control: (base: any, state: any) => ({
+      ...base,
+      minHeight: "38px",
+      borderRadius: "8px",
+      fontSize: "13px",
+      borderColor: state.isFocused ? "#22C55E" : "#E2E8F0",
+      backgroundColor: "#FFFFFF",
+      boxShadow: state.isFocused ? "0 0 0 3px rgba(34, 197, 94, 0.12)" : "none",
+      "&:hover": {
+        borderColor: "#22C55E",
+      },
+    }),
+    option: (base: any, state: any) => ({
+      ...base,
+      fontSize: "13px",
+      backgroundColor: state.isSelected
+        ? "#22C55E"
+        : state.isFocused
+        ? "rgba(34, 197, 94, 0.1)"
+        : "#FFFFFF",
+      color: state.isSelected ? "#FFFFFF" : "#0F172A",
+      cursor: "pointer",
+    }),
+  };
+
+  const avatarSrc = previewUrl || (userData.profile_image?.[0]?.src ? `${IMG_URL}${userData.profile_image?.[0]?.src}` : null);
+  const initialLetter = userData.first_name ? userData.first_name[0].toUpperCase() : "U";
+
   return (
     <>
-      <section className="breadcrumb breadcrumb-list mb-0 top-margin">
-        <span className="primary-right-round" />
-        <div className="container">
-          <h1 className="text-white">User Profile</h1>
-          <ul>
-            <li>
-              <Link to={routes.home}>Home</Link>
-            </li>
-            <li>User Profile</li>
-          </ul>
-        </div>
-      </section>
+      {/* Hero Section */}
+      <div className="hero-booking-section" style={{ background: "linear-gradient(135deg, #F0FDF4 0%, #ECFDF5 100%)", paddingTop: "175px", paddingBottom: "40px", position: "relative", overflow: "hidden", borderBottom: "1px solid #E5E7EB" }}>
+        <div className="hero-artwork-blend" style={{ position: "absolute", right: "-60px", top: 0, bottom: 0, width: "55%", backgroundImage: "url('/assets/img/bg/banner-illustration.png')", backgroundSize: "cover", backgroundPosition: "left center", backgroundRepeat: "no-repeat", maskImage: "linear-gradient(to left, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%)", WebkitMaskImage: "linear-gradient(to left, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%)", opacity: 0.9 }}></div>
+        
+        <div className="container" style={{ position: "relative", zIndex: 2 }}>
+          <div className="row align-items-center">
+            <div className="col-lg-7 text-start">
+              <span className="font-weight-bold" style={{ fontSize: "13px", letterSpacing: "1.5px", display: "block", marginBottom: "12px", color: "#22C55E", fontWeight: "700" }}>USER DASHBOARD</span>
+              <h1 className="d-flex align-items-center flex-wrap" style={{ fontSize: "48px", fontWeight: "800", color: "#0F172A", lineHeight: "1.1", marginBottom: "16px" }}>
+                Profile <span style={{ color: "#22C55E", marginLeft: "12px" }}>Settings</span>
+              </h1>
+              <p style={{ color: "#64748B", fontSize: "18px", marginBottom: "20px", fontWeight: "500", maxWidth: "480px" }}>Manage your profile information, contact details & avatar</p>
+              
+              <div className="d-flex align-items-center flex-wrap gap-2 mt-3">
+                <div className="d-inline-flex align-items-center bg-white px-3 py-2 rounded-pill shadow-sm" style={{ fontSize: "13px", border: "1px solid #E5E7EB" }}>
+                  <Link to="/" style={{ color: "#64748B", textDecoration: "none", fontWeight: "500" }}><i className="fas fa-home me-1" style={{ color: "#64748B" }} /> Home</Link>
+                  <span style={{ margin: "0 10px", color: "#64748B" }}><i className="fas fa-chevron-right" style={{ fontSize: "10px", color: "#64748B" }} /></span>
+                  <span style={{ color: "#22C55E", fontWeight: "600" }}>Profile Settings</span>
+                </div>
 
-      <div className="dashboard-section">
-        <div className="container">
-          {isFirstTime && (
-            <div className="alert alert-warning border-warning d-flex align-items-center mb-4 p-3 rounded-3 shadow-sm" role="alert">
-              <i className="fas fa-exclamation-circle text-warning fs-4 me-3" />
-              <div>
-                <strong className="d-block mb-1" style={{ fontSize: "16px" }}>Complete Your Profile Information</strong>
-                <span style={{ fontSize: "14px", color: "#475569" }}>
-                  Please fill in your <strong>First Name</strong>, <strong>Last Name</strong>, and <strong>Email Address</strong> to activate your account and start booking sports venues and coaches.
-                </span>
-              </div>
-            </div>
-          )}
-          <div className="row">
-            <div className="col-lg-12">
-              <div className="dashboard-menu">
-                <ul>
-                  {/* <li>
-                    <Link to={routes.userDashboard}>
-                      <ImageWithBasePath
-                        src="/assets/img/icons/dashboard-icon.svg"
-                        alt="Icon"
-                      />
-                      <span>Dashboard</span>
-                    </Link>
-                  </li> */}
-                  <li>
-                    <Link to={routes.userBookings}>
-                      <ImageWithBasePath
-                        src="/assets/img/icons/booking-icon.svg"
-                        alt="Icon"
-                      />
-                      <span>My Bookings</span>
-                    </Link>
-                  </li>
-
-                  <li>
-                    <Link to={routes.userProfile} className="active">
-                      <ImageWithBasePath
-                        src="/assets/img/icons/profile-icon.svg"
-                        alt="Icon"
-                      />
-                      <span>Profile Settings</span>
-                    </Link>
-                  </li>
-                </ul>
+                <div className="d-inline-flex align-items-center gap-2 ms-sm-2">
+                  <Link to={routes.userBookings} className="ki-tab-btn">
+                    <i className="fas fa-calendar-alt me-2" />
+                    <span>My Bookings</span>
+                  </Link>
+                  <Link to={routes.userProfile} className="ki-tab-btn active">
+                    <i className="fas fa-user-edit me-2" />
+                    <span>Profile Settings</span>
+                  </Link>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-      {/* /Dashboard Menu */}
-      {/* Page Content */}
-      <div className="content court-bg">
-        <div className="container">
-          {/* <div className="coach-court-list profile-court-list">
-              <ul className="nav">
-                <li>
-                  <Link className="active" to={routes.userProfile}>
-                    Profile
-                  </Link>
-                </li>
-                <li>
-                  <Link to={routes.userSettingPassword}>Change Password</Link>
-                </li>
-                <li>
-                  <Link to={routes.userProfileOtherSetting}>
-                    Other Settings
-                  </Link>
-                </li>
-              </ul>
-            </div> */}
-          <div className="row">
-            <div className="col-sm-12">
-              <div className="profile-detail-group">
-                <div className="card ">
-                  <form>
-                    <div className="row">
-                      <div className="col-md-12">
-                        <div className="image-upload">
-                          <h3>Upload Image</h3>
-                          <div className="file-upload">
-                            <input
-                              type="file"
-                              accept=".jpg,.jpeg,.png,.svg"
-                              onChange={handleFileUpload}
-                            />
-                          </div>
-                          {previewUrl ? (
-                            <div className="preview">
-                              <h4>Image Preview:</h4>
-                              <img
-                                src={previewUrl}
-                                alt="Preview"
-                                style={{ maxWidth: "200px" }}
-                              />
-                            </div>
-                          ) : userData.profile_image?.[0]?.src ? (
-                            <div className="preview">
-                              <h4>Image Preview:</h4>
-                              <img
-                                src={`${IMG_URL}${userData.profile_image?.[0]?.src}`}
-                                alt="Preview"
-                                style={{ maxWidth: "200px" }}
-                              />
-                            </div>
-                          ) : (
-                            ""
-                          )}
-                        </div>
-                      </div>
 
-                      {/* First Name */}
-                      <div className="col-lg-4 col-md-6">
-                        <div className="input-space">
-                          <label className="form-label">First Name</label>
+      {isFirstTime && (
+        <div className="container mt-4">
+          <div
+            className="alert border-0 d-flex align-items-center p-4 rounded-4 shadow-sm"
+            style={{ background: "linear-gradient(135deg, #FEF3C7 0%, #FFFBEB 100%)", borderLeft: "5px solid #F59E0B" }}
+            role="alert"
+          >
+            <div
+              className="d-flex align-items-center justify-content-center me-3 flex-shrink-0"
+              style={{ width: "44px", height: "44px", borderRadius: "12px", background: "rgba(245, 158, 11, 0.15)", color: "#D97706" }}
+            >
+              <i className="fas fa-user-clock fs-5" />
+            </div>
+            <div>
+              <strong className="d-block mb-1" style={{ fontSize: "16px", color: "#92400E" }}>
+                Complete Your Profile
+              </strong>
+              <span style={{ fontSize: "14px", color: "#B45309" }}>
+                Please fill in your <strong>First Name</strong>, <strong>Last Name</strong>, and verify your <strong>Email Address</strong> to activate full access for venue and coach bookings.
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="content court-bg py-5">
+        <div className="container">
+          <div className="row justify-content-center">
+            <div className="col-lg-8 col-xl-7">
+              <div className="ki-profile-card">
+                {/* Header Profile Photo Section */}
+                <div className="pb-4 mb-4 border-bottom">
+                  <div className="ki-section-title">
+                    <div className="ki-section-icon">
+                      <i className="fas fa-camera" />
+                    </div>
+                    Profile Photo
+                  </div>
+
+                  <div className="ki-avatar-section">
+                    <div className="ki-avatar-box">
+                      {avatarSrc ? (
+                        <img src={avatarSrc} alt="Profile" />
+                      ) : (
+                        <span>{initialLetter}</span>
+                      )}
+                      <div className="ki-avatar-badge">
+                        <i className="fas fa-camera me-1" /> Edit
+                      </div>
+                    </div>
+
+                    <div className="ki-upload-actions">
+                      <div className="ki-upload-btn-wrapper mb-2">
+                        <button
+                          type="button"
+                          className="btn btn-sm px-4 py-2 text-white font-weight-bold"
+                          style={{
+                            background: "linear-gradient(135deg, #22C55E 0%, #16A34A 100%)",
+                            borderRadius: "50px",
+                            boxShadow: "0 4px 12px rgba(34, 197, 94, 0.3)",
+                            border: "none"
+                          }}
+                        >
+                          <i className="fas fa-upload me-2" /> Upload New Photo
+                        </button>
+                        <input
+                          type="file"
+                          accept=".jpg,.jpeg,.png,.svg"
+                          onChange={handleFileUpload}
+                        />
+                      </div>
+                      <small className="text-muted">
+                        Allowed Formats: JPG, PNG, SVG (Max size: 5MB)
+                      </small>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Personal Information Section */}
+                <div className="pb-4 mb-4 border-bottom">
+                  <div className="ki-section-title">
+                    <div className="ki-section-icon">
+                      <i className="fas fa-user-circle" />
+                    </div>
+                    Personal Information
+                  </div>
+
+                  <div className="row g-3">
+                    <div className="col-md-6">
+                      <div className="ki-input-group">
+                        <label className="ki-field-label">First Name *</label>
+                        <div className="ki-input-wrapper">
+                          <i className="fas fa-user ki-input-icon" />
                           <input
                             type="text"
                             className="form-control"
                             name="first_name"
-                            placeholder="Enter Name"
-                            value={userData.first_name}
+                            placeholder="Enter First Name"
+                            value={userData.first_name || ""}
                             onChange={handleInputChange}
                           />
                         </div>
                       </div>
+                    </div>
 
-                      {/* Last Name */}
-                      <div className="col-lg-4 col-md-6">
-                        <div className="input-space">
-                          <label className="form-label">Last Name</label>
+                    <div className="col-md-6">
+                      <div className="ki-input-group">
+                        <label className="ki-field-label">Last Name *</label>
+                        <div className="ki-input-wrapper">
+                          <i className="fas fa-user ki-input-icon" />
                           <input
                             type="text"
                             className="form-control"
                             name="last_name"
-                            placeholder="Enter Name"
-                            value={userData.last_name}
+                            placeholder="Enter Last Name"
+                            value={userData.last_name || ""}
                             onChange={handleInputChange}
                           />
                         </div>
                       </div>
+                    </div>
 
-                      {/* Email */}
-                      <div className="col-lg-4 col-md-6">
-                        <div className="input-space">
-                          <label className="form-label">Email</label>
+                    <div className="col-md-6">
+                      <div className="ki-input-group">
+                        <label className="ki-field-label">Email Address (Read-only)</label>
+                        <div className="ki-input-wrapper">
+                          <i className="fas fa-envelope ki-input-icon" />
                           <input
                             type="email"
                             className="form-control"
                             name="email"
                             placeholder="Enter Email Address"
-                            value={userData.email}
+                            value={userData.email || ""}
                             onChange={handleInputChange}
                             disabled
                           />
                         </div>
                       </div>
+                    </div>
 
-                      {/* Phone Number */}
-                      <div className="col-lg-4 col-md-6">
-                        <div className="input-space">
-                          <label className="form-label">Phone Number</label>
+                    <div className="col-md-6">
+                      <div className="ki-input-group">
+                        <label className="ki-field-label">Phone Number (Read-only)</label>
+                        <div className="ki-input-wrapper">
+                          <i className="fas fa-phone-alt ki-input-icon" />
                           <input
                             type="text"
                             className="form-control"
                             name="mobile"
                             placeholder="Enter Phone Number"
-                            value={userData.mobile}
+                            value={userData.mobile || ""}
                             onChange={handleInputChange}
                             disabled
                           />
                         </div>
                       </div>
+                    </div>
 
-                      <div className="col-lg-12 col-md-12">
-                        <div className="info-about">
-                          <label htmlFor="comments" className="form-label">
-                            Information about You
-                          </label>
+                    <div className="col-12">
+                      <div className="ki-input-group">
+                        <label className="ki-field-label">About Yourself</label>
+                        <div className="ki-input-wrapper">
                           <textarea
                             className="form-control"
-                            id="comments"
                             rows={3}
-                            placeholder="About"
+                            placeholder="Tell us about your favorite sports, hobbies, or bio..."
                             name="user_info"
-                            value={userData.user_info}
+                            value={userData.user_info || ""}
                             onChange={handleInputChange}
                           />
                         </div>
                       </div>
+                    </div>
+                  </div>
+                </div>
 
-                      <div className="address-form-head">
-                        <h4>Address</h4>
-                      </div>
+                {/* Location & Address Section */}
+                <div>
+                  <div className="ki-section-title">
+                    <div className="ki-section-icon">
+                      <i className="fas fa-map-marker-alt" />
+                    </div>
+                    Address & Location
+                  </div>
 
-                      {/* Address */}
-                      <div className="col-lg-12 col-md-12">
-                        <div className="input-space">
-                          <label className="form-label">Address</label>
+                  <div className="row g-3">
+                    <div className="col-12">
+                      <div className="ki-input-group">
+                        <label className="ki-field-label">Street Address</label>
+                        <div className="ki-input-wrapper">
+                          <i className="fas fa-home ki-input-icon" />
                           <input
                             type="text"
                             className="form-control"
                             name="address"
-                            placeholder="Enter Your Address"
-                            value={userData.address}
+                            placeholder="House No., Street Name, Area"
+                            value={userData.address || ""}
                             onChange={handleInputChange}
                           />
                         </div>
                       </div>
+                    </div>
 
-                      {/* State */}
-                      <div className="col-lg-4 col-md-6">
-                        <div className="input-space">
-                          <label className="form-label">State</label>
-                          <Select
-                            options={stateOptions}
-                            value={stateOptions.find(
-                              (stateOptions) =>
-                                stateOptions.value === userData.state
-                            )}
-                            onChange={handleSelectChange}
-                            placeholder="Select State"
-                            isSearchable={true}
-                          />
-                        </div>
+                    <div className="col-md-4">
+                      <div className="ki-input-group">
+                        <label className="ki-field-label">State</label>
+                        <Select
+                          options={stateOptions}
+                          styles={customSelectStyles}
+                          value={stateOptions.find((opt) => opt.value === userData.state) || null}
+                          onChange={handleSelectChange}
+                          placeholder="Select State"
+                          isSearchable={true}
+                        />
                       </div>
+                    </div>
 
-                      {/* City */}
-                      <div className="col-lg-4 col-md-6">
-                        <div className="input-space">
-                          <label className="form-label">City</label>
-                          <Select
-                            options={cityOption}
-                            value={cityOption.find(
-                              (cityOption) => cityOption.value === userData.city
-                            )}
-                            onChange={handleCitySelectChange}
-                            placeholder="Select City"
-                            isSearchable={true}
-                          />
-                        </div>
-                        {/* <div className="input-space">
-                          <label className="form-label">City</label>
-                          <input
-                            type="text"
-                            className="form-control"
-                            name="city"
-                            placeholder="Enter City"
-                            value={userData.city}
-                            onChange={handleInputChange}
-                          />
-                        </div> */}
+                    <div className="col-md-4">
+                      <div className="ki-input-group">
+                        <label className="ki-field-label">City</label>
+                        <Select
+                          options={cityOption}
+                          styles={customSelectStyles}
+                          value={cityOption.find((opt) => opt.value === userData.city) || null}
+                          onChange={handleCitySelectChange}
+                          placeholder="Select City"
+                          isSearchable={true}
+                        />
                       </div>
+                    </div>
 
-                      {/* Zipcode */}
-                      <div className="col-lg-4 col-md-6">
-                        <div className="input-space mb-0">
-                          <label className="form-label">Zipcode</label>
+                    <div className="col-md-4">
+                      <div className="ki-input-group">
+                        <label className="ki-field-label">Zipcode</label>
+                        <div className="ki-input-wrapper">
+                          <i className="fas fa-mail-bulk ki-input-icon" />
                           <input
                             type="text"
                             className="form-control"
                             name="zipcode"
-                            placeholder="Enter Zipcode"
+                            placeholder="6-digit Zipcode"
                             value={userData.zipcode || ""}
                             onChange={(e) => {
                               const value = e.target.value;
@@ -709,21 +597,39 @@ const UserProfile = () => {
                         </div>
                       </div>
                     </div>
-                  </form>
-                </div>
-                <div className="save-changes text-end">
-                  <div>
-                    <button
-                      onClick={handleSaveChange}
-                      className="btn btn-secondary save-profile"
-                      disabled={loading}
-                    >
-                      {loading ? "Saving..." : "Save Changes"}
-                    </button>
-
-                    {error && <p style={{ color: "red" }}>{error}</p>}
-                    {success && <p style={{ color: "green" }}>{success}</p>}
                   </div>
+                </div>
+
+                {/* Submit Action */}
+                <div className="mt-5 pt-3 border-top d-flex align-items-center justify-content-between">
+                  <div>
+                    {error && <span className="text-danger font-weight-bold">{error}</span>}
+                    {success && <span className="text-success font-weight-bold">{success}</span>}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleSaveChange}
+                    className="btn px-4 py-2 text-white font-weight-bold"
+                    style={{
+                      background: "linear-gradient(135deg, #22C55E 0%, #16A34A 100%)",
+                      borderRadius: "50px",
+                      boxShadow: "0 4px 12px rgba(34, 197, 94, 0.3)",
+                      border: "none",
+                      fontSize: "13px",
+                      transition: "all 0.2s ease-in-out"
+                    }}
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      <>
+                        <i className="fas fa-spinner fa-spin me-2" /> Saving Changes...
+                      </>
+                    ) : (
+                      <>
+                        <i className="fas fa-check-circle me-2" /> Save Profile Details
+                      </>
+                    )}
+                  </button>
                 </div>
               </div>
             </div>

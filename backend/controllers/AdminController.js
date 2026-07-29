@@ -684,6 +684,7 @@ exports.loginUserWithMobile = async (req, res) => {
       success: true,
       message: "OTP sent successfully",
       token,
+      otp: otp,
     });
   } catch (err) {
     console.log(err.message);

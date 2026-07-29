@@ -416,8 +416,14 @@ const Header = () => {
                       <ul className="profile-dropdown">
                         <li className="ft-colr-ffff">
                           <Link to={routes.userBookings}>
-                            <i className="fas fa-user"></i> &nbsp;
+                            <i className="fas fa-calendar-alt"></i> &nbsp;
                             My Bookings
+                          </Link>
+                        </li>
+                        <li className="ft-colr-ffff">
+                          <Link to={routes.userProfile}>
+                            <i className="fas fa-user-edit"></i> &nbsp;
+                            Edit Profile
                           </Link>
                         </li>
                         <li className="ft-colr-ffff" onClick={removeToken}>
@@ -520,9 +526,17 @@ const Header = () => {
               </Link>
             </div>
           ) : (
-            <button className="btn btn-outline-danger w-100 py-2" onClick={() => { removeToken(); hideOffcanvas(); }}>
-              <i className="fas fa-sign-out-alt me-2" /> Logout
-            </button>
+            <div className="d-flex flex-column gap-2">
+              <Link to={routes.userBookings} className="btn btn-outline-success w-100 py-2 text-start px-3" onClick={hideOffcanvas}>
+                <i className="fas fa-calendar-alt me-2" /> My Bookings
+              </Link>
+              <Link to={routes.userProfile} className="btn btn-outline-primary w-100 py-2 text-start px-3" onClick={hideOffcanvas}>
+                <i className="fas fa-user-edit me-2" /> Edit Profile
+              </Link>
+              <button className="btn btn-outline-danger w-100 py-2 mt-1 text-start px-3" onClick={() => { removeToken(); hideOffcanvas(); }}>
+                <i className="fas fa-sign-out-alt me-2" /> Logout
+              </button>
+            </div>
           )}
         </div>
       </div>

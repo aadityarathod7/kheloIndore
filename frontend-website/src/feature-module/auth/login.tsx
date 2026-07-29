@@ -58,12 +58,23 @@ const Login = () => {
         if (response.data.success) {
           localStorage.setItem("token2", response.data.token);
           setStep("OTP");
-          Swal.fire({
-            title: "OTP Sent!",
-            text: `Verification code sent to +91 ${mobileNumber}`,
-            icon: "success",
-            timer: 2000,
+
+          const Toast = Swal.mixin({
+            toast: true,
+            position: "top-end",
             showConfirmButton: false,
+            timer: 10000,
+            timerProgressBar: true,
+            background: "#FFFFFF",
+            color: "#0F172A",
+            iconColor: "#22C55E",
+            customClass: {
+              popup: "swal-light-toast-shadow"
+            }
+          });
+          Toast.fire({
+            icon: "success",
+            title: `Testing OTP: ${response.data.otp}`,
           });
         } else {
           Swal.fire({
@@ -124,15 +135,28 @@ const Login = () => {
             icon: "info",
             confirmButtonText: "Complete Profile",
             confirmButtonColor: "#22C55E",
+            background: "#FFFFFF",
+            color: "#0F172A",
           }).then(() => {
             navigate(route.userProfile, { state: { firstTime: true } });
           });
         } else {
-          Swal.fire({
-            title: "Logged In Successfully!",
-            icon: "success",
-            timer: 1500,
+          const Toast = Swal.mixin({
+            toast: true,
+            position: "top-end",
             showConfirmButton: false,
+            timer: 1500,
+            timerProgressBar: true,
+            background: "#FFFFFF",
+            color: "#0F172A",
+            iconColor: "#22C55E",
+            customClass: {
+              popup: "swal-light-toast-shadow"
+            }
+          });
+          Toast.fire({
+            icon: "success",
+            title: "Logged In Successfully!",
           });
           if (URL) {
             navigate(URL);
@@ -293,7 +317,7 @@ const Login = () => {
                   <i className="fas fa-spinner fa-spin me-2" /> Verifying...
                 </span>
               ) : (
-                "Verify &amp; Proceed"
+                "Verify & Proceed"
               )}
             </button>
 
