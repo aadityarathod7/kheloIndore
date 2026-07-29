@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import ImageWithBasePath from "../../core/data/img/ImageWithBasePath";
 import { all_routes } from "../router/all_routes";
 import { Dropdown } from "primereact/dropdown";
@@ -23,6 +23,9 @@ interface JwtPayload {
 
 const UserProfile = () => {
   const routes = all_routes;
+  const navigate = useNavigate();
+  const location = useLocation();
+  const isFirstTime = location.state?.firstTime || localStorage.getItem("profileCompleted") === "false";
   const [userDataId, setUserDataId] = useState<JwtPayload | null>(null);
   const [uploadedFileUrl, setUploadedFileUrl] = useState<any>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -184,7 +187,16 @@ const UserProfile = () => {
   const [success, setSuccess] = useState("");
 
   const handleSaveChange = async () => {
-    const API_URL = `http://127.0.0.1:3037/api/user/profile-setting/${userId}`;
+    if (!userData.first_name?.trim() || !userData.last_name?.trim() || !userData.email?.trim()) {
+      Swal.fire({
+        icon: "warning",
+        title: "Required Fields Missing",
+        text: "Please enter your First Name, Last Name, and Email to complete your profile.",
+      });
+      return;
+    }
+
+    const saveApiUrl = `${API_URL}/user/profile-setting/${userId}`;
 
     const payload = {
       first_name: userData.first_name,
@@ -196,20 +208,25 @@ const UserProfile = () => {
       city: userData.city,
       zipcode: userData.zipcode,
       user_info: userData.user_info,
-      profile_image: uploadedFileUrl,
+      profile_image: uploadedFileUrl || userData.profile_image,
     };
 
     try {
       setLoading(true);
       setError("");
 
-      const response = await axios.put(API_URL, payload);
+      const response = await axios.put(saveApiUrl, payload);
+
+      localStorage.setItem("profileCompleted", "true");
 
       Swal.fire({
         icon: "success",
-        title: "Profile Updated",
-        text: "Profile updated successfully!",
-        confirmButtonText: "OK",
+        title: "Profile Completed!",
+        text: "Your profile details have been saved successfully.",
+        confirmButtonText: "Go to Home",
+        confirmButtonColor: "#22C55E",
+      }).then(() => {
+        navigate("/");
       });
 
       console.log("Response:", response.data);
@@ -420,6 +437,17 @@ const UserProfile = () => {
 
       <div className="dashboard-section">
         <div className="container">
+          {isFirstTime && (
+            <div className="alert alert-warning border-warning d-flex align-items-center mb-4 p-3 rounded-3 shadow-sm" role="alert">
+              <i className="fas fa-exclamation-circle text-warning fs-4 me-3" />
+              <div>
+                <strong className="d-block mb-1" style={{ fontSize: "16px" }}>Complete Your Profile Information</strong>
+                <span style={{ fontSize: "14px", color: "#475569" }}>
+                  Please fill in your <strong>First Name</strong>, <strong>Last Name</strong>, and <strong>Email Address</strong> to activate your account and start booking sports venues and coaches.
+                </span>
+              </div>
+            </div>
+          )}
           <div className="row">
             <div className="col-lg-12">
               <div className="dashboard-menu">

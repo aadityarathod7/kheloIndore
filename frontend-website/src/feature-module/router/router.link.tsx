@@ -651,7 +651,7 @@ const withoutHeaderRoutes = [
   },
   {
     path: routes.register,
-    element: <Signin />,
+    element: <Navigate to={routes.login} replace />,
     route: Route,
   },
   {

@@ -22,9 +22,11 @@ const Footer = () => {
           <p className="sub-title">
             Join our empowering sports community today and grow with us.
           </p>
-          <Link to={routes.register} className="btn btn-primary">
-            <i className="feather-user-plus" /> Join With Us
-          </Link>
+          {!loginToken && (
+            <Link to={routes.login} className="btn btn-primary">
+              <i className="feather-log-in me-2" /> Login Now
+            </Link>
+          )}
         </div>
         {/* /Footer Join CTA */}
 

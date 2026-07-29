@@ -608,7 +608,7 @@ exports.loginUserWithMobile = async (req, res) => {
     if (!mobile) {
       return res.status(400).json({
         success: false,
-        message: "Please Enter Mobile Number ",
+        message: "Please Enter Mobile Number",
       });
     }
     if (mobile.toString().length !== 10) {
@@ -622,14 +622,19 @@ exports.loginUserWithMobile = async (req, res) => {
       lowerCaseAlphabets: false,
       specialChars: false,
     });
-    const checkUser = await User.findOne({ mobile });
-    console.log(checkUser,"checkUser")
-    const checkCoach = await Coach.findOne({ mobile });
+
+    let checkUser = await User.findOne({ mobile });
+    let checkCoach = await Coach.findOne({ mobile });
+
+    // If user does not exist, create new account automatically
     if (!checkUser && !checkCoach) {
-      return res.status(400).json({
-        success: false,
-        message: "This user is not found in database",
+      checkUser = await User.create({
+        mobile: mobile,
+        role: "User",
+        status: true,
+        otp: otp,
       });
+      console.log("AUTO CREATED NEW USER FOR MOBILE:", mobile);
     }
 
     if (checkUser && checkUser.status === false) {
@@ -640,7 +645,6 @@ exports.loginUserWithMobile = async (req, res) => {
       });
     }
 
-    // Check if coach is found and check their status
     if (checkCoach && checkCoach.status === false) {
       return res.json({
         status: 400,
@@ -648,9 +652,10 @@ exports.loginUserWithMobile = async (req, res) => {
         message: "You are not active, please contact admin",
       });
     }
+
     console.log("MOBILE LOGIN OTP GENERATED FOR", mobile, ":", otp);
     if (checkCoach) {
-      const data = await Coach.findOneAndUpdate(
+      await Coach.findOneAndUpdate(
         { mobile },
         {
           last_login: Date.now(),
@@ -659,7 +664,7 @@ exports.loginUserWithMobile = async (req, res) => {
         { new: true }
       );
     } else {
-      const data = await User.findOneAndUpdate(
+      await User.findOneAndUpdate(
         { mobile },
         {
           last_login: Date.now(),
@@ -671,7 +676,7 @@ exports.loginUserWithMobile = async (req, res) => {
 
     const payload = {
       mobile: mobile,
-      role:checkUser.role,
+      role: checkCoach ? checkCoach.role : (checkUser ? checkUser.role : "User"),
     };
     const token = jwt.sign(payload, process.env.JWT_AUTH, { expiresIn: "5m" });
 
@@ -763,12 +768,16 @@ exports.loginCheckOTP = async (req, res) => {
       });
     }
 
+    // Check if profile is completed
+    const isProfileCompleted = Boolean(user.first_name && user.last_name && user.email);
+
     // Generate JWT token
     const payload = {
       userID: user._id,
-      first_name: user.first_name,
-      last_name: user.last_name,
-      role: user.role,
+      first_name: user.first_name || "",
+      last_name: user.last_name || "",
+      role: user.role || "User",
+      profileCompleted: isProfileCompleted,
     };
     const token = jwt.sign(payload, process.env.JWT_AUTH, { expiresIn: "1d" });
 
@@ -776,6 +785,14 @@ exports.loginCheckOTP = async (req, res) => {
       success: true,
       message: "Logged in successfully.",
       token,
+      profileCompleted: isProfileCompleted,
+      user: {
+        _id: user._id,
+        first_name: user.first_name || "",
+        last_name: user.last_name || "",
+        email: user.email || "",
+        mobile: user.mobile,
+      },
     });
   } catch (err) {
     console.error(err.message);

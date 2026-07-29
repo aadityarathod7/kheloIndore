@@ -1,322 +1,321 @@
 import React, { useEffect, useState } from "react";
-import ImageWithBasePath from "../../core/data/img/ImageWithBasePath";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { all_routes } from "../router/all_routes";
 import axios from "axios";
 import Swal from "sweetalert2";
-import "../../style/css/custom.css";
 import { API_URL } from "../../ApiUrl";
 
 const Login = () => {
   const route = all_routes;
-  const [password, setPassword] = useState("");
-  const [otp, setOtp] = useState("");
-  const [showPasswordField, setShowPasswordField] = useState(false);
-  const [showOtpField, setShowOtpField] = useState(false);
   const navigate = useNavigate();
-  const [mobileNumber, setMobileNumber] = useState("");
-  const [mobileApiError, setMobileApiError] = useState("");
-  const [otpPassApiError, setOtpPassApiError] = useState("");
   const location = useLocation();
-  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+
+  const [mobileNumber, setMobileNumber] = useState("");
+  const [otp, setOtp] = useState("");
+  const [step, setStep] = useState<"MOBILE" | "OTP">("MOBILE");
+  const [loading, setLoading] = useState(false);
+  const [mobileApiError, setMobileApiError] = useState("");
+  const [otpApiError, setOtpApiError] = useState("");
 
   const { URL } = location.state || {};
-
-  const handleChange = (e: any) => {
-    const value = e.target.value;
-
-    const numericValue = value.replace(/[^0-9]/g, "");
-    setMobileApiError("");
-
-    setShowOtpField(false);
-    setShowPasswordField(false);
-
-    setMobileNumber(numericValue);
-
-  };
 
   useEffect(() => {
     const loginToken = localStorage.getItem("token");
     if (loginToken) {
       navigate("/");
     }
-  }, []);
+  }, [navigate]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    document.title = "login"
+    document.title = "Login - Khelo Indore";
   }, []);
 
-  const handleLoginWithMobile = (field: any) => {
-    if (!mobileNumber.trim()) {
-      Swal.fire({
-        title: "Validation Error!",
-        text: "Please enter mobile number",
-        icon: "error",
-      });
+  const handleMobileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    const numericValue = value.replace(/[^0-9]/g, "");
+    setMobileApiError("");
+    setMobileNumber(numericValue);
+  };
+
+  const handleSendOtp = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+
+    if (!mobileNumber.trim() || mobileNumber.length !== 10) {
+      setMobileApiError("Please enter a valid 10-digit mobile number");
       return;
     }
+
+    setLoading(true);
+    setMobileApiError("");
 
     axios
       .post(`${API_URL}/user/login/mobile`, {
         mobile: mobileNumber,
       })
       .then((response) => {
+        setLoading(false);
         if (response.data.success) {
           localStorage.setItem("token2", response.data.token);
-          if (field === "OTP") {
-            setShowOtpField(true);
-            setShowPasswordField(false);
-          } else if (field === "Password") {
-            setShowOtpField(false);
-            setShowPasswordField(true);
-          }
+          setStep("OTP");
+          Swal.fire({
+            title: "OTP Sent!",
+            text: `Verification code sent to +91 ${mobileNumber}`,
+            icon: "success",
+            timer: 2000,
+            showConfirmButton: false,
+          });
         } else {
           Swal.fire({
             title: "Error",
-            text: "You are not active, please contact admin",
+            text: response.data.message || "Unable to send OTP. Please try again.",
             icon: "error",
           });
         }
       })
-      .catch(() => {
-        setMobileApiError("Mobile number not registered.");
-        // Swal.fire({
-        //   title: "Error",
-        //   text: "Mobile number not registered.",
-        //   icon: "error",
-        // });
+      .catch((error) => {
+        setLoading(false);
+        const msg = error?.response?.data?.message || "Failed to send OTP. Please try again.";
+        setMobileApiError(msg);
       });
   };
 
-  const handleConfirmPasswordOtp = (e: any) => {
+  const handleVerifyOtp = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (otp) {
-      axios
-        .post(`${API_URL}/user/login/mobile/otp`, {
+    if (!otp.trim() || otp.length < 4) {
+      setOtpApiError("Please enter the verification OTP");
+      return;
+    }
+
+    setLoading(true);
+    setOtpApiError("");
+
+    axios
+      .post(
+        `${API_URL}/user/login/mobile/otp`,
+        {
           mobile: mobileNumber,
           otp: otp,
-        }, {
+        },
+        {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token2")}`,
           },
-        })
-        .then((response) => {
-          const authToken = response.data.token;
-          const sanitizedToken = authToken;
-          localStorage.setItem("token", sanitizedToken);
+        }
+      )
+      .then((response) => {
+        setLoading(false);
+        const authToken = response.data.token;
+        const isProfileCompleted = response.data.profileCompleted;
+        const userData = response.data.user;
+
+        localStorage.setItem("token", authToken);
+        localStorage.setItem("profileCompleted", isProfileCompleted ? "true" : "false");
+
+        if (userData) {
+          localStorage.setItem("user", JSON.stringify(userData));
+        }
+
+        if (!isProfileCompleted) {
+          Swal.fire({
+            title: "Welcome to Khelo Indore!",
+            text: "Please complete your profile to continue.",
+            icon: "info",
+            confirmButtonText: "Complete Profile",
+            confirmButtonColor: "#22C55E",
+          }).then(() => {
+            navigate(route.userProfile, { state: { firstTime: true } });
+          });
+        } else {
+          Swal.fire({
+            title: "Logged In Successfully!",
+            icon: "success",
+            timer: 1500,
+            showConfirmButton: false,
+          });
           if (URL) {
-            navigate(URL)
+            navigate(URL);
           } else {
             navigate("/");
           }
-        })
-        .catch((error) => {
-          console.error("Error with OTP login:", error);
-          setOtpPassApiError(error?.response?.data?.message)
-        });
-    }
-    else if (password) {
-      axios
-        .post(`${API_URL}/user/login/mobile/otp`, {
-          mobile: mobileNumber,
-          password: password,
-        })
-        .then((response) => {
-          const authToken = response.data.token;
-          const sanitizedToken = authToken;
-          localStorage.setItem("token", sanitizedToken);
-          if (URL) {
-            navigate(URL)
-          } else {
-            navigate("/");
-          }
-        })
-        .catch((error) => {
-          console.error("Error with password login:", error);
-          setOtpPassApiError(error?.response?.data?.message)
-        });
-    } else {
-      console.log("Please provide either OTP or password.");
-      showPasswordField && setOtpPassApiError("Please provide password.");
-      showOtpField && setOtpPassApiError("Please provide OTP.");
-    }
+        }
+      })
+      .catch((error) => {
+        setLoading(false);
+        const msg = error?.response?.data?.message || "Invalid OTP. Please check and try again.";
+        setOtpApiError(msg);
+      });
   };
 
-  const togglePasswordVisibility = () => {
-    setIsPasswordVisible(prevState => !prevState);
-  }
-
   return (
-    <>
-      <div className="main-wrapper authendication-pages">
-        <div className="content">
-          <div className="container wrapper no-padding">
-            <div className="row no-margin vph-100">
-              <div className="col-12 col-sm-12 col-lg-6 no-padding">
-                <div className="banner-bg login">
-                  <div className="row no-margin h-100">
-                    <div className="col-sm-10 col-md-10 col-lg-10 mx-auto">
-                      <div className="h-100 d-flex justify-content-center align-items-center">
-                        <div className="text-bg register text-center">
-                          <button
-                            type="button"
-                            className="btn btn-limegreen text-capitalize"
-                          >
-                            <i className="fa-solid fa-thumbs-up me-3" />
-                            Login User, Coach &amp; Venue Admin
-                          </button>
-                          <p>
-                            Log in right away for our advanced sports software
-                            solutions, created to address issues in regular
-                            sporting events and activities.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="col-12 col-sm-12 col-lg-6 no-padding">
-                <div className="dull-pg">
-                  <div className="row no-margin vph-100 d-flex align-items-center justify-content-center">
-                    <div className="col-sm-10 col-md-10 col-lg-10 mx-auto">
-                      <header className="text-center">
-                        <Link to={route.home}>
-                          <ImageWithBasePath
-                            src="/assets/KHELO-INDORE-LOGO.png"
-                            className="img-fluid img-logo"
-                            alt="Logo"
-                          />
-                        </Link>
-                      </header>
-                      <div className="shadow-card">
-                        <h2>Welcome Back</h2>
-                        <p>Login into your account</p>
+    <div
+      className="ki-auth-wrapper d-flex align-items-center justify-content-center min-vh-100 py-5 px-3 position-relative overflow-hidden"
+      style={{
+        backgroundImage: "linear-gradient(rgba(15, 23, 42, 0.45), rgba(21, 128, 61, 0.25)), url('/assets/img/bg/stadium.png')",
+        backgroundSize: "cover",
+        backgroundPosition: "center center",
+        backgroundRepeat: "no-repeat",
+      }}
+    >
+      {/* Sleek Flat Card */}
+      <div
+        className="ki-minimal-card card border-0 position-relative"
+        style={{
+          zIndex: 2,
+          maxWidth: "420px",
+          width: "100%",
+          padding: "44px 36px",
+        }}
+      >
+        {/* Top green indicators */}
+        <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "4px", backgroundColor: "#22C55E" }} />
 
-                        <form onSubmit={handleConfirmPasswordOtp}>
-                          <div className="form-group">
-                            <input
-                              type="text"
-                              name="mobile"
-                              className={`form-control ${mobileApiError ? "is-invalid" : ""}`}
-                              placeholder="Enter Mobile Number"
-                              value={mobileNumber}
-                              maxLength={10}
-                              onChange={handleChange}
-                            />
-                            {mobileApiError && (
-                              <div className="invalid-feedback">{mobileApiError}</div>
-                            )}
-                          </div>
-                          {showPasswordField && (
-                            <>
-                              <div className="form-group">
-                                <div className="pass-group group-img">
-                                  <i className="toggle-password feather-eye" onClick={togglePasswordVisibility} />
-                                  <input
-                                    type={isPasswordVisible ? 'text' : 'password'}
-                                    name="password"
-                                    className={`form-control ${otpPassApiError ? "is-invalid" : ""}`}
-                                    placeholder="Enter Password"
-                                    value={password}
-                                    onChange={(e) => {
-                                      setPassword(e.target.value);
-                                      setOtpPassApiError("");
-                                    }}
-                                  />
-                                  {otpPassApiError && (
-                                    <div className="invalid-feedback">{otpPassApiError}</div>
-                                  )}
-                                </div>
-                              </div>
-                              <div className="text-end"><Link to={route.changePassword}>Forgot Password ?</Link></div>
-                            </>
-                          )}
-                          {showOtpField && (
-                            <>
-                              <div className="form-group">
-                                <input
-                                  type="text"
-                                  name="otp"
-                                  className={`form-control ${otpPassApiError ? "is-invalid" : ""}`}
-                                  placeholder="Enter OTP"
-                                  value={otp}
-                                  onChange={(e) => {
-                                    setOtp(e.target.value);
-                                    setOtpPassApiError("");
-                                  }}
-                                />
-                                {otpPassApiError && (
-                                  <div className="invalid-feedback">{otpPassApiError}</div>
-                                )}
-                              </div>
-                            </>
-                          )}
-                          {showPasswordField && (
-                            <button
-                              type="submit"
-                              className="ki-btn-primary w-100 text-dark"
-                              onClick={handleConfirmPasswordOtp}
-                            >
-                              Login
-                            </button>
-                          )}
-                        </form>
-                        {showOtpField && (
-                          <button
-                            className="ki-btn-primary text-capitalize mt-3 w-100 text-dark"
-                            onClick={handleConfirmPasswordOtp}
-                          >
-                            Login
-                          </button>
-                        )}
-                        <div className="row mb-3 d-flex justify-content-center gap-4">
-                          {!(showOtpField || showPasswordField) && (
-                            <>
-                              <button
-                                className="ki-btn-secondary col-5"
-                                onClick={() => {
-                                  handleLoginWithMobile("OTP");
-                                }}
-                                disabled={
-                                  !mobileNumber || mobileNumber.length < 10
-                                }
-                              >
-                                Login with OTP
-                              </button>
-                              <button
-                                className="ki-btn-secondary col-5"
-                                onClick={() => {
-                                  handleLoginWithMobile("Password");
-                                }}
-                                disabled={
-                                  !mobileNumber || mobileNumber.length < 10
-                                }
-                              >
-                                Login with Password
-                              </button>
-                            </>
-                          )}
-                        </div>
+        {/* Logo Header */}
+        <div className="text-center mb-4">
+          <Link to={route.home}>
+            <img
+              src="/assets/KHELO-INDORE-LOGO.png"
+              alt="Khelo Indore Logo"
+              style={{ maxHeight: "56px" }}
+            />
+          </Link>
+        </div>
 
-                        <div className="bottom-text text-center mt-3">
-                          <p>
-                            Don’t have an account?{" "}
-                            <Link to={route.register}>Sign up!</Link>
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+        {/* Title */}
+        <div className="text-center mb-4">
+          <h2 className="fw-bold mb-1" style={{ fontSize: "22px", color: "#0F172A", letterSpacing: "-0.5px" }}>
+            {step === "MOBILE" ? "Welcome to Khelo Indore" : "Verify Mobile Number"}
+          </h2>
+          <p className="text-muted m-0" style={{ fontSize: "14px", color: "#64748B" }}>
+            {step === "MOBILE"
+              ? "Enter your mobile number to get OTP"
+              : `Enter 6-digit code sent to +91 ${mobileNumber}`}
+          </p>
+        </div>
+
+        {step === "MOBILE" ? (
+          <form onSubmit={handleSendOtp}>
+            <div className="mb-4">
+              <label className="form-label fw-bold mb-2 ps-2" style={{ fontSize: "12px", color: "#475569", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                Mobile Number
+              </label>
+
+              {/* Flat Input Container */}
+              <div className="phone-input-container">
+                <span className="country-code">+91</span>
+                <input
+                  type="text"
+                  name="mobile"
+                  className="clean-phone-input"
+                  placeholder="Enter 10-digit mobile number"
+                  value={mobileNumber}
+                  maxLength={10}
+                  onChange={handleMobileChange}
+                  autoFocus
+                />
               </div>
+              {mobileApiError && (
+                <div className="text-danger small mt-2 fw-semibold ps-2">
+                  <i className="fas fa-exclamation-circle me-1" /> {mobileApiError}
+                </div>
+              )}
             </div>
-          </div>
+
+            <button
+              type="submit"
+              className="btn btn-submit w-100 fw-bold"
+              disabled={loading || mobileNumber.length !== 10}
+            >
+              {loading ? (
+                <span>
+                  <i className="fas fa-spinner fa-spin me-2" /> Sending OTP...
+                </span>
+              ) : (
+                "Send OTP"
+              )}
+            </button>
+          </form>
+        ) : (
+          <form onSubmit={handleVerifyOtp}>
+            <div className="mb-4">
+              <div className="d-flex align-items-center justify-content-between mb-2 ps-2 pe-2">
+                <label className="form-label fw-bold mb-0" style={{ fontSize: "12px", color: "#475569", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                  Enter OTP Code
+                </label>
+                <button
+                  type="button"
+                  className="btn btn-link btn-sm p-0 text-decoration-none fw-bold"
+                  style={{ color: "#22C55E", fontSize: "12px" }}
+                  onClick={() => {
+                    setStep("MOBILE");
+                    setOtp("");
+                    setOtpApiError("");
+                  }}
+                >
+                  <i className="fas fa-edit me-1" /> Change
+                </button>
+              </div>
+
+              <div className="phone-input-container justify-content-center">
+                <input
+                  type="text"
+                  name="otp"
+                  className="clean-phone-input text-center"
+                  placeholder="Enter 6-digit OTP"
+                  value={otp}
+                  maxLength={6}
+                  onChange={(e) => {
+                    setOtp(e.target.value.replace(/[^0-9]/g, ""));
+                    setOtpApiError("");
+                  }}
+                  style={{
+                    fontSize: "20px",
+                    letterSpacing: "6px",
+                  }}
+                  autoFocus
+                />
+              </div>
+              {otpApiError && (
+                <div className="text-danger small mt-2 fw-semibold text-center">
+                  <i className="fas fa-exclamation-circle me-1" /> {otpApiError}
+                </div>
+              )}
+            </div>
+
+            <button
+              type="submit"
+              className="btn btn-submit w-100 fw-bold"
+              disabled={loading || !otp}
+            >
+              {loading ? (
+                <span>
+                  <i className="fas fa-spinner fa-spin me-2" /> Verifying...
+                </span>
+              ) : (
+                "Verify &amp; Proceed"
+              )}
+            </button>
+
+            <div className="text-center mt-3">
+              <button
+                type="button"
+                className="btn btn-link btn-sm text-secondary text-decoration-none"
+                style={{ fontSize: "13px" }}
+                onClick={handleSendOtp}
+                disabled={loading}
+              >
+                Didn&apos;t receive OTP? <span className="text-success fw-bold">Resend OTP</span>
+              </button>
+            </div>
+          </form>
+        )}
+
+        <div className="mt-4 pt-3 border-top text-center" style={{ fontSize: "12px", color: "#94A3B8" }}>
+          By continuing, you agree to Khelo Indore&apos;s <Link to="/contact-us" style={{ color: "#64748B" }}>Terms</Link> &amp; <Link to="/contact-us" style={{ color: "#64748B" }}>Privacy Policy</Link>.
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

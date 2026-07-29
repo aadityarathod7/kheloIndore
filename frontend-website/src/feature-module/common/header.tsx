@@ -431,11 +431,8 @@ const Header = () => {
                 </div>
               ) : (
                 <div className="d-flex align-items-center gap-2">
-                  <Link to={"/login"} className="navbar-login-btn">
+                  <Link to={"/login"} className="navbar-register-btn px-4">
                     Login
-                  </Link>
-                  <Link to={"/register"} className="navbar-register-btn">
-                    Register
                   </Link>
                 </div>
               )}
@@ -518,11 +515,8 @@ const Header = () => {
         <div className="mt-4 pt-3">
           {!loginToken ? (
             <div className="d-flex flex-column gap-2">
-              <Link to="/login" className="navbar-login-btn text-center py-2 px-3 w-100" onClick={hideOffcanvas}>
+              <Link to="/login" className="navbar-register-btn text-center py-2 px-3 w-100" onClick={hideOffcanvas}>
                 Login
-              </Link>
-              <Link to="/register" className="navbar-register-btn text-center py-2 px-3 w-100" onClick={hideOffcanvas}>
-                Register
               </Link>
             </div>
           ) : (

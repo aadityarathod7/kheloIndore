@@ -1185,13 +1185,13 @@ const Home = () => {
                 </div>
                 <div className="convenient-btns">
                   <Link
-                    to={routes.register}
+                    to={routes.login}
                     className="btn btn-primary d-inline-flex align-items-center"
                   >
                     <span>
-                      <i className="feather-user-plus me-2" />
+                      <i className="feather-log-in me-2" />
                     </span>
-                    Join With Us
+                    Get Started
                   </Link>
                   <Link
                     to={routes.aboutUs}
@@ -1420,11 +1420,11 @@ const Home = () => {
                   </ul>
                 </div>
                 <Link
-                  to={routes.register}
+                  to={routes.login}
                   className="btn btn-primary w-100 d-flex align-items-center justify-content-center py-2"
                   style={{ background: "linear-gradient(90deg, #49BC4F, #38A941)", border: "none", borderRadius: "12px", fontWeight: "700" }}
                 >
-                  Join With Us
+                  Get Started Now
                   <i className="feather-arrow-right-circle ms-2" />
                 </Link>
               </div>
@@ -1459,11 +1459,11 @@ const Home = () => {
                   </ul>
                 </div>
                 <Link
-                  to={routes.register}
+                  to={routes.contactUs}
                   className="btn btn-primary w-100 d-flex align-items-center justify-content-center py-2"
                   style={{ background: "linear-gradient(90deg, #49BC4F, #38A941)", border: "none", borderRadius: "12px", fontWeight: "700" }}
                 >
-                  Join With Us
+                  Contact Us To Join
                   <i className="feather-arrow-right-circle ms-2" />
                 </Link>
               </div>
