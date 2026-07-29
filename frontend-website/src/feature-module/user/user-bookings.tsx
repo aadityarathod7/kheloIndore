@@ -518,56 +518,47 @@ const UserBookings = () => {
                         aria-labelledby="nav-Recent-tab"
                         tabIndex={0}
                       >
-                        <div className="table-responsive table-datatble">
-                          <table className="table  datatable">
-                            <thead className="thead-light">
-                              <tr>
-                                <th>Venue Name</th>
-                                <th>Venue Type</th>
-                                <th>Date &amp; Time</th>
-                                <th>Payment</th>
-                                <th>Invoice</th>
-                                <th>Status</th>
-                                <th>Cancel Booking</th>
-                                <th />
-                              </tr>
-                            </thead>
-                             <tbody>
-                              {(!venueBookingData || venueBookingData.length === 0) ? (
+                        {(!venueBookingData || venueBookingData.length === 0) ? (
+                          <div className="text-center py-5 my-3">
+                            <div
+                              className="d-inline-flex align-items-center justify-content-center mb-3"
+                              style={{ width: "64px", height: "64px", borderRadius: "50%", background: "rgba(34, 197, 94, 0.1)", color: "#22C55E" }}
+                            >
+                              <i className="fas fa-calendar-times fs-3" />
+                            </div>
+                            <h5 className="font-weight-bold text-dark mb-1">No Venue Bookings Found</h5>
+                            <p className="text-muted mb-4" style={{ fontSize: "14px", maxWidth: "420px", margin: "0 auto" }}>
+                              You haven&apos;t booked any sports venues yet. Explore top venues in Indore and book your slots!
+                            </p>
+                            <Link
+                              to={routes.blogListSidebarLeft}
+                              className="btn text-white px-4 py-2"
+                              style={{ background: "linear-gradient(135deg, #22C55E 0%, #16A34A 100%)", borderRadius: "50px", fontSize: "14px", fontWeight: "600", boxShadow: "0 4px 12px rgba(34, 197, 94, 0.25)" }}
+                            >
+                              <i className="fas fa-calendar-plus me-2" /> Book a Venue Now
+                            </Link>
+                          </div>
+                        ) : (
+                          <div className="table-responsive table-datatble">
+                            <table className="table datatable">
+                              <thead className="thead-light">
                                 <tr>
-                                  <td colSpan={7} className="text-center py-5">
-                                    <div className="d-flex flex-column align-items-center justify-content-center py-4">
-                                      <div
-                                        className="d-flex align-items-center justify-content-center mb-3"
-                                        style={{ width: "56px", height: "56px", borderRadius: "50%", background: "rgba(34, 197, 94, 0.1)", color: "#22C55E" }}
-                                      >
-                                        <i className="fas fa-calendar-times fs-4" />
-                                      </div>
-                                      <h6 className="font-weight-bold text-dark mb-1" style={{ fontSize: "16px" }}>No Venue Bookings Found</h6>
-                                      <p className="text-muted mb-3" style={{ fontSize: "13px", maxWidth: "360px" }}>
-                                        You haven&apos;t booked any sports venues yet. Explore top venues in Indore and book your slots!
-                                      </p>
-                                      <Link
-                                        to={routes.blogListSidebarLeft}
-                                        className="btn text-white px-4 py-2"
-                                        style={{ background: "linear-gradient(135deg, #22C55E 0%, #16A34A 100%)", borderRadius: "50px", fontSize: "13px", fontWeight: "600", boxShadow: "0 4px 12px rgba(34, 197, 94, 0.25)" }}
-                                      >
-                                        <i className="fas fa-calendar-plus me-2" /> Book a Venue Now
-                                      </Link>
-                                    </div>
-                                  </td>
+                                  <th>Venue Name</th>
+                                  <th>Venue Type</th>
+                                  <th>Date &amp; Time</th>
+                                  <th>Payment</th>
+                                  <th>Invoice</th>
+                                  <th>Status</th>
+                                  <th>Cancel Booking</th>
                                 </tr>
-                              ) : (
-                                venueBookingData.map((bookingData, index) => (
+                              </thead>
+                              <tbody>
+                                {venueBookingData.map((bookingData, index) => (
                                   <tr key={index}>
                                     <td>
                                       <h2 className="table-avatar">
                                         <span className="table-head-name flex-grow-1">
-                                          <Link
-                                            to="#"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#profile-coach"
-                                          >
+                                          <Link to="#" data-bs-toggle="modal" data-bs-target="#profile-coach">
                                             {bookingData?.name}
                                           </Link>
                                         </span>
@@ -577,13 +568,13 @@ const UserBookings = () => {
                                     <td className="table-date-time">
                                       <h4>
                                         Date - {formatDate(bookingData.date)}
-                                        {bookingData?.slots?.map((slotData: any, index: any) => (
-                                          <span key={index}>Slot - {convertTo12HourFormat(slotData?.startTime)} - {convertTo12HourFormat(slotData?.endTime)}</span>
+                                        {bookingData?.slots?.map((slotData: any, idx: any) => (
+                                          <span key={idx}>Slot - {convertTo12HourFormat(slotData?.startTime)} - {convertTo12HourFormat(slotData?.endTime)}</span>
                                         ))}
                                       </h4>
                                     </td>
                                     <td>
-                                      <span className="pay-dark fs-16">{bookingData?.total_price ? ("₹") : ("")} {bookingData.total_price}</span>
+                                      <span className="pay-dark fs-16">{bookingData?.total_price ? "₹" : ""} {bookingData.total_price}</span>
                                     </td>
                                     <td>
                                       <a href={`${IMG_URL}${bookingData.pdfUrl}`} target="_blank" rel="noopener noreferrer">
@@ -596,30 +587,18 @@ const UserBookings = () => {
                                       </span>
                                     </td>
                                     <td>
-                                      {
-                                        bookingData?.status === 'Rejected' ? (
-                                          ""
-                                        ) : bookingData?.cancellation_status === 1 ? (
-                                          <span className="pay-dark fs-16 btn btn-secondary" style={{ pointerEvents: "none", opacity: 0.6 }}>
-                                            Cancelled
-                                          </span>
-                                        ) : (new Date() - new Date(bookingData.createdAt)) / (1000 * 60 * 60) < 2 ? (
-                                          <span className="pay-dark fs-16 btn btn-primary" onClick={() => cancelVenueBooking(bookingData)}>
-                                            Cancel
-                                          </span>
-                                        ) : (
-                                          ""
-                                        )
-                                      }
-
+                                      {bookingData?.status === 'Rejected' ? "" : bookingData?.cancellation_status === 1 ? (
+                                        <span className="pay-dark fs-16 btn btn-secondary" style={{ pointerEvents: "none", opacity: 0.6 }}>Cancelled</span>
+                                      ) : (new Date() - new Date(bookingData.createdAt)) / (1000 * 60 * 60) < 2 ? (
+                                        <span className="pay-dark fs-16 btn btn-primary" onClick={() => cancelVenueBooking(bookingData)}>Cancel</span>
+                                      ) : ""}
                                     </td>
                                   </tr>
-                                ))
-                              )}
-
-                            </tbody>
-                          </table>
-                        </div>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        )}
                       </div>
                       <div
                         className="tab-pane fade"
@@ -628,55 +607,47 @@ const UserBookings = () => {
                         aria-labelledby="nav-RecentCoaching-tab"
                         tabIndex={0}
                       >
-                        <div className="table-responsive table-datatble">
-                          <table className="table  datatable">
-                            <thead className="thead-light">
-                              <tr>
-                                <th>Coach Name</th>
-                                <th>Date</th>
-                                <th>Time</th>
-                                <th>Payment</th>
-                                <th>Invoice</th>
-                                <th>Status</th>
-                                <th>Cancel Booking</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {(!coachBookingData || coachBookingData.length === 0) ? (
+                        {(!coachBookingData || coachBookingData.length === 0) ? (
+                          <div className="text-center py-5 my-3">
+                            <div
+                              className="d-inline-flex align-items-center justify-content-center mb-3"
+                              style={{ width: "64px", height: "64px", borderRadius: "50%", background: "rgba(34, 197, 94, 0.1)", color: "#22C55E" }}
+                            >
+                              <i className="fas fa-user-ninja fs-3" />
+                            </div>
+                            <h5 className="font-weight-bold text-dark mb-1">No Coach Bookings Found</h5>
+                            <p className="text-muted mb-4" style={{ fontSize: "14px", maxWidth: "420px", margin: "0 auto" }}>
+                              You haven&apos;t hired any coaches yet. Find certified coaches in your area and start training!
+                            </p>
+                            <Link
+                              to={routes.coachesGrid}
+                              className="btn text-white px-4 py-2"
+                              style={{ background: "linear-gradient(135deg, #22C55E 0%, #16A34A 100%)", borderRadius: "50px", fontSize: "14px", fontWeight: "600", boxShadow: "0 4px 12px rgba(34, 197, 94, 0.25)" }}
+                            >
+                              <i className="fas fa-user-plus me-2" /> Find a Coach
+                            </Link>
+                          </div>
+                        ) : (
+                          <div className="table-responsive table-datatble">
+                            <table className="table datatable">
+                              <thead className="thead-light">
                                 <tr>
-                                  <td colSpan={7} className="text-center py-5">
-                                    <div className="d-flex flex-column align-items-center justify-content-center py-4">
-                                      <div
-                                        className="d-flex align-items-center justify-content-center mb-3"
-                                        style={{ width: "56px", height: "56px", borderRadius: "50%", background: "rgba(34, 197, 94, 0.1)", color: "#22C55E" }}
-                                      >
-                                        <i className="fas fa-user-ninja fs-4" />
-                                      </div>
-                                      <h6 className="font-weight-bold text-dark mb-1" style={{ fontSize: "16px" }}>No Coach Bookings Found</h6>
-                                      <p className="text-muted mb-3" style={{ fontSize: "13px", maxWidth: "360px" }}>
-                                        You haven&apos;t hired any coaches yet. Find certified coaches in your area and start training!
-                                      </p>
-                                      <Link
-                                        to={routes.coachesGrid}
-                                        className="btn text-white px-4 py-2"
-                                        style={{ background: "linear-gradient(135deg, #22C55E 0%, #16A34A 100%)", borderRadius: "50px", fontSize: "13px", fontWeight: "600", boxShadow: "0 4px 12px rgba(34, 197, 94, 0.25)" }}
-                                      >
-                                        <i className="fas fa-user-plus me-2" /> Find a Coach
-                                      </Link>
-                                    </div>
-                                  </td>
+                                  <th>Coach Name</th>
+                                  <th>Date</th>
+                                  <th>Time</th>
+                                  <th>Payment</th>
+                                  <th>Invoice</th>
+                                  <th>Status</th>
+                                  <th>Cancel Booking</th>
                                 </tr>
-                              ) : (
-                                coachBookingData.map((bookingData, index) => (
+                              </thead>
+                              <tbody>
+                                {coachBookingData.map((bookingData, index) => (
                                   <tr key={index}>
                                     <td>
                                       <h2 className="table-avatar">
                                         <span className="table-head-name flex-grow-1">
-                                          <Link
-                                            to="#"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#profile-coach"
-                                          >
+                                          <Link to="#" data-bs-toggle="modal" data-bs-target="#profile-coach">
                                             {bookingData.first_name} {bookingData.last_name}
                                           </Link>
                                         </span>
@@ -689,7 +660,7 @@ const UserBookings = () => {
                                       </h4>
                                     </td>
                                     <td>
-                                      <span className="pay-dark fs-16">{bookingData?.total_price ? ("₹") : ("")} {bookingData.total_price}</span>
+                                      <span className="pay-dark fs-16">{bookingData?.total_price ? "₹" : ""} {bookingData.total_price}</span>
                                     </td>
                                     <td>
                                       <a href={`${IMG_URL}${bookingData.pdfUrl}`} target="_blank" rel="noopener noreferrer">
@@ -702,28 +673,18 @@ const UserBookings = () => {
                                       </span>
                                     </td>
                                     <td>
-                                      {
-                                        bookingData?.status === 'Rejected' ? (
-                                          ""
-                                        ) : bookingData?.cancellation_status === 1 ? (
-                                          <span className="pay-dark fs-16 btn btn-secondary" style={{ pointerEvents: "none", opacity: 0.6 }}>
-                                            Cancelled
-                                          </span>
-                                        ) : (new Date() - new Date(bookingData.createdAt)) / (1000 * 60 * 60) < 2 ? (
-                                          <span className="pay-dark fs-16 btn btn-primary" onClick={() => cancelCoachBooking(bookingData)}>
-                                            Cancel
-                                          </span>
-                                        ) : (
-                                          ""
-                                        )
-                                      }
+                                      {bookingData?.status === 'Rejected' ? "" : bookingData?.cancellation_status === 1 ? (
+                                        <span className="pay-dark fs-16 btn btn-secondary" style={{ pointerEvents: "none", opacity: 0.6 }}>Cancelled</span>
+                                      ) : (new Date() - new Date(bookingData.createdAt)) / (1000 * 60 * 60) < 2 ? (
+                                        <span className="pay-dark fs-16 btn btn-primary" onClick={() => cancelCoachBooking(bookingData)}>Cancel</span>
+                                      ) : ""}
                                     </td>
                                   </tr>
-                                ))
-                              )}
-                            </tbody>
-                          </table>
-                        </div>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        )}
                       </div>
                       <div
                         className="tab-pane fade"
@@ -732,55 +693,47 @@ const UserBookings = () => {
                         aria-labelledby="nav-RecentTrainer-tab"
                         tabIndex={0}
                       >
-                        <div className="table-responsive table-datatble">
-                          <table className="table  datatable">
-                            <thead className="thead-light">
-                              <tr>
-                                <th>Trainer Name</th>
-                                <th>Date</th>
-                                <th>Time</th>
-                                <th>Payment</th>
-                                <th>Invoice</th>
-                                <th>Status</th>
-                                <th>Cancel Booking</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {(!tarinerBookingData || tarinerBookingData.length === 0) ? (
+                        {(!tarinerBookingData || tarinerBookingData.length === 0) ? (
+                          <div className="text-center py-5 my-3">
+                            <div
+                              className="d-inline-flex align-items-center justify-content-center mb-3"
+                              style={{ width: "64px", height: "64px", borderRadius: "50%", background: "rgba(34, 197, 94, 0.1)", color: "#22C55E" }}
+                            >
+                              <i className="fas fa-dumbbell fs-3" />
+                            </div>
+                            <h5 className="font-weight-bold text-dark mb-1">No Personal Trainer Bookings Found</h5>
+                            <p className="text-muted mb-4" style={{ fontSize: "14px", maxWidth: "420px", margin: "0 auto" }}>
+                              You haven&apos;t booked any personal trainers yet. Level up your fitness with expert trainers!
+                            </p>
+                            <Link
+                              to={routes.blogList}
+                              className="btn text-white px-4 py-2"
+                              style={{ background: "linear-gradient(135deg, #22C55E 0%, #16A34A 100%)", borderRadius: "50px", fontSize: "14px", fontWeight: "600", boxShadow: "0 4px 12px rgba(34, 197, 94, 0.25)" }}
+                            >
+                              <i className="fas fa-dumbbell me-2" /> Explore Personal Trainers
+                            </Link>
+                          </div>
+                        ) : (
+                          <div className="table-responsive table-datatble">
+                            <table className="table datatable">
+                              <thead className="thead-light">
                                 <tr>
-                                  <td colSpan={7} className="text-center py-5">
-                                    <div className="d-flex flex-column align-items-center justify-content-center py-4">
-                                      <div
-                                        className="d-flex align-items-center justify-content-center mb-3"
-                                        style={{ width: "56px", height: "56px", borderRadius: "50%", background: "rgba(34, 197, 94, 0.1)", color: "#22C55E" }}
-                                      >
-                                        <i className="fas fa-dumbbell fs-4" />
-                                      </div>
-                                      <h6 className="font-weight-bold text-dark mb-1" style={{ fontSize: "16px" }}>No Personal Trainer Bookings Found</h6>
-                                      <p className="text-muted mb-3" style={{ fontSize: "13px", maxWidth: "360px" }}>
-                                        You haven&apos;t booked any personal trainers yet. Level up your fitness with expert trainers!
-                                      </p>
-                                      <Link
-                                        to={routes.blogList}
-                                        className="btn text-white px-4 py-2"
-                                        style={{ background: "linear-gradient(135deg, #22C55E 0%, #16A34A 100%)", borderRadius: "50px", fontSize: "13px", fontWeight: "600", boxShadow: "0 4px 12px rgba(34, 197, 94, 0.25)" }}
-                                      >
-                                        <i className="fas fa-dumbbell me-2" /> Explore Personal Trainers
-                                      </Link>
-                                    </div>
-                                  </td>
+                                  <th>Trainer Name</th>
+                                  <th>Date</th>
+                                  <th>Time</th>
+                                  <th>Payment</th>
+                                  <th>Invoice</th>
+                                  <th>Status</th>
+                                  <th>Cancel Booking</th>
                                 </tr>
-                              ) : (
-                                tarinerBookingData.map((bookingData, index) => (
+                              </thead>
+                              <tbody>
+                                {tarinerBookingData.map((bookingData, index) => (
                                   <tr key={index}>
                                     <td>
                                       <h2 className="table-avatar">
                                         <span className="table-head-name flex-grow-1">
-                                          <Link
-                                            to="#"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#profile-coach"
-                                          >
+                                          <Link to="#" data-bs-toggle="modal" data-bs-target="#profile-coach">
                                             {bookingData.first_name} {bookingData.last_name}
                                           </Link>
                                         </span>
@@ -793,7 +746,7 @@ const UserBookings = () => {
                                       </h4>
                                     </td>
                                     <td>
-                                      <span className="pay-dark fs-16">{bookingData?.total_price ? ("₹") : ("")} {bookingData.total_price}</span>
+                                      <span className="pay-dark fs-16">{bookingData?.total_price ? "₹" : ""} {bookingData.total_price}</span>
                                     </td>
                                     <td>
                                       <a href={`${IMG_URL}${bookingData.pdfUrl}`} target="_blank" rel="noopener noreferrer">
@@ -806,28 +759,18 @@ const UserBookings = () => {
                                       </span>
                                     </td>
                                     <td>
-                                      {
-                                        bookingData?.status === 'Rejected' ? (
-                                          ""
-                                        ) : bookingData?.cancellation_status === 1 ? (
-                                          <span className="pay-dark fs-16 btn btn-secondary" style={{ pointerEvents: "none", opacity: 0.6 }}>
-                                            Cancelled
-                                          </span>
-                                        ) : (new Date() - new Date(bookingData.createdAt)) / (1000 * 60 * 60) < 2 ? (
-                                          <span className="pay-dark fs-16 btn btn-primary" onClick={() => cancelTrainerBooking(bookingData)}>
-                                            Cancel
-                                          </span>
-                                        ) : (
-                                          ""
-                                        )
-                                      }
+                                      {bookingData?.status === 'Rejected' ? "" : bookingData?.cancellation_status === 1 ? (
+                                        <span className="pay-dark fs-16 btn btn-secondary" style={{ pointerEvents: "none", opacity: 0.6 }}>Cancelled</span>
+                                      ) : (new Date() - new Date(bookingData.createdAt)) / (1000 * 60 * 60) < 2 ? (
+                                        <span className="pay-dark fs-16 btn btn-primary" onClick={() => cancelTrainerBooking(bookingData)}>Cancel</span>
+                                      ) : ""}
                                     </td>
                                   </tr>
-                                ))
-                              )}
-                            </tbody>
-                          </table>
-                        </div>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>

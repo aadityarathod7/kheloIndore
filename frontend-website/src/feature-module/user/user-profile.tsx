@@ -191,6 +191,7 @@ const UserProfile = () => {
 
       await axios.put(saveApiUrl, payload);
       localStorage.setItem("profileCompleted", "true");
+      window.dispatchEvent(new Event("userProfileUpdated"));
 
       Swal.fire({
         icon: "success",
@@ -284,12 +285,32 @@ const UserProfile = () => {
       minHeight: "38px",
       borderRadius: "8px",
       fontSize: "13px",
+      paddingLeft: "24px",
       borderColor: state.isFocused ? "#22C55E" : "#E2E8F0",
       backgroundColor: "#FFFFFF",
       boxShadow: state.isFocused ? "0 0 0 3px rgba(34, 197, 94, 0.12)" : "none",
       "&:hover": {
         borderColor: "#22C55E",
       },
+    }),
+    valueContainer: (base: any) => ({
+      ...base,
+      padding: "0 6px",
+    }),
+    input: (base: any) => ({
+      ...base,
+      margin: 0,
+      padding: 0,
+    }),
+    placeholder: (base: any) => ({
+      ...base,
+      color: "#94A3B8",
+      fontSize: "13px",
+    }),
+    singleValue: (base: any) => ({
+      ...base,
+      color: "#0F172A",
+      fontSize: "13px",
     }),
     option: (base: any, state: any) => ({
       ...base,
@@ -469,7 +490,7 @@ const UserProfile = () => {
 
                     <div className="col-md-6">
                       <div className="ki-input-group">
-                        <label className="ki-field-label">Email Address (Read-only)</label>
+                        <label className="ki-field-label">Email Address *</label>
                         <div className="ki-input-wrapper">
                           <i className="fas fa-envelope ki-input-icon" />
                           <input
@@ -479,7 +500,6 @@ const UserProfile = () => {
                             placeholder="Enter Email Address"
                             value={userData.email || ""}
                             onChange={handleInputChange}
-                            disabled
                           />
                         </div>
                       </div>
@@ -487,7 +507,7 @@ const UserProfile = () => {
 
                     <div className="col-md-6">
                       <div className="ki-input-group">
-                        <label className="ki-field-label">Phone Number (Read-only)</label>
+                        <label className="ki-field-label">Phone Number *</label>
                         <div className="ki-input-wrapper">
                           <i className="fas fa-phone-alt ki-input-icon" />
                           <input
@@ -497,7 +517,6 @@ const UserProfile = () => {
                             placeholder="Enter Phone Number"
                             value={userData.mobile || ""}
                             onChange={handleInputChange}
-                            disabled
                           />
                         </div>
                       </div>
@@ -551,28 +570,38 @@ const UserProfile = () => {
                     <div className="col-md-4">
                       <div className="ki-input-group">
                         <label className="ki-field-label">State</label>
-                        <Select
-                          options={stateOptions}
-                          styles={customSelectStyles}
-                          value={stateOptions.find((opt) => opt.value === userData.state) || null}
-                          onChange={handleSelectChange}
-                          placeholder="Select State"
-                          isSearchable={true}
-                        />
+                        <div className="ki-input-wrapper">
+                          <i className="fas fa-map-marked-alt ki-input-icon" />
+                          <div style={{ width: "100%" }}>
+                            <Select
+                              options={stateOptions}
+                              styles={customSelectStyles}
+                              value={stateOptions.find((opt) => opt.value.toLowerCase() === String(userData.state || "").toLowerCase()) || (userData.state ? { value: userData.state, label: userData.state } : null)}
+                              onChange={handleSelectChange}
+                              placeholder="Select State"
+                              isSearchable={true}
+                            />
+                          </div>
+                        </div>
                       </div>
                     </div>
 
                     <div className="col-md-4">
                       <div className="ki-input-group">
                         <label className="ki-field-label">City</label>
-                        <Select
-                          options={cityOption}
-                          styles={customSelectStyles}
-                          value={cityOption.find((opt) => opt.value === userData.city) || null}
-                          onChange={handleCitySelectChange}
-                          placeholder="Select City"
-                          isSearchable={true}
-                        />
+                        <div className="ki-input-wrapper">
+                          <i className="fas fa-city ki-input-icon" />
+                          <div style={{ width: "100%" }}>
+                            <Select
+                              options={cityOption}
+                              styles={customSelectStyles}
+                              value={cityOption.find((opt) => opt.value.toLowerCase() === String(userData.city || "").toLowerCase()) || (userData.city ? { value: userData.city, label: userData.city } : null)}
+                              onChange={handleCitySelectChange}
+                              placeholder="Select City"
+                              isSearchable={true}
+                            />
+                          </div>
+                        </div>
                       </div>
                     </div>
 
@@ -609,15 +638,7 @@ const UserProfile = () => {
                   <button
                     type="button"
                     onClick={handleSaveChange}
-                    className="btn px-4 py-2 text-white font-weight-bold"
-                    style={{
-                      background: "linear-gradient(135deg, #22C55E 0%, #16A34A 100%)",
-                      borderRadius: "50px",
-                      boxShadow: "0 4px 12px rgba(34, 197, 94, 0.3)",
-                      border: "none",
-                      fontSize: "13px",
-                      transition: "all 0.2s ease-in-out"
-                    }}
+                    className="btn ki-submit-btn"
                     disabled={loading}
                   >
                     {loading ? (

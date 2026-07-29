@@ -2857,8 +2857,8 @@ body .swal2-container {
         z-index: 2 !important;
       }
 
-      .form-control,
-      input {
+      > .form-control,
+      > input {
         width: 100% !important;
         height: 38px !important;
         padding-left: 34px !important;
@@ -2870,6 +2870,15 @@ body .swal2-container {
         font-weight: 500 !important;
         color: #0F172A !important;
         transition: all 0.2s ease !important;
+
+        &:-webkit-autofill,
+        &:-webkit-autofill:hover,
+        &:-webkit-autofill:focus,
+        &:-webkit-autofill:active {
+          -webkit-box-shadow: 0 0 0 1000px #FFFFFF inset !important;
+          -webkit-text-fill-color: #0F172A !important;
+          transition: background-color 5000s ease-in-out 0s !important;
+        }
 
         &:focus {
           border-color: #22C55E !important;
@@ -2890,6 +2899,37 @@ body .swal2-container {
         height: auto !important;
         min-height: 65px !important;
         padding-top: 8px !important;
+      }
+    }
+  }
+
+  .ki-submit-btn {
+    background: linear-gradient(135deg, #22C55E 0%, #16A34A 100%) !important;
+    color: #FFFFFF !important;
+    border: none !important;
+    border-radius: 50px !important;
+    padding: 8px 24px !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3) !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    transition: all 0.2s ease-in-out !important;
+
+    i {
+      color: #FFFFFF !important;
+      font-size: 13px !important;
+    }
+
+    &:hover, &:focus, &:active {
+      background: linear-gradient(135deg, #16A34A 0%, #15803D 100%) !important;
+      color: #FFFFFF !important;
+      box-shadow: 0 6px 16px rgba(34, 197, 94, 0.4) !important;
+
+      i {
+        color: #FFFFFF !important;
       }
     }
   }

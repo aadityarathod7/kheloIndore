@@ -629,6 +629,8 @@ exports.loginUserWithMobile = async (req, res) => {
     // If user does not exist, create new account automatically
     if (!checkUser && !checkCoach) {
       checkUser = await User.create({
+        first_name: "User",
+        last_name: "",
         mobile: mobile,
         role: "User",
         status: true,

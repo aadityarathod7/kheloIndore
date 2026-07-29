@@ -4,12 +4,12 @@ const signupVerifyOTP = mongoose.Schema(
   {
     first_name: {
       type: String,
-      required: true,
+      default: "",
       trim: true,
     },
     last_name: {
       type: String,
-      required: true,
+      default: "",
       trim: true,
     },
     email: {

@@ -49,6 +49,7 @@ const Header = () => {
 
   const [visible, setVisible] = useState(false);
   const [error, setError] = useState("");
+  const [fullUserData, setFullUserData] = useState<any>(null);
   const [input, setInput] = useState({
     first_name: "",
     mobile: "",
@@ -63,20 +64,36 @@ const Header = () => {
 
   interface JwtPayload {
     first_name: string;
+    userID?: number;
+    id?: number;
   }
 
   useEffect(() => {
-    const getTokenFromStorage = () => {
+    const fetchUserData = async () => {
       const token = localStorage.getItem("token");
       if (token) {
-        const decodedToken = jwtDecode<JwtPayload>(token);
-        setUserData(decodedToken);
-      } else {
-        return;
+        try {
+          const decodedToken: any = jwtDecode<JwtPayload>(token);
+          setUserData(decodedToken);
+          const userId = decodedToken?.userID || decodedToken?.id;
+          if (userId) {
+            const res = await axios.get(`${API_URL}/user/fetch-user-by-id/${userId}`);
+            if (res.data?.data) {
+              setFullUserData(res.data.data);
+            }
+          }
+        } catch (err) {
+          console.error("Error fetching user profile in header:", err);
+        }
       }
     };
-    getTokenFromStorage();
-  }, []);
+    fetchUserData();
+
+    window.addEventListener("userProfileUpdated", fetchUserData);
+    return () => {
+      window.removeEventListener("userProfileUpdated", fetchUserData);
+    };
+  }, [location.pathname]);
 
   const handleInputChange = (e: any) => {
     e.preventDefault();
@@ -407,10 +424,20 @@ const Header = () => {
                       setIsProfileOpen(!isProfileOpen);
                     }}
                   >
-                    <div className="avatar-circle">
-                      {userData?.first_name ? userData.first_name[0].toUpperCase() : 'U'}
+                    <div className="avatar-circle" style={{ overflow: "hidden" }}>
+                      {fullUserData?.profile_image?.[0]?.src ? (
+                        <img 
+                          src={`${IMG_URL}${fullUserData.profile_image[0].src}`} 
+                          alt="Profile" 
+                          style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }} 
+                        />
+                      ) : (
+                        (fullUserData?.first_name || userData?.first_name || 'U')[0].toUpperCase()
+                      )}
                     </div>
-                    <span className="user-name-text">{userData?.first_name}</span>
+                    <span className="user-name-text">
+                      {fullUserData?.first_name || userData?.first_name || "User"}
+                    </span>
                     <i className="fas fa-chevron-down" style={{ fontSize: "12px", opacity: 0.7 }} />
                     <div className="lt-btn">
                       <ul className="profile-dropdown">
