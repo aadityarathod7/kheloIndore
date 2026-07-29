@@ -40,16 +40,12 @@ interface FilterData {
   near_by_location: any;
 }
 
-const BlogListSidebarLeft = (_props: { id: any; name: any }) => {
-  const routes = all_routes;
-  const [selectedItems, setSelectedItems] = useState(Array(10).fill(false));
+const BlogListSidebarLeft = (_props: { id: string; name: string }) => {
   const [venues, setVenues] = useState<Venues[]>([]);
   const [category, setCategory] = useState<Category[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedLocation, setSelectedLocation] = useState("");
   const [venueByLocation, setVenueByLocation] = useState<Venues[]>([]);
-  const [seacrhCategory, setSearchCategory] = useState("");
-  const [searchCategoryData, setSearchCategoryData] = useState<Venues[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
   // Advanced filters state
@@ -62,20 +58,6 @@ const BlogListSidebarLeft = (_props: { id: any; name: any }) => {
   const [layoutType, setLayoutType] = useState("");
   const [floorType, setFloorType] = useState("");
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
-
-  const handleAmenityChange = (amenity: string) => {
-    setSelectedAmenities(prev =>
-      prev.includes(amenity) ? prev.filter(item => item !== amenity) : [...prev, amenity]
-    );
-  };
-
-  const handleItemClick = (index: number) => {
-    setSelectedItems((prevSelectedItems) => {
-      const updatedSelectedItems = [...prevSelectedItems];
-      updatedSelectedItems[index] = !updatedSelectedItems[index];
-      return updatedSelectedItems;
-    });
-  };
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -141,23 +123,9 @@ const BlogListSidebarLeft = (_props: { id: any; name: any }) => {
 
   const venueType = [
     ...new Set(
-      venues.map((venue, _index) => venue.vendor_type.replace("_", " "))
+      venues.map((venue) => venue.vendor_type ? String(venue.vendor_type).replace("_", " ") : "")
     ),
   ];
-
-  const searchingCategories = (e:any) => {
-    const value = e.target.value;
-    setSearchCategory(value);
-    if (value.trim() === "") {
-      setSearchCategoryData([]);
-    } else {
-      setSearchCategoryData(
-        venueType.filter((item) =>
-          item.toLowerCase().includes(value.toLowerCase())
-        )
-      );
-    }
-  };
 
   useEffect(() => {
     let filteredData = venues;

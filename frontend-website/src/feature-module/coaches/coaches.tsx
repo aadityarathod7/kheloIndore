@@ -87,26 +87,14 @@ const options = [
   { value: "zumba", label: "Zumba" },
 ];
 
-const CoachesGrid = (props: { id: any }) => {
-  const routes = all_routes;
-  const [selectedItems, setSelectedItems] = useState(Array(9).fill(false));
+const CoachesGrid = (_props: { id?: string }) => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [coaches, setCoaches] = useState<Coach[]>([]);
   const [selectedSort, setSelectedSort] = useState<SortCriteria>();
-
-  const [name, setName] = useState<FilterData[]>([]);
-  const [locationName, setLocationName] = useState<FilterData[]>([]);
+  const [name, setName] = useState<any[]>([]);
+  const [locationName, setLocationName] = useState<any[]>([]);
   const [location, setLocation] = useState<string | null>(null);
-
-  const [coachPrice, setCoachPrice] = useState<FilterData[]>([]);
-  const [coachCategogy, setCoachCategory] = useState<FilterData[]>([]);
-  const [coachByLocation, setCoachByLocation] = useState<FilterData[]>([]);
   const [finalFilterCoach, setFinalFilterCoach] = useState<FilterData[]>([]);
-  const [selectedTrainerType, setSelectedTrainerType] = useState<string | null>(
-    null
-  );
-
-  const { id } = props;
 
   const navigate = useNavigate();
   const locations = useLocation();

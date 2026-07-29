@@ -2,17 +2,11 @@ import React, { useEffect, useState } from "react";
 import ImageWithBasePath from "../../core/data/img/ImageWithBasePath";
 import AOS from "aos";
 import "aos/dist/aos.css";
-import Select from "react-select";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import Slider from "react-slick";
 import { all_routes } from "../router/all_routes";
 import { Dropdown } from "primereact/dropdown";
-import { COffcanvasTitle } from "@coreui/react";
-import { COffcanvasHeader } from "@coreui/react";
-import { COffcanvasBody } from "@coreui/react";
-import { COffcanvas } from "@coreui/react";
-import { CButton, CCloseButton } from "@coreui/react";
 import "../../../node_modules/bootstrap/dist/css/bootstrap.min.css";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -73,27 +67,14 @@ interface Location {
 const Home = () => {
   const routes = all_routes;
   const [selectedTimeframe, setSelectedTimeframe] = useState<Goto>();
-  const [error, setError] = useState("");
-  const [selectedItems, setSelectedItems] = useState(Array(9).fill(false));
   const [coaches, setCoaches] = useState<Coach[]>([]);
   const [trainer, setTrainer] = useState<Trainer[]>([]);
   const [venues, setVenues] = useState<Venues[]>([]);
   const [activeTopRatedTab, setActiveTopRatedTab] = useState("venues");
-  const [selectedLocationSort, setSelectedLocationSort] = useState<any>();
-  const [selectedSport, setSelectedSport] = useState<any>();
-  const [data, setData] = useState([]);
-  const [visible, setVisible] = useState(false);
-  const [location, setLocation] = useState<Location | null>(null);
+  const [selectedLocationSort, setSelectedLocationSort] = useState<{ name: string } | null>(null);
+  const [selectedSport, setSelectedSport] = useState<{ name: string } | null>(null);
 
-  // const { id } = props;
   const navigate = useNavigate();
-  const [input, setInput] = useState({
-    first_name: "",
-    mobile: "",
-    email: "",
-    subject: "Quick Enquiry",
-    comments: "",
-  });
 
   useEffect(() => {
     document.title = "Home";

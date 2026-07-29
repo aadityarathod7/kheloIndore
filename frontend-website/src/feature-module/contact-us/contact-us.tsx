@@ -1,12 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { all_routes } from "../router/all_routes";
+import { Link } from "react-router-dom";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { API_URL } from "../../ApiUrl";
 
 const ContactUs = () => {
-  const navigate = useNavigate();
   const [input, setInput] = useState({
     first_name: "",
     last_name: "",
@@ -18,12 +16,10 @@ const ContactUs = () => {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    document.title = "contact-us"
+    document.title = "contact-us";
   }, []);
 
-  const [error, setError] = useState("");
-
-  const handleInputChange = (e: any) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     e.preventDefault();
     const { name, value } = e.target;
     console.log;
@@ -77,15 +73,18 @@ const ContactUs = () => {
         return;
       }
 
-      const response = await axios
-        .post(`${API_URL}/contactUs/create`, input)
-        .then((response) => {
-          // alert("response");
-          Swal.fire(
-            "Your request has been successfully submitted. We'll be in touch shortly!"
-          );
-          navigate("/");
-        });
+      await axios.post(`${API_URL}/contactUs/create`, input);
+      Swal.fire(
+        "Your request has been successfully submitted. We'll be in touch shortly!"
+      );
+      setInput({
+        first_name: "",
+        last_name: "",
+        mobile: "",
+        email: "",
+        subject: "",
+        comments: "",
+      });
 
       // Handle success or navigate to another page
       // Navigate to success page upon successful submission

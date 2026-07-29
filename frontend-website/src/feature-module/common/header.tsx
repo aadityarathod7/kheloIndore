@@ -246,149 +246,23 @@ const Header = () => {
       <div className="container-fluid">
         <nav className="navbar navbar-expand-lg header-nav">
           <div className="navbar-header">
-            <div className="mobile-navbar">
+            <div className="mobile-navbar d-lg-none d-flex align-items-center justify-content-between w-100 py-2 px-3">
+              <Link to="/" className="navbar-brand m-0">
+                <img
+                  src="/logo.png"
+                  className="img-fluid"
+                  alt="Logo"
+                  style={{ maxHeight: "40px" }}
+                />
+              </Link>
               <button
-                className="navbar-toggler  first-button"
+                className="navbar-toggler mobile-menu-btn d-flex align-items-center justify-content-center p-2 border-0 bg-transparent"
                 onClick={toggleOffcanvas}
                 type="button"
-                data-bs-toggle="offcanvas"
-                data-bs-target="#offcanvasWithBothOptions"
-                aria-controls="offcanvasWithBothOptions"
+                aria-label="Toggle navigation"
               >
-                {location.pathname.includes(routes.home) ? (
-                  <i className="fas fa-bars"></i>
-                ) : (
-                  <i className="fas fa-bars"></i>
-                )}
+                <i className="fas fa-bars text-dark" style={{ fontSize: "20px" }} />
               </button>
-              <div
-                className={`offcanvas offcanvas-start ${offcanvasOpen ? "show" : ""}`}
-                data-bs-scroll="true"
-                tabIndex="-1"
-                id="offcanvasWithBothOptions"
-                aria-labelledby="offcanvasWithBothOptionsLabel"
-              >
-                <div className="offcanvas-header" style={profileStyle}>
-                  <div
-                    className="nav-link btn btn-white log-register"
-                    style={{ width: "50%" }}
-                  >
-                    <a>
-                      <span>
-                        <i className="feather-users" />
-                      </span>
-                      {/* {userData?.first_name} */}
-                      <i className="fas fa-chevron-down"></i>
-                      <div className="lt-btn">
-                        <ul className="mobile profile-dropdown">
-                          <li className="ft-colr-ffff">
-                            <Link
-                              to={routes.userBookings}
-                              onClick={hideOffcanvas}
-                            >
-                              <i className="fas fa-user"></i> &nbsp;
-                              {userData?.first_name}
-                            </Link>
-                          </li>
-                          {/* <li className="ft-colr-ffff">
-                            <Link
-                              to={routes.userProfileOtherSetting}
-                              onClick={hideOffcanvas}
-                            >
-                              <i className="fas fa-cog"></i> Settings
-                            </Link>
-                          </li> */}
-                          <li className="ft-colr-ffff" onClick={removeToken}>
-                            <Link to={routes.home}>
-                              <i className="fas fa-sign-out-alt"></i> Logout
-                            </Link>
-                          </li>
-                        </ul>
-                      </div>
-                    </a>
-                  </div>
-                </div>
-                <div className="offcanvas-body">
-                  {/* <img src="/assets/img/plane.png" /> */}
-                  <ul className="nav-list">
-                    <li>
-                      <Link to={routes.home} onClick={hideOffcanvas}>
-                        Home
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        to={routes.blogListSidebarLeft}
-                        onClick={hideOffcanvas}
-                      >
-                        Sports venue
-                      </Link>
-                    </li>
-                    <li>
-                      <Link to={routes.coachesGrid} onClick={hideOffcanvas}>
-                        Coaches
-                      </Link>
-                    </li>
-                    <li>
-                      <Link to={routes.blogList} onClick={hideOffcanvas}>
-                        Personal Trainer
-                      </Link>
-                    </li>
-                    {/* <li>
-                      <Link to={routes.events} onClick={hideOffcanvas}>
-                        Events
-                      </Link>
-                    </li> */}
-                    <li>
-                      <Link to={routes.contactUs} onClick={hideOffcanvas}>
-                        Contact Us
-                      </Link>
-                    </li>
-                    <li>
-                      <Link to={routes.blogGrid} onClick={hideOffcanvas}>
-                        Blogs
-                      </Link>
-                    </li>
-                  </ul>
-                  <ul className="nav-btn-mob">
-                    <li className="nav-item">
-                      {/* <Link
-                        className="nav-link btn btn-secondary"
-                        to="http://127.0.0.1:3037/admin"
-                      >
-                        <span>
-                          <i className="feather-check-circle" />
-                        </span>
-                        List Your Court
-                      </Link> */}
-                    </li>
-                    <li
-                      className="nav-item"
-                      style={{ display: loginToken ? "none" : "block" }}
-                    >
-                      <div className="nav-link btn btn-white log-register">
-                        <Link to={"/login"}>
-                          <span>
-                            <i className="feather-users" />
-                          </span>
-                          Login
-                        </Link>{" "}
-                      </div>
-                    </li>
-                    <li
-                      className="nav-item"
-                      style={{ display: loginToken ? "none" : "block" }}
-                    >
-                      <div className="nav-link btn btn-white log-register">
-                        <span>
-                          <i className="feather-users" />
-                        </span>
-                        <Link to={"/register"}>Register</Link>
-                      </div>
-                    </li>
-                  </ul>
-                </div>
-              </div>
             </div>
             {/* <nav className="navbar navbar-light bg-light">
               <div className="container-fluid">
@@ -414,7 +288,7 @@ const Header = () => {
                 <span />
               </span>
             </Link> */}
-            <Link to="/" className="navbar-brand logo" style={{ padding: "0", display: "flex", alignItems: "center", textDecoration: "none" }}>
+            <Link to="/" className="navbar-brand logo d-none d-lg-flex" style={{ padding: "0", alignItems: "center", textDecoration: "none" }}>
               <img
                 src="/logo.png"
                 className="img-fluid logo-navbar-3d"
@@ -428,7 +302,7 @@ const Header = () => {
               />
             </Link>
           </div>
-          <div className="main-menu-wrapper">
+          <div className="main-menu-wrapper d-none d-lg-block">
             <div className="menu-header">
               <Link to="/" className="menu-logo">
                 <img
@@ -570,6 +444,102 @@ const Header = () => {
         </nav>
       </div>
     </header>
+    {/* Standalone Full-Height Mobile Offcanvas Drawer */}
+    <div
+      className={`offcanvas offcanvas-start ${offcanvasOpen ? "show" : ""}`}
+      tabIndex={-1}
+      id="offcanvasWithBothOptions"
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        bottom: 0,
+        width: "290px",
+        height: "100vh",
+        backgroundColor: "#FFFFFF",
+        zIndex: 1060,
+        visibility: offcanvasOpen ? "visible" : "hidden",
+        transform: offcanvasOpen ? "translateX(0)" : "translateX(-100%)",
+        transition: "transform 0.3s ease-in-out, visibility 0.3s ease-in-out",
+        boxShadow: "4px 0 24px rgba(0, 0, 0, 0.15)"
+      }}
+    >
+      <div className="offcanvas-header d-flex align-items-center justify-content-between p-3 border-bottom bg-white">
+        <div className="d-flex align-items-center gap-2">
+          <img src="/logo.png" alt="Logo" style={{ maxHeight: "36px" }} />
+          <span style={{ fontWeight: "700", color: "#0F172A", fontSize: "17px" }}>Khelo Indore</span>
+        </div>
+        {loginToken && userData?.first_name && (
+          <span className="badge bg-success-light text-success px-2 py-1" style={{ fontSize: "12px" }}>
+            Hi, {userData.first_name}
+          </span>
+        )}
+        <button 
+          type="button" 
+          className="btn-close text-reset" 
+          onClick={hideOffcanvas}
+          aria-label="Close"
+        ></button>
+      </div>
+      <div className="offcanvas-body p-3 bg-white">
+        <ul className="list-unstyled m-0 p-0">
+          <li className="border-bottom py-2">
+            <Link to={routes.home} onClick={hideOffcanvas} className="d-flex align-items-center py-2 text-dark font-weight-bold text-decoration-none" style={{ fontSize: "15px" }}>
+              <i className="fas fa-home me-3 text-success" style={{ width: "20px", textAlign: "center" }} /> Home
+            </Link>
+          </li>
+          <li className="border-bottom py-2">
+            <Link to={routes.blogListSidebarLeft} onClick={hideOffcanvas} className="d-flex align-items-center py-2 text-dark font-weight-bold text-decoration-none" style={{ fontSize: "15px" }}>
+              <i className="fas fa-map-marker-alt me-3 text-success" style={{ width: "20px", textAlign: "center" }} /> Sports Venue
+            </Link>
+          </li>
+          <li className="border-bottom py-2">
+            <Link to={routes.coachesGrid} onClick={hideOffcanvas} className="d-flex align-items-center py-2 text-dark font-weight-bold text-decoration-none" style={{ fontSize: "15px" }}>
+              <i className="fas fa-user-ninja me-3 text-success" style={{ width: "20px", textAlign: "center" }} /> Coaches
+            </Link>
+          </li>
+          <li className="border-bottom py-2">
+            <Link to={routes.blogList} onClick={hideOffcanvas} className="d-flex align-items-center py-2 text-dark font-weight-bold text-decoration-none" style={{ fontSize: "15px" }}>
+              <i className="fas fa-dumbbell me-3 text-success" style={{ width: "20px", textAlign: "center" }} /> Personal Trainer
+            </Link>
+          </li>
+          <li className="border-bottom py-2">
+            <Link to={routes.contactUs} onClick={hideOffcanvas} className="d-flex align-items-center py-2 text-dark font-weight-bold text-decoration-none" style={{ fontSize: "15px" }}>
+              <i className="fas fa-envelope me-3 text-success" style={{ width: "20px", textAlign: "center" }} /> Contact Us
+            </Link>
+          </li>
+          <li className="border-bottom py-2">
+            <Link to={routes.blogGrid} onClick={hideOffcanvas} className="d-flex align-items-center py-2 text-dark font-weight-bold text-decoration-none" style={{ fontSize: "15px" }}>
+              <i className="fas fa-newspaper me-3 text-success" style={{ width: "20px", textAlign: "center" }} /> Blogs
+            </Link>
+          </li>
+        </ul>
+
+        <div className="mt-4 pt-3">
+          {!loginToken ? (
+            <div className="d-flex flex-column gap-2">
+              <Link to="/login" className="navbar-login-btn text-center py-2 px-3 w-100" onClick={hideOffcanvas}>
+                Login
+              </Link>
+              <Link to="/register" className="navbar-register-btn text-center py-2 px-3 w-100" onClick={hideOffcanvas}>
+                Register
+              </Link>
+            </div>
+          ) : (
+            <button className="btn btn-outline-danger w-100 py-2" onClick={() => { removeToken(); hideOffcanvas(); }}>
+              <i className="fas fa-sign-out-alt me-2" /> Logout
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+    {offcanvasOpen && (
+      <div 
+        className="offcanvas-backdrop fade show"
+        onClick={hideOffcanvas}
+        style={{ zIndex: 1050 }}
+      />
+    )}
     <div>
         <div className="enquiry-btn">
           <CButton
