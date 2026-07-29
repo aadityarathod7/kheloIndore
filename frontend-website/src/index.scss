@@ -2216,6 +2216,147 @@ body, html, h1, h2, h3, h4, h5, h6, p, span, a, label, input, select, button {
   }
 }
 
+// Venue Details Compact Cards & Contrast Overrides
+.venue-details-compact-card {
+  background: #FFFFFF !important;
+  border: 1px solid #E2E8F0 !important;
+  color: #0F172A !important;
+
+  p, div, span, h1, h2, h3, h4, h5, h6, li, a {
+    color: #0F172A !important;
+  }
+
+  .text-muted {
+    color: #64748B !important;
+  }
+
+  .text-white {
+    color: #FFFFFF !important;
+  }
+}
+
+.venue-tab-btn {
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  padding: 7px 16px !important;
+  border-radius: 6px !important;
+  border: none !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease-in-out !important;
+
+  &.active {
+    background: linear-gradient(135deg, #22C55E 0%, #16A34A 100%) !important;
+    color: #FFFFFF !important;
+    box-shadow: 0 2px 8px rgba(34, 197, 94, 0.3) !important;
+
+    i {
+      color: #FFFFFF !important;
+    }
+  }
+
+  &.inactive {
+    background: #F1F5F9 !important;
+    color: #334155 !important;
+    border: 1px solid #E2E8F0 !important;
+
+    i {
+      color: #22C55E !important;
+    }
+
+    &:hover {
+      background: #E2E8F0 !important;
+      color: #0F172A !important;
+    }
+  }
+}
+
+.venue-sidebar-card {
+  background: #FFFFFF !important;
+  border: 1px solid #E2E8F0 !important;
+  border-radius: 10px !important;
+  overflow: hidden !important;
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04) !important;
+
+  .card-header-dark {
+    background: linear-gradient(135deg, #22C55E 0%, #16A34A 100%) !important;
+    color: #FFFFFF !important;
+    padding: 10px 14px !important;
+
+    h6, span, div, i {
+      color: #FFFFFF !important;
+    }
+
+    .badge-booking {
+      background: rgba(255, 255, 255, 0.2) !important;
+      color: #FFFFFF !important;
+      border: 1px solid rgba(255, 255, 255, 0.35) !important;
+    }
+  }
+
+  .pricing-box {
+    background: #F8FAFC !important;
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 6px !important;
+    padding: 8px 12px !important;
+    margin-bottom: 10px !important;
+
+    .pricing-label {
+      color: #64748B !important;
+      font-size: 11px !important;
+      font-weight: 600 !important;
+    }
+
+    .pricing-value {
+      color: #0F172A !important;
+      font-size: 13px !important;
+      font-weight: 700 !important;
+    }
+
+    .pricing-amount {
+      color: #22C55E !important;
+      font-size: 20px !important;
+      font-weight: 800 !important;
+    }
+  }
+
+  .feature-list {
+    list-style: none !important;
+    padding: 0 !important;
+    margin: 0 0 12px 0 !important;
+
+    li {
+      color: #0F172A !important;
+      font-size: 11px !important;
+      font-weight: 600 !important;
+      padding: 3px 0 !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 6px !important;
+
+      i {
+        color: #22C55E !important;
+        font-size: 12px !important;
+      }
+    }
+  }
+
+  .btn-book-cta {
+    background: linear-gradient(135deg, #22C55E 0%, #16A34A 100%) !important;
+    color: #FFFFFF !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    padding: 8px 14px !important;
+    border-radius: 6px !important;
+    border: none !important;
+    box-shadow: 0 3px 10px rgba(34, 197, 94, 0.25) !important;
+    width: 100% !important;
+
+    i {
+      color: #FFFFFF !important;
+    }
+  }
+}
+
 // Blog Grid Listings Specificity Rules
 .content.blog-grid {
   background-color: #F8FAFC !important;
@@ -2275,6 +2416,317 @@ body, html, h1, h2, h3, h4, h5, h6, p, span, a, label, input, select, button {
     border-color: #16A34A !important;
     background-color: rgba(34, 197, 94, 0.04) !important;
     transform: translateY(-1px) !important;
+  }
+}
+
+/* ==========================================================================
+   KHELO INDORE - PRODUCTION-READY PREMIUM SPORTS VENUE DETAILS STYLES
+   Airbnb / Playo / Cult.fit Production Level Design System
+   ========================================================================== */
+
+.khelo-pro-wrapper {
+  background-color: #F8FAFC !important;
+  min-height: 100vh !important;
+  padding-top: 120px !important;
+  padding-bottom: 60px !important;
+  color: #111827 !important;
+
+  .max-container {
+    max-width: 1400px !important;
+    margin: 0 auto !important;
+    padding: 0 20px !important;
+  }
+
+  /* Typography Scale */
+  .venue-hero-title {
+    font-size: 36px !important;
+    font-weight: 800 !important;
+    line-height: 1.15 !important;
+    color: #FFFFFF !important;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6) !important;
+  }
+
+  .section-title {
+    font-size: 28px !important;
+    font-weight: 800 !important;
+    color: #111827 !important;
+    margin-bottom: 16px !important;
+  }
+
+  .card-title-head {
+    font-size: 20px !important;
+    font-weight: 700 !important;
+    color: #111827 !important;
+    margin-bottom: 14px !important;
+  }
+
+  .body-text {
+    font-size: 16px !important;
+    line-height: 1.7 !important;
+    color: #374151 !important;
+  }
+
+  .muted-text {
+    font-size: 14px !important;
+    color: #6B7280 !important;
+  }
+
+  /* Glassmorphism Badge */
+  .glass-pill {
+    background: rgba(255, 255, 255, 0.25) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.4) !important;
+    color: #FFFFFF !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    padding: 6px 14px !important;
+    border-radius: 9999px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+  }
+
+  /* Bento Gallery Grid Images */
+  .bento-hero-main {
+    height: 450px !important;
+    width: 100% !important;
+    border-radius: 20px !important;
+    overflow: hidden !important;
+    position: relative !important;
+    background-color: #0F172A !important;
+    border: 1px solid #E5E7EB !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08) !important;
+
+    img {
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: cover !important;
+      transition: transform 0.4s ease !important;
+    }
+
+    &:hover img {
+      transform: scale(1.03) !important;
+    }
+  }
+
+  .bento-hero-thumb {
+    height: 218px !important;
+    width: 100% !important;
+    border-radius: 20px !important;
+    overflow: hidden !important;
+    position: relative !important;
+    background-color: #0F172A !important;
+    border: 1px solid #E5E7EB !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06) !important;
+
+    img {
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: cover !important;
+      transition: transform 0.4s ease !important;
+    }
+
+    &:hover img {
+      transform: scale(1.04) !important;
+    }
+  }
+
+  /* Premium Content Card */
+  .pro-card {
+    background-color: #FFFFFF !important;
+    border: 1px solid #E5E7EB !important;
+    border-radius: 16px !important;
+    padding: 24px !important;
+    margin-bottom: 24px !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06) !important;
+    transition: transform 0.25s ease, box-shadow 0.25s ease !important;
+
+    &:hover {
+      transform: translateY(-3px) !important;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1) !important;
+    }
+  }
+
+  /* Navigation Tabs Container Card */
+  .tabs-container-card {
+    background-color: #FFFFFF !important;
+    border: 1px solid #E5E7EB !important;
+    border-radius: 16px !important;
+    padding: 14px !important;
+    margin-bottom: 24px !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04) !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    overflow-x: auto !important;
+    white-space: nowrap !important;
+  }
+
+  .pro-tab-pill {
+    height: 44px !important;
+    padding: 0 22px !important;
+    border-radius: 9999px !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    transition: all 0.2s ease !important;
+    cursor: pointer !important;
+
+    &.active {
+      background-color: #22C55E !important;
+      color: #FFFFFF !important;
+      border: none !important;
+      box-shadow: 0 4px 14px rgba(34, 197, 94, 0.35) !important;
+
+      i {
+        color: #FFFFFF !important;
+      }
+    }
+
+    &.inactive {
+      background-color: #F8FAFC !important;
+      color: #374151 !important;
+      border: 1px solid #E5E7EB !important;
+
+      &:hover {
+        background-color: #F1F5F9 !important;
+        border-color: #CBD5E1 !important;
+        color: #111827 !important;
+      }
+
+      i {
+        color: #22C55E !important;
+      }
+    }
+  }
+
+  /* Specification Metric Info Card */
+  .pro-spec-card {
+    background-color: #F8FAFC !important;
+    border: 1px solid #E5E7EB !important;
+    border-radius: 14px !important;
+    padding: 16px 12px !important;
+    min-height: 110px !important;
+    text-align: center !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: transform 0.2s ease, background-color 0.2s ease !important;
+
+    &:hover {
+      transform: translateY(-3px) !important;
+      background-color: #FFFFFF !important;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06) !important;
+    }
+
+    .icon-circle {
+      width: 42px !important;
+      height: 42px !important;
+      border-radius: 50% !important;
+      background-color: rgba(34, 197, 94, 0.12) !important;
+      color: #16A34A !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      margin-bottom: 8px !important;
+
+      i {
+        font-size: 18px !important;
+        color: #16A34A !important;
+      }
+    }
+
+    .spec-label {
+      color: #6B7280 !important;
+      font-size: 12px !important;
+      font-weight: 600 !important;
+      margin-bottom: 2px !important;
+    }
+
+    .spec-val {
+      color: #111827 !important;
+      font-size: 18px !important;
+      font-weight: 800 !important;
+      line-height: 1.15 !important;
+    }
+
+    .spec-unit {
+      color: #94A3B8 !important;
+      font-size: 11px !important;
+      font-weight: 500 !important;
+    }
+  }
+
+  /* Amenity Icon Card Grid */
+  .pro-amenity-card {
+    background-color: #F8FAFC !important;
+    border: 1px solid #E5E7EB !important;
+    border-radius: 12px !important;
+    padding: 12px 16px !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    color: #111827 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+
+    i {
+      color: #22C55E !important;
+      font-size: 16px !important;
+    }
+  }
+
+  /* CTAs & Buttons */
+  .pro-btn-primary {
+    height: 48px !important;
+    border-radius: 9999px !important;
+    background: linear-gradient(135deg, #22C55E 0%, #16A34A 100%) !important;
+    color: #FFFFFF !important;
+    font-weight: 700 !important;
+    font-size: 15px !important;
+    border: none !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    width: 100% !important;
+    box-shadow: 0 4px 14px rgba(34, 197, 94, 0.3) !important;
+    transition: all 0.2s ease !important;
+
+    &:hover {
+      background: linear-gradient(135deg, #16A34A 0%, #15803D 100%) !important;
+      color: #FFFFFF !important;
+      transform: translateY(-2px) !important;
+      box-shadow: 0 6px 20px rgba(34, 197, 94, 0.4) !important;
+    }
+  }
+
+  .pro-btn-secondary {
+    height: 48px !important;
+    border-radius: 9999px !important;
+    background: #FFFFFF !important;
+    border: 1.5px solid #22C55E !important;
+    color: #16A34A !important;
+    font-weight: 700 !important;
+    font-size: 14px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    width: 100% !important;
+    transition: all 0.2s ease !important;
+
+    &:hover {
+      background-color: rgba(34, 197, 94, 0.08) !important;
+      color: #15803D !important;
+      border-color: #15803D !important;
+      transform: translateY(-1px) !important;
+    }
   }
 }
 
@@ -2932,32 +3384,17 @@ body .swal2-container {
         color: #FFFFFF !important;
       }
     }
-  }
-
-  .ki-avatar-section {
+   .ki-avatar-section {
     display: flex !important;
     align-items: center !important;
     gap: 16px !important;
 
-    .ki-avatar-box {
+    .avatar-wrapper {
       position: relative !important;
       width: 64px !important;
       height: 64px !important;
       border-radius: 50% !important;
-      background: linear-gradient(135deg, #22C55E 0%, #16A34A 100%) !important;
-      display: flex !important;
-      align-items: center !important;
-      justify-content: center !important;
-      color: #FFFFFF !important;
-      font-size: 24px !important;
-      font-weight: 700 !important;
-      box-shadow: 0 4px 14px rgba(34, 197, 94, 0.2) !important;
       overflow: hidden !important;
-      flex-shrink: 0 !important;
-
-      img {
-        width: 100% !important;
-        height: 100% !important;
         object-fit: cover !important;
       }
 
@@ -3048,7 +3485,227 @@ body .swal2-container {
   }
 }
 
+/* Venue Details Page Premium Redesign (Compact & Minimal) */
+.venue-coach-details {
+  padding-top: 150px !important;
+  background-color: #F8FAFC !important;
+  min-height: 100vh !important;
 
+  .bannergallery-section {
+    padding: 0 15px !important;
+    margin-bottom: 16px !important;
 
+    .gallery-widget-item {
+      border-radius: 10px !important;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+      border: 1px solid #E2E8F0 !important;
+    }
+  }
 
+  .venue-info {
+    background: #FFFFFF !important;
+    border-top: 1px solid #E2E8F0 !important;
+    border-bottom: 1px solid #E2E8F0 !important;
+    padding: 14px 0 !important;
+    margin-bottom: 20px !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02) !important;
 
+    h1 {
+      color: #0F172A !important;
+      font-size: 20px !important;
+      font-weight: 700 !important;
+      margin-bottom: 4px !important;
+    }
+
+    ul {
+      li {
+        color: #64748B !important;
+        font-size: 13px !important;
+        font-weight: 500 !important;
+
+        i {
+          color: #22C55E !important;
+          margin-right: 4px !important;
+        }
+      }
+    }
+
+    .social-options {
+      .btn {
+        background: #F1F5F9 !important;
+        color: #0F172A !important;
+        border: 1px solid #E2E8F0 !important;
+        font-size: 12px !important;
+        padding: 5px 12px !important;
+        font-weight: 600 !important;
+
+        &:hover {
+          background: #E2E8F0 !important;
+        }
+
+        i {
+          color: #22C55E !important;
+        }
+      }
+    }
+  }
+
+  .venue-options {
+    background: #F1F5F9 !important;
+    border-radius: 10px !important;
+    padding: 4px !important;
+    margin-bottom: 16px !important;
+
+    ul {
+      display: flex !important;
+      flex-wrap: wrap !important;
+      gap: 4px !important;
+      list-style: none !important;
+      padding: 0 !important;
+      margin: 0 !important;
+
+      li {
+        float: none !important;
+        margin: 0 !important;
+
+        a {
+          display: inline-block !important;
+          padding: 6px 14px !important;
+          border-radius: 6px !important;
+          font-size: 12px !important;
+          font-weight: 600 !important;
+          color: #64748B !important;
+          text-decoration: none !important;
+          transition: all 0.2s ease !important;
+
+          &:hover {
+            color: #0F172A !important;
+            background: rgba(255, 255, 255, 0.6) !important;
+          }
+        }
+
+        &.active a {
+          background: linear-gradient(135deg, #22C55E 0%, #16A34A 100%) !important;
+          color: #FFFFFF !important;
+          box-shadow: 0 2px 6px rgba(34, 197, 94, 0.25) !important;
+        }
+      }
+    }
+  }
+
+  .accordion-item {
+    background: #FFFFFF !important;
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 10px !important;
+    margin-bottom: 12px !important;
+    overflow: hidden !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02) !important;
+
+    .accordion-header {
+      .accordion-button {
+        background: linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%) !important;
+        color: #0F172A !important;
+        font-size: 14px !important;
+        font-weight: 700 !important;
+        padding: 10px 16px !important;
+        box-shadow: none !important;
+
+        &:not(.collapsed) {
+          color: #16A34A !important;
+          background: linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 100%) !important;
+          border-bottom: 1px solid #BBF7D0 !important;
+        }
+
+        &::after {
+          filter: grayscale(100%) brightness(0.3);
+          transform: scale(0.8);
+        }
+      }
+    }
+
+    .accordion-body {
+      background: #FFFFFF !important;
+      color: #334155 !important;
+      font-size: 13px !important;
+      line-height: 1.5 !important;
+      padding: 14px 16px !important;
+
+      p, div, li, span {
+        color: #334155 !important;
+        font-size: 13px !important;
+      }
+
+      ul.clearfix {
+        list-style: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        display: grid !important;
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)) !important;
+        gap: 8px !important;
+
+        li {
+          display: flex !important;
+          align-items: center !important;
+          gap: 6px !important;
+          background: #F8FAFC !important;
+          padding: 6px 10px !important;
+          border-radius: 6px !important;
+          border: 1px solid #F1F5F9 !important;
+          font-weight: 500 !important;
+          font-size: 12px !important;
+
+          i {
+            color: #22C55E !important;
+            font-size: 14px !important;
+          }
+        }
+      }
+
+      ul.venue-discription {
+        padding: 0 !important;
+        margin-top: 8px !important;
+        list-style: none !important;
+
+        li.dis-list {
+          display: flex !important;
+          align-items: center !important;
+          gap: 6px !important;
+          padding: 4px 0 !important;
+          border-bottom: 1px dashed #E2E8F0 !important;
+          font-size: 12px !important;
+
+          .p-f {
+            font-weight: 700 !important;
+            color: #0F172A !important;
+            margin: 0 !important;
+            text-transform: capitalize !important;
+            font-size: 12px !important;
+          }
+
+          .p-t {
+            color: #475569 !important;
+            margin: 0 !important;
+            font-size: 12px !important;
+          }
+        }
+      }
+    }
+  }
+
+  .book-court {
+    background: #FFFFFF !important;
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 12px !important;
+    padding: 16px !important;
+    box-shadow: 0 6px 18px -4px rgba(0, 0, 0, 0.04) !important;
+
+    h4 {
+      color: #0F172A !important;
+      font-weight: 700 !important;
+      font-size: 15px !important;
+      padding-bottom: 8px !important;
+      margin-bottom: 12px !important;
+      border-bottom: 1px solid #F1F5F9 !important;
+    }
+  }
+}

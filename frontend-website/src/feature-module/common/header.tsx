@@ -257,7 +257,7 @@ const Header = () => {
     <>
       <header
         className={`header ${
-          location.pathname.includes(routes.home) ? "header-trans" : "header-sticky"
+          location.pathname === routes.home ? "header-trans" : "header-sticky"
         } ${isScrolled ? "fixed" : ""}`}
       >
       <div className="container-fluid">

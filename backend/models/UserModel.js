@@ -55,9 +55,9 @@ const userSchema = new mongoose.Schema(
     },    
     profile_image: [
       {
-        fileType: { type: String, required: true },
-        src: { type: String, required: true },
-        fileName: { type: String, required: true },
+        fileType: { type: String },
+        src: { type: String },
+        fileName: { type: String },
       },
     ],
     status:{
