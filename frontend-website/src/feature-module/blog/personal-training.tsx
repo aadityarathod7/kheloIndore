@@ -258,20 +258,33 @@ const BlogList = () => {
 
   return (
     <div>
-      <section className="breadcrumb breadcrumb-list mb-0 top-margin">
-        <span className="primary-right-round" />
-        <div className="container">
-          <h1 className="text-white">Personal Trainer</h1>
-          <ul>
-            <li>
-              <Link to={routes.home}>Home</Link>
-            </li>
-            <li>Personal Trainer</li>
-          </ul>
+      {/* Hero Section */}
+      <div className="hero-booking-section" style={{ background: "linear-gradient(135deg, #F0FDF4 0%, #ECFDF5 100%)", paddingTop: "110px", paddingBottom: "40px", position: "relative", overflow: "hidden", borderBottom: "1px solid #E5E7EB" }}>
+        {/* Blended Background Turf Graphics */}
+        <div className="hero-artwork-blend" style={{ position: "absolute", right: "-60px", top: 0, bottom: 0, width: "55%", backgroundImage: "url('/assets/img/bg/banner-illustration.png')", backgroundSize: "cover", backgroundPosition: "left center", backgroundRepeat: "no-repeat", maskImage: "linear-gradient(to left, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%)", WebkitMaskImage: "linear-gradient(to left, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%)", opacity: 0.9 }}></div>
+        
+        <div className="container" style={{ position: "relative", zIndex: 2 }}>
+          <div className="row align-items-center">
+            <div className="col-lg-7 text-start">
+              <span className="font-weight-bold" style={{ fontSize: "13px", letterSpacing: "1.5px", display: "block", marginBottom: "12px", color: "#22C55E", fontWeight: "700" }}>BOOK. PLAY. ENJOY</span>
+              <h1 className="d-flex align-items-center flex-wrap" style={{ fontSize: "56px", fontWeight: "800", color: "#0F172A", lineHeight: "1.1", marginBottom: "16px" }}>
+                Personal <span style={{ color: "#22C55E", marginLeft: "12px" }}>Trainers</span>
+              </h1>
+              <p style={{ color: "#64748B", fontSize: "20px", marginBottom: "24px", fontWeight: "500", maxWidth: "480px" }}>Find and book personal fitness trainers in Indore</p>
+              
+              {/* Breadcrumb pill */}
+              <div className="d-inline-flex align-items-center bg-white px-3 py-2 rounded-pill shadow-sm" style={{ fontSize: "13px", border: "1px solid #E5E7EB" }}>
+                <Link to="/" style={{ color: "#64748B", textDecoration: "none", fontWeight: "500" }}><i className="feather-home me-1" style={{ color: "#64748B" }} /> Home</Link>
+                <span style={{ margin: "0 10px", color: "#64748B" }}><i className="feather-chevron-right" style={{ fontSize: "12px", color: "#64748B" }} /></span>
+                <span style={{ color: "#22C55E", fontWeight: "600" }}>Personal Trainer</span>
+              </div>
+            </div>
+          </div>
         </div>
-      </section>
-
-      <div className="content">
+      </div>
+      {/* /Hero Section */}
+      {/* Page Content */}
+      <div className="content blog-grid" style={{ backgroundColor: "#F8FAFC", padding: "32px 0 60px 0" }}>
         <div className="container">
           <div className="row">
             <div className="col-lg-12">
@@ -364,130 +377,22 @@ const BlogList = () => {
               ? (
                 finalFilterTrainer.length > 0 ? (finalFilterTrainer.map((trainer, index) => (
                   <div className="col-lg-4 col-md-6" key={index}>
-                    <div className="featured-venues-item">
-                      <div className="listing-item listing-item-grid">
-                        <div
-                          className="listing-img"
-                          style={{ height: "316px" }}
-                        >
-                          {/* <Link to={routes.coachDetail}>
-                        <ImageWithBasePath
-                          src={`assets/img/featured/${coach.profile}`}
-                          alt="Venue"
-                        />
-                      </Link> */}
-
-                          <Link
-                            to={`/personal-training/trainer/${trainer.first_name?.replace(/\s+/g, "-").toLowerCase()}/${trainer._id}`}
-                          >
-                            <ImageWithBasePath
-                              src={
-                                trainer.profile_picture[0]?.src
-                                  ? `${IMG_URL}${trainer.profile_picture[0].src}`
-                                  : "/assets/img/no-img.png"
-                              }
-                              alt="user"
-                            />
-                          </Link>
-
-                          <div
-                            className="fav-item-venues"
-                            onClick={() => handleItemClick(index)}
-                          >
-                            <span className="tag tag-blue">
-                              {trainer?.trainer_type}
-                            </span>
-                            {/* <div className="list-reviews coche-star">
-                            <Link
-                              to="#"
-                              className={`fav-icon ${selectedItems[index] ? "selected" : ""
-                                }`}
-                            >
-                              <i className="feather-heart" />
-                            </Link>
-                          </div> */}
-                          </div>
-                          {/* <div className="hour-list">
-                          <h5 className="tag tag-primary">
-                            ₹{trainer.price}/month <span></span>
-                          </h5>
-                        </div> */}
-                        </div>
-                        <div className="listing-content">
-                          <h3 className="listing-title">
-                            <Link
-                              to={`/personal-training/trainer/${trainer.first_name?.replace(/\s+/g, "-").toLowerCase()}/${trainer._id}`}
-                            >
-                              {trainer.first_name}
-                              {trainer.last_name}
-                            </Link>
-                          </h3>
-                          {/* <ul className="mb-2">
-                          <li>
-                            <span><i className="feather-map-pin me-2" /> {trainer.near_by_location}</span>
-                          </li>
-                        </ul> */}
-                          <div className="listing-details-group">
-                            <p> Specializations: {trainer.specializations}</p>
-                          </div>
-                          <div className="coach-btn">
-                            <ul>
-                              <li>
-                                <Link
-                                  to={`/personal-training/trainer/${trainer.first_name?.replace(/\s+/g, "-").toLowerCase()}/${trainer._id}`}
-                                  className="btn btn-primary w-100"
-                                >
-                                  <i className="feather-eye me-2" />
-                                  View Profile
-                                </Link>
-                              </li>
-                              <li>
-                              <div onClick={() => checkToken(trainer._id)}>
-                              <Link
-                                to={``}
-                                className="btn btn-secondary w-100"
-                              >
-                                <i className="feather-calendar me-2" />
-                                Book Now
-                              </Link>
-                              </div>
-                              </li>
-                            </ul>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))
-
-                ) : (
-                  <p>No trainer found for the selected category.</p>
-                )
-              ) : (trainer.map((trainer, index) => (
-                <div className="col-lg-4 col-md-6" key={index}>
-                  <div className="featured-venues-item">
-                    <div className="listing-item listing-item-grid">
+                    <div className="listing-item listing-item-grid ki-card-hover">
                       <div
                         className="listing-img"
-                        style={{ height: "316px" }}
+                        style={{ height: "140px", overflow: "hidden", position: "relative" }}
                       >
-                        {/* <Link to={routes.coachDetail}>
-                        <ImageWithBasePath
-                          src={`assets/img/featured/${coach.profile}`}
-                          alt="Venue"
-                        />
-                      </Link> */}
-
                         <Link
                           to={`/personal-training/trainer/${trainer.first_name?.replace(/\s+/g, "-").toLowerCase()}/${trainer._id}`}
                         >
                           <ImageWithBasePath
                             src={
-                              trainer?.profile_picture[0]?.src
+                              trainer.profile_picture[0]?.src
                                 ? `${IMG_URL}${trainer.profile_picture[0].src}`
                                 : "/assets/img/no-img.png"
                             }
                             alt="user"
+                            style={{ height: "100%", width: "100%", objectFit: "cover" }}
                           />
                         </Link>
 
@@ -499,35 +404,35 @@ const BlogList = () => {
                             {trainer?.trainer_type}
                           </span>
                           {/* <div className="list-reviews coche-star">
-                            <Link
-                              to="#"
-                              className={`fav-icon ${selectedItems[index] ? "selected" : ""
-                                }`}
-                            >
-                              <i className="feather-heart" />
-                            </Link>
-                          </div> */}
+                          <Link
+                            to="#"
+                            className={`fav-icon ${selectedItems[index] ? "selected" : ""
+                              }`}
+                          >
+                            <i className="feather-heart" />
+                          </Link>
+                        </div> */}
                         </div>
                         {/* <div className="hour-list">
-                          <h5 className="tag tag-primary">
-                            ₹{trainer.price}/month <span></span>
-                          </h5>
-                        </div> */}
+                        <h5 className="tag tag-primary">
+                          ₹{trainer.price}/month <span></span>
+                        </h5>
+                      </div> */}
                       </div>
                       <div className="listing-content">
                         <h3 className="listing-title">
                           <Link
                             to={`/personal-training/trainer/${trainer.first_name?.replace(/\s+/g, "-").toLowerCase()}/${trainer._id}`}
                           >
-                            {trainer.first_name}&nbsp;&nbsp;
+                            {trainer.first_name}
                             {trainer.last_name}
                           </Link>
                         </h3>
                         {/* <ul className="mb-2">
-                          <li>
-                            <span><i className="feather-map-pin me-2" /> {trainer.near_by_location}</span>
-                          </li>
-                        </ul> */}
+                        <li>
+                          <span><i className="feather-map-pin me-2" /> {trainer.near_by_location}</span>
+                        </li>
+                      </ul> */}
                         <div className="listing-details-group">
                           <p> Specializations: {trainer.specializations}</p>
                         </div>
@@ -543,7 +448,100 @@ const BlogList = () => {
                               </Link>
                             </li>
                             <li>
-                              <div onClick={() => checkToken(trainer._id)}>
+                            <div onClick={() => checkToken(trainer._id)}>
+                            <Link
+                              to={``}
+                              className="btn btn-secondary w-100"
+                            >
+                              <i className="feather-calendar me-2" />
+                              Book Now
+                            </Link>
+                            </div>
+                            </li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))
+
+                ) : (
+                  <p>No trainer found for the selected category.</p>
+                )
+              ) : (trainer.map((trainer, index) => (
+                <div className="col-lg-4 col-md-6" key={index}>
+                  <div className="listing-item listing-item-grid ki-card-hover">
+                    <div
+                      className="listing-img"
+                      style={{ height: "140px", overflow: "hidden", position: "relative" }}
+                    >
+                      <Link
+                        to={`/personal-training/trainer/${trainer.first_name?.replace(/\s+/g, "-").toLowerCase()}/${trainer._id}`}
+                      >
+                        <ImageWithBasePath
+                          src={
+                            trainer?.profile_picture[0]?.src
+                              ? `${IMG_URL}${trainer.profile_picture[0].src}`
+                              : "/assets/img/no-img.png"
+                          }
+                          alt="user"
+                          style={{ height: "100%", width: "100%", objectFit: "cover" }}
+                        />
+                      </Link>
+
+                      <div
+                        className="fav-item-venues"
+                        onClick={() => handleItemClick(index)}
+                      >
+                        <span className="tag tag-blue">
+                          {trainer?.trainer_type}
+                        </span>
+                        {/* <div className="list-reviews coche-star">
+                            <Link
+                              to="#"
+                              className={`fav-icon ${selectedItems[index] ? "selected" : ""
+                                }`}
+                            >
+                              <i className="feather-heart" />
+                            </Link>
+                          </div> */}
+                      </div>
+                      {/* <div className="hour-list">
+                          <h5 className="tag tag-primary">
+                            ₹{trainer.price}/month <span></span>
+                          </h5>
+                        </div> */}
+                    </div>
+                    <div className="listing-content">
+                      <h3 className="listing-title">
+                        <Link
+                          to={`/personal-training/trainer/${trainer.first_name?.replace(/\s+/g, "-").toLowerCase()}/${trainer._id}`}
+                        >
+                          {trainer.first_name}&nbsp;&nbsp;
+                          {trainer.last_name}
+                        </Link>
+                      </h3>
+                      {/* <ul className="mb-2">
+                          <li>
+                            <span><i className="feather-map-pin me-2" /> {trainer.near_by_location}</span>
+                          </li>
+                        </ul> */}
+                      <div className="listing-details-group">
+                        <p> Specializations: {trainer.specializations}</p>
+                      </div>
+                      <div className="coach-btn">
+                        <ul>
+                          <li>
+                            <Link
+                              to={`/personal-training/trainer/${trainer.first_name?.replace(/\s+/g, "-").toLowerCase()}/${trainer._id}`}
+                              className="btn btn-primary w-100"
+                            >
+                              <i className="feather-eye me-2" />
+                              View Profile
+                            </Link>
+                          </li>
+                          <li>
+                            <div onClick={() => checkToken(trainer._id)}>
                               <Link
                                 to={``}
                                 className="btn btn-secondary w-100"
@@ -551,33 +549,9 @@ const BlogList = () => {
                                 <i className="feather-calendar me-2" />
                                 Book Now
                               </Link>
-                              </div>
-                            </li>
-                          </ul>
-                        </div>
-                        {/* <div className="avalbity-review">
-                          <ul>
-                            <li>
-                              <div className="avalibity-date">
-                                <span>
-                                  <i className="feather-calendar" />
-                                </span>
-                                <div className="avalibity-datecontent">
-                                  <h6>Next Availability</h6>
-                                  
-                                </div>
-                              </div>
-                            </li>
-                            <li>
-                              <div className="list-reviews mb-0">
-                                <div className="d-flex align-items-center">
-                                  <span className="rating-bg">4.5</span>
-                                  <span>80 Reviews</span>
-                                </div>
-                              </div>
-                            </li>
-                          </ul>
-                        </div> */}
+                            </div>
+                          </li>
+                        </ul>
                       </div>
                     </div>
                   </div>

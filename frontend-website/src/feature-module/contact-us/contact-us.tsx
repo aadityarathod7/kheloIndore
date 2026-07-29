@@ -103,7 +103,32 @@ const ContactUs = () => {
 
   return (
     <div>
-      <div className=" contact-us-page top-margin">
+      {/* Hero Section */}
+      <div className="hero-booking-section" style={{ background: "linear-gradient(135deg, #F0FDF4 0%, #ECFDF5 100%)", paddingTop: "110px", paddingBottom: "40px", position: "relative", overflow: "hidden", borderBottom: "1px solid #E5E7EB" }}>
+        {/* Blended Background Turf Graphics */}
+        <div className="hero-artwork-blend" style={{ position: "absolute", right: "-60px", top: 0, bottom: 0, width: "55%", backgroundImage: "url('/assets/img/bg/banner-illustration.png')", backgroundSize: "cover", backgroundPosition: "left center", backgroundRepeat: "no-repeat", maskImage: "linear-gradient(to left, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%)", WebkitMaskImage: "linear-gradient(to left, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%)", opacity: 0.9 }}></div>
+        
+        <div className="container" style={{ position: "relative", zIndex: 2 }}>
+          <div className="row align-items-center">
+            <div className="col-lg-7 text-start">
+              <span className="font-weight-bold" style={{ fontSize: "13px", letterSpacing: "1.5px", display: "block", marginBottom: "12px", color: "#22C55E", fontWeight: "700" }}>BOOK. PLAY. ENJOY</span>
+              <h1 className="d-flex align-items-center flex-wrap" style={{ fontSize: "56px", fontWeight: "800", color: "#0F172A", lineHeight: "1.1", marginBottom: "16px" }}>
+                Contact <span style={{ color: "#22C55E", marginLeft: "12px" }}>Us</span>
+              </h1>
+              <p style={{ color: "#64748B", fontSize: "20px", marginBottom: "24px", fontWeight: "500", maxWidth: "480px" }}>Get in touch with the Khelo Indore team</p>
+              
+              {/* Breadcrumb pill */}
+              <div className="d-inline-flex align-items-center bg-white px-3 py-2 rounded-pill shadow-sm" style={{ fontSize: "13px", border: "1px solid #E5E7EB" }}>
+                <Link to="/" style={{ color: "#64748B", textDecoration: "none", fontWeight: "500" }}><i className="feather-home me-1" style={{ color: "#64748B" }} /> Home</Link>
+                <span style={{ margin: "0 10px", color: "#64748B" }}><i className="feather-chevron-right" style={{ fontSize: "12px", color: "#64748B" }} /></span>
+                <span style={{ color: "#22C55E", fontWeight: "600" }}>Contact Us</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {/* /Hero Section */}
+      <div className="contact-us-page">
         <div className="content blog-details contact-group">
           <div className="container">
             <h2 className="text-center mb-40">Contact Information</h2>

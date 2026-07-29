@@ -1493,11 +1493,38 @@ input, select, textarea, .form-control {
   }
 }
 
-// Breadcrumb reinforcement (source now fixed in breadcrumb.scss)
+// Breadcrumb reinforcement to fully override style.css colors
 .breadcrumb.breadcrumb-list, .breadcrumb {
   background: linear-gradient(180deg, #EDF3EE 0%, #E2E8E3 100%) !important;
   border-bottom: 1px solid #D6E4D8 !important;
   padding: 40px 0 !important;
+
+  h1, h2, h3, h4, h5, h6, .text-white {
+    color: #17222D !important; // Charcoal title
+    font-family: 'Space Grotesk', sans-serif !important;
+    font-weight: 800 !important;
+  }
+
+  ul, li {
+    color: #606D76 !important; // Charcoal/grey for active/muted breadcrumb text
+    font-size: 14px !important;
+    font-weight: 600 !important;
+
+    // Chevron separator icon
+    &:after {
+      color: #9BA5AE !important; // Muted chevron separator
+    }
+
+    a {
+      color: #3CAB4B !important; // Garmin Green for breadcrumb link path
+      font-weight: 600 !important;
+      text-decoration: none !important;
+
+      &:hover {
+        color: #2D8C35 !important; // Darker green on hover
+      }
+    }
+  }
 }
 
 // Global .bg-dark override — purge all dark backgrounds from Bootstrap helper class
@@ -1611,29 +1638,40 @@ input, select, textarea, .form-control {
   }
 }
 
-// Pagination theme overrides to match daylight brand theme
+// Pagination theme overrides to match daylight brand theme — Premium Circular design
 .pagination {
-  gap: 6px !important;
+  gap: 8px !important;
+  justify-content: center !important;
+  margin-top: 40px !important;
+  margin-bottom: 20px !important;
+  flex-wrap: wrap !important;
   
   .page-item {
     .page-link {
+      width: 42px !important;
+      height: 42px !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
       background: #FBFCFB !important;
       border: 1px solid #E2E8E3 !important;
       color: #17222D !important;
-      border-radius: 8px !important;
+      border-radius: 50% !important; // Circle design
       font-weight: 600 !important;
-      padding: 8px 16px !important;
-      transition: all 0.2s ease !important;
+      font-size: 14px !important;
+      padding: 0 !important;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
       
       &:hover {
         background-color: #EAF5EB !important;
         color: #3CAB4B !important;
         border-color: #3CAB4B !important;
+        transform: scale(1.05) !important;
       }
     }
     
     &.active .page-link {
-      background: linear-gradient(90deg, #49BC4F, #38A941) !important;
+      background: linear-gradient(135deg, #49BC4F 0%, #38A941 100%) !important;
       color: #FFFFFF !important;
       border-color: transparent !important;
       box-shadow: 0 4px 12px rgba(67, 182, 73, 0.25) !important;
@@ -1643,10 +1681,642 @@ input, select, textarea, .form-control {
 
 // Global Card Content Reset to prevent double-border layout bug
 .listing-item, .featured-venues-item, .ki-card, .listing-card {
+  background-color: #FBFCFB !important;
+  border: 1px solid #E2E8E3 !important;
+  border-radius: 24px !important;
+  overflow: hidden !important;
+  
   .listing-content, .listing-content.news-content, .listing-content.list-coche-content {
     background: transparent !important;
     border: none !important;
     box-shadow: none !important;
     border-radius: 0 !important;
+    padding: 20px !important;
   }
 }
+
+// Breadcrumb pseudo elements cleanup (remove dark/harsh background circular blobs)
+.breadcrumb span.primary-right-round,
+.breadcrumb:before,
+.breadcrumb:after,
+.breadcrumb ul:after {
+  opacity: 0.2 !important; // Fade decorative blobs for a cleaner, high-contrast, text-first header
+}
+
+// Content wrapper margin/padding normalization
+.content {
+  padding: 60px 0 !important;
+}
+
+// Dropdown arrow customization for form select fields
+select.form-select {
+  padding-right: 36px !important;
+  border-radius: 12px !important;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%233CAB4B' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e") !important;
+  background-size: 12px 12px !important;
+  background-position: right 12px center !important;
+}
+
+// Premium form controls inside sidebar filters
+.stickybar, .sidebar-filter, .filter-widget {
+  .form-control, .form-select, input, select {
+    background-color: #FBFCFB !important;
+    border: 1px solid #D6E4D8 !important;
+    border-radius: 12px !important;
+    color: #17222D !important;
+    padding: 10px 14px !important;
+    font-size: 13px !important;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+
+    &:focus {
+      border-color: #3CAB4B !important;
+      box-shadow: 0 0 0 3px rgba(60, 171, 75, 0.12) !important;
+      background-color: #FFFFFF !important;
+    }
+  }
+
+  .ki-card {
+    h4 {
+      font-family: 'Space Grotesk', sans-serif !important;
+      font-weight: 700 !important;
+      color: #17222D !important;
+      border-left: 4px solid #3CAB4B !important;
+      padding-left: 12px !important;
+      margin-bottom: 20px !important;
+      line-height: 1.2 !important;
+    }
+  }
+
+  // Premium Checkbox visual system
+  .form-check {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    padding-left: 0 !important;
+    margin-bottom: 12px !important;
+
+    input[type="checkbox"].form-check-input {
+      width: 18px !important;
+      height: 18px !important;
+      border-radius: 6px !important;
+      border: 2px solid #C2D5C4 !important;
+      margin-top: 0 !important;
+      cursor: pointer !important;
+      background-color: #FBFCFB !important;
+      transition: all 0.2s ease !important;
+      flex-shrink: 0 !important;
+
+      &:checked {
+        background-color: #3CAB4B !important;
+        border-color: #3CAB4B !important;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M6 10l3 3 6-6'/%3e%3c/svg%3e") !important;
+      }
+
+      &:focus {
+        box-shadow: 0 0 0 3px rgba(60, 171, 75, 0.12) !important;
+      }
+    }
+
+    label.form-check-label {
+      font-size: 13px !important;
+      font-weight: 500 !important;
+      color: #606D76 !important;
+      cursor: pointer !important;
+      user-select: none !important;
+    }
+  }
+}
+
+// Pagination chevron prev/next overrides
+.pagination {
+  .page-item {
+    &.prev .page-link, &.next .page-link {
+      background: #EAF5EB !important;
+      color: #3CAB4B !important;
+      border-color: transparent !important;
+      
+      &:hover {
+        background: #3CAB4B !important;
+        color: #FFFFFF !important;
+      }
+    }
+    
+    &.disabled {
+      opacity: 0.5 !important;
+      pointer-events: none !important;
+    }
+  }
+}
+
+// Contact Us Page Premium Redesign Styling
+.contact-us-page {
+  .details {
+    background: #FBFCFB !important;
+    border: 1px solid #E2E8E3 !important;
+    border-radius: 20px !important;
+    padding: 24px !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03) !important;
+    transition: all 0.3s ease !important;
+    margin-bottom: 24px !important;
+    height: 100% !important;
+
+    &:hover {
+      transform: translateY(-4px) !important;
+      border-color: #3CAB4B !important;
+      box-shadow: 0 15px 35px rgba(60, 171, 75, 0.08) !important;
+    }
+
+    i {
+      width: 54px !important;
+      height: 54px !important;
+      background: linear-gradient(135deg, #EAF5EB 0%, #D8ECD9 100%) !important;
+      color: #3CAB4B !important;
+      border-radius: 12px !important;
+      font-size: 20px !important;
+      margin-right: 20px !important;
+      flex-shrink: 0 !important;
+    }
+
+    .info {
+      h4 {
+        font-size: 16px !important;
+        font-weight: 700 !important;
+        color: #17222D !important;
+        margin-bottom: 6px !important;
+      }
+      p, a {
+        font-size: 14px !important;
+        color: #606D76 !important;
+        margin: 0 !important;
+        text-decoration: none !important;
+      }
+    }
+  }
+
+  // Reach out section style normalizations
+  .section.dull-bg {
+    background: transparent !important; // Align with the page daylight background
+    padding: 80px 0 !important;
+  }
+
+  // Contact form redesign
+  form.contact-us {
+    background: #FBFCFB !important;
+    border: 1px solid #E2E8E3 !important;
+    border-radius: 28px !important;
+    padding: 40px !important;
+    box-shadow: 0 15px 45px rgba(0, 0, 0, 0.04) !important;
+    max-width: 800px !important;
+    margin: 0 auto !important;
+
+    label {
+      font-weight: 600 !important;
+      font-size: 13px !important;
+      color: #17222D !important;
+      margin-bottom: 8px !important;
+    }
+
+    input, textarea {
+      border-radius: 12px !important;
+      background: #FBFCFB !important;
+      border: 1px solid #D6E4D8 !important;
+      padding: 12px 16px !important;
+      font-size: 14px !important;
+      color: #17222D !important;
+
+      &:focus {
+        border-color: #43B649 !important;
+        box-shadow: 0 0 0 3px rgba(67, 182, 73, 0.15) !important;
+      }
+    }
+
+    button[type="button"] {
+      background: linear-gradient(90deg, #49BC4F, #38A941) !important;
+      color: #FFFFFF !important;
+      border: none !important;
+      border-radius: 30px !important;
+      padding: 12px 32px !important;
+      font-weight: 700 !important;
+      font-size: 15px !important;
+      box-shadow: 0 4px 12px rgba(60, 171, 75, 0.25) !important;
+      transition: all 0.2s ease !important;
+      margin: 24px auto 0 auto !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 8px !important;
+
+      &:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 20px rgba(60, 171, 75, 0.35) !important;
+      }
+    }
+  }
+}
+
+// Modern Compact Sidebar Filter Card Styles
+.filter-sidebar-card {
+  background: #FFFFFF !important;
+  border: 1px solid #E2E8E3 !important;
+  border-radius: 16px !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02) !important;
+  padding: 20px !important;
+
+  .filter-section {
+    border-bottom: 1px solid #EDF3EE !important;
+    padding-bottom: 14px !important;
+    margin-bottom: 14px !important;
+
+    &:last-child {
+      border-bottom: none !important;
+      padding-bottom: 0 !important;
+      margin-bottom: 0 !important;
+    }
+  }
+
+  .filter-subtitle {
+    font-family: 'Space Grotesk', sans-serif !important;
+    font-weight: 700 !important;
+    font-size: 13px !important;
+    color: #17222D !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    margin-bottom: 10px !important;
+    border-left: 3px solid #3CAB4B !important;
+    padding-left: 8px !important;
+  }
+
+  .filter-label {
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    color: #606D76 !important;
+    margin-bottom: 4px !important;
+    display: block !important;
+  }
+
+  .compact-input, .compact-select {
+    padding: 6px 10px !important;
+    font-size: 12px !important;
+    height: auto !important;
+    border-radius: 8px !important;
+    background-color: #FBFCFB !important;
+    border: 1px solid #D6E4D8 !important;
+
+    &:focus {
+      border-color: #3CAB4B !important;
+      box-shadow: 0 0 0 3px rgba(60, 171, 75, 0.1) !important;
+      background-color: #FFFFFF !important;
+    }
+  }
+}
+
+// Override template double container designs to remove duplicate card borders and trailing white space
+div.blog-sidebar, 
+div.theiaStickySidebar, 
+div.stickybar,
+aside.blog-sidebar,
+.blog-sidebar.theiaStickySidebar {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+// Premium Modern Breadcrumb Redesign
+.breadcrumb, .breadcrumb.breadcrumb-list {
+  background: #F0F6F1 url('/assets/img/bg/stadium-turf.png') no-repeat right center !important;
+  background-size: auto 100% !important;
+  background-color: #F0F6F1 !important;
+  border-bottom: none !important;
+  padding: 60px 0 !important;
+  position: relative !important;
+  margin: 80px 0 0 0 !important;
+  overflow: hidden !important;
+
+  // Floating breadcrumb pill contrast fix
+  .rounded-pill {
+    background-color: #FFFFFF !important;
+    
+    a {
+      color: #606D76 !important;
+      font-weight: 500 !important;
+      text-decoration: none !important;
+      
+      &:hover {
+        color: #3CAB4B !important;
+      }
+      
+      i {
+        color: #606D76 !important;
+      }
+    }
+    
+    span {
+      color: #606D76 !important;
+      font-weight: 600 !important;
+      
+      i {
+        color: #C2D5C4 !important;
+      }
+    }
+  }
+
+  // Strip template background blobs
+  &:before, &:after, span.primary-right-round, ul:after {
+    display: none !important;
+    content: none !important;
+    opacity: 0 !important;
+  }
+
+  h1 {
+    font-family: 'Space Grotesk', sans-serif !important;
+    font-size: 46px !important;
+    font-weight: 800 !important;
+    color: #17222D !important;
+    letter-spacing: -1px !important;
+    margin-bottom: 8px !important;
+    line-height: 1.1 !important;
+    
+    span {
+      color: #3CAB4B !important;
+    }
+  }
+
+  p {
+    color: #606D76 !important;
+    font-size: 16px !important;
+    margin-bottom: 24px !important;
+    font-weight: 500 !important;
+  }
+
+  span.font-weight-bold {
+    color: #3CAB4B !important;
+  }
+
+  ul {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    padding-left: 0 !important;
+    margin-bottom: 0 !important;
+    list-style: none !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    background: transparent !important;
+
+    li {
+      display: flex !important;
+      align-items: center !important;
+      color: #606D76 !important;
+      padding-right: 0 !important;
+
+      a {
+        color: #3CAB4B !important;
+        text-decoration: none !important;
+        font-weight: 600 !important;
+        transition: color 0.2s ease !important;
+
+        &:hover {
+          color: #2D8C35 !important;
+        }
+      }
+
+      // Custom elegant divider
+      &:after {
+        content: "/" !important;
+        margin-left: 8px !important;
+        margin-right: 8px !important;
+        color: #C2D5C4 !important;
+        font-family: inherit !important;
+        position: static !important;
+        font-size: 13px !important;
+        display: inline-block !important;
+        opacity: 1 !important;
+      }
+
+      &:last-child {
+        color: #606D76 !important;
+        font-weight: 500 !important;
+
+        &:after {
+          display: none !important;
+        }
+      }
+    }
+  }
+}
+
+
+
+// Apply premium global typography (Awwwards / Linear style)
+body, html, h1, h2, h3, h4, h5, h6, p, span, a, label, input, select, button {
+  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif !important;
+}
+
+// Layout Alignments
+.blog-grid .container {
+  max-width: 1400px !important;
+  margin: 0 auto !important;
+  padding-left: 32px !important;
+  padding-right: 32px !important;
+}
+
+// Sticky Sidebar Filter Box
+.filter-sidebar-card {
+  width: 320px !important;
+  max-width: 100% !important;
+  background: #FFFFFF !important;
+  border: 1px solid #E5E7EB !important;
+  border-radius: 16px !important;
+  box-shadow: 0 12px 40px rgba(15, 23, 42, 0.08) !important;
+  padding: 16px !important;
+  position: sticky !important;
+  top: 100px !important;
+  z-index: 10 !important;
+}
+
+// Premium Card Lift & Image Zoom Animations
+.listing-item.ki-card-hover {
+  background-color: #FFFFFF !important;
+  border: 1px solid #E5E7EB !important;
+  border-radius: 20px !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.01) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  overflow: hidden !important;
+  
+  &:hover {
+    transform: translateY(-8px) !important;
+    box-shadow: 0 12px 40px rgba(15, 23, 42, 0.08) !important;
+    
+    .background-image {
+      transform: scale(1.08) !important;
+    }
+  }
+  
+  .background-image {
+    transition: transform 0.4s ease !important;
+  }
+}
+
+// Availability and Badge adjustments
+.tag-blue, .tag {
+  background-color: #2D3E33 !important;
+  border-radius: 6px !important;
+}
+
+// Hero Booking Section Premium Overrides (Charcoal + Garmin Green)
+.hero-booking-section {
+  background: linear-gradient(135deg, #F0FDF4 0%, #ECFDF5 100%) !important;
+
+  h1 {
+    color: #0F172A !important;
+    font-size: 56px !important;
+    font-weight: 800 !important;
+    line-height: 1.1 !important;
+    margin-bottom: 16px !important;
+    
+    span {
+      color: #22C55E !important;
+    }
+  }
+
+  p {
+    color: #64748B !important;
+    font-size: 20px !important;
+    font-weight: 500 !important;
+    margin-bottom: 24px !important;
+  }
+
+  span.font-weight-bold {
+    color: #22C55E !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+  }
+
+  // Floating breadcrumb pill
+  .rounded-pill {
+    background-color: #FFFFFF !important;
+    border: 1px solid #E5E7EB !important;
+
+    a {
+      color: #64748B !important;
+      font-weight: 500 !important;
+      text-decoration: none !important;
+
+      &:hover {
+        color: #22C55E !important;
+      }
+    }
+
+    span {
+      color: #0F172A !important;
+      font-weight: 600 !important;
+    }
+  }
+}
+
+// Blog Grid Listings Specificity Rules
+.content.blog-grid {
+  background-color: #F8FAFC !important;
+  
+  h1, h2, h3, h4, h5, h6 {
+    color: #0F172A !important;
+  }
+  
+  p, span, label, li {
+    color: #64748B !important;
+  }
+
+  // Badges & Tag text color
+  .tag, .tag-blue, .badge {
+    color: #FFFFFF !important;
+    font-weight: 700 !important;
+  }
+
+  .text-primary, .text-success, span.text-primary, span.text-success {
+    color: #22C55E !important;
+  }
+
+  // Pagination color control
+  .pagination {
+    .page-link {
+      color: #0F172A !important;
+      background-color: #FFFFFF !important;
+      border-color: #E5E7EB !important;
+    }
+
+    .page-item.active .page-link {
+      color: #FFFFFF !important;
+      background-color: #22C55E !important;
+      border-color: #22C55E !important;
+    }
+  }
+}
+
+// Header Navbar Buttons Redesign (Sleek, Modern, SaaS-style)
+.navbar-login-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 8px 20px !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  color: #0F172A !important;
+  background-color: transparent !important;
+  border: 1.5px solid #22C55E !important; // Sleek green outline
+  border-radius: 10px !important;
+  text-decoration: none !important;
+  height: 38px !important;
+  transition: all 0.2s ease-in-out !important;
+
+  &:hover {
+    color: #16A34A !important;
+    border-color: #16A34A !important;
+    background-color: rgba(34, 197, 94, 0.04) !important;
+    transform: translateY(-1px) !important;
+  }
+}
+
+.navbar-register-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 8px 20px !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  color: #FFFFFF !important;
+  background-color: #22C55E !important;
+  border: none !important;
+  border-radius: 10px !important;
+  text-decoration: none !important;
+  height: 38px !important;
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.15) !important;
+  transition: all 0.2s ease-in-out !important;
+
+  &:hover {
+    color: #FFFFFF !important;
+    background-color: #16A34A !important;
+    box-shadow: 0 6px 16px rgba(22, 163, 74, 0.25) !important;
+    transform: translateY(-1px) !important;
+  }
+
+  &:active {
+    transform: translateY(0) !important;
+  }
+}
+
+// Global Scrollbar Removal (Hide Scrollbar but keep page fully scrollable)
+::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
+}
+
+// Firefox and IE/Edge support
+* {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+

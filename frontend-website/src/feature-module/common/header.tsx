@@ -556,22 +556,12 @@ const Header = () => {
                   </div>
                 </div>
               ) : (
-                <div className="d-flex gap-2">
-                  <Link to={"/login"}>
-                    <div className="nav-link btn btn-accent-outline log-register">
-                      <span>
-                        <i className="feather-user" />
-                      </span>
-                      Login
-                    </div>
-                  </Link>{" "}
-                  <Link to={"/register"}>
-                    <div className="nav-link btn btn-primary log-register">
-                      <span>
-                        <i className="feather-user-plus" />
-                      </span>
-                      Register
-                    </div>
+                <div className="d-flex align-items-center gap-2">
+                  <Link to={"/login"} className="navbar-login-btn">
+                    Login
+                  </Link>
+                  <Link to={"/register"} className="navbar-register-btn">
+                    Register
                   </Link>
                 </div>
               )}

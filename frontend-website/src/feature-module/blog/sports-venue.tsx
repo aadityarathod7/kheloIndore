@@ -251,6 +251,43 @@ const BlogListSidebarLeft = (_props: { id: any; name: any }) => {
     setCurrentPage(pageNumber);
   };
 
+  const totalPages = Math.ceil(
+    (venueByLocation.length > 0 ? venueByLocation.length : venues.length) / venuesPerPage
+  );
+
+  const getPaginationPages = () => {
+    const pages = [];
+    const maxPageButtons = 5;
+
+    if (totalPages <= maxPageButtons) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      pages.push(1);
+
+      const start = Math.max(2, currentPage - 1);
+      const end = Math.min(totalPages - 1, currentPage + 1);
+
+      if (start > 2) {
+        pages.push("...");
+      }
+
+      for (let i = start; i <= end; i++) {
+        pages.push(i);
+      }
+
+      if (end < totalPages - 1) {
+        pages.push("...");
+      }
+
+      pages.push(totalPages);
+    }
+    return pages;
+  };
+
+  const paginationPages = getPaginationPages();
+
   return (
     <div>
       {loading ? (
@@ -259,245 +296,367 @@ const BlogListSidebarLeft = (_props: { id: any; name: any }) => {
         </>
       ) : (
         <>
-          {/* Breadcrumb */}
-          <div className="breadcrumb breadcrumb-list mb-0 top-margin">
-            <span className="primary-right-round" />
-            <div className="container">
-              <h1 className="text-white">Sports Venue</h1>
-              <ul>
-                <li>
-                  <Link to={routes.home}>Home</Link>
-                </li>
-                <li>Sports Venue</li>
-              </ul>
+          {/* Hero Section */}
+          <div className="hero-booking-section" style={{ background: "linear-gradient(135deg, #F0FDF4 0%, #ECFDF5 100%)", paddingTop: "110px", paddingBottom: "40px", position: "relative", overflow: "hidden", borderBottom: "1px solid #E5E7EB" }}>
+            {/* Blended Background Turf Graphics */}
+            <div className="hero-artwork-blend" style={{ position: "absolute", right: "-60px", top: 0, bottom: 0, width: "55%", backgroundImage: "url('/assets/img/bg/banner-illustration.png')", backgroundSize: "cover", backgroundPosition: "left center", backgroundRepeat: "no-repeat", maskImage: "linear-gradient(to left, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%)", WebkitMaskImage: "linear-gradient(to left, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%)", opacity: 0.9 }}></div>
+            
+            <div className="container" style={{ position: "relative", zIndex: 2 }}>
+              <div className="row align-items-center">
+                <div className="col-lg-7 text-start">
+                  <span className="font-weight-bold" style={{ fontSize: "13px", letterSpacing: "1.5px", display: "block", marginBottom: "12px", color: "#22C55E", fontWeight: "700" }}>BOOK. PLAY. ENJOY</span>
+                  <h1 className="d-flex align-items-center flex-wrap" style={{ fontSize: "56px", fontWeight: "800", color: "#0F172A", lineHeight: "1.1", marginBottom: "16px" }}>
+                    Sports <span style={{ color: "#22C55E", marginLeft: "12px" }}>Venues</span>
+                  </h1>
+                  <p style={{ color: "#64748B", fontSize: "20px", marginBottom: "24px", fontWeight: "500", maxWidth: "480px" }}>Find and book the best sports venues in Indore</p>
+                  
+                  {/* Breadcrumb pill */}
+                  <div className="d-inline-flex align-items-center bg-white px-3 py-2 rounded-pill shadow-sm" style={{ fontSize: "13px", border: "1px solid #E5E7EB" }}>
+                    <Link to="/" style={{ color: "#64748B", textDecoration: "none", fontWeight: "500" }}><i className="feather-home me-1" style={{ color: "#64748B" }} /> Home</Link>
+                    <span style={{ margin: "0 10px", color: "#64748B" }}><i className="feather-chevron-right" style={{ fontSize: "12px", color: "#64748B" }} /></span>
+                    <span style={{ color: "#22C55E", fontWeight: "600" }}>Sports Venues</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-          {/* /Breadcrumb */}
+          {/* /Hero Section */}
+
           {/* Page Content */}
-          <div className="content blog-grid">
+          <div className="content blog-grid" style={{ backgroundColor: "#F8FAFC", padding: "32px 0 60px 0" }}>
             <div className="container">
               <div className="row">
-                <div className="col-sm-12 col-md-8 col-lg-8">
-                  <div className="row">
-                    {currentVenues.map((venue, index) => (
-                      <div className="col-lg-6 col-md-12 col-sm-6 mb-4 d-flex" key={index}>
-                        <div className="ki-card ki-card-hover w-100 d-flex flex-column justify-content-between" style={{ margin: 0, overflow: "hidden" }}>
-                          <div className="listing-item venue-page p-0 border-0 w-100" style={{ background: "transparent" }}>
-                            <div className="listing-img" style={{ height: "180px", position: "relative" }}>
-                              <div
-                                className="background-image"
-                                style={{
-                                  backgroundImage: `url(${venue?.images[0]?.src
-                                      ? `${IMG_URL}${venue?.images[0]?.src}`
-                                      : "/assets/img/no-img.png"
-                                    })`,
-                                  height: "100%",
-                                  backgroundSize: "cover"
-                                }}
-                              ></div>
-                              <Link
-                                to={`/sports-venue/${venue.vendor_type.replace(/\s+/g, "-").toLowerCase()}/${venue.name.replace(/\s+/g, "-").toLowerCase()}/${venue._id}`}
-                                style={{ position: "absolute", inset: 0 }}
-                              >
-                                <ImageWithBasePath
-                                  src={
-                                    venue?.images[0]?.src
-                                      ? `${IMG_URL}${venue?.images[0]?.src}`
-                                      : "/assets/img/no-img.png"
-                                  }
-                                  className="img-fluid foreground-image"
-                                  alt="Venue Image"
-                                  style={{ height: "100%", width: "100%", objectFit: "cover", opacity: 0 }}
+                
+                {/* Sidebar Filter on the Left */}
+                <div className="col-sm-12 col-md-4 col-lg-4 blog-sidebar theiaStickySidebar">
+                  <div className="stickybar">
+                    <div className="ki-card filter-sidebar-card p-3 mb-0" style={{ backgroundColor: "#FFFFFF", borderRadius: "16px", border: "1px solid #E2E8E3", boxShadow: "0 4px 20px rgba(0,0,0,0.02)" }}>
+                      
+                      {/* Filter Title Header & Reset */}
+                      <div className="d-flex align-items-center justify-content-between pb-2 mb-3" style={{ borderBottom: "1px solid #E2E8E3" }}>
+                        <h4 className="m-0 d-flex align-items-center gap-2" style={{ fontSize: "15px", fontWeight: "700", color: "#17222D" }}>
+                          <i className="feather-sliders text-muted" style={{ fontSize: "16px" }} />
+                          Filters
+                        </h4>
+                        <button 
+                          onClick={() => {
+                            setFromDate("");
+                            setToDate("");
+                            setFromTime("");
+                            setToTime("");
+                            setGrassType("");
+                            setLayoutType("");
+                            setFloorType("");
+                            setSortBy("");
+                            setSelectedAmenities([]);
+                          }}
+                          className="btn btn-link p-0 text-decoration-none d-flex align-items-center gap-1"
+                          style={{ fontSize: "12px", fontWeight: "600", color: "#3CAB4B" }}
+                        >
+                          <i className="feather-refresh-cw" style={{ fontSize: "11px" }} />
+                          Reset
+                        </button>
+                      </div>
+
+                      {/* Group 1: Date Range */}
+                      <div className="filter-section mb-3" style={{ borderBottom: "1px solid #EDF3EE", paddingBottom: "14px" }}>
+                        <label className="d-flex align-items-center gap-2 mb-2" style={{ fontSize: "12px", fontWeight: "700", color: "#17222D" }}>
+                          <i className="feather-calendar" style={{ color: "#3CAB4B", fontSize: "14px" }} />
+                          Date Range
+                        </label>
+                        <div className="row g-2">
+                          <div className="col-6">
+                            <label className="filter-label" style={{ fontSize: "10px", color: "#606D76", fontWeight: "600" }}>From Date</label>
+                            <input type="date" className="form-control form-control-sm compact-input" value={fromDate} onChange={(e) => setFromDate(e.target.value)} />
+                          </div>
+                          <div className="col-6">
+                            <label className="filter-label" style={{ fontSize: "10px", color: "#606D76", fontWeight: "600" }}>To Date</label>
+                            <input type="date" className="form-control form-control-sm compact-input" value={toDate} onChange={(e) => setToDate(e.target.value)} />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Group 2: Time Range */}
+                      <div className="filter-section mb-3" style={{ borderBottom: "1px solid #EDF3EE", paddingBottom: "14px" }}>
+                        <label className="d-flex align-items-center gap-2 mb-2" style={{ fontSize: "12px", fontWeight: "700", color: "#17222D" }}>
+                          <i className="feather-clock" style={{ color: "#3CAB4B", fontSize: "14px" }} />
+                          Time Range
+                        </label>
+                        <div className="row g-2">
+                          <div className="col-6">
+                            <label className="filter-label" style={{ fontSize: "10px", color: "#606D76", fontWeight: "600" }}>From Hour</label>
+                            <select className="form-select form-select-sm compact-select" value={fromTime} onChange={(e) => setFromTime(e.target.value)}>
+                              <option value="">Start</option>
+                              <option value="06:00">6 AM</option>
+                              <option value="08:00">8 AM</option>
+                              <option value="10:00">10 AM</option>
+                              <option value="12:00">12 PM</option>
+                              <option value="14:00">2 PM</option>
+                              <option value="16:00">4 PM</option>
+                              <option value="18:00">6 PM</option>
+                              <option value="20:00">8 PM</option>
+                            </select>
+                          </div>
+                          <div className="col-6">
+                            <label className="filter-label" style={{ fontSize: "10px", color: "#606D76", fontWeight: "600" }}>To Hour</label>
+                            <select className="form-select form-select-sm compact-select" value={toTime} onChange={(e) => setToTime(e.target.value)}>
+                              <option value="">End</option>
+                              <option value="08:00">8 AM</option>
+                              <option value="10:00">10 AM</option>
+                              <option value="12:00">12 PM</option>
+                              <option value="14:00">2 PM</option>
+                              <option value="16:00">4 PM</option>
+                              <option value="18:00">6 PM</option>
+                              <option value="20:00">8 PM</option>
+                              <option value="22:00">10 PM</option>
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Specifications (Grass, Layout, Level, Sort) in side-by-side grids */}
+                      <div className="filter-section mb-3" style={{ borderBottom: "1px solid #EDF3EE", paddingBottom: "14px" }}>
+                        <div className="row g-2 mb-2">
+                          <div className="col-6">
+                            <label className="filter-label" style={{ fontSize: "10px", color: "#606D76", fontWeight: "600" }}>Grass Type</label>
+                            <select className="form-select form-select-sm compact-select" value={grassType} onChange={(e) => setGrassType(e.target.value)}>
+                              <option value="">Any Grass</option>
+                              <option value="natural">Natural</option>
+                              <option value="artificial">Artificial</option>
+                            </select>
+                          </div>
+                          <div className="col-6">
+                            <label className="filter-label" style={{ fontSize: "10px", color: "#606D76", fontWeight: "600" }}>Layout</label>
+                            <select className="form-select form-select-sm compact-select" value={layoutType} onChange={(e) => setLayoutType(e.target.value)}>
+                              <option value="">Any Layout</option>
+                              <option value="covered">Indoor</option>
+                              <option value="open">Outdoor</option>
+                            </select>
+                          </div>
+                        </div>
+                        <div className="row g-2">
+                          <div className="col-6">
+                            <label className="filter-label" style={{ fontSize: "10px", color: "#606D76", fontWeight: "600" }}>Floor Level</label>
+                            <select className="form-select form-select-sm compact-select" value={floorType} onChange={(e) => setFloorType(e.target.value)}>
+                              <option value="">Any Level</option>
+                              <option value="ground">Ground</option>
+                              <option value="terrace">Terrace</option>
+                            </select>
+                          </div>
+                          <div className="col-6">
+                            <label className="filter-label" style={{ fontSize: "10px", color: "#606D76", fontWeight: "600" }}>Sort By</label>
+                            <select className="form-select form-select-sm compact-select" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+                              <option value="">Default</option>
+                              <option value="price-low-high">Price: Low-High</option>
+                              <option value="price-high-low">Price: High-Low</option>
+                              <option value="name">Name: A-Z</option>
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Group 3: Amenities in 3 Columns */}
+                      <div className="filter-section mb-3 pb-0" style={{ borderBottom: "none" }}>
+                        <label className="d-flex align-items-center gap-2 mb-2" style={{ fontSize: "12px", fontWeight: "700", color: "#17222D" }}>
+                          <i className="feather-tag" style={{ color: "#3CAB4B", fontSize: "14px" }} />
+                          Amenities
+                        </label>
+                        <div className="row g-2">
+                          {[
+                            { label: "Floodlights", key: "lighting" },
+                            { label: "CCTV", key: "security" },
+                            { label: "Parking", key: "parking" },
+                            { label: "Changing Room", key: "seating" },
+                            { label: "Drinking Water", key: "cafeteria" },
+                            { label: "Washroom", key: "ac" }
+                          ].map((amenity) => (
+                            <div className="col-4" key={amenity.key}>
+                              <div className="form-check m-0 d-flex align-items-center gap-1">
+                                <input 
+                                  type="checkbox" 
+                                  className="form-check-input" 
+                                  id={`amenity-${amenity.key}`}
+                                  checked={selectedAmenities.includes(amenity.key)}
+                                  onChange={() => handleAmenityChange(amenity.key)}
+                                  style={{ width: "12px", height: "12px", cursor: "pointer" }}
                                 />
-                              </Link>
-                              <div className="fav-item-venues news-sports" style={{ top: "12px", left: "12px" }}>
-                                <span className="tag tag-blue" style={{ background: "linear-gradient(90deg, #49BC4F, #38A941)", color: "#FFFFFF", fontWeight: "700", boxShadow: "0 2px 8px rgba(60,171,75,0.2)" }}>
-                                  {venue?.vendor_type.replace("_", " ")}
-                                </span>
+                                <label className="form-check-label" htmlFor={`amenity-${amenity.key}`} style={{ fontSize: "9px", cursor: "pointer", color: "#606D76", fontWeight: "500", whiteSpace: "nowrap" }}>
+                                  {amenity.label}
+                                </label>
                               </div>
                             </div>
-                            <div className="listing-content news-content p-3">
-                              <div className="d-flex align-items-center justify-content-between mb-2">
-                                <div className="rating-wrap d-flex align-items-center gap-1">
-                                  <i className="fas fa-star text-warning" style={{ fontSize: "12px" }} />
-                                  <span style={{ fontSize: "12px", color: "#606D76" }}>4.8 (18 reviews)</span>
-                                </div>
-                                <span style={{ fontSize: "12px", color: "#606D76" }}>
-                                  <i className="fas fa-arrows-alt me-1" style={{ color: "#3CAB4B" }} />
-                                  Standard Size
-                                </span>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Apply Filters Button */}
+                      <div className="mt-3">
+                        <button 
+                          className="btn btn-primary w-100 rounded-pill d-flex align-items-center justify-content-center gap-2 py-2" 
+                          style={{ backgroundColor: "#3CAB4B", borderColor: "#3CAB4B", fontWeight: "600", fontSize: "13px", color: "#FFFFFF", boxShadow: "0 4px 12px rgba(60, 171, 75, 0.2)" }}
+                        >
+                          <i className="feather-search" />
+                          Apply Filters
+                        </button>
+                      </div>
+
+                    </div>
+                  </div>
+                </div>
+
+                {/* Listings Grid on the Right */}
+                <div className="col-sm-12 col-md-8 col-lg-8">
+                  
+                  {/* Listings Header */}
+                  <div className="d-flex align-items-center justify-content-between mb-4">
+                    <h5 className="m-0" style={{ fontSize: "16px", fontWeight: "700", color: "#17222D" }}>
+                      <span style={{ color: "#3CAB4B", marginRight: "6px" }}>
+                        {venueByLocation.length > 0 ? venueByLocation.length : venues.length}
+                      </span> 
+                      Venues Found
+                    </h5>
+                    <div className="d-flex align-items-center gap-2">
+                      <div className="d-flex align-items-center gap-1 bg-white px-2 py-1 rounded border" style={{ fontSize: "12px", height: "32px", borderColor: "#E2E8E3" }}>
+                        <span className="text-muted pe-1">Sort by:</span>
+                        <select className="form-select form-select-sm border-0 bg-transparent py-0 ps-0 pe-4" value={sortBy} onChange={(e) => setSortBy(e.target.value)} style={{ fontSize: "12px", fontWeight: "600", boxShadow: "none", width: "100px", backgroundPosition: "right 4px center" }}>
+                          <option value="">Popular</option>
+                          <option value="price-low-high">Price: Low-High</option>
+                          <option value="price-high-low">Price: High-Low</option>
+                          <option value="name">Name: A-Z</option>
+                        </select>
+                      </div>
+                      <button className="btn btn-sm btn-primary rounded d-flex align-items-center justify-content-center" style={{ width: "32px", height: "32px", backgroundColor: "#3CAB4B", borderColor: "#3CAB4B" }}>
+                        <i className="feather-grid" />
+                      </button>
+                      <button className="btn btn-sm btn-light rounded d-flex align-items-center justify-content-center border" style={{ width: "32px", height: "32px", backgroundColor: "#FFFFFF" }}>
+                        <i className="feather-list" />
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="row">
+                    {currentVenues.map((venue, index) => (
+                      <div className="col-lg-4 col-md-6 col-sm-12 mb-4 d-flex" key={index}>
+                        <div className="listing-item venue-page ki-card-hover w-100 d-flex flex-column justify-content-between" style={{ margin: 0, overflow: "hidden", backgroundColor: "#FFFFFF", borderRadius: "16px", border: "1px solid #E2E8E3", boxShadow: "0 4px 15px rgba(0,0,0,0.01)" }}>
+                          <div className="listing-img" style={{ height: "140px", position: "relative" }}>
+                            <div
+                              className="background-image"
+                              style={{
+                                backgroundImage: `url(${venue?.images[0]?.src
+                                    ? `${IMG_URL}${venue?.images[0]?.src}`
+                                    : "/assets/img/no-img.png"
+                                  })`,
+                                height: "100%",
+                                backgroundSize: "cover"
+                              }}
+                            ></div>
+                            <Link
+                              to={`/sports-venue/${venue.vendor_type.replace(/\s+/g, "-").toLowerCase()}/${venue.name.replace(/\s+/g, "-").toLowerCase()}/${venue._id}`}
+                              style={{ position: "absolute", inset: 0 }}
+                            >
+                              <ImageWithBasePath
+                                src={
+                                  venue?.images[0]?.src
+                                    ? `${IMG_URL}${venue?.images[0]?.src}`
+                                    : "/assets/img/no-img.png"
+                                }
+                                className="img-fluid foreground-image"
+                                alt="Venue Image"
+                                style={{ height: "100%", width: "100%", objectFit: "cover", opacity: 0 }}
+                              />
+                            </Link>
+                            
+                            {/* Favorite Heart Button */}
+                            <div className="fav-item-venues" style={{ position: "absolute", top: "8px", right: "8px", zIndex: 2 }}>
+                              <button className="btn btn-white rounded-circle d-flex align-items-center justify-content-center shadow-sm" style={{ width: "28px", height: "28px", padding: 0, backgroundColor: "#FFFFFF", border: "none" }}>
+                                <i className="feather-heart text-muted" style={{ fontSize: "13px" }} />
+                              </button>
+                            </div>
+
+                            <div className="fav-item-venues news-sports" style={{ top: "8px", left: "8px" }}>
+                              <span className="tag tag-blue" style={{ background: "#2D3E33", color: "#FFFFFF", fontWeight: "700", fontSize: "10px", padding: "4px 8px", borderRadius: "4px" }}>
+                                {venue?.vendor_type.replace("_", " ")}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="listing-content news-content p-3" style={{ background: "#FFFFFF" }}>
+                            <div className="d-flex align-items-center justify-content-between mb-1" style={{ fontSize: "11px" }}>
+                              <div className="rating-wrap d-flex align-items-center gap-1">
+                                <i className="fas fa-star text-warning" style={{ fontSize: "10px" }} />
+                                <span style={{ fontSize: "10px", fontWeight: "700", color: "#17222D" }}>4.8</span>
                               </div>
-                              <h3 className="listing-title mb-2" style={{ fontSize: "18px", fontWeight: "600" }}>
-                                <Link
-                                  to={`/sports-venue/${venue.vendor_type.replace(/\s+/g, "-").toLowerCase()}/${venue.name.replace(/\s+/g, "-").toLowerCase()}/${venue._id}`}
-                                  className="text-truncate d-block" style={{ color: "#17222D" }}
-                                >
-                                  {venue.name}
-                                </Link>
-                              </h3>
-                              <p className="mb-3" style={{ fontSize: "13px", color: "#606D76" }}>
-                                <i className="feather-map-pin me-2" style={{ color: "#3CAB4B" }} />
-                                {venue.near_by_location}
-                              </p>
-                              <div className="d-flex align-items-center justify-content-between pt-2" style={{ borderTop: "1px solid #E2E8E3" }}>
-                                <span style={{ fontSize: "14px", fontWeight: "600", color: "#17222D" }}>
-                                  ₹{venue.price_per_hr || "750"} <span style={{ fontSize: "11px", fontWeight: "normal", color: "#606D76" }}>/ hr</span>
-                                </span>
-                                <Link 
-                                  to={`/sports-venue/${venue.vendor_type.replace(/\s+/g, "-").toLowerCase()}/${venue.name.replace(/\s+/g, "-").toLowerCase()}/${venue._id}`}
-                                  className="btn btn-primary btn-sm rounded-pill px-3"
-                                  style={{ fontSize: "12px" }}
-                                >
-                                  Book Slot
-                                </Link>
-                              </div>
+                              <span style={{ fontSize: "10px", color: "#606D76", fontWeight: "600" }}>
+                                <i className="feather-grid me-1" style={{ color: "#3CAB4B", fontSize: "10px" }} />
+                                Standard
+                              </span>
+                            </div>
+                            <h3 className="listing-title mb-1" style={{ fontSize: "15px", fontWeight: "700" }}>
+                              <Link
+                                to={`/sports-venue/${venue.vendor_type.replace(/\s+/g, "-").toLowerCase()}/${venue.name.replace(/\s+/g, "-").toLowerCase()}/${venue._id}`}
+                                className="text-truncate d-block" style={{ color: "#17222D" }}
+                              >
+                                {venue.name}
+                              </Link>
+                            </h3>
+                            <p className="mb-2 text-truncate" style={{ fontSize: "12px", color: "#606D76" }}>
+                              <i className="feather-map-pin me-1" style={{ color: "#606D76" }} />
+                              {venue.near_by_location}, Indore
+                            </p>
+                            <div className="d-flex align-items-center justify-content-between pt-2" style={{ borderTop: "1px solid #E2E8E3" }}>
+                              <span style={{ fontSize: "14px", fontWeight: "700", color: "#17222D" }}>
+                                ₹{venue.price_per_hr || "750"} <span style={{ fontSize: "10px", fontWeight: "normal", color: "#606D76" }}>/ hr</span>
+                              </span>
+                              <Link 
+                                to={`/sports-venue/${venue.vendor_type.replace(/\s+/g, "-").toLowerCase()}/${venue.name.replace(/\s+/g, "-").toLowerCase()}/${venue._id}`}
+                                className="btn btn-primary btn-sm rounded-pill px-3 py-1"
+                                style={{ fontSize: "11px", fontWeight: "600", backgroundColor: "#3CAB4B", borderColor: "#3CAB4B" }}
+                              >
+                                Book Slot
+                              </Link>
                             </div>
                           </div>
                         </div>
                       </div>
                     ))}
                   </div>
-                  <ul className="pagination">
-                    {venues.length > venuesPerPage &&
-                      Array(Math.ceil(venues.length / venuesPerPage))
-                        .fill()
-                        .map((_, index) => (
-                          <li
-                            key={index}
-                            className={`page-item ${currentPage === index + 1 ? "active" : ""}`}
-                          >
-                            <button
-                              className="page-link"
-                              onClick={() => handlePageChange(index + 1)}
-                            >
-                              {index + 1}
+
+                  {/* Modern Centered Pagination wrapper */}
+                  <div className="d-flex justify-content-center w-100 mt-4">
+                    <ul className="pagination">
+                      {venues.length > venuesPerPage && (
+                        <>
+                          <li className={`page-item prev ${currentPage === 1 ? "disabled" : ""}`}>
+                            <button className="page-link" onClick={() => currentPage > 1 && handlePageChange(currentPage - 1)} disabled={currentPage === 1}>
+                              <i className="feather-chevron-left" />
                             </button>
                           </li>
-                        ))}
-                  </ul>
-
-                  {/* /Blog */}
-                </div>
-                <div className="col-sm-12 col-md-4 col-lg-4 blog-sidebar theiaStickySidebar">
-                  <div className="stickybar d-flex flex-column gap-4">
-                    {/* Advanced Date & Hour Filter */}
-                    <div className="ki-card mb-0">
-                      <h4 className="mb-3" style={{ fontSize: "18px", borderBottom: "none", paddingBottom: 0, color: "#17222D" }}>Advanced Booking Filter</h4>
-                      <div className="row g-2 mb-3">
-                        <div className="col-6">
-                          <label className="mb-1" style={{ fontSize: "11px", color: "#606D76" }}>From Date</label>
-                          <input type="date" className="form-control form-control-sm" value={fromDate} onChange={(e) => setFromDate(e.target.value)} style={{ padding: "6px 8px", fontSize: "12px" }} />
-                        </div>
-                        <div className="col-6">
-                          <label className="mb-1" style={{ fontSize: "11px", color: "#606D76" }}>To Date</label>
-                          <input type="date" className="form-control form-control-sm" value={toDate} onChange={(e) => setToDate(e.target.value)} style={{ padding: "6px 8px", fontSize: "12px" }} />
-                        </div>
-                      </div>
-                      <div className="row g-2">
-                        <div className="col-6">
-                          <label className="mb-1" style={{ fontSize: "11px", color: "#606D76" }}>From Hour</label>
-                          <select className="form-select form-select-sm" value={fromTime} onChange={(e) => setFromTime(e.target.value)} style={{ padding: "6px 8px", fontSize: "12px" }}>
-                            <option value="">Start</option>
-                            <option value="06:00">6:00 AM</option>
-                            <option value="08:00">8:00 AM</option>
-                            <option value="10:00">10:00 AM</option>
-                            <option value="12:00">12:00 PM</option>
-                            <option value="14:00">2:00 PM</option>
-                            <option value="16:00">4:00 PM</option>
-                            <option value="18:00">6:00 PM</option>
-                            <option value="20:00">8:00 PM</option>
-                          </select>
-                        </div>
-                        <div className="col-6">
-                          <label className="mb-1" style={{ fontSize: "11px", color: "#606D76" }}>To Hour</label>
-                          <select className="form-select form-select-sm" value={toTime} onChange={(e) => setToTime(e.target.value)} style={{ padding: "6px 8px", fontSize: "12px" }}>
-                            <option value="">End</option>
-                            <option value="08:00">8:00 AM</option>
-                            <option value="10:00">10:00 AM</option>
-                            <option value="12:00">12:00 PM</option>
-                            <option value="14:00">2:00 PM</option>
-                            <option value="16:00">4:00 PM</option>
-                            <option value="18:00">6:00 PM</option>
-                            <option value="20:00">8:00 PM</option>
-                            <option value="22:00">10:00 PM</option>
-                          </select>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Sorting Card */}
-                    <div className="ki-card mb-0">
-                      <h4 className="mb-3" style={{ fontSize: "18px", borderBottom: "none", paddingBottom: 0, color: "#17222D" }}>Sort Results</h4>
-                      <select className="form-select form-select-sm" value={sortBy} onChange={(e) => setSortBy(e.target.value)} style={{ padding: "8px 12px", fontSize: "13px" }}>
-                        <option value="">Default sorting</option>
-                        <option value="price-low-high">Price: Low to High</option>
-                        <option value="price-high-low">Price: High to Low</option>
-                        <option value="name">Name: A to Z</option>
-                      </select>
-                    </div>
-
-                    {/* Pitch Specifications */}
-                    <div className="ki-card mb-0">
-                      <h4 className="mb-3" style={{ fontSize: "18px", borderBottom: "none", paddingBottom: 0, color: "#17222D" }}>Pitch Features</h4>
-                      
-                      <div className="mb-3">
-                        <label className="mb-1" style={{ fontSize: "12px", fontWeight: "600", color: "#606D76" }}>Grass Type</label>
-                        <select className="form-select form-select-sm" value={grassType} onChange={(e) => setGrassType(e.target.value)} style={{ padding: "8px 12px", fontSize: "13px" }}>
-                          <option value="">Any Grass</option>
-                          <option value="natural">Natural Grass</option>
-                          <option value="artificial">Artificial Grass</option>
-                        </select>
-                      </div>
-
-                      <div className="mb-3">
-                        <label className="mb-1" style={{ fontSize: "12px", fontWeight: "600", color: "#606D76" }}>Layout</label>
-                        <select className="form-select form-select-sm" value={layoutType} onChange={(e) => setLayoutType(e.target.value)} style={{ padding: "8px 12px", fontSize: "13px" }}>
-                          <option value="">Any Layout</option>
-                          <option value="covered">Covered / Indoor</option>
-                          <option value="open">Open Air / Outdoor</option>
-                        </select>
-                      </div>
-
-                      <div>
-                        <label className="mb-1" style={{ fontSize: "12px", fontWeight: "600", color: "#606D76" }}>Location Level</label>
-                        <select className="form-select form-select-sm" value={floorType} onChange={(e) => setFloorType(e.target.value)} style={{ padding: "8px 12px", fontSize: "13px" }}>
-                          <option value="">Any Level</option>
-                          <option value="ground">Ground Floor</option>
-                          <option value="terrace">Terrace / Rooftop</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    {/* Amenities Checklist */}
-                    <div className="ki-card mb-0">
-                      <h4 className="mb-3" style={{ fontSize: "18px", borderBottom: "none", paddingBottom: 0, color: "#17222D" }}>Amenities</h4>
-                      <div className="d-flex flex-column gap-2">
-                        {[
-                          { label: "Floodlights", key: "lighting" },
-                          { label: "Security / CCTV", key: "security" },
-                          { label: "Seating Stand", key: "seating" },
-                          { label: "Parking Space", key: "parking" },
-                          { label: "Cafeteria / Cafe", key: "cafeteria" },
-                          { label: "Air Conditioning", key: "ac" },
-                          { label: "Sound System", key: "sound" }
-                        ].map((amenity) => (
-                          <div className="form-check" key={amenity.key}>
-                            <input 
-                              type="checkbox" 
-                              className="form-check-input" 
-                              id={`amenity-${amenity.key}`}
-                              checked={selectedAmenities.includes(amenity.key)}
-                              onChange={() => handleAmenityChange(amenity.key)}
-                              style={{ cursor: "pointer" }}
-                            />
-                            <label className="form-check-label" htmlFor={`amenity-${amenity.key}`} style={{ fontSize: "13px", cursor: "pointer", color: "#606D76" }}>
-                              {amenity.label}
-                            </label>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
+                          {paginationPages.map((page, index) => (
+                            <li
+                              key={index}
+                              className={`page-item ${page === currentPage ? "active" : ""} ${page === "..." ? "disabled" : ""}`}
+                            >
+                              {page === "..." ? (
+                                <span className="page-link" style={{ border: "none", background: "transparent", cursor: "default", display: "flex", alignItems: "center", justifyContent: "center" }}>...</span>
+                              ) : (
+                                <button
+                                  className="page-link"
+                                  onClick={() => handlePageChange(page)}
+                                >
+                                  {page}
+                                </button>
+                              )}
+                            </li>
+                          ))}
+                          <li className={`page-item next ${currentPage === totalPages ? "disabled" : ""}`}>
+                            <button className="page-link" onClick={() => currentPage < totalPages && handlePageChange(currentPage + 1)} disabled={currentPage === totalPages}>
+                              <i className="feather-chevron-right" />
+                            </button>
+                          </li>
+                        </>
+                      )}
+                    </ul>
                   </div>
+
                 </div>
               </div>
             </div>

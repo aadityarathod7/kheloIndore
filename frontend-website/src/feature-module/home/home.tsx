@@ -369,7 +369,7 @@ const Home = () => {
 
   return (
     <>
-      <section className="hero-section top-margin" style={{ backgroundImage: "linear-gradient(rgba(229, 236, 227, 0.92), rgba(229, 236, 227, 0.92)), url('/assets/img/bg/banner.jpg')" }}>
+      <section className="hero-section" style={{ backgroundImage: "linear-gradient(rgba(229, 236, 227, 0.92), rgba(229, 236, 227, 0.92)), url('/assets/img/bg/banner.jpg')" }}>
         <div className="banner-cock-one">
           {/* <ImageWithBasePath
             src="assets/img/icons/banner-cock1.svg"
@@ -389,8 +389,8 @@ const Home = () => {
           </div>
         </div>
         <div className="container">
-          <div className="home-banner py-5">
-            <div className="row align-items-center w-100">
+          <div className="home-banner py-5" style={{ paddingTop: "80px" }}>
+            <div className="row align-items-center w-100" style={{ marginTop: "90px" }}>
               <div className="col-lg-7 col-md-12 mx-auto">
                 <div className="section-search aos" data-aos="fade-up">
                   {/* Badge */}
