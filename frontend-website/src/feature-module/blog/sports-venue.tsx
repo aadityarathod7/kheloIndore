@@ -5,6 +5,7 @@ import { all_routes } from "../router/all_routes";
 import axios from "axios";
 import { API_URL, IMG_URL } from "../../ApiUrl";
 import Loader from "../loader/loader";
+import Swal from "sweetalert2";
 
 interface Venues {
   name: string;
@@ -102,6 +103,36 @@ const BlogListSidebarLeft = (_props: { id: string; name: string }) => {
   useEffect(() => {
     setSearchQuery(urlSearchQuery);
   }, [urlSearchQuery]);
+  const [favorites, setFavorites] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    if (venues.length > 0) {
+      const initialFavs: Record<string, boolean> = {};
+      venues.forEach((v) => {
+        initialFavs[v._id] = localStorage.getItem(`fav_venue_${v._id}`) === "true";
+      });
+      setFavorites(initialFavs);
+    }
+  }, [venues]);
+
+  const toggleFavorite = (venueId: string) => {
+    const nextStatus = !favorites[venueId];
+    localStorage.setItem(`fav_venue_${venueId}`, String(nextStatus));
+    setFavorites((prev) => ({
+      ...prev,
+      [venueId]: nextStatus,
+    }));
+
+    Swal.fire({
+      icon: nextStatus ? "success" : "info",
+      title: `<span style="color: #1E293B; font-size: 18px; font-weight: 500; font-family: sans-serif;">${nextStatus ? "Saved to Favourites!" : "Removed from Favourites"}</span>`,
+      html: `<span style="color: #64748B; font-size: 14px; font-family: sans-serif;">${nextStatus ? "Venue added to your favorites list." : "Venue removed from your favorites list."}</span>`,
+      timer: 1500,
+      showConfirmButton: false,
+      background: "#FFFFFF",
+    });
+  };
+
   const [venueByLocation, setVenueByLocation] = useState<Venues[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -115,6 +146,12 @@ const BlogListSidebarLeft = (_props: { id: string; name: string }) => {
   const [layoutType, setLayoutType] = useState("");
   const [floorType, setFloorType] = useState("");
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
+
+  const handleAmenityChange = (key: string) => {
+    setSelectedAmenities((prev) =>
+      prev.includes(key) ? prev.filter((item) => item !== key) : [...prev, key]
+    );
+  };
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -505,7 +542,7 @@ const BlogListSidebarLeft = (_props: { id: string; name: string }) => {
                         </div>
                       </div>
 
-                      {/* Group 3: Amenities in 3 Columns */}
+                      {/* Group 3: Amenities in 2 Columns */}
                       <div className="filter-section mb-3 pb-0" style={{ borderBottom: "none" }}>
                         <label className="d-flex align-items-center gap-2 mb-2" style={{ fontSize: "12px", fontWeight: "700", color: "#17222D" }}>
                           <i className="feather-tag" style={{ color: "#3CAB4B", fontSize: "14px" }} />
@@ -520,17 +557,17 @@ const BlogListSidebarLeft = (_props: { id: string; name: string }) => {
                             { label: "Drinking Water", key: "cafeteria" },
                             { label: "Washroom", key: "ac" }
                           ].map((amenity) => (
-                            <div className="col-4" key={amenity.key}>
-                              <div className="form-check m-0 d-flex align-items-center gap-1">
+                            <div className="col-6" key={amenity.key}>
+                              <div className="form-check m-0 d-flex align-items-start gap-2">
                                 <input 
                                   type="checkbox" 
                                   className="form-check-input" 
                                   id={`amenity-${amenity.key}`}
                                   checked={selectedAmenities.includes(amenity.key)}
                                   onChange={() => handleAmenityChange(amenity.key)}
-                                  style={{ width: "12px", height: "12px", cursor: "pointer" }}
+                                  style={{ width: "13px", height: "13px", cursor: "pointer", flexShrink: 0, marginTop: "2px" }}
                                 />
-                                <label className="form-check-label" htmlFor={`amenity-${amenity.key}`} style={{ fontSize: "9px", cursor: "pointer", color: "#606D76", fontWeight: "500", whiteSpace: "nowrap" }}>
+                                <label className="form-check-label" htmlFor={`amenity-${amenity.key}`} style={{ fontSize: "11px", cursor: "pointer", color: "#606D76", fontWeight: "500", userSelect: "none", whiteSpace: "normal", lineHeight: "1.2" }}>
                                   {amenity.label}
                                 </label>
                               </div>
@@ -625,14 +662,25 @@ const BlogListSidebarLeft = (_props: { id: string; name: string }) => {
                             </Link>
                             
                             {/* Favorite Heart Button */}
-                            <div className="fav-item-venues" style={{ position: "absolute", top: "8px", right: "8px", zIndex: 2 }}>
-                              <button className="btn btn-white rounded-circle d-flex align-items-center justify-content-center shadow-sm" style={{ width: "28px", height: "28px", padding: 0, backgroundColor: "#FFFFFF", border: "none" }}>
-                                <i className="feather-heart text-muted" style={{ fontSize: "13px" }} />
+                            <div style={{ position: "absolute", top: "8px", right: "8px", zIndex: 2 }}>
+                              <button 
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  toggleFavorite(venue._id);
+                                }}
+                                className="btn btn-white rounded-circle d-flex align-items-center justify-content-center shadow-sm" 
+                                style={{ width: "28px", height: "28px", padding: 0, backgroundColor: "#FFFFFF", border: "none" }}
+                              >
+                                <i 
+                                  className={favorites[venue._id] ? "fas fa-heart text-danger" : "feather-heart text-muted"} 
+                                  style={{ fontSize: "13px" }} 
+                                />
                               </button>
                             </div>
 
-                            <div className="fav-item-venues news-sports" style={{ top: "8px", left: "8px" }}>
-                              <span className="tag tag-blue" style={{ background: "#2D3E33", color: "#FFFFFF", fontWeight: "700", fontSize: "10px", padding: "4px 8px", borderRadius: "4px" }}>
+                            {/* Category Badge */}
+                            <div style={{ position: "absolute", top: "8px", left: "8px", zIndex: 2 }}>
+                              <span className="tag tag-blue" style={{ background: "#2D3E33", color: "#FFFFFF", fontWeight: "700", fontSize: "10px", padding: "4px 8px", borderRadius: "4px", textTransform: "uppercase" }}>
                                 {venue?.vendor_type.replace("_", " ")}
                               </span>
                             </div>

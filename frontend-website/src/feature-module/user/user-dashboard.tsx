@@ -5,6 +5,7 @@ import { all_routes } from "../router/all_routes";
 import { jwtDecode} from "jwt-decode";
 import { API_URL, IMG_URL } from "../../ApiUrl";
 import axios from "axios";
+import Swal from "sweetalert2";
 
 interface JwtPayload {
   userID:number;
@@ -112,9 +113,10 @@ const UserDashboard = () => {
     setFavouriteVenues((prev) => prev.filter((v) => String(v.id) !== String(venueId)));
     Swal.fire({
       icon: "info",
-      title: "Removed from Favourites",
-      timer: 1800,
-      showConfirmButton: false
+      title: '<span style="color: #1E293B; font-size: 18px; font-weight: 500; font-family: sans-serif;">Removed from Favourites</span>',
+      timer: 1500,
+      showConfirmButton: false,
+      background: "#FFFFFF",
     });
   };
 
@@ -988,8 +990,9 @@ const UserDashboard = () => {
                                   className="action-icon dropdown-toggle"
                                   data-bs-toggle="dropdown"
                                   aria-expanded="false"
+                                  style={{ color: "#475569" }}
                                 >
-                                  <i className="fas fa-ellipsis" />
+                                  <i className="fas fa-ellipsis-h" style={{ color: "#475569" }} />
                                 </Link>
                                 <div className="dropdown-menu dropdown-menu-end">
                                   <Link
@@ -1178,8 +1181,9 @@ const UserDashboard = () => {
                                   className="action-icon dropdown-toggle"
                                   data-bs-toggle="dropdown"
                                   aria-expanded="false"
+                                  style={{ color: "#475569" }}
                                 >
-                                  <i className="fas fa-ellipsis" />
+                                  <i className="fas fa-ellipsis-h" style={{ color: "#475569" }} />
                                 </Link>
                                 <div className="dropdown-menu dropdown-menu-end">
                                   <Link
@@ -1247,71 +1251,75 @@ const UserDashboard = () => {
                       {favLoading ? (
                         <div className="text-center py-4">
                           <i className="fas fa-spinner fa-spin text-success fa-2x mb-2 d-block" />
-                          <span>Loading your saved venues...</span>
+                          <span style={{ fontSize: "12px", color: "#64748B", fontWeight: "400" }}>Loading your saved venues...</span>
                         </div>
                       ) : favouriteVenues.length > 0 ? (
-                        <div className="table-responsive dashboard-table-responsive">
-                          <table className="table dashboard-card-table align-middle">
-                            <tbody>
-                              {favouriteVenues.map((v: Record<string, any>, index: number) => {
-                                const imgPath = v.images && v.images[0]?.src
-                                  ? `${IMG_URL}${v.images[0].src}`
-                                  : "/assets/img/venues/venue-01.jpg";
-                                return (
-                                  <tr key={String(v.id || index)}>
-                                    <td>
-                                      <div className="academy-info d-flex align-items-center gap-3">
-                                        <Link to={`/coaches/venue-details/${v.id}`} className="academy-img" style={{ width: "60px", height: "60px", borderRadius: "12px", overflow: "hidden", flexShrink: 0 }}>
-                                          <img
-                                            src={imgPath}
-                                            alt={String(v.name || 'Venue')}
-                                            style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                                            onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-                                              (e.target as HTMLImageElement).src = "/assets/img/venues/venue-01.jpg";
-                                            }}
-                                          />
-                                        </Link>
-                                        <div className="academy-content">
-                                          <h6 className="mb-1">
-                                            <Link to={`/coaches/venue-details/${v.id}`} className="fw-bold text-dark text-decoration-none">
-                                              {v.name}
-                                            </Link>
-                                          </h6>
-                                          <p className="mb-0 text-muted" style={{ fontSize: "12px" }}>
-                                            📍 {v.address ? `${v.address}, ${v.city || ''}` : "Indore"}
-                                          </p>
-                                        </div>
-                                      </div>
-                                    </td>
-                                    <td className="text-end align-middle">
-                                      <div className="d-flex align-items-center justify-content-end gap-2">
-                                        <button
-                                          type="button"
-                                          className="btn btn-sm btn-outline-danger rounded-pill px-3"
-                                          onClick={(e) => handleRemoveFav(v.id, e)}
-                                          title="Remove from Favourites"
-                                        >
-                                          <i className="fas fa-trash-alt me-1" /> Remove
-                                        </button>
-                                        <Link to={`/coaches/venue-details/${v.id}`} className="btn btn-sm btn-success text-white rounded-pill px-3" style={{ backgroundColor: "#22C55E", border: "none" }}>
-                                          Book Court
-                                        </Link>
-                                      </div>
-                                    </td>
-                                  </tr>
-                                );
-                              })}
-                            </tbody>
-                          </table>
+                        <div className="d-flex flex-column gap-2" style={{ maxHeight: "380px", overflowY: "auto", paddingRight: "4px" }}>
+                          {favouriteVenues.map((v: Record<string, any>, index: number) => {
+                            const venueId = v._id || v.id;
+                            const imgPath = v.images && v.images[0]?.src
+                              ? `${IMG_URL}${v.images[0].src}`
+                              : "/assets/img/venues/venue-01.jpg";
+                            return (
+                              <div 
+                                key={String(venueId || index)} 
+                                className="d-flex align-items-center justify-content-between p-2 rounded border" 
+                                style={{ borderColor: "#F1F5F9", backgroundColor: "#F8FAFC" }}
+                              >
+                                <div className="d-flex align-items-center gap-2 overflow-hidden">
+                                  <Link to={`/coaches/venue-details/${venueId}`} className="academy-img" style={{ width: "42px", height: "42px", borderRadius: "8px", overflow: "hidden", flexShrink: 0, display: "block" }}>
+                                    <img
+                                      src={imgPath}
+                                      alt={String(v.name || 'Venue')}
+                                      style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                                      onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+                                        (e.target as HTMLImageElement).src = "/assets/img/venues/venue-01.jpg";
+                                      }}
+                                    />
+                                  </Link>
+                                  <div className="overflow-hidden">
+                                    <h6 className="mb-0 text-truncate" style={{ fontSize: "12px", fontWeight: 500, color: "#1E293B" }}>
+                                      <Link to={`/coaches/venue-details/${venueId}`} className="text-decoration-none" style={{ color: "#1E293B", fontWeight: 500 }}>
+                                        {v.name}
+                                      </Link>
+                                    </h6>
+                                    <p className="mb-0 text-muted text-truncate" style={{ fontSize: "10px", fontWeight: 400 }}>
+                                      <i className="feather-map-pin me-1" style={{ fontSize: "10px", color: "#EF4444" }} />
+                                      {v.address ? `${v.address.substring(0, 24)}${v.address.length > 24 ? '...' : ''}` : "Indore"}
+                                    </p>
+                                  </div>
+                                </div>
+                                
+                                <div className="d-flex align-items-center gap-1 flex-shrink-0">
+                                  <button
+                                    type="button"
+                                    onClick={(e) => handleRemoveFav(venueId, e)}
+                                    title="Remove from Favourites"
+                                    className="d-flex align-items-center justify-content-center shadow-sm"
+                                    style={{ width: "28px", height: "28px", borderRadius: "50%", padding: 0, border: "1px solid #FECACA", backgroundColor: "#FFFFFF", cursor: "pointer" }}
+                                  >
+                                    <i className="feather-trash" style={{ fontSize: "11px", color: "#EF4444" }} />
+                                  </button>
+                                  <Link 
+                                    to={`/coaches/venue-details/${venueId}`} 
+                                    className="btn btn-sm btn-success text-white rounded-pill px-2.5 py-1" 
+                                    style={{ backgroundColor: "#22C55E", border: "none", fontSize: "10px", fontWeight: 500, padding: "4px 10px" }}
+                                  >
+                                    Book
+                                  </Link>
+                                </div>
+                              </div>
+                            );
+                          })}
                         </div>
                       ) : (
                         <div className="text-center py-4">
-                          <i className="fas fa-heart-broken text-muted fa-3x mb-3 d-block" />
-                          <h6 className="fw-bold text-dark">No favourite venues saved yet</h6>
-                          <p className="text-muted mb-3" style={{ fontSize: "13px" }}>
-                            Click the ❤️ heart icon on any venue page to save it here for quick access.
+                          <i className="fas fa-heart-broken text-muted fa-2x mb-2 d-block" />
+                          <h6 style={{ fontSize: "13px", fontWeight: 500, color: "#1E293B" }}>No favourite venues saved yet</h6>
+                          <p className="text-muted mb-2" style={{ fontSize: "11px", fontWeight: 400 }}>
+                            Click the heart icon on any venue page to save it.
                           </p>
-                          <Link to={routes.blogListSidebarLeft} className="btn btn-success text-white rounded-pill px-4" style={{ backgroundColor: "#22C55E", border: "none" }}>
+                          <Link to={routes.blogListSidebarLeft} className="btn btn-success text-white rounded-pill px-3 py-1" style={{ backgroundColor: "#22C55E", border: "none", fontSize: "11px", fontWeight: 500 }}>
                             Explore Sports Venues
                           </Link>
                         </div>
@@ -1325,101 +1333,58 @@ const UserDashboard = () => {
                     aria-labelledby="nav-FavouritesCoaching-tab"
                     tabIndex={0}
                   >
-                    <div className="table-responsive dashboard-table-responsive">
-                      <table className="table dashboard-card-table">
-                        <tbody>
-                          <tr>
-                            <td>
-                              <div className="academy-info academy-info">
-                                <Link
-                                  to={routes.userBookings}
-                                  className="academy-img"
-                                >
-                                  <ImageWithBasePath
-                                    src="/assets/img/featured/featured-05.jpg"
-                                    alt="Booking"
-                                  />
-                                </Link>
-                                <div className="academy-content">
-                                  <h6>
-                                    <Link to={routes.userBookings}>
-                                      Kevin Anderson
-                                    </Link>
-                                  </h6>
-                                  <p>10 Bookings</p>
-                                </div>
+                    <div className="p-3">
+                      <div className="d-flex flex-column gap-2" style={{ maxHeight: "380px", overflowY: "auto", paddingRight: "4px" }}>
+                        {[
+                          { name: "Kevin Anderson", bookings: "10 Bookings", img: "/assets/img/featured/featured-05.jpg" },
+                          { name: "Angela Roudrigez", bookings: "20 Bookings", img: "/assets/img/featured/featured-06.jpg" },
+                          { name: "Evon Raddick", bookings: "30 Bookings", img: "/assets/img/featured/featured-07.jpg" }
+                        ].map((coach, index) => (
+                          <div 
+                            key={index} 
+                            className="d-flex align-items-center justify-content-between p-2 rounded border" 
+                            style={{ borderColor: "#F1F5F9", backgroundColor: "#F8FAFC" }}
+                          >
+                            <div className="d-flex align-items-center gap-2 overflow-hidden">
+                              <Link to={routes.userBookings} className="academy-img" style={{ width: "42px", height: "42px", borderRadius: "8px", overflow: "hidden", flexShrink: 0, display: "block" }}>
+                                <ImageWithBasePath
+                                  src={coach.img}
+                                  alt={coach.name}
+                                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                                />
+                              </Link>
+                              <div className="overflow-hidden">
+                                <h6 className="mb-0 text-truncate" style={{ fontSize: "12px", fontWeight: 500, color: "#1E293B" }}>
+                                  <Link to={routes.userBookings} className="text-decoration-none" style={{ color: "#1E293B", fontWeight: 500 }}>
+                                    {coach.name}
+                                  </Link>
+                                </h6>
+                                <p className="mb-0 text-muted text-truncate" style={{ fontSize: "10px", fontWeight: 400 }}>
+                                  👤 {coach.bookings}
+                                </p>
                               </div>
-                            </td>
-                            <td>
-                              <div className="academy-icon">
-                                <Link to={routes.userBookings}>
-                                  <i className="feather-chevron-right" />
-                                </Link>
-                              </div>
-                            </td>
-                          </tr>
-                          <tr>
-                            <td>
-                              <div className="academy-info academy-info">
-                                <Link
-                                  to={routes.userBookings}
-                                  className="academy-img"
-                                >
-                                  <ImageWithBasePath
-                                    src="/assets/img/featured/featured-06.jpg"
-                                    alt="Booking"
-                                  />
-                                </Link>
-                                <div className="academy-content">
-                                  <h6>
-                                    <Link to={routes.userBookings}>
-                                      Angela Roudrigez
-                                    </Link>
-                                  </h6>
-                                  <p>20 Bookings</p>
-                                </div>
-                              </div>
-                            </td>
-                            <td>
-                              <div className="academy-icon">
-                                <Link to={routes.userBookings}>
-                                  <i className="feather-chevron-right" />
-                                </Link>
-                              </div>
-                            </td>
-                          </tr>
-                          <tr>
-                            <td>
-                              <div className="academy-info academy-info">
-                                <Link
-                                  to={routes.userBookings}
-                                  className="academy-img"
-                                >
-                                  <ImageWithBasePath
-                                    src="/assets/img/featured/featured-07.jpg"
-                                    alt="Booking"
-                                  />
-                                </Link>
-                                <div className="academy-content">
-                                  <h6>
-                                    <Link to={routes.userBookings}>
-                                      Evon Raddick
-                                    </Link>
-                                  </h6>
-                                  <p>30 Bookings</p>
-                                </div>
-                              </div>
-                            </td>
-                            <td>
-                              <div className="academy-icon">
-                                <Link to={routes.userBookings}>
-                                  <i className="feather-chevron-right" />
-                                </Link>
-                              </div>
-                            </td>
-                          </tr>
-                        </tbody>
-                      </table>
+                            </div>
+                            
+                            <div className="d-flex align-items-center gap-1 flex-shrink-0">
+                              <button
+                                type="button"
+                                title="Remove from Favourites"
+                                className="d-flex align-items-center justify-content-center shadow-sm"
+                                style={{ width: "28px", height: "28px", borderRadius: "50%", padding: 0, border: "1px solid #FECACA", backgroundColor: "#FFFFFF", cursor: "pointer" }}
+                              >
+                                <i className="feather-trash" style={{ fontSize: "11px", color: "#EF4444" }} />
+                              </button>
+                              <Link 
+                                to={routes.userBookings} 
+                                className="btn btn-sm btn-success text-white rounded-pill px-2.5 py-1" 
+                                style={{ backgroundColor: "#22C55E", border: "none", fontSize: "10px", fontWeight: 500, padding: "4px 10px" }}
+                              >
+                                View
+                              </Link>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>

@@ -5,6 +5,7 @@ import { Link, useLocation, useNavigate, useSearchParams } from "react-router-do
 import { all_routes } from "../router/all_routes";
 import axios from "axios";
 import { API_URL, IMG_URL } from "../../ApiUrl";
+import Swal from "sweetalert2";
 // import data from '../../../public/assets/img/featured'
 interface Location {
   address: string;
@@ -148,6 +149,91 @@ const CoachesGrid = (_props: { id?: string }) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const urlSearchQuery = searchParams.get("search") || "";
   const [searchQuery, setSearchQuery] = useState(urlSearchQuery);
+
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const coachesPerPage = 8;
+  const indexOfLastCoach = currentPage * coachesPerPage;
+  const indexOfFirstCoach = indexOfLastCoach - coachesPerPage;
+  const currentCoaches = finalFilterCoach.slice(indexOfFirstCoach, indexOfLastCoach);
+
+  const handlePageChange = (pageNumber: any) => {
+    setCurrentPage(pageNumber);
+    window.scrollTo({ top: 250, behavior: "smooth" });
+  };
+
+  const totalPages = Math.ceil(finalFilterCoach.length / coachesPerPage);
+
+  const getPaginationPages = () => {
+    const pages = [];
+    const maxPageButtons = 5;
+
+    if (totalPages <= maxPageButtons) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      let start = Math.max(1, currentPage - 2);
+      let end = Math.min(totalPages, currentPage + 2);
+
+      if (start === 1) {
+        end = maxPageButtons;
+      } else if (end === totalPages) {
+        start = totalPages - maxPageButtons + 1;
+      }
+
+      if (start > 1) {
+        pages.push(1);
+        if (start > 2) pages.push("...");
+      }
+
+      for (let i = start; i <= end; i++) {
+        pages.push(i);
+      }
+
+      if (end < totalPages) {
+        if (end < totalPages - 1) pages.push("...");
+        pages.push(totalPages);
+      }
+    }
+    return pages;
+  };
+
+  const paginationPages = getPaginationPages();
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [location, selectedCategory, searchQuery]);
+
+  const [favorites, setFavorites] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    if (coaches.length > 0) {
+      const initialFavs: Record<string, boolean> = {};
+      coaches.forEach((c) => {
+        initialFavs[c._id] = localStorage.getItem(`fav_coach_${c._id}`) === "true";
+      });
+      setFavorites(initialFavs);
+    }
+  }, [coaches]);
+
+  const toggleFavorite = (coachId: string | number) => {
+    const nextStatus = !favorites[coachId];
+    localStorage.setItem(`fav_coach_${coachId}`, String(nextStatus));
+    setFavorites((prev) => ({
+      ...prev,
+      [coachId]: nextStatus,
+    }));
+
+    Swal.fire({
+      icon: nextStatus ? "success" : "info",
+      title: `<span style="color: #1E293B; font-size: 18px; font-weight: 500; font-family: sans-serif;">${nextStatus ? "Saved to Favourites!" : "Removed from Favourites"}</span>`,
+      html: `<span style="color: #64748B; font-size: 14px; font-family: sans-serif;">${nextStatus ? "Coach added to your favorites list." : "Coach removed from your favorites list."}</span>`,
+      timer: 1500,
+      showConfirmButton: false,
+      background: "#FFFFFF",
+    });
+  };
 
   const navigate = useNavigate();
   const locations = useLocation();
@@ -444,128 +530,19 @@ const CoachesGrid = (_props: { id?: string }) => {
           </div>
           {/* Sort By */}
           <div className="row justify-content-center">
-            {selectedCategory || selectedSort || location ? (
-              finalFilterCoach.length > 0 ? ( // Ensure there are filtered coaches
-                finalFilterCoach.map((coach, index) => (
-                  <div className="col-lg-4 col-md-6" key={index}>
-                    <div className="listing-item listing-item-grid ki-card-hover">
-                      <div
-                        className="listing-img"
-                        style={{ height: "140px", overflow: "hidden", position: "relative" }}
-                      >
-                        <Link
-                          to={`/coaches/${coach.trainer_type?.replace(/\s+/g, "-").toLowerCase()}/${coach.first_name?.replace(/\s+/g, "-").toLowerCase()}/${coach._id}`}
-                        >
-                          <ImageWithBasePath
-                            src={
-                              coach.profile_picture[0]?.src
-                                ? `${IMG_URL}${coach.profile_picture[0]?.src}`
-                                : "assets/img/no-img.png"
-                            }
-                            alt="user"
-                            style={{ height: "100%", width: "100%", objectFit: "cover" }}
-                          />
-                        </Link>
-                        <> </>
-                        <div
-                          className="fav-item-venues"
-                          onClick={() => handleItemClick(index)}
-                        >
-                          <span className="tag tag-blue">
-                            {coach.trainer_type}
-                          </span>
-                          {/* <div className="list-reviews coche-star">
-                          <Link
-                            to="#"
-                            className={`fav-icon ${selectedItems[index] ? "selected" : ""
-                              }`}
-                          >
-                            <i className="feather-heart" />
-                          </Link>
-                        </div> */}
-                        </div>
-                        {/* <div className="hour-list">
-                        <h5 className="tag tag-primary">
-                          From ₹{coach.price} <span>/month</span>
-                        </h5>
-                      </div> */}
-                      </div>
-                      <div className="listing-content">
-                        <h3 className="listing-title">
-                          <Link
-                            to={`/coaches/${coach.trainer_type?.replace(/\s+/g, "-").toLowerCase()}/${coach.first_name?.replace(/\s+/g, "-").toLowerCase()}/${coach._id}`}
-                          >
-                             {coach.full_name ? coach.full_name : coach.first_name}
-                          </Link>
-                        </h3>
-                        <ul className="mb-2">
-                          {/* <li>
-                            <span>
-                              <i className="feather-map-pin me-2" />
-                              {coach.location?.address},{coach.location?.city},{" "}
-                              {coach.location?.state}.{coach.location?.zipcode}
-                              {coach.near_by_location}
-                            </span>
-                          </li> */}
-                        </ul>
-                        <div className="listing-details-group">
-                          {/* <p>{coach.bio}</p> */}
-                          <p>
-                            Specializations:{" "}
-                            {Array.isArray(coach?.specializations)
-                              ? coach?.specializations.join(", ")
-                              : coach?.specializations ||
-                              "No specializations provided"}
-                          </p>
-                        </div>
-                        <div className="coach-btn">
-                          <ul>
-                            <li>
-                              <Link
-                                to={`/coaches/${coach.trainer_type?.replace(/\s+/g, "-").toLowerCase()}/${coach.first_name?.replace(/\s+/g, "-").toLowerCase()}/${coach._id}`}
-                                className="ki-btn-primary w-100 text-dark"
-                              >
-                                <i className="feather-eye me-2" />
-                                View Profile
-                              </Link>
-                            </li>
-                            <li>
-                              <div onClick={() => checkToken(coach._id)}>
-                                <Link
-                                  to={``}
-                                  className="ki-btn-secondary w-100"
-                                >
-                                  <i className="feather-calendar me-2" />
-                                  Book Now
-                                </Link>
-                              </div>
-                            </li>
-                          </ul>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <p>No coaches found for the selected category.</p>
-              )
-            ) : (
-              coaches.map((coach, index) => (
-                <div className="col-lg-4 col-md-6" key={index}>
-                  <div className="listing-item listing-item-grid ki-card-hover">
-                    <div className="listing-img" style={{ height: "140px", overflow: "hidden", position: "relative" }}>
-                      {/* <Link to={routes.coachDetail}>
-                      <ImageWithBasePath
-                        src={`assets/img/featured/${coach.profile}`}
-                        alt="Venue"
-                      />
-                    </Link> */}
-
+            {currentCoaches.length > 0 ? (
+              currentCoaches.map((coach, index) => (
+                <div className="col-lg-3 col-md-6 col-sm-12 mb-4 d-flex" key={index}>
+                  <div className="listing-item venue-page ki-card-hover w-100 d-flex flex-column justify-content-between" style={{ margin: 0, overflow: "hidden", backgroundColor: "#FFFFFF", borderRadius: "16px", border: "1px solid #E2E8E3", boxShadow: "0 4px 15px rgba(0,0,0,0.01)" }}>
+                    <div
+                      className="listing-img"
+                      style={{ height: "140px", overflow: "hidden", position: "relative" }}
+                    >
                       <Link
-                        to={`/coaches/${coach?.trainer_type?.replace(/\s+/g, "-").toLowerCase()}/${coach?.first_name?.replace(/\s+/g, "-").toLowerCase()}/${coach?._id}`}
+                        to={`/coaches/${coach.trainer_type?.replace(/\s+/g, "-").toLowerCase()}/${coach.first_name?.replace(/\s+/g, "-").toLowerCase()}/${coach._id}`}
+                        style={{ display: "block", height: "100%" }}
                       >
                         <ImageWithBasePath
-                          // src="assets/img/featured/featured-05.jpg"
                           src={
                             coach.profile_picture[0]?.src
                               ? `${IMG_URL}${coach.profile_picture[0]?.src}`
@@ -575,121 +552,130 @@ const CoachesGrid = (_props: { id?: string }) => {
                           style={{ height: "100%", width: "100%", objectFit: "cover" }}
                         />
                       </Link>
-                      <div
-                        className="fav-item-venues"
-                        onClick={() => handleItemClick(index)}
-                      >
-                        <span className="tag tag-blue">
+                      
+                      {/* Favorite Heart Button */}
+                      <div style={{ position: "absolute", top: "8px", right: "8px", zIndex: 2 }}>
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            toggleFavorite(coach._id);
+                          }}
+                          className="btn btn-white rounded-circle d-flex align-items-center justify-content-center shadow-sm" 
+                          style={{ width: "28px", height: "28px", padding: 0, backgroundColor: "#FFFFFF", border: "none" }}
+                        >
+                          <i 
+                            className={favorites[coach._id] ? "fas fa-heart text-danger" : "feather-heart text-muted"} 
+                            style={{ fontSize: "13px" }} 
+                          />
+                        </button>
+                      </div>
+
+                      {/* Category Badge */}
+                      <div style={{ position: "absolute", top: "8px", left: "8px", zIndex: 2 }}>
+                        <span className="tag tag-blue" style={{ background: "#2D3E33", color: "#FFFFFF", fontWeight: "700", fontSize: "10px", padding: "4px 8px", borderRadius: "4px", textTransform: "uppercase" }}>
                           {coach?.trainer_type}
                         </span>
-                        {/* <div className="list-reviews coche-star">
-                          <Link
-                            to="#"
-                            className={`fav-icon ${selectedItems[index] ? "selected" : ""
-                              }`}
-                          >
-                            <i className="feather-heart" />
-                          </Link>
-                        </div> */}
                       </div>
-                      {/* <div className="hour-list">
-                        <h5 className="tag tag-primary">
-                          From ₹{coach.price} <span>/month</span>
-                        </h5>
-                      </div> */}
                     </div>
-                    <div className="listing-content">
-                      <h3 className="listing-title">
-                        <Link
-                          to={`/coaches/${coach?.trainer_type?.replace(/\s+/g, "-").toLowerCase()}/${coach?.first_name?.replace(/\s+/g, "-").toLowerCase()}/${coach?._id}`}
-                        >
-                          {coach?.full_name}
-                        </Link>
-                      </h3>
-                      {/* <ul className="mb-2">
-                          <li>
-                            <span>
-                              <i className="feather-map-pin me-2" />
-                              {coach?.near_by_location}
-                            </span>
-                          </li>
-                        </ul> */}
-                      <div className="listing-details-group">
-                        {/* <p>{coach.bio}</p> */}
-                        <p>
-                          Specializations:{" "}
-                          {Array.isArray(coach?.specializations)
-                            ? coach?.specializations.join(", ")
-                            : coach?.specializations ||
-                            "No specializations provided"}
+
+                    <div className="listing-content news-content p-3 w-100 d-flex flex-column justify-content-between flex-grow-1" style={{ background: "#FFFFFF" }}>
+                      <div>
+                        <div className="d-flex align-items-center justify-content-between mb-1" style={{ fontSize: "11px" }}>
+                          <div className="rating-wrap d-flex align-items-center gap-1">
+                            <i className="fas fa-star text-warning" style={{ fontSize: "10px" }} />
+                            <span style={{ fontSize: "10px", fontWeight: "700", color: "#17222D" }}>4.7</span>
+                          </div>
+                          <span style={{ fontSize: "10px", color: "#606D76", fontWeight: "600" }}>
+                            <i className="feather-grid me-1" style={{ color: "#3CAB4B", fontSize: "10px" }} />
+                            Standard
+                          </span>
+                        </div>
+                        <h3 className="listing-title mb-1" style={{ fontSize: "15px", fontWeight: "700" }}>
+                          <Link
+                            to={`/coaches/${coach.trainer_type?.replace(/\s+/g, "-").toLowerCase()}/${coach.first_name?.replace(/\s+/g, "-").toLowerCase()}/${coach._id}`}
+                            className="text-truncate d-block" style={{ color: "#17222D" }}
+                          >
+                            {coach.full_name ? coach.full_name : coach.first_name}
+                          </Link>
+                        </h3>
+                        <p className="mb-2 text-truncate" style={{ fontSize: "12px", color: "#606D76" }}>
+                          <i className="feather-map-pin me-1" style={{ color: "#606D76" }} />
+                          {coach.near_by_location || "Indore"}, Indore
+                        </p>
+                        <p className="mb-2 text-truncate" style={{ fontSize: "11px", color: "#64748B" }}>
+                          Specialization: {Array.isArray(coach?.specializations) ? coach?.specializations.join(", ") : coach?.specializations || "Coaching"}
                         </p>
                       </div>
-                      <div className="coach-btn">
-                        <ul>
-                          <li>
-                            <Link
-                              // to={
-                              //   routes.coachDetail
-                              // }
-                              to={`/coaches/${coach?.trainer_type?.replace(/\s+/g, "-").toLowerCase()}/${coach?.first_name?.replace(/\s+/g, "-").toLowerCase()}/${coach?._id}`}
-                              className="ki-btn-primary w-100"
-                            >
-                              <i className="feather-eye me-2" />
-                              View Profile
-                            </Link>
-                          </li>
-                          <li>
-                            <div onClick={() => checkToken(coach?._id)}>
-                              <Link
-                                to={``}
-                                className="ki-btn-secondary w-100"
-                              >
-                                <i className="feather-calendar me-2" />
-                                Book Now
-                              </Link>
-                            </div>
-                          </li>
-                        </ul>
+                      
+                      <div className="d-flex align-items-center justify-content-between pt-2 mt-auto" style={{ borderTop: "1px solid #E2E8E3" }}>
+                        <span style={{ fontSize: "14px", fontWeight: "700", color: "#17222D" }}>
+                          ₹{coach.price_per_hr || "500"} <span style={{ fontSize: "10px", fontWeight: "normal", color: "#606D76" }}>/ hr</span>
+                        </span>
+                        <div className="d-flex gap-1">
+                          <Link 
+                            to={`/coaches/${coach.trainer_type?.replace(/\s+/g, "-").toLowerCase()}/${coach.first_name?.replace(/\s+/g, "-").toLowerCase()}/${coach._id}`}
+                            className="btn btn-outline-success btn-sm rounded-pill px-2.5 py-1"
+                            style={{ fontSize: "10px", fontWeight: "600", borderColor: "#3CAB4B", color: "#3CAB4B" }}
+                          >
+                            View
+                          </Link>
+                          <button 
+                            onClick={() => checkToken(coach?._id)}
+                            className="btn btn-primary btn-sm rounded-pill px-2.5 py-1"
+                            style={{ fontSize: "10px", fontWeight: "600", backgroundColor: "#3CAB4B", borderColor: "#3CAB4B" }}
+                          >
+                            Book
+                          </button>
+                        </div>
                       </div>
-                      {/* <div className="avalbity-review">
-                        <ul>
-                          <li>
-                            <div className="avalibity-date">
-                              <span>
-                                <i className="feather-calendar" />
-                              </span>
-                              <div className="avalibity-datecontent">
-                                <h6>Next Availability</h6>
-                                <h5>{coach.availability}</h5>
-                              </div>
-                            </div>
-                          </li>
-                          <li>
-                            <div className="list-reviews mb-0">
-                              <div className="d-flex align-items-center">
-                                <span className="rating-bg">4.5</span>
-                                <span>80 Reviews</span>
-                              </div>
-                            </div>
-                          </li>
-                        </ul>
-                      </div> */}
                     </div>
                   </div>
                 </div>
               ))
+            ) : (
+              <div className="col-lg-12 text-center py-5 bg-white rounded shadow-sm border mt-3">
+                <h5 className="text-muted" style={{ fontWeight: "500" }}>No coaches found matching search criteria</h5>
+              </div>
             )}
           </div>
-          {/* <div className="col-12 text-center mt-3">
-            <Link to="#" className="btn btn-load">
-              Load More Coaches{" "}
-              <ImageWithBasePath
-                src="assets/img/icons/u_plus-square.svg"
-                className="ms-2"
-                alt="Icon"
-              />
-            </Link>
-          </div> */}
+
+          {/* Centered Pagination wrapper */}
+          <div className="d-flex justify-content-center w-100 mt-4">
+            <ul className="pagination">
+              {finalFilterCoach.length > coachesPerPage && (
+                <>
+                  <li className={`page-item prev ${currentPage === 1 ? "disabled" : ""}`}>
+                    <button className="page-link" onClick={() => currentPage > 1 && handlePageChange(currentPage - 1)} disabled={currentPage === 1}>
+                      <i className="feather-chevron-left" />
+                    </button>
+                  </li>
+                  {paginationPages.map((page, index) => (
+                    <li
+                      key={index}
+                      className={`page-item ${page === currentPage ? "active" : ""} ${page === "..." ? "disabled" : ""}`}
+                    >
+                      {page === "..." ? (
+                        <span className="page-link" style={{ border: "none", background: "transparent", cursor: "default", display: "flex", alignItems: "center", justifyContent: "center" }}>...</span>
+                      ) : (
+                        <button
+                          className="page-link"
+                          onClick={() => handlePageChange(page)}
+                        >
+                          {page}
+                        </button>
+                      )}
+                    </li>
+                  ))}
+                  <li className={`page-item next ${currentPage === totalPages ? "disabled" : ""}`}>
+                    <button className="page-link" onClick={() => currentPage < totalPages && handlePageChange(currentPage + 1)} disabled={currentPage === totalPages}>
+                      <i className="feather-chevron-right" />
+                    </button>
+                  </li>
+                </>
+              )}
+            </ul>
+          </div>
         </div>
       </div>
       {/* /Page Content */}
