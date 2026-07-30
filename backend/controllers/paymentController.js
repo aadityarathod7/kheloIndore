@@ -229,14 +229,15 @@ const actualvenuePaymentStatus = async (req, res) => {
   if (!user || user.length === 0) {
     throw new Error("User not found for the transaction");
   }
-  let { user_id, date, venue_id, slotsBooked, vendor_id } = user[0];
+  let { user_id, date, venue_id, slotsBooked } = user[0];
   const venueData = await Venue1.findById(venue_id);
   if (!venueData) {
     throw new Error("Venue not found");
   }
   const venueName = venueData.name;
-  const venueLocation = venueData.address
-  const vendorid =venueData.vendor_id
+  const venueLocation = venueData.address;
+  const vendorid = venueData.vendor_id;
+  const vendor_id = vendorid || user[0].vendor_id;
   console.log(vendorid,"vendorid")
   let dateObj = new Date(date);
   const emaildata = (await User.findById(vendorid)) || (await User.findOne({ role: "Super Admin" })) || (await User.findOne({})) || { email: "superadmin@yopmail.com" };
@@ -2072,19 +2073,19 @@ const getVenueCoachPTBookingByUserId = async (req, res) => {
 const formattedIST = new Date(ist).toISOString().replace("T", " ").split(".")[0];
     // Combine all records and add names to the data
     const allRecords = {
-      formattedIST:formattedIST,
+      formattedIST: formattedIST,
       personalTrainer: personalTrainerRecords.map((record) => ({
         ...record.toObject(),
-        pt_name: `${record.pt_id.first_name} ${record.pt_id.last_name}`,
+        pt_name: record.pt_id ? `${record.pt_id.first_name || ''} ${record.pt_id.last_name || ''}`.trim() : "N/A",
       })),
       coach: coachRecords.map((record) => ({
         ...record.toObject(),
-        coach_name: `${record.coachId.first_name} ${record.coachId.last_name}`,
+        coach_name: record.coachId ? `${record.coachId.first_name || ''} ${record.coachId.last_name || ''}`.trim() : "N/A",
       })),
       venueAdmin: venueAdminRecords.map((record) => ({
         ...record.toObject(),
-        venue_name: record.venue_id.name,
-        vendor_type: record.venue_id.vendor_type,  // Assuming venue has a name field
+        venue_name: record.venue_id?.name || "N/A",
+        vendor_type: record.venue_id?.vendor_type || "N/A",
       })),
     };
 

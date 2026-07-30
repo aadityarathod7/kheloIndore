@@ -648,15 +648,15 @@ const VenueTimeDate = () => {
                       slots && slots.length > 0 ? (
                         <div className="row">
                           {slots.map((slot: any, index) => (
-                            <div key={index} className="col-6 col-sm-4 col-md-3 col-lg-4 col-xl-3">
+                            <div key={index} className="col-12 col-sm-6 col-md-4 col-xl-3">
                               <div
                                 className={`time-slot ${slot.isChecked ? "checked" : ""} ${slot.isBooked ? "disabled" : "active"}`}
                                 onClick={() => handleSlotClick(index)}
                               >
                                 <div className="booking-info">
                                   <span className="time">
-                                    <i className="feather-clock me-2" />
-                                    {slot?.startTime}-{slot?.endTime}
+                                    <i className="feather-clock me-1" />
+                                    {slot?.startTime} - {slot?.endTime}
                                   </span>
                                   <div className="price-container">
                                     <span className="price">

@@ -2,11 +2,9 @@ import React, { useEffect } from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import axios from 'axios';
-import { css } from '@emotion/react';
-import { ClipLoader } from 'react-spinners';
 import Swal from 'sweetalert2';
 import { useLocation, useNavigate } from 'react-router-dom';
-import logoImage from '../../src/Khelo Indore Logo/Group 88.png';
+import logoImage from '../../src/Khelo Indore Logo/logo.png';
 import '../../src/Loginadmin.css';
 import { API_URL } from '../utils/ApiUrl';
 
@@ -27,14 +25,12 @@ function Loginadmin() {
       .matches(/^\d{10}$/, 'Mobile number must be exactly 10 digits')
       .required('Mobile number is required'),
     password: Yup.string().required('Password is required'),
-    // role: Yup.string().required('Role is required'),
   });
 
   const formik = useFormik({
     initialValues: {
       mobile: '',
       password: '',
-      // role: '',
     },
     validationSchema: validationSchema,
     onSubmit: (values, { setSubmitting }) => {
@@ -43,14 +39,11 @@ function Loginadmin() {
     },
   });
 
-  console.log(state,"state route")
-
   const handleApi = (formData, setSubmitting) => {
     axios
       .post(`${API_URL}/user/login`, {
         mobile: Number(formData.mobile),
         password: formData.password,
-        // role: formData.role,
       })
       .then((response) => {
         if (response.data.success) {
@@ -99,118 +92,86 @@ function Loginadmin() {
       });
   };
 
-  const override = css`
-    display: block;
-    margin: 0 auto;
-  `;
-
-  document.addEventListener('DOMContentLoaded', function () {
-    const selectElement = document.getElementById('roleSelect');
-
-    selectElement.addEventListener('change', function () {
-      if (selectElement.value) {
-        selectElement.style.backgroundColor = 'orange';
-      } else {
-        selectElement.style.backgroundColor = 'white';
-      }
-    });
-  });
-
   return (
-    <div className="con">
-      <div className="row justify-content-center">
-        <div className="col-md-6 col-10">
-          <div className="card mt-5">
-            <div className="card-body">
-              <img
-                src={logoImage}
-                alt="Logo"
-                className="logo-image"
-                style={{ maxWidth: '150px' }}
-              />
-              <form onSubmit={formik.handleSubmit}>
-                {/* <div className="form-group">
-                  <label htmlFor="role" style={{ fontWeight: 'bold' }}>
-                    Select Role
-                  </label>
-                  <div className="select-container">
-                    <select
-                      id="roleSelect"
-                      name="role"
-                      className="form-control"
-                      onChange={formik.handleChange}
-                      onBlur={formik.handleBlur}
-                      value={formik.values.role}
-                    >
-                      <option value="" disabled>
-                        Select Role
-                      </option>
-                      <option value="Super Admin">Super Admin</option>
-                      <option value="Venue Admin">Venue Admin</option>
-                      <option value="Coach">Coach</option>
-                    </select>
-                    <i className="fa fa-chevron-down select-icon"></i>
-                  </div>
-                  {formik.touched.role && formik.errors.role ? (
-                    <div className="text-danger">{formik.errors.role}</div>
-                  ) : null}
-                </div> */}
+    <div className="admin-auth-wrapper">
+      <div className="admin-login-card">
+        {/* Accent Bar */}
+        <div className="card-accent-bar" />
 
-                <div className="form-group">
-                  <label htmlFor="mobile" style={{ fontWeight: 'bold' }}>
-                    Mobile Number
-                  </label>
-                  <input
-                    id="mobile"
-                    name="mobile"
-                    placeholder="Enter Mobile Number"
-                    type="text"
-                    inputMode="numeric"
-                    maxLength={10}
-                    className="form-control"
-                    onChange={(e) => {
-                      const value = e.target.value.replace(/[^0-9]/g, '');
-                      formik.setFieldValue('mobile', value);
-                    }}
-                    onBlur={formik.handleBlur}
-                    value={formik.values.mobile}
-                  />
-                  {formik.touched.mobile && formik.errors.mobile ? (
-                    <div className="text-danger">{formik.errors.mobile}</div>
-                  ) : null}
-                </div>
-
-                <div className="form-group">
-                  <label htmlFor="password" style={{ fontWeight: 'bold' }}>
-                    Password
-                  </label>
-                  <input
-                    id="password"
-                    name="password"
-                    type="password"
-                    placeholder="Enter Password"
-                    className="form-control"
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                    value={formik.values.password}
-                  />
-                  {formik.touched.password && formik.errors.password ? (
-                    <div className="text-danger">{formik.errors.password}</div>
-                  ) : null}
-                </div>
-
-                <div className="spinner">
-                  <button type="submit" className="btn-login" disabled={formik.isSubmitting}>
-                    Login
-                    {formik.isSubmitting && (
-                      <ClipLoader color={'#FFFFFF'} loading={formik.isSubmitting} css={override} size={20} />
-                    )}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
+        {/* Logo Header */}
+        <div className="text-center mb-4">
+          <img
+            src={logoImage}
+            alt="Khelo Indore Logo"
+            className="login-logo-img"
+          />
         </div>
+
+        {/* Title */}
+        <div className="text-center mb-4">
+          <h2 className="login-title">
+            Admin Portal Login
+          </h2>
+          <p className="login-subtitle">
+            Enter your mobile number and password to continue
+          </p>
+        </div>
+
+        <form onSubmit={formik.handleSubmit}>
+          <div className="form-group mb-4">
+            <label htmlFor="mobile" className="input-label">
+              Mobile Number
+            </label>
+            <div className="phone-input-wrapper">
+              <span className="country-prefix">+91</span>
+              <input
+                id="mobile"
+                name="mobile"
+                placeholder="Enter 10-digit mobile number"
+                type="text"
+                inputMode="numeric"
+                maxLength={10}
+                className="clean-admin-input"
+                onChange={(e) => {
+                  const value = e.target.value.replace(/[^0-9]/g, '');
+                  formik.setFieldValue('mobile', value);
+                }}
+                onBlur={formik.handleBlur}
+                value={formik.values.mobile}
+              />
+            </div>
+            {formik.touched.mobile && formik.errors.mobile ? (
+              <div className="text-danger small mt-1 ps-1">{formik.errors.mobile}</div>
+            ) : null}
+          </div>
+
+          <div className="form-group mb-4">
+            <label htmlFor="password" className="input-label">
+              Password
+            </label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              placeholder="Enter Password"
+              className="clean-admin-input w-100"
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              value={formik.values.password}
+            />
+            {formik.touched.password && formik.errors.password ? (
+              <div className="text-danger small mt-1 ps-1">{formik.errors.password}</div>
+            ) : null}
+          </div>
+
+          <button type="submit" className="btn-admin-submit" disabled={formik.isSubmitting}>
+            {formik.isSubmitting ? (
+              <span>Logging in...</span>
+            ) : (
+              "Login to Dashboard"
+            )}
+          </button>
+        </form>
       </div>
     </div>
   );

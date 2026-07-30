@@ -429,3 +429,5 @@ exports.fetchCoachBooking = async (req, res) => {
   }
 };
 
+exports.fetchCoachBooking = exports.actualfetchCoachBooking;
+

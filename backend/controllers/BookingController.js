@@ -70,11 +70,15 @@ if(slots1.length===0){
        });
      }
      
-   }
  }
+ }
+    const venueData = await Venue1.findById(venue_id);
+    const vendor_id = venueData ? venueData.vendor_id : null;
+
     const newBooking = await Booking.create({
       user_id,
       venue_id,
+      vendor_id,
       date,
       slotsBooked,
       total_price,
@@ -304,20 +308,16 @@ exports.getBookings = async (req, res) => {
 
         // Find available slots for the given venue and date
         const slots = await Slot.find({ venue_id: venue_id, date: dateObj });
-        if (slots.length == 0) {
-          return res.status(400).json({
-            success: false,
-            message: "No slots found for this venue",
-            data: [],
-          });
-        }
-
-        const slotsArray = slots[0].slots;
-        for (let slot of slotsArray) {
-          const slotID = slot._id.toString();
-          if (slotsBooked.includes(slotID)) {
-            slotPopulatedData.push(slot);
+        if (slots.length > 0 && slots[0].slots) {
+          const slotsArray = slots[0].slots;
+          for (let slot of slotsArray) {
+            const slotID = slot._id.toString();
+            if (slotsBooked.includes(slotID)) {
+              slotPopulatedData.push(slot);
+            }
           }
+        } else if (booking.slot_time && booking.slot_time.length > 0) {
+          slotPopulatedData = booking.slot_time;
         }
         bookingData.push({ info: booking, slots: slotPopulatedData });
       }
@@ -346,11 +346,11 @@ exports.getBookings = async (req, res) => {
         const venue = booking.venue_id;
 
         return (
-          (user.first_name && user.first_name.match(regex)) ||
-          (user.last_name && user.last_name.match(regex)) ||
-          (user.mobile && user.mobile.toString().match(regex)) ||
-          (venue.name && venue.name.match(regex)) ||
-          (venue._id && venue._id.toString().match(regex))
+          (user && user.first_name && user.first_name.match(regex)) ||
+          (user && user.last_name && user.last_name.match(regex)) ||
+          (user && user.mobile && user.mobile.toString().match(regex)) ||
+          (venue && venue.name && venue.name.match(regex)) ||
+          (venue && venue._id && venue._id.toString().match(regex))
         );
       });
 
@@ -362,20 +362,16 @@ exports.getBookings = async (req, res) => {
         const dateObj = new Date(date);
 
         const slots = await Slot.find({ venue_id: venue_id, date: dateObj });
-        if (slots.length == 0) {
-          return res.status(400).json({
-            success: false,
-            message: "No slots found for this venue",
-            data: [],
-          });
-        }
-
-        const slotsArray = slots[0].slots;
-        for (let slot of slotsArray) {
-          const slotID = slot._id.toString();
-          if (slotsBooked.includes(slotID)) {
-            slotPopulatedData.push(slot);
+        if (slots.length > 0 && slots[0].slots) {
+          const slotsArray = slots[0].slots;
+          for (let slot of slotsArray) {
+            const slotID = slot._id.toString();
+            if (slotsBooked.includes(slotID)) {
+              slotPopulatedData.push(slot);
+            }
           }
+        } else if (booking.slot_time && booking.slot_time.length > 0) {
+          slotPopulatedData = booking.slot_time;
         }
         bookingData.push({ info: booking, slots: slotPopulatedData });
       }
