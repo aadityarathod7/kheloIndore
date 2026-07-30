@@ -249,19 +249,160 @@ const CoachDetail = (props: any) => {
   }
 
   return (
-    <div className="venue-coach-details coach-detail top-margin">
-      {/* Banner */}
-      <div className="banner">
-        <ImageWithBasePath
-          src="/assets/img/bg/coach-detail-bg.jpg"
-          alt="Banner"
-        />
+    <div className="venue-coach-details coach-detail top-margin" style={{ backgroundColor: "#F8FAFC" }}>
+      {/* Hero Section */}
+      <div className="hero-booking-section" style={{ background: "linear-gradient(135deg, #F0FDF4 0%, #ECFDF5 100%)", paddingTop: "110px", paddingBottom: "120px", position: "relative", overflow: "hidden", borderBottom: "1px solid #E5E7EB" }}>
+        {/* Blended Background Turf Graphics */}
+        <div className="hero-artwork-blend" style={{ position: "absolute", right: "-60px", top: 0, bottom: 0, width: "55%", backgroundImage: "url('/assets/img/bg/banner-illustration.png')", backgroundSize: "cover", backgroundPosition: "left center", backgroundRepeat: "no-repeat", maskImage: "linear-gradient(to left, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%)", WebkitMaskImage: "linear-gradient(to left, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%)", opacity: 0.9 }}></div>
+        
+        <div className="container" style={{ position: "relative", zIndex: 2 }}>
+          <div className="row align-items-center">
+            <div className="col-lg-7 text-start">
+              <span className="font-weight-bold" style={{ fontSize: "13px", letterSpacing: "1.5px", display: "block", marginBottom: "12px", color: "#22C55E", fontWeight: "700" }}>COACH DETAILS</span>
+              <h1 className="d-flex align-items-center flex-wrap" style={{ fontSize: "40px", fontWeight: "800", color: "#0F172A", lineHeight: "1.2", marginBottom: "16px" }}>
+                {coachData?.first_name ? `${coachData.first_name} ${coachData.last_name || ""}` : "Coach Details"}
+              </h1>
+              
+              {/* Breadcrumb pill */}
+              <div className="d-inline-flex align-items-center bg-white px-3 py-2 rounded-pill shadow-sm" style={{ fontSize: "13px", border: "1px solid #E5E7EB" }}>
+                <Link to="/" style={{ color: "#64748B", textDecoration: "none", fontWeight: "500" }}><i className="feather-home me-1" style={{ color: "#64748B" }} /> Home</Link>
+                <span style={{ margin: "0 10px", color: "#64748B" }}><i className="feather-chevron-right" style={{ fontSize: "12px", color: "#64748B" }} /></span>
+                <Link to="/coaches" style={{ color: "#64748B", textDecoration: "none", fontWeight: "500" }}>Coaches</Link>
+                <span style={{ margin: "0 10px", color: "#64748B" }}><i className="feather-chevron-right" style={{ fontSize: "12px", color: "#64748B" }} /></span>
+                <span style={{ color: "#22C55E", fontWeight: "600" }}>Details</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
+      {/* /Hero Section */}
+      <style dangerouslySetInnerHTML={{__html: `
+        .venue-coach-details, .venue-coach-details *, .venue-coach-details span, .venue-coach-details p, .venue-coach-details li {
+          color: #334155 !important;
+        }
+        .venue-coach-details h1, .venue-coach-details h2, .venue-coach-details h3, .venue-coach-details h4, .venue-coach-details h5, .venue-coach-details h6,
+        .venue-coach-details h1 *, .venue-coach-details h2 *, .venue-coach-details h3 *, .venue-coach-details h4 *, .venue-coach-details h5 *, .venue-coach-details h6 * {
+          color: #0F172A !important;
+          font-weight: 700 !important;
+        }
+        .venue-coach-details a, .venue-coach-details a span {
+          color: #334155 !important;
+        }
+        .venue-coach-details a:hover {
+          color: #22C55E !important;
+        }
+        .venue-coach-details a.btn, .venue-coach-details button.btn,
+        .venue-coach-details a.btn *, .venue-coach-details button.btn * {
+          color: #FFFFFF !important;
+        }
+        .venue-coach-details .active, .venue-coach-details .active * {
+          color: #22C55E !important;
+        }
+        .venue-options {
+          margin-top: 30px !important;
+        }
+        .top-margin {
+          margin-top: 0px !important;
+          padding-top: 0px !important;
+        }
+        /* Custom Modern Coach Info Card to prevent overlaps */
+        .coach-info {
+          display: flex !important;
+          flex-direction: row !important;
+          align-items: center !important;
+          padding: 24px !important;
+          background-color: #FFFFFF !important;
+          border: 1px solid #E2E8F0 !important;
+          border-radius: 16px !important;
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02) !important;
+          margin-bottom: 24px !important;
+        }
+        .coach-info .profile-pic {
+          width: 120px !important;
+          height: 120px !important;
+          min-width: 120px !important;
+          margin-right: 24px !important;
+          overflow: hidden !important;
+          border-radius: 12px !important;
+          position: static !important;
+        }
+        .coach-info .profile-pic img {
+          width: 100% !important;
+          height: 100% !important;
+          object-fit: cover !important;
+          margin: 0 !important;
+          position: static !important;
+        }
+        /* Sidebar booking card redesigned for light green turf theme */
+        .venue-coach-details .book-coach {
+          background-color: #FFFFFF !important;
+          border: 1px solid #E2E8F0 !important;
+          border-radius: 16px !important;
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04) !important;
+          padding: 24px !important;
+        }
+        .venue-coach-details .book-coach h4,
+        .venue-coach-details .book-coach h4 * {
+          color: #0F172A !important;
+          border-bottom-color: #E2E8F0 !important;
+        }
+        .venue-coach-details .book-coach p,
+        .venue-coach-details .book-coach span,
+        .venue-coach-details .book-coach strong {
+          color: #334155 !important;
+        }
+        .venue-coach-details .book-coach .dull-bg {
+          background-color: #F0FDF4 !important;
+          border: 1px solid #DCFCE7 !important;
+          border-radius: 12px !important;
+          padding: 16px !important;
+        }
+        .venue-coach-details .book-coach .dull-bg * {
+          color: #166534 !important;
+        }
+        .venue-coach-details .book-coach .dull-bg h4.primary-text {
+          color: #22C55E !important;
+          font-weight: 800 !important;
+        }
+        .venue-coach-details .book-coach a.btn-secondary,
+        .venue-coach-details .book-coach button.btn-secondary,
+        .venue-coach-details .book-coach button {
+          background-color: #22C55E !important;
+          border-color: #22C55E !important;
+          color: #FFFFFF !important;
+          border-radius: 10px !important;
+          font-weight: 600 !important;
+          padding: 12px !important;
+          width: 100% !important;
+          display: flex !important;
+          justify-content: center !important;
+          align-items: center !important;
+        }
+        .venue-coach-details .book-coach a.btn-secondary:hover,
+        .venue-coach-details .book-coach button.btn-secondary:hover,
+        .venue-coach-details .book-coach button:hover {
+          background-color: #16A34A !important;
+          border-color: #16A34A !important;
+          color: #FFFFFF !important;
+        }
+        .venue-coach-details .book-coach a.btn-secondary i,
+        .venue-coach-details .book-coach button.btn-secondary i,
+        .venue-coach-details .book-coach button i {
+          color: #FFFFFF !important;
+          margin-right: 8px !important;
+        }
+        /* Make sidebar wrappers transparent to prevent any dark block showing through */
+        .stickybar, .theiaStickySidebar, .theiaStickySidebarCon {
+          background-color: transparent !important;
+          background: transparent !important;
+          border: none !important;
+          box-shadow: none !important;
+      `}} />
       {/* Page Content */}
       <div className="content">
         <div className="container">
           {/* Row */}
-          <div className="row move-top">
+          <div className="row" style={{ marginTop: "-80px", position: "relative", zIndex: 10 }}>
             {/* {coachData.map((coachId,index)=>(   */}
             <div className="col-12 col-sm-12 col-md-12 col-lg-8">
               <div className="dull-bg corner-radius-10 coach-info d-md-flex justify-content-start align-items-start">
@@ -1007,16 +1148,14 @@ const CoachDetail = (props: any) => {
                     </h4>
                     <span>/hr</span>
                   </div>
-                  <div className="d-grid btn-block mt-3">
-                    <div className="d-grid btn-block" onClick={()=>checkToken(id)}>
-                      <Link
-                        to={``}
-                        className="btn btn-secondary d-inline-flex justify-content-center align-items-center"
-                      >
-                        <i className="feather-calendar" />
-                        Book Now
-                      </Link>
-                    </div>
+                  <div className="d-grid mt-3">
+                    <button
+                      onClick={() => checkToken(id)}
+                      className="btn btn-secondary d-inline-flex justify-content-center align-items-center"
+                    >
+                      <i className="feather-calendar" />
+                      Book Now
+                    </button>
                   </div>
                 </div>
                 {/* <div className="white-bg next-availability">
@@ -1122,9 +1261,8 @@ const CoachDetail = (props: any) => {
                         <i className="feather-arrow-right-circle ms-1" />
                       </Link>
                     </div>
-                  </form>
                 </div>
-                <div className="white-bg listing-owner">
+                {/* <div className="white-bg listing-owner">
                   <h4 className="border-bottom">Listing By Owner</h4>
                   <ul>
                     <li className="d-flex justify-content-start align-items-center">
@@ -1181,10 +1319,9 @@ const CoachDetail = (props: any) => {
                         </p>
                       </div>
                     </li>
-                  </ul>
                 </div> */}
-                <div className="white-bg">
-                  {/* <h4 className="border-bottom">Share Venue</h4>
+                {/* <div className="white-bg">
+                  <h4 className="border-bottom">Share Venue</h4>
                   <ul className="social-medias d-flex">
                     <li className="facebook">
                       <Link to="#;">
@@ -1216,9 +1353,9 @@ const CoachDetail = (props: any) => {
                         <i className="fa-brands fa-linkedin" />
                       </Link>
                     </li>
-                  </ul> */}
+                  </ul>
                   <div>
-                    {/* <div className="price-wrap aos" data-aos="fade-up">
+                    <div className="price-wrap aos" data-aos="fade-up">
                       <div className="row justify-content-center">
                         <div className="col-lg-4 d-flex col-md-6">
                           
@@ -1280,9 +1417,9 @@ const CoachDetail = (props: any) => {
                           </div>
                         </div>
                       </div>
-                    </div> */}
+                    </div>
                   </div>
-                </div>
+                </div> */}
               </div>
             </aside>
           </div>
