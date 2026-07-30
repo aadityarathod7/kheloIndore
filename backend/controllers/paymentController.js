@@ -29,6 +29,40 @@ const { ObjectId } = require("mongoose").Types;
 const personalTrainer = require("../models/PersonalTrainingModel")
 const Refund = require("../models/RefundModel");
 
+const getDateRange = (date) => {
+  let startOfTargetDay, endOfTargetDay;
+  if (typeof date === "string" && date.includes("-") && date.split("-").length === 3) {
+    const parts = date.split("T")[0].split("-");
+    const y = parseInt(parts[0]);
+    const m = parseInt(parts[1]) - 1;
+    const d = parseInt(parts[2]);
+    startOfTargetDay = new Date(y, m, d, 0, 0, 0, 0);
+    endOfTargetDay = new Date(y, m, d, 23, 59, 59, 999);
+  } else {
+    const dateObj = new Date(date);
+    if (isNaN(dateObj)) {
+      return null;
+    }
+    const y = dateObj.getFullYear();
+    const m = dateObj.getMonth();
+    const d = dateObj.getDate();
+    startOfTargetDay = new Date(y, m, d, 0, 0, 0, 0);
+    endOfTargetDay = new Date(y, m, d, 23, 59, 59, 999);
+  }
+  return { start: startOfTargetDay, end: endOfTargetDay };
+};
+
+const getPuppeteerLaunchOptions = () => {
+  const options = {
+    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    headless: "new",
+  };
+  if (fs.existsSync('/usr/bin/chromium-browser')) {
+    options.executablePath = '/usr/bin/chromium-browser';
+  }
+  return options;
+};
+
 const venuePayment = async (req, res) => {
   try {
     const { user_id, venue_id, date, slotsBooked, total_price } = req.body;
@@ -50,14 +84,20 @@ const venuePayment = async (req, res) => {
       return res.status(400).json({ success: false, message: "Booking slots are empty or invalid" });
     }
 
-    // Convert date to Date object
-    const dateObj = new Date(date);
-    if (isNaN(dateObj)) {
+    // Convert date to Date object range
+    const range = getDateRange(date);
+    if (!range) {
       return res.status(400).json({ success: false, message: "Invalid date format" });
     }
 
     // Fetch slots for the venue and date
-    const slots1 = await Slot.find({ venue_id: venue_id, date: dateObj });
+    const slots1 = await Slot.find({
+      venue_id: venue_id,
+      date: {
+        $gte: range.start,
+        $lte: range.end
+      }
+    });
     if (!slots1 || slots1.length === 0) {
       return res.status(400).json({ success: false, message: "No slots found for the given venue and date" });
     }
@@ -199,12 +239,9 @@ const actualvenuePaymentStatus = async (req, res) => {
   const vendorid =venueData.vendor_id
   console.log(vendorid,"vendorid")
   let dateObj = new Date(date);
-  const emaildata =await User.findById(vendorid)
-  if (!emailData) {
-    throw new Error("Vendor admin not found");
-  }
-const venueadminemail = emaildata.email
-console.log(venueadminemail,"venueadminemail")
+  const emaildata = (await User.findById(vendorid)) || (await User.findOne({ role: "Super Admin" })) || (await User.findOne({})) || { email: "superadmin@yopmail.com" };
+  const venueadminemail = emaildata.email
+  console.log(venueadminemail,"venueadminemail")
   const userData = await User.findById(user_id);
   if (!userData) {
     throw new Error("User data not found");
@@ -312,11 +349,7 @@ console.log(allSlotDetails,"allSlotDetails")
       var invoicePath = path.join(pdfDir, filename);
             var pdfUrl = `/pdf/${filename}`;
 
-            const browser = await puppeteer.launch({
-                executablePath:'/usr/bin/chromium-browser',
-              args: ['--no-sandbox', '--disable-setuid-sandbox'] ,
-              headless: true, 
-            });
+            const browser = await puppeteer.launch(getPuppeteerLaunchOptions());
         const page = await browser.newPage();
         await page.setContent(html, { waitUntil: "networkidle0" });
         await page.pdf({
@@ -359,7 +392,6 @@ console.log(allSlotDetails,"allSlotDetails")
       const updatedSlots = await Slot.updateMany(
         {
           venue_id: venue_id,
-          date: dateObj,
           "slots._id": { $in: slotsBooked },
         },
         {
@@ -452,9 +484,7 @@ console.log(allSlotDetails,"allSlotDetails")
       var filename = `${uuidv4()}.pdf`;
       var invoicePath = path.join(__dirname, `../public/pdf/${filename}`);
       var pdfUrl = `/pdf/${filename}`;
-      const browser = await puppeteer.launch({
-        headless: true, 
-      });
+      const browser = await puppeteer.launch(getPuppeteerLaunchOptions());
       const page = await browser.newPage();
       await page.setContent(html, { waitUntil: "networkidle0" });
       await page.pdf({
@@ -497,7 +527,6 @@ console.log(allSlotDetails,"allSlotDetails")
       const updatedSlots = await Slot.updateMany(
         {
           venue_id: venue_id,
-          date: dateObj,
           "slots._id": { $in: slotsBooked },
         },
         {
@@ -575,9 +604,7 @@ const workingvenuePaymentStatus = async (req, res) => {
     const venueLocation = venueData.address;
     const vendorid = venueData.vendor_id;
 
-    const emaildata = await User.findById(vendorid);
-    if (!emaildata) return res.status(404).json({ error: "Vendor admin not found" });
-
+    const emaildata = (await User.findById(vendorid)) || (await User.findOne({ role: "Super Admin" })) || (await User.findOne({})) || { email: "superadmin@yopmail.com" };
     const venueadminemail = emaildata.email;
     const userData = await User.findById(user_id);
     if (!userData) return res.status(404).json({ error: "User data not found" });
@@ -635,11 +662,7 @@ const workingvenuePaymentStatus = async (req, res) => {
       fs.mkdirSync(pdfDir, { recursive: true });
     }
 
-    const browser = await puppeteer.launch({
-       executablePath: '/usr/bin/chromium-browser',
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
-      headless: true,
-    });
+    const browser = await puppeteer.launch(getPuppeteerLaunchOptions());
     const page = await browser.newPage();
     await page.setContent(html, { waitUntil: "networkidle0" });
     await page.pdf({ path: invoicePath, format: "A3", printBackground: true });
@@ -661,7 +684,7 @@ const workingvenuePaymentStatus = async (req, res) => {
 
     // Update Slots
     await Slot.updateMany(
-      { venue_id, date: new Date(date), "slots._id": { $in: slotsBooked } },
+      { venue_id, "slots._id": { $in: slotsBooked } },
       { $set: { "slots.$[slot].isBooked": true } },
       { arrayFilters: [{ "slot._id": { $in: slotsBooked } }] }
     );
@@ -774,9 +797,7 @@ const venuePaymentStatus = async (req, res) => {
     const venueLocation = venueData.address;
     const vendorid = venueData.vendor_id;
 
-    const emaildata = await User.findById(vendorid);
-    if (!emaildata) return res.status(404).json({ error: "Vendor admin not found" });
-
+    const emaildata = (await User.findById(vendorid)) || (await User.findOne({ role: "Super Admin" })) || (await User.findOne({})) || { email: "superadmin@yopmail.com" };
     const venueadminemail = emaildata.email;
     const userData = await User.findById(user_id);
     if (!userData) return res.status(404).json({ error: "User data not found" });
@@ -822,11 +843,7 @@ const venuePaymentStatus = async (req, res) => {
       fs.mkdirSync(pdfDir, { recursive: true });
     }
 
-    const browser = await puppeteer.launch({
-       executablePath: '/usr/bin/chromium-browser',
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
-      headless: true,
-    });
+    const browser = await puppeteer.launch(getPuppeteerLaunchOptions());
     const page = await browser.newPage();
     await page.setContent(html, { waitUntil: "networkidle0" });
     await page.pdf({ path: invoicePath, format: "A3", printBackground: true });
@@ -856,7 +873,7 @@ const venuePaymentStatus = async (req, res) => {
 
       // Update Slots
       await Slot.updateMany(
-        { venue_id, date: new Date(date), "slots._id": { $in: slotsBooked } },
+        { venue_id, "slots._id": { $in: slotsBooked } },
         { $set: { "slots.$[slot].isBooked": true } },
         { arrayFilters: [{ "slot._id": { $in: slotsBooked } }] }
       );
@@ -980,9 +997,7 @@ const getVenueBookingByUserId = async (req, res) => {
         paymentStatus,
         paymentState,
       } = booking;
-      const dateObj = new Date(date);
-
-      const slots = await Slot.find({ venue_id: venue_id, date: dateObj });
+      const slots = await Slot.find({ venue_id: venue_id, "slots._id": { $in: slotsBooked } });
       if (slots.length === 0) {
         return res.status(400).json({
           success: false,
@@ -1277,11 +1292,7 @@ console.log(`${start_time} to ${end_time}`)
     var filename = `${uuidv4()}.pdf`;
     var invoicePath = path.join(__dirname, `../public/pdf/${filename}`);
     var pdfUrl = `/pdf/${filename}`;
-    const browser = await puppeteer.launch({
-            executablePath: '/usr/bin/chromium-browser',
-     args: ['--no-sandbox', '--disable-setuid-sandbox'],
-     headless: true,
-   });
+    const browser = await puppeteer.launch(getPuppeteerLaunchOptions());
         const page = await browser.newPage();
         await page.setContent(html, { waitUntil: "networkidle0" });
         await page.pdf({
@@ -1733,11 +1744,7 @@ const slotDates = `${formattedStartDate} to ${formattedEndDate}`;
     var filename = `${uuidv4()}.pdf`;
     var invoicePath = path.join(__dirname, `../public/pdf/${filename}`);
     var pdfUrl = `/pdf/${filename}`;
-    const browser = await puppeteer.launch({
-           executablePath: '/usr/bin/chromium-browser',
-     args: ['--no-sandbox', '--disable-setuid-sandbox'],
-     headless: true,
-   });
+    const browser = await puppeteer.launch(getPuppeteerLaunchOptions());
         const page = await browser.newPage();
         await page.setContent(html, { waitUntil: "networkidle0" });
         await page.pdf({
@@ -1949,9 +1956,7 @@ const actualgetVenueCoachPTBookingByUserId = async (req, res) => {
         verification_status,
         _id
       } = booking;
-      const dateObj = new Date(date);
-
-      const slots = await Slot.find({ venue_id: venue_id, date: dateObj });
+      const slots = await Slot.find({ venue_id: venue_id, "slots._id": { $in: slotsBooked } });
       if (slots.length === 0) {
         return res.status(400).json({
           success: false,

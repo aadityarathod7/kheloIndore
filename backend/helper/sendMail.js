@@ -1,117 +1,96 @@
-const  nodemailer = require('nodemailer')
-const fs = require( 'fs')
-const path = require( 'path')
+const nodemailer = require('nodemailer')
+const fs = require('fs')
+const path = require('path')
 
- const sendEmail = async (email,mailcontent,attachedFiles) => {
-  console.log(email,"attachedFiles6")
-    // let transporter = nodemailer.createTransport({
-    //     service: "gmail",
-    //     auth: {
-    //       user: "mailto:swapinfotechindore@gmail.com",
-    //       pass: "ejnljjxnhcautboc",
-    //     },
-    // })
-
-
-    let transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST, // SMTP hostname
-      port: process.env.SMTP_PORT, // SMTP port
-      secure: process.env.SMTP_PORT == 465, // Use TLS for port 465
+// Dynamic Transporter Factory
+const createMailTransporter = () => {
+  if (process.env.EMAIL_SERVICE === "gmail") {
+    return nodemailer.createTransport({
+      service: "gmail",
       auth: {
-        user: process.env.SMTP_USER, // SMTP username
-        pass: process.env.SMTP_PASS, // SMTP password
+        user: process.env.EMAIL_ID,
+        pass: process.env.EMAIL_PASSWORD,
       },
     });
-    var mailOptions = {
-      from: `"KheloIndore" <${process.env.SMTP_USER}>`, // Sender email
-        to: email,
-        subject: 'Booking Confirmation',
-        html: mailcontent,
-        attachments: attachedFiles
-    };
-
-    transporter.sendMail(mailOptions, function (err ,result) {
-        if (err) {
-            console.log(err);
-        }
-        console.log('Email has been sent on your email id');
-    })
-}
-const sendEmailForSwap = async (email, subject, mailcontent,attachedFiles) => {
-  let transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST, // SMTP hostname
-    port: process.env.SMTP_PORT, // SMTP port
-    secure: process.env.SMTP_PORT == 465, // Use TLS for port 465
+  }
+  return nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port: parseInt(process.env.SMTP_PORT || '465'),
+    secure: process.env.SMTP_PORT == 465,
     auth: {
-      user: process.env.SMTP_USER, // SMTP username
-      pass: process.env.SMTP_PASS, // SMTP password
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS,
     },
   });
+};
 
-    var mailOptions = {
-      from: `"KheloIndore" <${process.env.SMTP_USER}>`, // Sender email
-        to: email,
-        subject: subject,
-        html: mailcontent,
-    };
+// Dynamic Sender Address
+const getSenderEmail = () => {
+  return process.env.EMAIL_SERVICE === "gmail" ? process.env.EMAIL_ID : process.env.SMTP_USER;
+};
 
-    transporter.sendMail(mailOptions, function (err ,result) {
-        if (err) {
-            console.log(err);
-        }
-        console.log('Email has been sent on your email id');
-    })
-}
-const superAdminAddUsersendEmail = async (email,mailcontent) => {
-  let transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST, // SMTP hostname
-    port: process.env.SMTP_PORT, // SMTP port
-    secure: process.env.SMTP_PORT == 465, // Use TLS for port 465
-    auth: {
-      user: process.env.SMTP_USER, // SMTP username
-      pass: process.env.SMTP_PASS, // SMTP password
-    },
-  });
+const sendEmail = async (email, mailcontent, attachedFiles) => {
+  console.log(email, "attachedFiles6")
+  const transporter = createMailTransporter();
+  var mailOptions = {
+    from: `"KheloIndore" <${getSenderEmail()}>`,
+    to: email,
+    subject: 'Booking Confirmation',
+    html: mailcontent,
+    attachments: attachedFiles
+  };
 
-    var mailOptions = {
-      from: `"KheloIndore" <${process.env.SMTP_USER}>`, // Sender email
-        to: email,
-        subject: 'Login details',
-        html: mailcontent
-    };
-
-    transporter.sendMail(mailOptions, function (err ,result) {
-        if (err) {
-            console.log(err);
-        }
-        console.log('Email has been sent on your email id');
-    })
+  transporter.sendMail(mailOptions, function (err, result) {
+    if (err) {
+      console.log(err);
+    }
+    console.log('Email has been sent on your email id');
+  })
 }
 
+const sendEmailForSwap = async (email, subject, mailcontent, attachedFiles) => {
+  const transporter = createMailTransporter();
+  var mailOptions = {
+    from: `"KheloIndore" <${getSenderEmail()}>`,
+    to: email,
+    subject: subject,
+    html: mailcontent,
+  };
 
+  transporter.sendMail(mailOptions, function (err, result) {
+    if (err) {
+      console.log(err);
+    }
+    console.log('Email has been sent on your email id');
+  })
+}
+
+const superAdminAddUsersendEmail = async (email, mailcontent) => {
+  const transporter = createMailTransporter();
+  var mailOptions = {
+    from: `"KheloIndore" <${getSenderEmail()}>`,
+    to: email,
+    subject: 'Login details',
+    html: mailcontent
+  };
+
+  transporter.sendMail(mailOptions, function (err, result) {
+    if (err) {
+      console.log(err);
+    }
+    console.log('Email has been sent on your email id');
+  })
+}
 
 const sendVenuAdminConfirmation = async ({ senderEmail, senderName, recipientEmail, subject, html }) => {
   try {
-    // Create a transporter object using default SMTP transport
-    let transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST, // SMTP hostname
-      port: process.env.SMTP_PORT, // SMTP port
-      secure: process.env.SMTP_PORT == 465, // Use TLS for port 465
-      auth: {
-        user: process.env.SMTP_USER, // SMTP username
-        pass: process.env.SMTP_PASS, // SMTP password
-      },
-    });
-
-    // Email options
+    const transporter = createMailTransporter();
     const mailOptions = {
-      from: `"KheloIndore" <${process.env.SMTP_USER}>`,
+      from: `"KheloIndore" <${getSenderEmail()}>`,
       to: recipientEmail,
       subject: subject,
       html: html,
     };
-
-    // Send the email
     const info = await transporter.sendMail(mailOptions);
     console.log('Email sent: ' + info.response);
   } catch (error) {
@@ -121,26 +100,13 @@ const sendVenuAdminConfirmation = async ({ senderEmail, senderName, recipientEma
 
 const sendVenueConfirnation = async ({ senderEmail, senderName, recipientEmail, subject, html }) => {
   try {
-    // Create a transporter object using default SMTP transport
-    let transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST, // SMTP hostname
-      port: process.env.SMTP_PORT, // SMTP port
-      secure: process.env.SMTP_PORT == 465, // Use TLS for port 465
-      auth: {
-        user: process.env.SMTP_USER, // SMTP username
-        pass: process.env.SMTP_PASS, // SMTP password
-      },
-    });
-
-    // Email options
+    const transporter = createMailTransporter();
     const mailOptions = {
-      from: `"KheloIndore" <${process.env.SMTP_USER}>`,
+      from: `"KheloIndore" <${getSenderEmail()}>`,
       to: recipientEmail,
       subject: subject,
       html: html,
     };
-
-    // Send the email
     const info = await transporter.sendMail(mailOptions);
     console.log('Email sent: ' + info.response);
   } catch (error) {
@@ -150,23 +116,13 @@ const sendVenueConfirnation = async ({ senderEmail, senderName, recipientEmail, 
 
 const sendVenueAddBySuperadmin = async ({ senderEmail, senderName, recipientEmail, subject, html }) => {
   try {
-    let transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST, // SMTP hostname
-      port: process.env.SMTP_PORT, // SMTP port
-      secure: process.env.SMTP_PORT == 465, // Use TLS for port 465
-      auth: {
-        user: process.env.SMTP_USER, // SMTP username
-        pass: process.env.SMTP_PASS, // SMTP password
-      },
-    });
-
+    const transporter = createMailTransporter();
     const mailOptions = {
-      from: `"KheloIndore" <${process.env.SMTP_USER}>`,
+      from: `"KheloIndore" <${getSenderEmail()}>`,
       to: recipientEmail,
       subject: subject,
       html: html,
     };
-
     const info = await transporter.sendMail(mailOptions);
     console.log('Email sent: ' + info.response);
   } catch (error) {
@@ -182,28 +138,17 @@ const sendBookingRequestEmail = async ({
 }) => {
   try {
     console.log("Sending email to:", recipientEmail); 
-    console.log(attachmentInvoices,"attachmentInvoices")
-    // Ensure recipientEmail is defined
+    console.log(attachmentInvoices, "attachmentInvoices")
     if (!recipientEmail) {
       throw new Error("No recipient email provided");
     }
-    let transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST, // SMTP hostname
-      port: process.env.SMTP_PORT, // SMTP port
-      secure: process.env.SMTP_PORT == 465, // Use TLS for port 465
-      auth: {
-        user: process.env.SMTP_USER, // SMTP username
-        pass: process.env.SMTP_PASS, // SMTP password
-      },
-    });
-
-
+    const transporter = createMailTransporter();
     const mailOptions = {
-      from: `"KheloIndore" <${process.env.SMTP_USER}>`, // Sender email
+      from: `"KheloIndore" <${getSenderEmail()}>`,
       to: recipientEmail,
       subject: `Booking Request for ${venueName}`,
       html: mailcontentuser,
-      attachments:attachmentInvoices
+      attachments: attachmentInvoices
     };
 
     const info = await transporter.sendMail(mailOptions);
@@ -220,25 +165,13 @@ const sendBookingEmailToApprovalToVenueAdmin = async ({
   attachmentInvoices,
 }) => {
   try {
- 
-    let transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST, // SMTP hostname
-      port: process.env.SMTP_PORT, // SMTP port
-      secure: process.env.SMTP_PORT == 465, // Use TLS for port 465
-      auth: {
-        user: process.env.SMTP_USER, // SMTP username
-        pass: process.env.SMTP_PASS, // SMTP password
-      },
-    });
-
-
+    const transporter = createMailTransporter();
     const mailOptions = {
-      from: `"KheloIndore" <${process.env.SMTP_USER}>`, // Sender email
+      from: `"KheloIndore" <${getSenderEmail()}>`,
       to: venueadminemail,
       subject: `Booking Approval Required for ${venueName}`,
       html: mailcontent,
-      attachmentInvoices
-
+      attachments: attachmentInvoices
     };
 
     const info = await transporter.sendMail(mailOptions);
@@ -253,18 +186,9 @@ const sendBookingEmailToApprovalToSuperAdmin = async ({
   subject 
 }) => {
   try {
-    let transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST, // SMTP hostname
-      port: process.env.SMTP_PORT, // SMTP port
-      secure: process.env.SMTP_PORT == 465, // Use TLS for port 465
-      auth: {
-        user: process.env.SMTP_USER, // SMTP username
-        pass: process.env.SMTP_PASS, // SMTP password
-      },
-    });
-  
+    const transporter = createMailTransporter();
     const mailOptions = {
-      from: `"KheloIndore" <${process.env.SMTP_USER}>`, // Sender email
+      from: `"KheloIndore" <${getSenderEmail()}>`,
       to: process.env.SUPER_ADMIN_EMAIL,
       subject: subject,
       html: mailcontent,
@@ -276,59 +200,33 @@ const sendBookingEmailToApprovalToSuperAdmin = async ({
   }
 };
 
-
 const generateResetPasswordMailContent = async (email, html) => {
   try {
-    // Configure the nodemailer transport
-    let transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST, // SMTP hostname
-      port: process.env.SMTP_PORT, // SMTP port
-      secure: process.env.SMTP_PORT == 465, // Use TLS for port 465
-      auth: {
-        user: process.env.SMTP_USER, // SMTP username
-        pass: process.env.SMTP_PASS, // SMTP password
-      },
-    });
-
-    // Define email options
+    const transporter = createMailTransporter();
     const mailOptions = {
-      from: `"KheloIndore" <${process.env.SMTP_USER}>`, // Sender email
-      to: email, // Recipient email
-      subject: "Password Reset Request", // Email subject
-      html: html, // HTML content
+      from: `"KheloIndore" <${getSenderEmail()}>`,
+      to: email,
+      subject: "Password Reset Request",
+      html: html,
     };
 
-    // Send the email
     const result = await transporter.sendMail(mailOptions);
     console.log(`Email successfully sent to ${email}:`, result);
   } catch (error) {
-    // Log errors for debugging
     console.error("Error sending email:", error.message);
   }
 };
 
 const sendEmailConfirm = async ({ senderEmail, senderName, recipientEmail, subject, html }) => {
   try {
-    // Create a transporter object using default SMTP transport
-    let transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST, // SMTP hostname
-      port: process.env.SMTP_PORT, // SMTP port
-      secure: true,// Use TLS for port 465
-      auth: {
-        user: process.env.SMTP_USER, // SMTP username
-        pass: process.env.SMTP_PASS, // SMTP password
-      },
-    });
-
-    // Email options
+    const transporter = createMailTransporter();
     const mailOptions = {
-      from: `"KheloIndore" <${process.env.SMTP_USER}>`, // Sender email
+      from: `"KheloIndore" <${getSenderEmail()}>`,
       to: recipientEmail,
       subject: subject,
       html: html,
     };
 
-    // Send the email
     const info = await transporter.sendMail(mailOptions);
     console.log('Email sent: ' + info.response);
   } catch (error) {
@@ -336,48 +234,38 @@ const sendEmailConfirm = async ({ senderEmail, senderName, recipientEmail, subje
   }
 };
 
-const cancellationEmail = async ({recipientEmail, subject, html }) => {
+const cancellationEmail = async ({ recipientEmail, subject, html }) => {
   try {
-    let transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST, // SMTP hostname
-      port: process.env.SMTP_PORT, // SMTP port
-      secure: process.env.SMTP_PORT == 465, // Use TLS for port 465
-      auth: {
-        user: process.env.SMTP_USER, // SMTP username
-        pass: process.env.SMTP_PASS, // SMTP password
-      },
-    });
-
-  var mailOptions = {
-    from: `"KheloIndore" <${process.env.SMTP_USER}>`, // Sender email
+    const transporter = createMailTransporter();
+    var mailOptions = {
+      from: `"KheloIndore" <${getSenderEmail()}>`,
       to: recipientEmail,
       subject: subject,
       html: html,
-  };
+    };
 
-  transporter.sendMail(mailOptions, function (err ,result) {
+    transporter.sendMail(mailOptions, function (err, result) {
       if (err) {
-          console.log(err);
+        console.log(err);
       }
       console.log('Email has been sent on your email id');
-  })
-    console.log('Email sent: ' + info.response);
+    })
   } catch (error) {
     console.error('Error sending email:', error);
   }
 };
 
 module.exports = {
-    sendEmail,
-    sendEmailForSwap,
-    superAdminAddUsersendEmail,
-    sendVenuAdminConfirmation,
-    sendVenueConfirnation,
-    sendVenueAddBySuperadmin,
-    sendBookingRequestEmail,
-    sendBookingEmailToApprovalToVenueAdmin,
-    sendBookingEmailToApprovalToSuperAdmin,
-    generateResetPasswordMailContent,
-    sendEmailConfirm,
-    cancellationEmail,
+  sendEmail,
+  sendEmailForSwap,
+  superAdminAddUsersendEmail,
+  sendVenuAdminConfirmation,
+  sendVenueConfirnation,
+  sendVenueAddBySuperadmin,
+  sendBookingRequestEmail,
+  sendBookingEmailToApprovalToVenueAdmin,
+  sendBookingEmailToApprovalToSuperAdmin,
+  generateResetPasswordMailContent,
+  sendEmailConfirm,
+  cancellationEmail,
 }
