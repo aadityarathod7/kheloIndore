@@ -3974,3 +3974,27 @@ body .swal2-container {
     }
   }
 }
+
+/* High contrast typography for Dashboard content */
+.content.court-bg {
+  color: #334155 !important;
+
+  h1, h2, h3, h4, h5, h6 {
+    color: #0F172A !important;
+  }
+
+  p, span, label, td, th, a, li {
+    // Keep text dark Slate unless it is a badge, specific white texts, or active button
+    &:not(.text-white):not(.badge):not(.text-success):not(.pro-tab-pill):not(.ki-tab-btn):not(.btn):not(.btn-primary):not(.active) {
+      color: #334155 !important;
+    }
+  }
+
+  // Ensure active tab pills keep their white color
+  .active, .pro-tab-pill.active, .ki-tab-btn.active {
+    color: #FFFFFF !important;
+    i, span {
+      color: #FFFFFF !important;
+    }
+  }
+}

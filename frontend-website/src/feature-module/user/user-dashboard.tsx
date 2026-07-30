@@ -122,7 +122,7 @@ const UserDashboard = () => {
   return (
     <>
       {/* Hero Section (Matching My Bookings Header) */}
-      <div className="hero-booking-section" style={{ background: "linear-gradient(135deg, #F0FDF4 0%, #ECFDF5 100%)", paddingTop: "175px", paddingBottom: "40px", position: "relative", overflow: "hidden", borderBottom: "1px solid #E5E7EB" }}>
+      <div className="hero-booking-section" style={{ background: "linear-gradient(135deg, #F0FDF4 0%, #ECFDF5 100%)", paddingTop: "195px", paddingBottom: "40px", position: "relative", overflow: "hidden", borderBottom: "1px solid #E5E7EB" }}>
         <div className="hero-artwork-blend" style={{ position: "absolute", right: "-60px", top: 0, bottom: 0, width: "55%", backgroundImage: "url('/assets/img/bg/banner-illustration.png')", backgroundSize: "cover", backgroundPosition: "left center", backgroundRepeat: "no-repeat", maskImage: "linear-gradient(to left, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%)", WebkitMaskImage: "linear-gradient(to left, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%)", opacity: 0.9 }}></div>
         
         <div className="container" style={{ position: "relative", zIndex: 2 }}>
@@ -178,23 +178,31 @@ const UserDashboard = () => {
       {/* Page Content */}
       <div className="content court-bg">
         <div className="container">
-          {/* Statistics Card */}
+          <div className="row justify-content-center">
+            <div className="col-xl-11 col-lg-12">
+              {/* Statistics Card */}
           <div className="row">
             <div className="col-lg-12">
               <div className="my-profile-box">
-                <h3>My Profile</h3>
+                <h3 style={{ color: "#0F172A", fontWeight: "700", marginBottom: "20px" }}>My Profile</h3>
                 <div className="card profile-user-view">
                   <div className="profile-groups">
-                    <div className="profile-detail-box">
-                      <div className="profile-img">
-                        <ImageWithBasePath
-                          className="rounded-circle"
-                          src="/assets/img/profile-icon.jpg"
-                          alt="Useeer"
-                        />
+                    <div className="profile-detail-box d-flex align-items-center gap-3">
+                      <div className="profile-img" style={{ width: "80px", height: "80px", minWidth: "80px", minHeight: "80px", borderRadius: "50%", overflow: "hidden", border: "2px solid #22C55E" }}>
+                        {userData?.profile_image?.[0]?.src ? (
+                          <img
+                            src={`${IMG_URL}${userData.profile_image[0].src}`}
+                            alt="Profile"
+                            style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }}
+                          />
+                        ) : (
+                          <div className="d-flex align-items-center justify-content-center bg-success text-white fw-bold h-100 w-100" style={{ fontSize: "28px" }}>
+                            {(userData?.first_name || 'U')[0].toUpperCase()}
+                          </div>
+                        )}
                       </div>
                       <div className="user-profile-detail">
-                        <h4>{userData?.first_name} {userData?.last_name}</h4>
+                        <h4 className="mb-0" style={{ fontSize: "22px", fontWeight: "700" }}>{userData?.first_name} {userData?.last_name}</h4>
                         <ul>
                           {/* <li>
                             <ImageWithBasePath
@@ -209,11 +217,10 @@ const UserDashboard = () => {
                     <div className="convenient-btns">
                       <Link
                         to={routes.userProfile}
-                        className="ki-btn-secondary d-inline-flex align-items-center"
+                        className="pro-btn-primary d-inline-flex align-items-center"
+                        style={{ padding: "0 20px", height: "42px", width: "auto" }}
                       >
-                        <span>
-                          <i className="feather-edit me-2" />
-                        </span>
+                        <i className="fas fa-user-edit me-2" />
                         Edit Profile
                       </Link>
                     </div>
@@ -2986,6 +2993,8 @@ const UserDashboard = () => {
                   <Link to="#" className="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Reset</Link>
                   <Link to="#" className="btn btn-primary" data-bs-dismiss="modal" aria-label="Close">Submit</Link>
                 </div>
+              </div>
+            </div>
               </div>
             </div>
           </div>
