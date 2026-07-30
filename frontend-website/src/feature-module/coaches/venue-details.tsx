@@ -191,22 +191,51 @@ const VenueDetails = () => {
           <Loader />
         </>
       ) : (
-        <div className="khelo-pro-wrapper">
-          <div className="max-container">
-            {/* 1. Breadcrumb Bar */}
-            <div className="pro-breadcrumb">
-              <Link to="/">
-                <i className="feather-home" /> Home
-              </Link>
-              <span className="separator">/</span>
-              <Link to={routes.blogListSidebarLeft}>
-                Sports Venues
-              </Link>
-              <span className="separator">/</span>
-              <span className="current text-capitalize">
-                {venueData?.name || (name ? name.replaceAll('-', ' ') : "Venue Details")}
-              </span>
+        <>
+          {/* Hero CSS overrides */}
+          <style dangerouslySetInnerHTML={{__html: `
+            .venue-hero-section { background: linear-gradient(135deg, #F0FDF4 0%, #ECFDF5 100%) !important; }
+            .venue-hero-section h1 { color: #0F172A !important; font-weight: 800 !important; }
+            .venue-hero-section h1 span { color: #22C55E !important; }
+            .venue-hero-section p { color: #64748B !important; }
+            .venue-hero-section span.tagline { color: #22C55E !important; font-weight: 700 !important; }
+            .venue-hero-section a { color: #64748B !important; text-decoration: none !important; }
+            .venue-hero-section .breadcrumb-pill span.active-crumb { color: #22C55E !important; font-weight: 600 !important; }
+            .venue-hero-section .breadcrumb-pill i { color: #64748B !important; }
+          `}} />
+
+          {/* Hero Section - matches listing pages */}
+          <div className="venue-hero-section" style={{ paddingTop: "110px", paddingBottom: "40px", position: "relative", overflow: "hidden", borderBottom: "1px solid #E5E7EB" }}>
+            <div style={{ position: "absolute", right: "-60px", top: 0, bottom: 0, width: "55%", backgroundImage: "url('/assets/img/bg/banner-illustration.png')", backgroundSize: "cover", backgroundPosition: "left center", backgroundRepeat: "no-repeat", maskImage: "linear-gradient(to left, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%)", WebkitMaskImage: "linear-gradient(to left, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%)", opacity: 0.9 }}></div>
+            <div className="container" style={{ position: "relative", zIndex: 2 }}>
+              <div className="row align-items-center">
+                <div className="col-lg-7 text-start">
+                  <span className="tagline" style={{ fontSize: "13px", letterSpacing: "1.5px", display: "block", marginBottom: "12px", color: "#22C55E", fontWeight: "700" }}>BOOK. PLAY. ENJOY</span>
+                  <h1 className="d-flex align-items-center flex-wrap" style={{ fontSize: "48px", fontWeight: "800", color: "#0F172A", lineHeight: "1.15", marginBottom: "16px" }}>
+                    <span style={{ color: "#22C55E", marginRight: "12px" }}>Sports</span> Venue
+                  </h1>
+                  <p style={{ color: "#64748B", fontSize: "18px", marginBottom: "24px", fontWeight: "500", maxWidth: "480px" }}>
+                    {venueData?.name || (name ? name.replaceAll('-', ' ') : "Venue Details")}
+                  </p>
+                  {/* Breadcrumb pill */}
+                  <div className="breadcrumb-pill d-inline-flex align-items-center bg-white px-3 py-2 rounded-pill shadow-sm" style={{ fontSize: "13px", border: "1px solid #E5E7EB" }}>
+                    <Link to="/" style={{ color: "#64748B", textDecoration: "none", fontWeight: "500" }}>
+                      <i className="feather-home me-1" style={{ color: "#64748B" }} /> Home
+                    </Link>
+                    <span style={{ margin: "0 10px", color: "#64748B" }}><i className="feather-chevron-right" style={{ fontSize: "12px", color: "#64748B" }} /></span>
+                    <Link to={routes.blogListSidebarLeft} style={{ color: "#64748B", textDecoration: "none", fontWeight: "500" }}>Sports Venues</Link>
+                    <span style={{ margin: "0 10px", color: "#64748B" }}><i className="feather-chevron-right" style={{ fontSize: "12px", color: "#64748B" }} /></span>
+                    <span className="active-crumb text-capitalize" style={{ color: "#22C55E", fontWeight: "600" }}>
+                      {venueData?.name || (name ? name.replaceAll('-', ' ') : "Venue Details")}
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
+          </div>
+
+          <div className="khelo-pro-wrapper" style={{ paddingTop: "32px" }}>
+            <div className="max-container">
 
             {/* 2. MAIN 2-COLUMN LAYOUT (Left 70% / Right 30%) */}
             <div className="row g-4">
@@ -734,8 +763,9 @@ const VenueDetails = () => {
                 <i className="fas fa-comment-dots" style={{ fontSize: "16px" }} /> Enquiry Now
               </button>
             </div>
+            </div>
           </div>
-        </div>
+        </>
       )}
     </>
   );

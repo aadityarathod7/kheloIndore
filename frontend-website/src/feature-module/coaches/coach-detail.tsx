@@ -251,20 +251,23 @@ const CoachDetail = (props: any) => {
   return (
     <div className="venue-coach-details coach-detail top-margin" style={{ backgroundColor: "#F8FAFC" }}>
       {/* Hero Section */}
-      <div className="hero-booking-section" style={{ background: "linear-gradient(135deg, #F0FDF4 0%, #ECFDF5 100%)", paddingTop: "110px", paddingBottom: "120px", position: "relative", overflow: "hidden", borderBottom: "1px solid #E5E7EB" }}>
+      <div className="hero-booking-section" style={{ background: "linear-gradient(135deg, #F0FDF4 0%, #ECFDF5 100%)", paddingTop: "110px", paddingBottom: "40px", position: "relative", overflow: "hidden", borderBottom: "1px solid #E5E7EB" }}>
         {/* Blended Background Turf Graphics */}
         <div className="hero-artwork-blend" style={{ position: "absolute", right: "-60px", top: 0, bottom: 0, width: "55%", backgroundImage: "url('/assets/img/bg/banner-illustration.png')", backgroundSize: "cover", backgroundPosition: "left center", backgroundRepeat: "no-repeat", maskImage: "linear-gradient(to left, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%)", WebkitMaskImage: "linear-gradient(to left, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%)", opacity: 0.9 }}></div>
         
         <div className="container" style={{ position: "relative", zIndex: 2 }}>
           <div className="row align-items-center">
             <div className="col-lg-7 text-start">
-              <span className="font-weight-bold" style={{ fontSize: "13px", letterSpacing: "1.5px", display: "block", marginBottom: "12px", color: "#22C55E", fontWeight: "700" }}>COACH DETAILS</span>
-              <h1 className="d-flex align-items-center flex-wrap" style={{ fontSize: "40px", fontWeight: "800", color: "#0F172A", lineHeight: "1.2", marginBottom: "16px" }}>
-                {coachData?.first_name ? `${coachData.first_name} ${coachData.last_name || ""}` : "Coach Details"}
+              <span style={{ fontSize: "13px", letterSpacing: "1.5px", display: "block", marginBottom: "12px", color: "#22C55E", fontWeight: "700" }}>BOOK. PLAY. ENJOY</span>
+              <h1 style={{ fontSize: "48px", fontWeight: "800", color: "#0F172A", lineHeight: "1.15", marginBottom: "16px", display: "flex", alignItems: "center", flexWrap: "wrap" as const }}>
+                <span style={{ color: "#22C55E", marginRight: "12px" }}>Coach</span> Details
               </h1>
+              <p style={{ color: "#64748B", fontSize: "18px", marginBottom: "24px", fontWeight: "500", maxWidth: "480px" }}>
+                {coachData?.first_name ? `${coachData.first_name} ${coachData.last_name || ""}` : "View coach profile and book your session"}
+              </p>
               
               {/* Breadcrumb pill */}
-              <div className="d-inline-flex align-items-center bg-white px-3 py-2 rounded-pill shadow-sm" style={{ fontSize: "13px", border: "1px solid #E5E7EB" }}>
+              <div style={{ display: "inline-flex", alignItems: "center", background: "#FFFFFF", padding: "8px 16px", borderRadius: "50px", boxShadow: "0 1px 6px rgba(0,0,0,0.08)", fontSize: "13px", border: "1px solid #E5E7EB" }}>
                 <Link to="/" style={{ color: "#64748B", textDecoration: "none", fontWeight: "500" }}><i className="feather-home me-1" style={{ color: "#64748B" }} /> Home</Link>
                 <span style={{ margin: "0 10px", color: "#64748B" }}><i className="feather-chevron-right" style={{ fontSize: "12px", color: "#64748B" }} /></span>
                 <Link to="/coaches" style={{ color: "#64748B", textDecoration: "none", fontWeight: "500" }}>Coaches</Link>
@@ -402,7 +405,7 @@ const CoachDetail = (props: any) => {
       <div className="content">
         <div className="container">
           {/* Row */}
-          <div className="row" style={{ marginTop: "-80px", position: "relative", zIndex: 10 }}>
+          <div className="row g-4" style={{ paddingTop: "32px", position: "relative", zIndex: 10 }}>
             {/* {coachData.map((coachId,index)=>(   */}
             <div className="col-12 col-sm-12 col-md-12 col-lg-8">
               <div className="dull-bg corner-radius-10 coach-info d-md-flex justify-content-start align-items-start">

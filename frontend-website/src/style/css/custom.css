@@ -820,3 +820,146 @@ span.css-1u9des2-indicatorSeparator {
 svg.css-tj5bde-Svg {
   fill: rgb(133 130 130) !important;
 }
+
+/* ============================================================
+   KHELO INDORE — GLOBAL THEME TEXT & ICON VISIBILITY FIX
+   Fixes white/invisible text caused by legacy template CSS
+   on hero sections, breadcrumbs, and detail pages.
+   ============================================================ */
+
+/* Hero sections — force dark text on the light green gradient */
+.hero-booking-section,
+.venue-hero-section,
+.hero-section-custom {
+  background: linear-gradient(135deg, #F0FDF4 0%, #ECFDF5 100%) !important;
+}
+
+.hero-booking-section h1,
+.hero-booking-section h2,
+.venue-hero-section h1,
+.venue-hero-section h2 {
+  color: #0F172A !important;
+}
+
+.hero-booking-section p,
+.venue-hero-section p {
+  color: #64748B !important;
+}
+
+.hero-booking-section span,
+.venue-hero-section span {
+  color: #0F172A !important;
+}
+
+/* Green accent spans inside hero headings */
+.hero-booking-section h1 span,
+.hero-booking-section h2 span,
+.venue-hero-section h1 span,
+.venue-hero-section h2 span {
+  color: #22C55E !important;
+}
+
+/* Feather icons — make sure they're visible on all backgrounds */
+.hero-booking-section i[class*="feather"],
+.venue-hero-section i[class*="feather"],
+.pro-breadcrumb i[class*="feather"],
+.breadcrumb-bar i[class*="feather"],
+.coach-info i[class*="feather"],
+.venue-options i[class*="feather"] {
+  color: #64748B !important;
+}
+
+/* White breadcrumb pill — text inside must be readable */
+.hero-booking-section .rounded-pill,
+.venue-hero-section .rounded-pill,
+.hero-booking-section .breadcrumb-pill {
+  background: #FFFFFF !important;
+  color: #64748B !important;
+}
+
+.hero-booking-section .rounded-pill a,
+.hero-booking-section .rounded-pill span,
+.venue-hero-section .rounded-pill a,
+.venue-hero-section .rounded-pill span,
+.hero-booking-section .breadcrumb-pill a,
+.hero-booking-section .breadcrumb-pill span {
+  color: #64748B !important;
+  text-decoration: none !important;
+}
+
+/* Active breadcrumb item */
+.hero-booking-section .rounded-pill span:last-child,
+.venue-hero-section .rounded-pill span:last-child,
+.hero-booking-section .breadcrumb-pill .active-crumb {
+  color: #22C55E !important;
+  font-weight: 600 !important;
+}
+
+/* Venue/Coach detail pages — ensure hero text isn't overridden
+   by the .venue-coach-details * !important rules */
+.venue-coach-details .hero-booking-section h1,
+.venue-coach-details .hero-booking-section h1 * {
+  color: #0F172A !important;
+}
+
+.venue-coach-details .hero-booking-section h1 span {
+  color: #22C55E !important;
+}
+
+.venue-coach-details .hero-booking-section p {
+  color: #64748B !important;
+}
+
+.venue-coach-details .hero-booking-section span {
+  color: #64748B !important;
+}
+
+.venue-coach-details .hero-booking-section span.tagline,
+.venue-coach-details .hero-booking-section .text-green {
+  color: #22C55E !important;
+}
+
+/* Booking steps / stepper — keep text visible */
+.booking-steps .active a,
+.booking-steps .active span {
+  color: #22C55E !important;
+}
+
+.booking-steps li a {
+  color: #334155 !important;
+}
+
+/* Make sure page background is always the soft off-white */
+.page-wrapper,
+.main-wrapper,
+body {
+  background-color: #F8FAFC !important;
+}
+
+/* Content area headings — always dark */
+.content h1, .content h2, .content h3, .content h4, .content h5 {
+  color: #0F172A !important;
+}
+
+.content p, .content li, .content span {
+  color: #334155 !important;
+}
+
+/* Green buttons everywhere */
+.btn-primary,
+.btn.btn-primary {
+  background: linear-gradient(135deg, #22C55E 0%, #16A34A 100%) !important;
+  border-color: #16A34A !important;
+  color: #FFFFFF !important;
+}
+
+.btn-primary:hover,
+.btn.btn-primary:hover {
+  background: linear-gradient(135deg, #16A34A 0%, #15803D 100%) !important;
+  color: #FFFFFF !important;
+}
+
+/* Feather icons global default — never invisible */
+i[class*="feather"] {
+  color: inherit;
+}
