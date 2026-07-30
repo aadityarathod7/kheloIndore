@@ -89,70 +89,96 @@ const BlogDetailsSidebarLeft = () => {
     ],
   };
   return (
-    <div>
-      {/* Breadcrumb */}
-      <div className="breadcrumb breadcrumb-list mb-0 top-margin">
-        <span className="primary-right-round" />
-        <div className="container">
-          <h1 className="text-white">Blog Details</h1>
-          <ul>
-            <li>
-              <Link to={routes.home}>Home</Link>
-            </li>
-            <li>Blog Details</li>
-          </ul>
+    <div style={{ backgroundColor: "#F8FAFC" }}>
+      {/* Hero Section */}
+      <div className="hero-booking-section" style={{ background: "linear-gradient(135deg, #F0FDF4 0%, #ECFDF5 100%)", paddingTop: "110px", paddingBottom: "40px", position: "relative", overflow: "hidden", borderBottom: "1px solid #E5E7EB" }}>
+        {/* Blended Background Turf Graphics */}
+        <div className="hero-artwork-blend" style={{ position: "absolute", right: "-60px", top: 0, bottom: 0, width: "55%", backgroundImage: "url('/assets/img/bg/banner-illustration.png')", backgroundSize: "cover", backgroundPosition: "left center", backgroundRepeat: "no-repeat", maskImage: "linear-gradient(to left, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%)", WebkitMaskImage: "linear-gradient(to left, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%)", opacity: 0.9 }}></div>
+        
+        <div className="container" style={{ position: "relative", zIndex: 2 }}>
+          <div className="row align-items-center">
+            <div className="col-lg-7 text-start">
+              <span className="font-weight-bold" style={{ fontSize: "13px", letterSpacing: "1.5px", display: "block", marginBottom: "12px", color: "#22C55E", fontWeight: "700" }}>BLOG POST</span>
+              <h1 className="d-flex align-items-center flex-wrap" style={{ fontSize: "40px", fontWeight: "800", color: "#0F172A", lineHeight: "1.2", marginBottom: "16px" }}>
+                {blogDetails?.blog_title || "Blog Details"}
+              </h1>
+              
+              {/* Breadcrumb pill */}
+              <div className="d-inline-flex align-items-center bg-white px-3 py-2 rounded-pill shadow-sm" style={{ fontSize: "13px", border: "1px solid #E5E7EB" }}>
+                <Link to="/" style={{ color: "#64748B", textDecoration: "none", fontWeight: "500" }}><i className="feather-home me-1" style={{ color: "#64748B" }} /> Home</Link>
+                <span style={{ margin: "0 10px", color: "#64748B" }}><i className="feather-chevron-right" style={{ fontSize: "12px", color: "#64748B" }} /></span>
+                <span style={{ color: "#22C55E", fontWeight: "600" }}>Blogs</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="content">
-        <section className="detail-info">
-          <div className="container">
-            <div className="row">
-              <div className="col-12 col-sm-12 offset-md-1 col-md-10 col-lg-10">
-                <div className="wrapper">
-                  <div className="seat-booking">
-                    <div
-                      className="col-12 d-flex"
-                      style={{ justifyContent: "center" }}
-                    >
-                      <div>
-                        <img
-                          src={blogDetails?.blog_image}
-                          alt="blog-image"
-                          style={{
-                            display: "block",
-                            margin: "0 auto",
-                            width: "500px", // Set your desired width
-                            height: "300px", // Set your desired height
-                            objectFit: "cover", // Ensures the image scales properly
-                          }}
-                        />
-                      </div>
-                    </div>
-
-                    <div className="row mt-3" key={blogDetails?._id}>
-                      <div className="col-12 ">
-                        <h1>{blogDetails?.blog_title}</h1>
-                        <div
-                          dangerouslySetInnerHTML={{
-                            __html: blogDetails?.blog_description
-                              ? blogDetails?.blog_description.replace(/&lt;/g, '<').replace(/&gt;/g, '>')
-                              : '',
-                          }}
-                        />
-
-                      </div>
-                    </div>
+      <div className="content py-5">
+        <div className="container">
+          <div className="row justify-content-center">
+            <div className="col-lg-9 col-md-10 col-sm-12">
+              <div 
+                className="shadow-sm border" 
+                style={{ backgroundColor: "#FFFFFF", borderRadius: "20px", border: "1px solid #E2E8F0", padding: "30px", overflow: "hidden" }}
+              >
+                {/* Blog Image */}
+                {blogDetails?.blog_image && (
+                  <div className="mb-4" style={{ borderRadius: "14px", overflow: "hidden", maxHeight: "420px" }}>
+                    <img
+                      src={blogDetails.blog_image}
+                      alt="blog-image"
+                      style={{
+                        width: "100%",
+                        height: "auto",
+                        maxHeight: "420px",
+                        objectFit: "cover",
+                        display: "block"
+                      }}
+                    />
                   </div>
+                )}
+
+                {/* Blog Content */}
+                <div className="blog-body mt-2">
+                  <style dangerouslySetInnerHTML={{__html: `
+                    .blog-body h2, .blog-body h2 * {
+                      color: #0F172A !important;
+                    }
+                    .blog-rich-content, .blog-rich-content * {
+                      color: #334155 !important;
+                    }
+                    .blog-metadata-item, .blog-metadata-item * {
+                      color: #64748B !important;
+                    }
+                    .blog-metadata-item i {
+                      color: #22C55E !important;
+                    }
+                  `}} />
+                  <h2 className="mb-3" style={{ fontSize: "28px", fontWeight: "800", color: "#0F172A", fontFamily: "sans-serif" }}>
+                    {blogDetails?.blog_title}
+                  </h2>
+                  
+                  {/* Optional author/date metadata info bar */}
+                  <div className="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom blog-metadata-item" style={{ fontSize: "13px", borderColor: "#F1F5F9" }}>
+                    <span><i className="feather-user me-1" /> By Admin</span>
+                    <span><i className="feather-calendar me-1" /> {blogDetails?.created_at ? new Date(blogDetails.created_at).toLocaleDateString() : "July 2026"}</span>
+                  </div>
+
+                  <div
+                    className="blog-rich-content"
+                    style={{ color: "#334155", fontSize: "16px", lineHeight: "1.8", fontWeight: "400" }}
+                    dangerouslySetInnerHTML={{
+                      __html: blogDetails?.blog_description
+                        ? blogDetails?.blog_description.replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+                        : '',
+                    }}
+                  />
                 </div>
               </div>
             </div>
-            {/* CREATED AT BOX */}
-            {/* <div className="created-at">
-              <p>Created at: {blogDetails.created_at}</p>
-            </div> */}
           </div>
-        </section>
+        </div>
       </div>
     </div>
   );

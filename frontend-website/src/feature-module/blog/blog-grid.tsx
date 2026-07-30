@@ -8,12 +8,67 @@ import { API_URL, IMG_URL } from "../../ApiUrl";
 const BlogGrid = () => {
   const routes = all_routes;
   const [selectedItems, setSelectedItems] = useState(Array(10).fill(false));
-  const [blog, setBlog] = useState<Event[]>([]);
+  const [blog, setBlog] = useState<any[]>([]);
+
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const blogsPerPage = 8;
+  const indexOfLastBlog = currentPage * blogsPerPage;
+  const indexOfFirstBlog = indexOfLastBlog - blogsPerPage;
+  const currentBlogs = blog.slice(indexOfFirstBlog, indexOfLastBlog);
+
+  const handlePageChange = (pageNumber: any) => {
+    setCurrentPage(pageNumber);
+    window.scrollTo({ top: 250, behavior: "smooth" });
+  };
+
+  const totalPages = Math.ceil(blog.length / blogsPerPage);
+
+  const getPaginationPages = () => {
+    const pages = [];
+    const maxPageButtons = 5;
+
+    if (totalPages <= maxPageButtons) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      let start = Math.max(1, currentPage - 2);
+      let end = Math.min(totalPages, currentPage + 2);
+
+      if (start === 1) {
+        end = maxPageButtons;
+      } else if (end === totalPages) {
+        start = totalPages - maxPageButtons + 1;
+      }
+
+      if (start > 1) {
+        pages.push(1);
+        if (start > 2) pages.push("...");
+      }
+
+      for (let i = start; i <= end; i++) {
+        pages.push(i);
+      }
+
+      if (end < totalPages) {
+        if (end < totalPages - 1) pages.push("...");
+        pages.push(totalPages);
+      }
+    }
+    return pages;
+  };
+
+  const paginationPages = getPaginationPages();
 
   useEffect(() => {
-      window.scrollTo(0, 0);
-      document.title = "blog"
-    }, []);
+    setCurrentPage(1);
+  }, [blog]);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    document.title = "blog"
+  }, []);
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -76,82 +131,98 @@ const BlogGrid = () => {
           {/* Page Content */}
           <div className="content blog-grid" style={{ backgroundColor: "#F8FAFC", padding: "32px 0 60px 0" }}>
             <div className="container">
-              <div className="row">
-                
-                {
-                  blog.map((event:any, index) => (
-                  <div className="col-12 col-sm-12 col-md-6 col-lg-4" key={event?.id}>
-                  <div className="listing-item ki-card-hover">
-                    <div className="listing-img">
-                      <Link to={`/blog/${event?.slug_url}`}>
-                        <ImageWithBasePath
-                          src={event?.picture && event?.picture.includes('/uploads/blog/') ? event?.picture : "/assets/img/no-img.png"}
-                          className="img-fluid blog-images"
-                          alt="Venue"
-                        />
-                      </Link>
-                   
+              <div className="row justify-content-center">
+                {currentBlogs.length > 0 ? (
+                  currentBlogs.map((event: any, index) => (
+                    <div className="col-lg-3 col-md-6 col-sm-12 mb-4 d-flex" key={event?.id}>
+                      <div className="listing-item venue-page ki-card-hover w-100 d-flex flex-column justify-content-between" style={{ margin: 0, overflow: "hidden", backgroundColor: "#FFFFFF", borderRadius: "16px", border: "1px solid #E2E8E3", boxShadow: "0 4px 15px rgba(0,0,0,0.01)" }}>
+                        <div className="listing-img" style={{ height: "140px", overflow: "hidden", position: "relative" }}>
+                          <Link to={`/blog/${event?.slug_url}`} style={{ display: "block", height: "100%" }}>
+                            <ImageWithBasePath
+                              src={event?.picture && event?.picture.includes('/uploads/blog/') ? event?.picture : "/assets/img/no-img.png"}
+                              className="img-fluid"
+                              alt="Blog image"
+                              style={{ height: "100%", width: "100%", objectFit: "cover" }}
+                            />
+                          </Link>
+                        </div>
+                        
+                        <div className="listing-content news-content p-3 w-100 d-flex flex-column justify-content-between flex-grow-1" style={{ background: "#FFFFFF" }}>
+                          <div>
+                            <div className="d-flex align-items-center justify-content-between mb-1" style={{ fontSize: "11px" }}>
+                              <span style={{ fontSize: "10px", color: "#606D76", fontWeight: "600" }}>
+                                <i className="feather-tag me-1" style={{ color: "#3CAB4B", fontSize: "10px" }} />
+                                Sports
+                              </span>
+                              <span style={{ fontSize: "10px", color: "#606D76", fontWeight: "600" }}>
+                                <i className="feather-calendar me-1" style={{ color: "#3CAB4B", fontSize: "10px" }} />
+                                July 2026
+                              </span>
+                            </div>
+                            <h3 className="listing-title mb-1" style={{ fontSize: "15px", fontWeight: "700" }}>
+                              <Link to={`/blog/${event?.slug_url}`} className="text-truncate d-block" style={{ color: "#17222D" }}>
+                                {event?.title}
+                              </Link>
+                            </h3>
+                          </div>
+                          
+                          <div className="d-flex align-items-center justify-content-between pt-2 mt-auto" style={{ borderTop: "1px solid #E2E8E3" }}>
+                            <span style={{ fontSize: "11px", color: "#64748B" }}>By Admin</span>
+                            <Link 
+                              to={`/blog/${event?.slug_url}`}
+                              className="btn btn-outline-success btn-sm rounded-pill px-2.5 py-1"
+                              style={{ fontSize: "10px", fontWeight: "600", borderColor: "#3CAB4B", color: "#3CAB4B" }}
+                            >
+                              Read More
+                            </Link>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                    <div className="listing-content news-content">
-                      
-                      <h3 className="listing-title blog-title text-center" style={{ fontSize: "16px", fontWeight: "600", padding: "10px 0" }}>
-                        <Link to={`/blog/${event?.slug_url}`} style={{ color: "#17222D" }}>
-                         {event?.title}
-                        </Link>
-                      </h3>
-                      
-                    </div>
+                  ))
+                ) : (
+                  <div className="col-lg-12 text-center py-5 bg-white rounded shadow-sm border">
+                    <h5 className="text-muted" style={{ fontWeight: "500" }}>No blogs found</h5>
                   </div>
-                  {/* /Blog */}
-                </div>))}
-
-             
+                )}
               </div>
-              {/*Pagination*/}
-              {/* <div className="blog-pagination">
-                <nav>
-                  <ul className="pagination justify-content-center pagination-center">
-                    <li className="page-item previtem">
-                      <Link className="page-link" to="#">
-                        <i className="feather-chevrons-left" />
-                      </Link>
-                    </li>
-                    <li className="page-item previtem">
-                      <Link className="page-link" to="#">
-                        <i className="feather-chevron-left" />
-                      </Link>
-                    </li>
-                    <li className="page-item">
-                      <Link className="page-link active" to="#">
-                        1
-                      </Link>
-                    </li>
-                    <li className="page-item active">
-                      <Link className="page-link" to="#">
-                        2
-                      </Link>
-                    </li>
-                    <li className="page-item">
-                      <Link className="page-link" to="#">
-                        3
-                      </Link>
-                    </li>
-                    <li className="page-item nextlink">
-                      <Link className="page-link" to="#">
-                        {" "}
-                        <i className="feather-chevron-right" />
-                      </Link>
-                    </li>
-                    <li className="page-item nextlink">
-                      <Link className="page-link" to="#">
-                        {" "}
-                        <i className="feather-chevrons-right" />
-                      </Link>
-                    </li>
-                  </ul>
-                </nav>
-              </div> */}
-              {/*Pagination*/}
+
+              {/* Centered Pagination wrapper */}
+              <div className="d-flex justify-content-center w-100 mt-4">
+                <ul className="pagination">
+                  {blog.length > blogsPerPage && (
+                    <>
+                      <li className={`page-item prev ${currentPage === 1 ? "disabled" : ""}`}>
+                        <button className="page-link" onClick={() => currentPage > 1 && handlePageChange(currentPage - 1)} disabled={currentPage === 1}>
+                          <i className="feather-chevron-left" />
+                        </button>
+                      </li>
+                      {paginationPages.map((page, index) => (
+                        <li
+                          key={index}
+                          className={`page-item ${page === currentPage ? "active" : ""} ${page === "..." ? "disabled" : ""}`}
+                        >
+                          {page === "..." ? (
+                            <span className="page-link" style={{ border: "none", background: "transparent", cursor: "default", display: "flex", alignItems: "center", justifyContent: "center" }}>...</span>
+                          ) : (
+                            <button
+                              className="page-link"
+                              onClick={() => handlePageChange(page)}
+                            >
+                              {page}
+                            </button>
+                          )}
+                        </li>
+                      ))}
+                      <li className={`page-item next ${currentPage === totalPages ? "disabled" : ""}`}>
+                        <button className="page-link" onClick={() => currentPage < totalPages && handlePageChange(currentPage + 1)} disabled={currentPage === totalPages}>
+                          <i className="feather-chevron-right" />
+                        </button>
+                      </li>
+                    </>
+                  )}
+                </ul>
+              </div>
             </div>
           </div>
           {/* /Page Content */}
