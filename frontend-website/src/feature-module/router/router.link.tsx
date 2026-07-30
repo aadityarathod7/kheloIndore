@@ -622,16 +622,6 @@ const publicRoutes = [
     route: Route,
   },
   {
-    path:routes.paymentSuccess,
-    element:<PaymentSuccess />,
-    route:Route,
-  },
-  {
-    path:routes.paymentFailed,
-    element:<PaymentFailed />,
-    route:Route,
-  },
-  {
     path:routes.commonpage,
     element:<CommonPage />,
     route:Route,
@@ -672,6 +662,16 @@ const withoutHeaderRoutes = [
   {
     path: routes.verifyotp,
     element: <VerifyOTP />,
+    route: Route,
+  },
+  {
+    path: routes.paymentSuccess,
+    element: <PaymentSuccess />,
+    route: Route,
+  },
+  {
+    path: routes.paymentFailed,
+    element: <PaymentFailed />,
     route: Route,
   },
 ];

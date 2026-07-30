@@ -622,217 +622,174 @@ const CoachTimeDate = (props: any) => {
                 </div>
               </div> */}
             </section>
-            <div className="row text-center">
+            <div className="row text-start">
               <div className="col-12 col-sm-12 col-md-12 col-lg-8">
-                <div className="card time-date-card">
-                  <section className="booking-date">
-                    <div className="list-unstyled date-slider mb-40">
-                      <button className="btn btn-success" data-bs-toggle="modal" data-bs-target="#batchModal">
-                        Select Batch
-                      </button>
-                      {/* -=-=-=-=-=-=-=-=-=-modal 1 -=-=-=-=-=-=-=-=-= */}
-                      <div className="modal fade" id="batchModal" tabIndex={-1} aria-labelledby="batchModalLabel" aria-hidden="true">
-                        <div className="modal-dialog">
-                          <div className="modal-content">
-                            <div className="modal-header">
-                              <h5 className="modal-title" id="batchModalLabel">Select Batch</h5>
-                              <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div className="modal-body">
-                              <div className="mb-3">
-                                {['Monthly', 'Quarterly', 'Half-Yearly', 'Annually', 'Custom'].map((batchOption) => (
-                                  <div key={batchOption} className="form-check d-flex gap-2 mb-3 align-items-center">
-                                    <input
-                                      className="form-check-input"
-                                      type="radio"
-                                      name="batchOption"
-                                      id={batchOption}
-                                      value={batchOption}
-                                      checked={selectedBatch === batchOption}
-                                      onChange={handleRadioChange}
-                                    />
-                                    <label className="form-check-label" htmlFor={batchOption}>
-                                      {batchOption}
-                                    </label>
-                                  </div>
-                                ))}
-                              </div>
-
-                              <div className="d-flex justify-content-between">
-                                <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                <button
-                                  type="button"
-                                  className="btn btn-primary"
-                                  data-bs-toggle="modal"
-                                  data-bs-target="#dateModal"
-                                  data-bs-dismiss="modal"
-                                  disabled={isNextButtonDisabled}
-                                >
-                                  Next
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
+                
+                {/* Card 1: Subscription Batch */}
+                <div className="card time-date-card mb-4" style={{ padding: "24px", borderRadius: "16px" }}>
+                  <h4 className="mb-4" style={{ color: "#0F172A", fontWeight: "700" }}>
+                    <i className="feather-calendar me-2" style={{ color: "#22C55E" }} />
+                    Select Subscription Batch
+                  </h4>
+                  <div className="row gap-3 px-3">
+                    {['Monthly', 'Quarterly', 'Half-Yearly', 'Annually', 'Custom'].map((batchOption) => (
+                      <div 
+                        key={batchOption} 
+                        className="col-auto p-0"
+                      >
+                        <input
+                          type="radio"
+                          className="btn-check"
+                          name="batchOption"
+                          id={batchOption}
+                          value={batchOption}
+                          checked={selectedBatch === batchOption}
+                          onChange={handleRadioChange}
+                        />
+                        <label 
+                          className={`btn ${selectedBatch === batchOption ? 'btn-success' : 'btn-outline-secondary'}`}
+                          htmlFor={batchOption}
+                          style={{
+                            borderRadius: "10px", 
+                            padding: "10px 20px", 
+                            fontWeight: "600",
+                            border: selectedBatch === batchOption ? "none" : "1px solid #E2E8F0",
+                            background: selectedBatch === batchOption ? "#22C55E" : "#F8FAFC",
+                            color: selectedBatch === batchOption ? "#FFFFFF" : "#475569"
+                          }}
+                        >
+                          {batchOption}
+                        </label>
                       </div>
-                      {/* -=-=-=-=-=-=-=-=-=-modal 1 -=-=-=-=-=-=-=-=-= */}
-                      {/* -=-=-=-=-=-=-=-=-=-modal 2 -=-=-=-=-=-=-=-=-= */}
-                      <div className="modal fade" id="dateModal" tabIndex={-1} aria-labelledby="dateModalLabel" aria-hidden="true">
-                        <div className="modal-dialog">
-                          <div className="modal-content">
-                            <div className="modal-header">
-                              <h5 className="modal-title" id="dateModalLabel">Select Start and End Date</h5>
-                              <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div className="modal-body">
-                              <div className="mb-3">
-                                <label htmlFor="startDate" className="form-label">Start Date</label>
-                                <input
-                                  type="date"
-                                  className="form-control"
-                                  id="startDate"
-                                  value={startDate || ''}
-                                  onChange={handleStartDateChange}
-                                />
-                              </div>
-                              <div className="mb-3">
-                                <label htmlFor="endDate" className="form-label">End Date</label>
-                                <input
-                                  type="date"
-                                  className="form-control"
-                                  id="endDate"
-                                  value={endDate || ''}
-                                  onChange={handleEndDateChange}
-                                  disabled={selectedBatch === 'Monthly' || selectedBatch === 'Quarterly' || selectedBatch === 'Annually' || selectedBatch === 'Half-Yearly'}
-                                />
-                              </div>
-                            </div>
-                            <div className="modal-footer">
-                              <button type="button" className="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#batchModal" data-bs-dismiss="modal">back</button>
-                              <button
-                                type="button"
-                                className="btn btn-primary"
-                                data-bs-toggle="modal"
-                                data-bs-target="#slotModal"
-                                data-bs-dismiss="modal"
-                                disabled={isNextButtonDisabledTwo}
-                                onClick={() => getSlotById(dateId)}
-                              >
-                                Next
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      {/* -=-=-=-=-=-=-=-=-=-modal 2 -=-=-=-=-=-=-=-=-= */}
-                      {/* -=-=-=-=-=-=-=-=-=-modal 3 -=-=-=-=-=-=-=-=-= */}
-                      <div className="modal fade" id="slotModal" tabIndex={-1} aria-labelledby="slotModalLabel" aria-hidden="true">
-                        <div className="modal-dialog">
-                          <div className="modal-content">
-                            <div className="modal-header">
-                              <h5 className="modal-title" id="slotModalLabel">Select Time Slot</h5>
-                              <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div className="modal-body">
-                              <div className="row">
-                                {timeSlot?.slots?.map((slot: any) => (
-                                  <div
-                                    key={slot.id}
-                                    className={`slot-item col-md-5 col-lg-5 ${slot.isBooked ? 'disabled' : ''} ${selectedTimeSlot?._id === slot._id ? "selected" : ""}`}
-                                    onClick={() => setSelectedTimeSlot(slot)}
-                                  >
-                                    <div>Time: {slot.start_time} - {slot.end_time}</div>
-                                    <div>Price: ₹{slot.price}</div>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                            <div className="modal-footer">
-                              <button type="button" className="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#dateModal" data-bs-dismiss="modal">back</button>
-                              <button type="button" className="btn btn-primary" data-bs-dismiss="modal">Confirm</button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      {/* -=-=-=-=-=-=-=-=-=-modal 3 -=-=-=-=-=-=-=-=-= */}
-
-                      {/* <Dropdown>
-                        <Dropdown.Toggle variant="success" id="dropdown-basic">
-                          Select Batch
-                        </Dropdown.Toggle>
-                        <Dropdown.Menu>
-                          {batchData
-                            ? batchData.map((batch) => (
-                              <Dropdown.Item
-                                key={batch._id}
-                                onClick={() => setSelectedBatch(batch)}
-                              >
-                                {batch.batchName}-
-                                {new Date(batch.batchDate).toLocaleDateString(
-                                  "en-IN"
-                                )}
-                              </Dropdown.Item>
-                            ))
-                            : ""}
-                        </Dropdown.Menu>
-                      </Dropdown> */}
-                    </div>
-                    {/* {selectedBatch && (
-                      <div className="slots">
-                        <div className="batch-data">
-                          <div className="batch-name">
-                            Batch Name : {selectedBatch.batchName}
-                          </div>
-                          <div className="batch-name">
-                            Start On :{" "}
-                            {new Date(
-                              selectedBatch.batchDate
-                            ).toLocaleDateString("en-IN")}
-                          </div>
-                        </div>
-                        <div className="slots-data">
-                          <h5>Available Slots</h5>
-                          <div className="slot-list row">
-                            {slotData?.slots?.map((slot: any) => (
-                              <div
-                                key={slot._id}
-                                className={`slot-item col-md-5 col-lg-5 ${selectedTimeSlot?._id === slot._id ? "selected" : ""} ${slot.isBooked ? "disabled" : ""}`}
-                                onClick={() => setSelectedTimeSlot(slot)}
-                              >
-                                <div>
-                                  Time : {slot.startTime} - {slot.endTime}
-                                </div>
-                                <div>Price : ₹{slot.price}</div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    )} */}
-                    <div className="row"></div>
-                  </section>
+                    ))}
+                  </div>
                 </div>
+
+                {/* Card 2: Date Range */}
+                <div className="card time-date-card mb-4" style={{ padding: "24px", borderRadius: "16px", opacity: selectedBatch ? 1 : 0.5, pointerEvents: selectedBatch ? "auto" : "none" }}>
+                  <h4 className="mb-4" style={{ color: "#0F172A", fontWeight: "700" }}>
+                    <i className="feather-calendar me-2" style={{ color: "#22C55E" }} />
+                    Select Date Range
+                  </h4>
+                  <div className="row">
+                    <div className="col-md-6 mb-3">
+                      <label htmlFor="startDate" className="form-label" style={{ fontWeight: "600", color: "#475569" }}>Start Date</label>
+                      <input
+                        type="date"
+                        className="form-control"
+                        id="startDate"
+                        value={startDate || ''}
+                        onChange={handleStartDateChange}
+                        style={{ padding: "12px", borderRadius: "10px", border: "1px solid #E2E8F0" }}
+                      />
+                    </div>
+                    <div className="col-md-6 mb-3">
+                      <label htmlFor="endDate" className="form-label" style={{ fontWeight: "600", color: "#475569" }}>End Date</label>
+                      <input
+                        type="date"
+                        className="form-control"
+                        id="endDate"
+                        value={endDate || ''}
+                        onChange={handleEndDateChange}
+                        disabled={selectedBatch !== 'Custom'}
+                        style={{ padding: "12px", borderRadius: "10px", border: "1px solid #E2E8F0", background: selectedBatch !== 'Custom' ? "#F1F5F9" : "#FFFFFF" }}
+                      />
+                    </div>
+                  </div>
+                  {startDate && (
+                    <div className="mt-2 text-end">
+                      <button
+                        type="button"
+                        className="ki-btn-secondary btn-sm"
+                        style={{ padding: "6px 16px", fontSize: "14px" }}
+                        onClick={() => getSlotById(dateId)}
+                        disabled={isNextButtonDisabledTwo}
+                      >
+                        Find Available Slots <i className="feather-search ms-1"></i>
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Card 3: Available Time Slots */}
+                <div className="card time-date-card mb-4" style={{ padding: "24px", borderRadius: "16px", opacity: (!isNextButtonDisabledTwo && timeSlot?.slots) ? 1 : 0.5 }}>
+                  <h4 className="mb-4" style={{ color: "#0F172A", fontWeight: "700" }}>
+                    <i className="feather-clock me-2" style={{ color: "#22C55E" }} />
+                    Available Time Slots
+                  </h4>
+                  {timeSlot?.slots ? (
+                    timeSlot.slots.length > 0 ? (
+                      <div className="row">
+                        {timeSlot.slots.map((slot: any) => (
+                          <div key={slot.id} className="col-sm-6 col-md-4 mb-3">
+                            <div
+                              className={`slot-item ${slot.isBooked ? 'disabled' : ''} ${selectedTimeSlot?._id === slot._id ? 'selected' : ''}`}
+                              onClick={() => !slot.isBooked && setSelectedTimeSlot(slot)}
+                              style={{ 
+                                padding: "12px", 
+                                border: selectedTimeSlot?._id === slot._id ? "2px solid #22C55E" : "1px solid #E2E8F0", 
+                                borderRadius: "12px",
+                                background: selectedTimeSlot?._id === slot._id ? "#F0FDF4" : "#F8FAFC",
+                                cursor: slot.isBooked ? "not-allowed" : "pointer",
+                                opacity: slot.isBooked ? 0.5 : 1
+                              }}
+                            >
+                              <div style={{ fontWeight: "600", color: selectedTimeSlot?._id === slot._id ? "#16A34A" : "#334155" }}>
+                                <i className="feather-clock me-1"></i> {slot.start_time} - {slot.end_time}
+                              </div>
+                              <div style={{ fontSize: "14px", color: "#64748B", marginTop: "4px" }}>
+                                Price: ₹{slot.price} / session
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-muted text-center py-4">No slots available for the selected start date.</div>
+                    )
+                  ) : (
+                    <div className="text-muted text-center py-5">
+                      <i className="feather-calendar" style={{ fontSize: "48px", color: "#94A3B8", display: "block", marginBottom: "16px" }} />
+                      <span style={{ fontSize: "16px", fontWeight: "500", color: "#64748B" }}>
+                        Select dates and click Find Available Slots to view times.
+                      </span>
+                    </div>
+                  )}
+                </div>
+
               </div>
               <div className="col-12 col-sm-12 col-md-12 col-lg-4">
-                <aside className="card booking-details">
+                <aside className="card booking-details" style={{ position: "sticky", top: "120px" }}>
                   <h3 className="border-bottom">Booking Details</h3>
-                  <ul>
-                    <li>
-                      <i className="feather-calendar me-2" />
-                      {startDate && endDate ? `${startDate} - ${endDate}` : "Select a date"}
+                  <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+                    <li style={{ padding: "12px 0", borderBottom: "1px dashed #E2E8F0", display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "6px" }}>
+                      <span style={{ color: "#64748B", fontSize: "13px" }}>Batch Type</span>
+                      <strong style={{ color: "#0F172A", fontSize: "15px" }}>{selectedBatch || "Not selected"}</strong>
                     </li>
-                    <li>
-                      <i className="feather-clock me-2" />
-                      {selectedTimeSlot
-                        ? `${selectedTimeSlot?.start_time} to ${selectedTimeSlot?.end_time}`
-                        : "Select a time slot"}
+                    <li style={{ padding: "12px 0", borderBottom: "1px dashed #E2E8F0", display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "6px" }}>
+                      <span style={{ color: "#64748B", fontSize: "13px" }}>Date Range</span>
+                      <strong style={{ color: "#0F172A", fontSize: "15px" }}>
+                        <i className="feather-calendar me-2" style={{ color: "#22C55E" }} />
+                        {startDate && endDate ? `${startDate} to ${endDate}` : "Select a date range"}
+                      </strong>
+                    </li>
+                    <li style={{ padding: "12px 0", borderBottom: "1px dashed #E2E8F0", display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "6px" }}>
+                      <span style={{ color: "#64748B", fontSize: "13px" }}>Time Slot</span>
+                      <strong style={{ color: "#0F172A", fontSize: "15px" }}>
+                        <i className="feather-clock me-2" style={{ color: "#22C55E" }} />
+                        {selectedTimeSlot
+                          ? `${selectedTimeSlot?.start_time} to ${selectedTimeSlot?.end_time}`
+                          : "Select a time slot"}
+                      </strong>
                     </li>
                   </ul>
-                  <div className="d-grid btn-block">
-                    <button type="button" className="btn btn-primary">
-                      Subtotal : ₹
-                      {selectedTimeSlot ? selectedTimeSlot.price * (daysDifference+1 || 1) : 0}
-                    </button>
+                  <div className="d-grid mt-4">
+                    <div style={{ background: "#F0FDF4", padding: "16px", borderRadius: "12px", border: "1px solid #DCFCE7", textAlign: "center" }}>
+                      <span style={{ display: "block", color: "#166534", fontSize: "14px", fontWeight: "600", marginBottom: "4px" }}>Total Amount</span>
+                      <strong style={{ fontSize: "28px", color: "#16A34A", fontWeight: "800" }}>
+                        ₹{selectedTimeSlot ? selectedTimeSlot.price * (daysDifference+1 || 1) : 0}
+                      </strong>
+                    </div>
                   </div>
                 </aside>
               </div>

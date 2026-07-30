@@ -131,7 +131,9 @@ Book your slot online in seconds and get instant confirmation!`,
 async function seedCoach() {
   const existing = await Coach.findOne({ email: "rahul.sharma.coach@kheloindore.in" });
   if (existing) {
-    console.log("⏭  Coach already seeded — ID:", existing._id.toString());
+    existing.is_admin_access = 1;
+    await existing.save();
+    console.log("⏭  Coach updated & seeded — ID:", existing._id.toString());
     return existing;
   }
 
@@ -151,7 +153,7 @@ async function seedCoach() {
     role:         "Coach",
     status:       true,
     verification_status: 1,
-    is_admin_access: 0,
+    is_admin_access: 1,
     read_seen:    1,
     isUpdated:    true,
 
@@ -222,7 +224,9 @@ and offers individual, group, and advanced performance sessions.`,
 async function seedTrainer() {
   const existing = await Trainer.findOne({ email: "priya.fitness@kheloindore.in" });
   if (existing) {
-    console.log("⏭  Trainer already seeded — ID:", existing._id.toString());
+    existing.is_admin_access = 1;
+    await existing.save();
+    console.log("⏭  Trainer updated & seeded — ID:", existing._id.toString());
     return existing;
   }
 
@@ -240,6 +244,7 @@ async function seedTrainer() {
     trainer_type: "Personal Trainer",
     role:         "Personal Trainer",
     status:       true,
+    is_admin_access: 1,
     read_seen:    1,
     isUpdated:    true,
 
@@ -311,6 +316,65 @@ plans tailored to individual goals.`,
   return trainer;
 }
 
+const CoachSlot = require("../models/CoachSlotsModel");
+const TrainerSlot = require("../models/PersonalTrainerSlotModel");
+
+async function seedCoachSlots(coachId) {
+  const existing = await CoachSlot.findOne({ coachId });
+  if (existing) return;
+
+  const today = new Date();
+  for (let i = 0; i < 370; i++) {
+    const d = new Date(today);
+    d.setDate(today.getDate() + i);
+    const dateString = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}T00:00:00.000Z`;
+
+    const end = new Date(dateString);
+    end.setMonth(d.getMonth() + 1);
+
+    await CoachSlot.create({
+      coachId,
+      start_date: new Date(dateString),
+      end_date: end,
+      slots: [
+        { start_time: "06:00 AM", end_time: "07:00 AM", price: 1500, isBooked: false },
+        { start_time: "07:00 AM", end_time: "08:00 AM", price: 1500, isBooked: false },
+        { start_time: "05:00 PM", end_time: "06:00 PM", price: 1500, isBooked: false }
+      ],
+      status: true
+    });
+  }
+  console.log("✅ Coach Slots seeded");
+}
+
+async function seedTrainerSlots(trainerId) {
+  const existing = await TrainerSlot.findOne({ trainerId });
+  if (existing) return;
+
+  const today = new Date();
+  for (let i = 0; i < 370; i++) {
+    const d = new Date(today);
+    d.setDate(today.getDate() + i);
+    const dateString = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}T00:00:00.000Z`;
+
+    const end = new Date(dateString);
+    end.setMonth(d.getMonth() + 1);
+
+    await TrainerSlot.create({
+      trainerId,
+      start_date: new Date(dateString),
+      end_date: end,
+      slots: [
+        { start_time: "06:00 AM", end_time: "07:00 AM", price: 1200, isBooked: false },
+        { start_time: "07:00 AM", end_time: "08:00 AM", price: 1200, isBooked: false },
+        { start_time: "06:00 PM", end_time: "07:00 PM", price: 1200, isBooked: false }
+      ],
+      status: true
+    });
+  }
+  console.log("✅ Trainer Slots seeded");
+}
+
 // ── Run All ───────────────────────────────────────────────────────────────────
 
 async function main() {
@@ -319,6 +383,9 @@ async function main() {
   const venue   = await seedVenue();
   const coach   = await seedCoach();
   const trainer = await seedTrainer();
+  
+  await seedCoachSlots(coach._id);
+  await seedTrainerSlots(trainer._id);
 
   console.log("\n══════════════════════════════════════════");
   console.log("✅  SEED COMPLETE — Use these IDs to test:");
