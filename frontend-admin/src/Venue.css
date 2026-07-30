@@ -122,7 +122,7 @@
 }
 
 .uploaded-file button {
-  background: #ff5f15;
+  background: #097e52;
   color: white;
   border: none;
   padding: 5px 10px;
@@ -151,7 +151,7 @@ input[type="file"] {
 
 /* Style the select from files button */
 .select-files-button {
-  background: #ff5f15;
+  background: #097e52;
   color: white;
   border: none;
   padding: 10px;

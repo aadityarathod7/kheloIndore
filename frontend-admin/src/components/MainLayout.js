@@ -3,7 +3,6 @@ import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
   LogoutOutlined,
-  BellOutlined,
 } from "@ant-design/icons";
 import { AiOutlineDashboard } from "react-icons/ai";
 import { RiCouponLine, RiUserLine } from "react-icons/ri";
@@ -14,29 +13,197 @@ import {
   FaBlog,
   FaBloggerB,
 } from "react-icons/fa";
-import { ToastContainer, toast } from "react-toastify";
+import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Outlet } from "react-router-dom";
-import { BiCategoryAlt } from "react-icons/bi";
-import { Layout, Menu, theme } from "antd";
-import { useNavigate } from "react-router-dom";
-import { faUser } from "@fortawesome/free-solid-svg-icons";
-import logoImage from "../Khelo Indore Logo/Group 86.png";
+import { Layout, ConfigProvider, theme } from "antd";
+import { useNavigate, useLocation } from "react-router-dom";
+import logoImage from "../Khelo Indore Logo/logo.png";
 import Userlogo from "../Khelo Indore Logo/dashboard_user.jpg";
 import "../../src/MainLayout.css";
-import { API_URL } from "../utils/ApiUrl";
 import axios from "axios";
-import Swal from 'sweetalert2';
+import Swal from "sweetalert2";
 
-const { Header, Sider, Content } = Layout;
+const { Header, Content } = Layout;
+
+const SIDEBAR_W = 240;
+const SIDEBAR_COLLAPSED_W = 72;
+
+/* ── Sidebar menu definition ─────────────────────────────── */
+const buildMenu = (role) => {
+  const items = [];
+  if (role === "Super Admin") {
+    items.push(
+      { key: "dashboard", icon: <AiOutlineDashboard />, label: "Dashboard" },
+      { key: "enquiries", icon: <FaQuestionCircle />, label: "Enquiries" },
+      { key: "blog", icon: <FaBlog />, label: "Blog" },
+      { key: "users", icon: <RiUserLine />, label: "Users" }
+    );
+  }
+  if (role === "Super Admin" || role === "Venue Admin") {
+    items.push(
+      { key: "venues", icon: <RiCouponLine />, label: "Venues" },
+      { key: "venue-admin", icon: <RiUserLine />, label: "Venue Admin" }
+    );
+  }
+  if (role === "Super Admin" || role === "Coach") {
+    items.push({ key: "coaches", icon: <FaBloggerB />, label: "Coach" });
+  }
+  if (role === "Super Admin" || role === "Personal Trainer") {
+    items.push({
+      key: "personal-training",
+      icon: <FaChalkboard />,
+      label: "Personal Training",
+    });
+  }
+  items.push({ key: "bookings", icon: <FaCalendarAlt />, label: "Bookings" });
+  return items;
+};
+
+/* ── Styles (inline, scoped to sidebar) ──────────────────── */
+const S = {
+  sidebar: (collapsed) => ({
+    position: "fixed",
+    top: 0,
+    left: 0,
+    bottom: 0,
+    width: collapsed ? SIDEBAR_COLLAPSED_W : SIDEBAR_W,
+    background: "#FAFAFA",
+    borderRight: "1px solid #E2E8F0",
+    display: "flex",
+    flexDirection: "column",
+    transition: "width 0.25s ease",
+    zIndex: 100,
+    overflowX: "hidden",
+  }),
+  logoArea: {
+    height: 64,
+    display: "flex",
+    alignItems: "center",
+    padding: "0 16px",
+    borderBottom: "1px solid #E2E8F0",
+    flexShrink: 0,
+    background: "#FAFAFA",
+  },
+  logoImg: {
+    maxHeight: 36,
+    width: "auto",
+    objectFit: "contain",
+    transition: "all 0.25s ease",
+  },
+  logoSmall: {
+    color: "#097e52",
+    fontWeight: 800,
+    fontSize: 20,
+    fontFamily: "Inter,sans-serif",
+  },
+  nav: {
+    flex: 1,
+    overflowY: "auto",
+    overflowX: "hidden",
+    padding: "12px 10px",
+  },
+  navItem: (active, collapsed) => ({
+    display: "flex",
+    alignItems: "center",
+    gap: collapsed ? 0 : 14,
+    padding: collapsed ? "12px 0" : "11px 16px",
+    justifyContent: collapsed ? "center" : "flex-start",
+    borderRadius: 10,
+    marginBottom: 4,
+    cursor: "pointer",
+    transition: "all 0.18s ease",
+    background: active
+      ? "linear-gradient(135deg,#097e52 0%,#076340 100%)"
+      : "transparent",
+    color: active ? "#fff" : "#475569",
+    fontFamily: "Inter,sans-serif",
+    fontWeight: active ? 700 : 500,
+    fontSize: 14,
+    boxShadow: active ? "0 4px 12px rgba(9,126,82,0.2)" : "none",
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+  }),
+  navIcon: (active) => ({
+    fontSize: 18,
+    color: active ? "#fff" : "#64748B",
+    flexShrink: 0,
+    transition: "color 0.18s",
+  }),
+  navLabel: {
+    overflow: "hidden",
+    opacity: 1,
+    transition: "opacity 0.2s ease",
+  },
+  divider: {
+    height: 1,
+    background: "#E2E8F0",
+    margin: "10px 0",
+  },
+  userBox: (collapsed) => ({
+    padding: collapsed ? "14px 0" : "14px 16px",
+    borderTop: "1px solid #E2E8F0",
+    display: "flex",
+    alignItems: "center",
+    gap: collapsed ? 0 : 12,
+    justifyContent: collapsed ? "center" : "flex-start",
+    cursor: "pointer",
+    flexShrink: 0,
+    transition: "all 0.18s ease",
+  }),
+  avatar: {
+    width: 36,
+    height: 36,
+    borderRadius: "50%",
+    border: "2px solid #097e52",
+    boxSizing: "border-box",
+    objectFit: "cover",
+    flexShrink: 0,
+  },
+  userName: {
+    color: "#0F172A",
+    fontFamily: "Inter,sans-serif",
+    fontWeight: 600,
+    fontSize: 13,
+    overflow: "hidden",
+    whiteSpace: "nowrap",
+  },
+  userRole: {
+    color: "#64748B",
+    fontFamily: "Inter,sans-serif",
+    fontSize: 11,
+    fontWeight: 500,
+  },
+  logoutBtn: {
+    display: "flex",
+    alignItems: "center",
+    gap: 6,
+    padding: "8px 14px",
+    borderRadius: 8,
+    background: "rgba(239,68,68,0.1)",
+    color: "#EF4444",
+    border: "none",
+    cursor: "pointer",
+    fontFamily: "Inter,sans-serif",
+    fontSize: 13,
+    fontWeight: 600,
+    transition: "all 0.18s",
+    width: "100%",
+    justifyContent: "center",
+    marginTop: 8,
+  },
+};
 
 const MainLayout = () => {
   const [collapsed, setCollapsed] = useState(false);
-  const [isNewNotification, setIsNewNotification] = useState(false);
-  const {
-    token: { colorBgContainer },
-  } = theme.useToken();
+  const [hoveredKey, setHoveredKey] = useState(null);
+  const { token: { colorBgContainer } } = theme.useToken();
   const navigate = useNavigate();
+  const location = useLocation();
+  const currentKey =
+    location.pathname.split("/").filter(Boolean).pop() || "dashboard";
+  const role = localStorage.getItem("role");
+  const menuItems = buildMenu(role);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -45,274 +212,200 @@ const MainLayout = () => {
     navigate("/");
   };
 
-  const tokenRole = localStorage.getItem("role");
-
-  // Function to handle new notifications
-  const handleNewNotification = () => {
-    setIsNewNotification(true);
-    toast.success("New notification received!");
-  };
-
-  const role = tokenRole;
-
-  const items = [
-    ...(role === "Super Admin"
-      ? [
-        {
-          key: "dashboard",
-          icon: <AiOutlineDashboard className="fs-4" />,
-          label: "Dashboard",
-        },
-        // {
-        //   key: "categories",
-        //   icon: <BiCategoryAlt className="fs-4" />,
-        //   label: "Categories",
-        // },
-        // {
-        //   key: "events",
-        //   icon: <FaCalendarAlt className="fs-4" />,
-        //   label: "Events",
-        // },
-        {
-          key: "enquiries",
-          icon: <FaQuestionCircle className="fs-4" />,
-          label: "Enquiries",
-        },
-        {
-          key: "blog",
-          icon: <FaBlog className="fs-4" />,
-          label: "Blog",
-        },
-        {
-          key: "users",
-          icon: <RiUserLine className="fs-4" />,
-          label: "Users",
-        },
-      ]
-      : []),
-    ...(role === "Super Admin" || role === "Venue Admin"
-      ? [
-        {
-          key: "venues",
-          icon: <RiCouponLine className="fs-4" />,
-          label: "Venues",
-        },
-        {
-          key: "venue-admin",
-          icon: <RiUserLine className="fs-4" />,
-          label: "Venue Admin",
-        },
-      ]
-      : []),
-    ...(role === "Super Admin" || role === "Coach"
-      ? [
-        {
-          key: "coaches",
-          icon: <FaBloggerB className="fs-4" />,
-          label: "Coach",
-        },
-      ]
-      : []),
-    ...(role === "Super Admin" || role === "Personal Trainer"
-      ? [
-        {
-          key: "personal-training",
-          icon: <FaChalkboard className="fs-4" />,
-          label: "Personal Training",
-        },
-      ]
-      : []),
-    {
-      key: "bookings",
-      icon: <FaCalendarAlt className="fs-4" />,
-      label: "Bookings",
-    },
-  ];
-
-  const callNotification = async () => {
-    try {
-      const response = await axios.get(`${API_URL}/booking/notification`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
-
-      if (response.data.success) {
-        const bookingData = response.data.data[0];
-
-        Swal.fire({
-          title: 'Booking',
-          text: `Booking by ${bookingData.userName} for ${bookingData.venueName}. Please Confirm. Total Price: ₹${bookingData.totalPrice}`,
-          icon: 'success',
-          confirmButtonText: 'Ok'
-        });
-      }
-    } catch (error) {
-      console.error("Error fetching notifications:", error);
-      Swal.fire({
-        title: 'Error',
-        text: 'There was an issue fetching your booking information. Please try again later.',
-        icon: 'error',
-        confirmButtonText: 'Close'
-      });
-    }
-  };
-
   return (
-    <Layout>
-      <Sider trigger={null} collapsible collapsed={collapsed}>
-        <div className="sidelogo">
-          <h2 className="text-white fs-5 text-center py-3 mb-0">
-            <span className="sm-logo">KI</span>
-            <img src={logoImage} alt="Khelo Indore Logo" className="lg-logo" />
-            <span className="lg-logo"></span>
-          </h2>
-        </div>
-        <Menu
-          theme="dark"
-          mode="inline"
-          defaultSelectedKeys={[""]}
-          onClick={({ key }) => {
-            if (key === "signout") {
-              handleLogout();
-            } else {
-              navigate(key);
-            }
-          }}
-          items={items}
-        />
-      </Sider>
-      <Layout className="site-layout">
-        <Header
-          className="d-flex justify-content-between ps-1 pe-5"
-          style={{
-            padding: 0,
-            background: colorBgContainer,
-          }}
-        >
-          {React.createElement(
-            collapsed ? MenuUnfoldOutlined : MenuFoldOutlined,
-            {
-              className: "trigger",
-              onClick: () => setCollapsed(!collapsed),
-            }
-          )}
-          <div className="d-flex gap-4 align-items-center">
-            <div className="d-flex gap-3 align-items-center dropdown">
-              {/* <div style={{ position: "relative" }}>
-                <BellOutlined
-                  className="notification"
-                  onClick={callNotification}
-                />
-                {isNewNotification && (
-                  <span
-                    className="badge bg-danger rounded-circle p-1"
-                    style={{ position: "absolute", right: "-1px" }}
-                  >
-                    1
-                  </span>
-                )}
-              </div> */}
-
-              <div
-                role="button"
-                id="dropdownMenuLink"
-                data-bs-toggle="dropdown"
-                aria-expanded="false"
-              >
-                <h5 className="mb-0">
-                  <img
-                    id="userLogo"
-                    src={Userlogo}
-                    icon={faUser}
-                    style={{
-                      color: "rgb(255, 95, 21)",
-                      borderRadius: "50%",
-                      backgroundColor: "#fff",
-                      padding: "1px",
-                      boxShadow: "0 2px 4px rgba(0, 0, 0, 0.2)",
-                      width: "31px",
-                      height: "32px",
-                    }}
-                  />
-                  {/* <span style={{ fontWeight: "bold" }}> Super Admin</span> */}
-                  <span style={{ fontWeight: "bold" }}>
-                    {" "}
-                    {localStorage.getItem("role")}
-                  </span>
-                </h5>
-              </div>
-
-              <div
-                className="dropdown-menu dropdown-menu-left"
-                aria-labelledby="dropdownMenuLink"
-              >
-                <li
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    width: "341px",
-                  }}
-                >
-                  {/* User Logo Image */}
-                  <img
-                    id="userLogo"
-                    src={Userlogo}
-                    style={{
-                      width: "100px",
-                      height: "100px",
-                      padding: "8px",
-                      borderRadius: "50%",
-                    }}
-                  />
-                </li>
-                <li>
-                  {/* User Name */}
-                  <h6 id="userName" style={{ textAlign: "center" }}>
-                    {localStorage.getItem("role")}
-                  </h6>
-                </li>
-                <li>
-                  <button
-                    className="dropdown-item py-1 mb-1"
-                    style={{
-                      height: "auto",
-                      lineHeight: "20px",
-                      textAlign: "center",
-                    }}
-                    onClick={handleLogout}
-                  >
-                    <LogoutOutlined /> Signout
-                  </button>
-                </li>
-              </div>
-            </div>
+    <ConfigProvider
+      theme={{
+        token: { colorPrimary: "#097e52", fontFamily: "Inter, sans-serif" },
+        components: { Layout: { bodyBg: "#F8FAFC", headerBg: "#ffffff" } },
+      }}
+    >
+      <div style={{ display: "flex", minHeight: "100vh" }}>
+        {/* ── Custom Sidebar ──────────────────────────────── */}
+        <aside style={S.sidebar(collapsed)}>
+          {/* Logo */}
+          <div style={S.logoArea}>
+            {collapsed ? (
+              <span style={S.logoSmall}>KI</span>
+            ) : (
+              <img src={logoImage} alt="Khelo Indore" style={S.logoImg} />
+            )}
           </div>
-        </Header>
-        <Content
+
+          {/* Navigation */}
+          <nav style={S.nav}>
+            {/* Section label */}
+            {!collapsed && (
+              <p
+                style={{
+                  fontSize: 10,
+                  fontWeight: 700,
+                  color: "#94A3B8",
+                  letterSpacing: "1.2px",
+                  textTransform: "uppercase",
+                  padding: "4px 8px 8px",
+                  fontFamily: "Inter,sans-serif",
+                }}
+              >
+                Main Menu
+              </p>
+            )}
+
+            {menuItems.map((item) => {
+              const active = currentKey === item.key;
+              const hovered = hoveredKey === item.key && !active;
+              return (
+                <div
+                  key={item.key}
+                  style={{
+                    ...S.navItem(active, collapsed),
+                    background: hovered
+                      ? "#E6F4EA"
+                      : active
+                      ? "linear-gradient(135deg,#097e52 0%,#076340 100%)"
+                      : "transparent",
+                    color: hovered ? "#097e52" : active ? "#fff" : "#475569",
+                  }}
+                  onClick={() => navigate(item.key)}
+                  onMouseEnter={() => setHoveredKey(item.key)}
+                  onMouseLeave={() => setHoveredKey(null)}
+                  title={collapsed ? item.label : ""}
+                >
+                  <span style={S.navIcon(active || hovered)}>{item.icon}</span>
+                  {!collapsed && <span style={S.navLabel}>{item.label}</span>}
+                </div>
+              );
+            })}
+
+            <div style={S.divider} />
+
+            {/* Logout button inside nav */}
+            <div
+              style={{
+                ...S.navItem(false, collapsed),
+                color: "#EF4444",
+                background: "transparent",
+              }}
+              onClick={handleLogout}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "rgba(239,68,68,0.08)";
+                e.currentTarget.style.color = "#EF4444";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "transparent";
+                e.currentTarget.style.color = "#EF4444";
+              }}
+              title={collapsed ? "Sign Out" : ""}
+            >
+              <span style={{ fontSize: 18, flexShrink: 0 }}>
+                <LogoutOutlined />
+              </span>
+              {!collapsed && <span style={S.navLabel}>Sign Out</span>}
+            </div>
+          </nav>
+
+          {/* User info at bottom */}
+          <div style={S.userBox(collapsed)}>
+            <img src={Userlogo} alt="User" style={S.avatar} />
+            {!collapsed && (
+              <div style={{ overflow: "hidden" }}>
+                <div style={S.userName}>{role}</div>
+                <div style={S.userRole}>Administrator</div>
+              </div>
+            )}
+          </div>
+        </aside>
+
+        {/* ── Main Content ────────────────────────────────── */}
+        <Layout
           style={{
-            margin: "24px 16px",
-            padding: 24,
-            minHeight: 280,
-            background: colorBgContainer,
+            marginLeft: collapsed ? SIDEBAR_COLLAPSED_W : SIDEBAR_W,
+            transition: "margin-left 0.25s ease",
+            background: "#F8FAFC",
           }}
         >
-          <ToastContainer
-            position="top-right"
-            autoClose={250}
-            hideProgressBar={false}
-            newestOnTop={true}
-            closeOnClick
-            rtl={false}
-            pauseOnFocusLoss
-            draggable
-            theme="light"
-          />
-          <Outlet />
-        </Content>
-      </Layout>
-    </Layout>
+          {/* Top Header */}
+          <Header
+            style={{
+              background: "#fff",
+              padding: "0 24px",
+              boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
+              borderBottom: "1px solid #E2E8F0",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              height: 64,
+              position: "sticky",
+              top: 0,
+              zIndex: 99,
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+              {/* Collapse toggle */}
+              <button
+                onClick={() => setCollapsed(!collapsed)}
+                style={{
+                  background: "none",
+                  border: "none",
+                  fontSize: 20,
+                  cursor: "pointer",
+                  color: "#64748B",
+                  padding: "8px",
+                  borderRadius: 8,
+                  display: "flex",
+                  alignItems: "center",
+                  transition: "all 0.2s",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = "#E6F4EA";
+                  e.currentTarget.style.color = "#097e52";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = "none";
+                  e.currentTarget.style.color = "#64748B";
+                }}
+              >
+                {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+              </button>
+              
+              <span style={{
+                fontFamily: "Inter, sans-serif",
+                fontSize: "16px",
+                fontWeight: 700,
+                color: "#0F172A",
+                letterSpacing: "-0.2px"
+              }}>
+                Admin Panel
+              </span>
+            </div>
+          </Header>
+
+          {/* Page Content */}
+          <Content
+            style={{
+              margin: "24px",
+              padding: 24,
+              background: "#fff",
+              borderRadius: 14,
+              boxShadow: "0 2px 12px rgba(0,0,0,0.04)",
+              minHeight: "calc(100vh - 112px)",
+            }}
+          >
+            <ToastContainer
+              position="top-right"
+              autoClose={250}
+              hideProgressBar={false}
+              newestOnTop={true}
+              closeOnClick
+              rtl={false}
+              pauseOnFocusLoss
+              draggable
+              theme="light"
+            />
+            <Outlet />
+          </Content>
+        </Layout>
+      </div>
+    </ConfigProvider>
   );
 };
 

@@ -1,41 +1,77 @@
+/* ═══════════════════════════════════════════════════════════
+   KHELO INDORE ADMIN — MAIN LAYOUT
+═══════════════════════════════════════════════════════════ */
+
+/* Logo area (top of sidebar) */
+.sidelogo {
+  background: linear-gradient(135deg, #097e52 0%, #076340 100%);
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 64px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
 .lg-logo {
-    height: 100%;
-    max-width: 210px; 
-    width: auto; 
-  }
-
-.sm-logo{
-    height: 100%;
-    max-width: 50px; 
-    width: auto; 
+  height: 42px;
+  max-width: 180px;
+  width: auto;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
 }
 
-.sidelogo{
-  background-color: #ff5f15;
+.sm-logo {
+  height: 36px;
+  max-width: 36px;
+  width: auto;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
 }
 
+/* Dropdown active link color */
 .dropdown-menu {
-  --bs-dropdown-link-active-bg:rgb(255, 95, 21) !important;
-
-} 
-
-.ant-menu-dark:not(.ant-menu-horizontal) .ant-menu-item-selected {
-    background-color: rgb(255, 95, 21) !important; 
+  --bs-dropdown-link-active-bg: #097e52 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1) !important;
+  border: 1px solid #E2E8F0 !important;
 }
 
-.notification{
-  font-size: 25px;
+/* User avatar border */
+#userLogo {
+  border: 2px solid #097e52 !important;
+}
+
+/* Notification bell */
+.notification { font-size: 22px; color: #475569; }
+.notification:hover { color: #097e52; }
+
+/* ── Ant Design menu override — ALL states ─────────────────── */
+.ant-menu-dark:not(.ant-menu-horizontal) .ant-menu-item-selected {
+  background: #097e52 !important;
+  box-shadow: 0 4px 12px rgba(9,126,82,0.35) !important;
+}
+.ant-menu-dark .ant-menu-item-selected,
+.ant-menu-dark .ant-menu-item:hover,
+.ant-menu-dark .ant-menu-submenu-title:hover {
+  background: #097e52 !important;
+  color: #fff !important;
+}
+.ant-menu-dark.ant-menu-inline .ant-menu-item-selected,
+.ant-menu-dark.ant-menu-inline .ant-menu-item-active {
+  background: #097e52 !important;
+}
+
+/* Page heading area */
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #F1F5F9;
 }
 
 @media (max-width: 768px) {
-  .footer {
-    padding: 10px;
-  }
-
-  .footer p {
-    font-size: 12px;
-  }
+  .sidelogo { height: 56px; }
 }
-
-
-

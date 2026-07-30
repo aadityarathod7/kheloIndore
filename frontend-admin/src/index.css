@@ -1,45 +1,46 @@
+/* ═══════════════════════════════════════════════════════════
+   KHELO INDORE ADMIN — GLOBAL THEME
+   Matching the main website's premium design
+═══════════════════════════════════════════════════════════ */
+
+/* Google Fonts — Inter (same as main website) */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --ki-green:        #097e52;
+  --ki-green-dark:   #076340;
+  --ki-green-light:  #F0FDF4;
+  --ki-slate-900:    #0F172A;
+  --ki-slate-800:    #1E293B;
+  --ki-slate-600:    #475569;
+  --ki-slate-400:    #94A3B8;
+  --ki-slate-100:    #F1F5F9;
+  --ki-white:        #FFFFFF;
+  --ki-shadow-sm:    0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.04);
+  --ki-shadow-md:    0 4px 16px rgba(0,0,0,.08);
+  --ki-shadow-lg:    0 10px 30px rgba(0,0,0,.1);
+  --ki-radius:       12px;
+}
+
+/* ── Base ─────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
 body {
-  font-family: Roboto, sans-serif;
+  font-family: 'Inter', sans-serif !important;
+  background-color: #F8FAFC !important;
+  color: var(--ki-slate-900) !important;
+  -webkit-font-smoothing: antialiased;
 }
 
-.trigger {
-  padding: 0 24px;
-  font-size: 18px;
-  line-height: 64px;
-  cursor: pointer;
-  transition: color 0.3s;
-}
-
-
-.logo {
-  height: 32px;
-  margin: 16px;
-  background: rgba(255, 255, 255, 0.3);
-}
+/* ── Layout ───────────────────────────────────────────────── */
 .ant-layout {
   min-height: 100vh;
-}
-.ant-layout-sider {
-  flex: 0 0 250px !important;
-  max-width: 250px !important;
-  min-width: 250px !important;
-  width: 250px !important;
-}
-.ant-layout-sider-collapsed {
-  flex: 0 0 80px !important;
-  max-width: 80px !important;
-  min-width: 80px !important;
-  width: 80px !important;
-}
-.sm-logo {
-  display: none;
+  background: #F8FAFC !important;
 }
 
-.ant-layout-sider-collapsed .sm-logo {
-  display: block;
-}
-.ant-layout-sider-collapsed .lg-logo {
-  display: none;
+/* ── Content area ─────────────────────────────────────────── */
+.ant-layout-content {
+  background: #F8FAFC !important;
 }
 
 main {
@@ -47,25 +48,227 @@ main {
   overflow-y: scroll;
   background-color: transparent !important;
 }
-main::-webkit-scrollbar {
-  width: 0px;
+main::-webkit-scrollbar { width: 0px; }
+
+/* ── Sidebar widths ───────────────────────────────────────── */
+.ant-layout-sider {
+  flex: 0 0 250px !important;
+  max-width: 250px !important;
+  min-width: 250px !important;
+  width: 250px !important;
+  background: var(--ki-slate-900) !important;
+  box-shadow: 4px 0 24px rgba(0,0,0,.15) !important;
+}
+.ant-layout-sider-collapsed {
+  flex: 0 0 80px !important;
+  max-width: 80px !important;
+  min-width: 80px !important;
+  width: 80px !important;
+}
+
+/* ── Sidebar logo area ────────────────────────────────────── */
+.sm-logo { display: none; }
+.ant-layout-sider-collapsed .sm-logo { display: block; }
+.ant-layout-sider-collapsed .lg-logo { display: none; }
+
+/* ── Admin Header bar ─────────────────────────────────────── */
+.ant-layout-header {
+  background: var(--ki-white) !important;
+  box-shadow: var(--ki-shadow-sm) !important;
+  border-bottom: 1px solid #E2E8F0 !important;
+  padding: 0 24px !important;
+  height: 64px !important;
+  line-height: 64px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+}
+
+/* ── Hamburger trigger ────────────────────────────────────── */
+.trigger {
+  padding: 0 16px;
+  font-size: 20px;
+  line-height: 64px;
+  cursor: pointer;
+  color: var(--ki-slate-600) !important;
+  transition: color 0.2s;
+}
+.trigger:hover { color: var(--ki-green) !important; }
+
+/* ── Sidebar menu items ───────────────────────────────────── */
+.ant-menu-dark {
+  background: var(--ki-slate-900) !important;
+}
+.ant-menu-dark .ant-menu-item {
+  border-radius: 10px !important;
+  margin: 4px 12px !important;
+  width: calc(100% - 24px) !important;
+  color: var(--ki-slate-400) !important;
+  font-weight: 500 !important;
+  font-size: 14px !important;
+  transition: all 0.2s ease !important;
+}
+.ant-menu-dark .ant-menu-item:hover,
+.ant-menu-dark .ant-menu-item-active {
+  background: var(--ki-slate-800) !important;
+  color: var(--ki-white) !important;
+}
+.ant-menu-dark .ant-menu-item-selected,
+.ant-menu-dark:not(.ant-menu-horizontal) .ant-menu-item-selected {
+  background: var(--ki-green) !important;
+  color: var(--ki-white) !important;
+  box-shadow: 0 4px 12px rgba(9,126,82,0.35) !important;
 }
 .ant-menu-title-content {
-  font-size: 16px;
+  font-size: 14px !important;
+  font-weight: 500 !important;
 }
+
+/* ── Content cards / tables wrapper ──────────────────────── */
+.ant-layout-content > div,
+.ant-layout-content .container-fluid {
+  border-radius: var(--ki-radius);
+}
+
+/* ── Ant Design Table ─────────────────────────────────────── */
+.ant-table {
+  border-radius: var(--ki-radius) !important;
+  overflow: hidden !important;
+  box-shadow: var(--ki-shadow-sm) !important;
+  font-family: 'Inter', sans-serif !important;
+}
+.ant-table-thead > tr > th {
+  background: #F8FAFC !important;
+  color: var(--ki-slate-600) !important;
+  font-weight: 700 !important;
+  font-size: 12px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  border-bottom: 2px solid #E2E8F0 !important;
+  padding: 14px 16px !important;
+}
+.ant-table-tbody > tr > td {
+  font-size: 14px !important;
+  color: var(--ki-slate-900) !important;
+  padding: 14px 16px !important;
+  border-bottom: 1px solid #F1F5F9 !important;
+}
+.ant-table-tbody > tr:hover > td {
+  background: var(--ki-green-light) !important;
+}
+
+/* ── Buttons ─────────────────────────────────────────────── */
+.ant-btn-primary,
+button.btn-primary,
+.btn-primary {
+  background: var(--ki-green) !important;
+  border-color: var(--ki-green) !important;
+  color: #fff !important;
+  font-weight: 600 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 2px 8px rgba(9,126,82,0.3) !important;
+  transition: all 0.2s ease !important;
+  font-family: 'Inter', sans-serif !important;
+}
+.ant-btn-primary:hover,
+button.btn-primary:hover,
+.btn-primary:hover {
+  background: var(--ki-green-dark) !important;
+  border-color: var(--ki-green-dark) !important;
+  box-shadow: 0 4px 14px rgba(9,126,82,0.45) !important;
+}
+
+/* ── Input Fields ─────────────────────────────────────────── */
+.ant-input,
+.ant-input-affix-wrapper,
+.form-control {
+  border-radius: 8px !important;
+  border-color: #E2E8F0 !important;
+  font-family: 'Inter', sans-serif !important;
+  font-size: 14px !important;
+  padding: 10px 14px !important;
+  transition: all 0.2s ease !important;
+}
+.ant-input:focus,
+.ant-input-affix-wrapper:focus,
+.ant-input-affix-wrapper-focused,
+.form-control:focus {
+  border-color: var(--ki-green) !important;
+  box-shadow: 0 0 0 3px rgba(9,126,82,0.15) !important;
+  outline: none !important;
+}
+
+/* ── Cards ────────────────────────────────────────────────── */
+.ant-card {
+  border-radius: var(--ki-radius) !important;
+  border: 1px solid #E2E8F0 !important;
+  box-shadow: var(--ki-shadow-sm) !important;
+  font-family: 'Inter', sans-serif !important;
+}
+.ant-card-head {
+  border-bottom: 1px solid #E2E8F0 !important;
+  font-weight: 700 !important;
+  color: var(--ki-slate-900) !important;
+}
+
+/* ── Page title text ──────────────────────────────────────── */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Inter', sans-serif !important;
+  font-weight: 700 !important;
+  color: var(--ki-slate-900) !important;
+}
+
+/* ── Pagination ───────────────────────────────────────────── */
+.ant-pagination-item-active {
+  border-color: var(--ki-green) !important;
+  background: var(--ki-green) !important;
+}
+.ant-pagination-item-active a {
+  color: #fff !important;
+}
+.ant-pagination-item:hover,
+.ant-pagination-prev:hover .ant-pagination-item-link,
+.ant-pagination-next:hover .ant-pagination-item-link {
+  border-color: var(--ki-green) !important;
+  color: var(--ki-green) !important;
+}
+
+/* ── Select dropdowns ─────────────────────────────────────── */
+.ant-select-selector {
+  border-radius: 8px !important;
+  border-color: #E2E8F0 !important;
+  font-family: 'Inter', sans-serif !important;
+}
+.ant-select-focused .ant-select-selector {
+  border-color: var(--ki-green) !important;
+  box-shadow: 0 0 0 3px rgba(9,126,82,0.15) !important;
+}
+.ant-select-item-option-selected {
+  background: var(--ki-green-light) !important;
+  color: var(--ki-green-dark) !important;
+  font-weight: 600 !important;
+}
+
+/* ── Badges / Tags ────────────────────────────────────────── */
+.ant-badge-status-success .ant-badge-status-dot,
+.ant-tag-green { background: var(--ki-green) !important; }
+
+/* ── Scrollbar ────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #F1F5F9; }
+::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: var(--ki-green); }
+
+/* ── Error text ───────────────────────────────────────────── */
+.error { color: #EF4444; font-size: 12px; font-weight: 500; }
+
+/* ── Header user name ─────────────────────────────────────── */
 .ant-layout-header h5 {
+  font-family: 'Inter', sans-serif !important;
+  font-weight: 600 !important;
+  color: var(--ki-slate-900) !important;
+  font-size: 14px !important;
   line-height: 20px;
-  font-size: 14px;
 }
-.ant-layout-header p {
-  line-height: 20px;
-  font-size: 13px;
-}
-.ant-layout-header div .badge {
-  top: 16px;
-  right: -6px;
-}
-.error {
-  color: red;
-  font-size: 12px;
-}
+.ant-layout-header p { line-height: 20px; font-size: 13px; }
+.ant-layout-header div .badge { top: 16px; right: -6px; }

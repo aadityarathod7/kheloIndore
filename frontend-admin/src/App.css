@@ -1,49 +1,73 @@
+/* ═══════════════════════════════════════════════════════════
+   KHELO INDORE ADMIN — APP LEVEL STYLES
+═══════════════════════════════════════════════════════════ */
+
 :root {
-  --color-212529: #212529;
-  --color-ffd333: #ff5f15;
-  --color-47ad24: #47ad24;
-  --color-e52e2e: #e52e2e;
-  --color-828599: #828599;
-  --color-3d464d: #ed464d;
-  --color-c3d4da: #ced4da;
+  --color-primary:  #097e52;
+  --color-primary-dark: #076340;
+  --color-danger:   #EF4444;
+  --color-warning:  #F59E0B;
+  --color-muted:    #64748B;
+  --color-dark:     #0F172A;
+  --color-border:   #E2E8F0;
+
+  /* Legacy variable names kept for compatibility */
+  --color-212529: #0F172A;
+  --color-ffd333: #097e52;
+  --color-47ad24: #097e52;
+  --color-e52e2e: #EF4444;
+  --color-828599: #64748B;
+  --color-3d464d: #EF4444;
+  --color-c3d4da: #E2E8F0;
 }
 
+/* Global text utilities */
 .green {
-  color: var(--color-47ad24);
+  color: var(--color-primary);
   font-size: 14px;
-  font-family: Roboto !important;
+  font-family: 'Inter', sans-serif !important;
+  font-weight: 600;
 }
 .red {
-  color: var(--color-212529);
+  color: var(--color-danger);
   font-size: 14px;
-  font-family: Roboto !important;
-}
-.quill {
-  background-color:rgb(255, 95, 21);
+  font-family: 'Inter', sans-serif !important;
+  font-weight: 600;
 }
 
+/* Quill editor header */
+.quill {
+  background-color: var(--color-primary);
+}
+
+/* Form control base */
 .form-control {
   box-shadow: none;
-  border-color: var(--color-c3d4da);
+  border-color: var(--color-border);
 }
+
+/* Typography */
 .title {
-  font: 28px;
-  font-family: Roboto !important;
-  color: var(--color-212529);
+  font-size: 28px;
+  font-family: 'Inter', sans-serif !important;
+  color: var(--color-dark);
+  font-weight: 800;
 }
 
 .sub-title {
-  font: 24px;
-  font-family: Roboto !important;
-  color: var(--color-212529);
+  font-size: 18px;
+  font-family: 'Inter', sans-serif !important;
+  color: var(--color-dark);
+  font-weight: 700;
 }
+
 .desc {
-  font: 14px;
-  font-family: Roboto !important;
-  color: var(--color-828599);
+  font-size: 14px;
+  font-family: 'Inter', sans-serif !important;
+  color: var(--color-muted);
 }
 
-
+/* Calendar / FullCalendar time grid */
 .fc .fc-timegrid-slot {
   border-bottom: 0px;
   height: 4rem !important;

@@ -31,7 +31,7 @@ label {
 
 /* Submit button */
 .SubmitButton {
-  background-color: #ff5f15;
+  background-color: #097e52;
   color: #fff;
   border: none;
   padding: 10px 20px;
@@ -41,7 +41,7 @@ label {
 }
 
 .SubmitButton:hover {
-  background-color: #ff5f15
+  background-color: #097e52
 }
 
 .CancelButton {
