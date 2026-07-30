@@ -41,6 +41,7 @@ interface VenueData {
   src: string;
   _id: string;
   price_per_hr: number;
+  vendor_type?: string;
 }
 
 interface JwtPayload {
@@ -445,6 +446,55 @@ const VenueTimeDate = () => {
           color: #334155 !important;
         }
         
+        /* Custom buttons styling overrides */
+        .ki-btn-primary {
+          background: linear-gradient(135deg, #22C55E 0%, #16A34A 100%) !important;
+          color: #FFFFFF !important;
+          border: none !important;
+          border-radius: 50px !important;
+          font-weight: 700 !important;
+          font-size: 15px !important;
+          padding: 12px 30px !important;
+          display: inline-flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          box-shadow: 0 4px 14px rgba(34, 197, 94, 0.3) !important;
+          text-decoration: none !important;
+          cursor: pointer !important;
+        }
+        .ki-btn-primary:hover {
+          background: linear-gradient(135deg, #16A34A 0%, #15803D 100%) !important;
+          color: #FFFFFF !important;
+          box-shadow: 0 6px 20px rgba(22, 163, 74, 0.4) !important;
+        }
+        .ki-btn-primary * {
+          color: #FFFFFF !important;
+        }
+        
+        .ki-btn-secondary {
+          background: #FFFFFF !important;
+          color: #475569 !important;
+          border: 1px solid #CBD5E1 !important;
+          border-radius: 50px !important;
+          font-weight: 600 !important;
+          font-size: 15px !important;
+          padding: 12px 30px !important;
+          display: inline-flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+          text-decoration: none !important;
+          cursor: pointer !important;
+        }
+        .ki-btn-secondary:hover {
+          background: #F8FAFC !important;
+          border-color: #94A3B8 !important;
+          color: #0F172A !important;
+        }
+        .ki-btn-secondary * {
+          color: #475569 !important;
+        }
+        
         /* Slots items selector styling */
         .slot-item {
           border: 1px solid #E2E8F0 !important;
@@ -559,70 +609,80 @@ const VenueTimeDate = () => {
               </div>
             </section> */}
             <div className="row text-center">
-              <div className="col-12 col-sm-12 col-md-12 col-lg-8">
-                <div className="card time-date-card">
-                  <section className="booking-date">
-                    <div className="list-unstyled owl-carousel date-slider owl-theme mb-40">
-                      <div className="booking-date-item">
-                        {
-                          dateData.length > 0 ? (<DatePicker
-                            selected={selectedDate}
-                            onChange={handleDateChange}
-                            className="form-control"
-                            placeholderText="Select Date"
-                            dateFormat="dd/MM/yyyy"
-                            minDate={minDate}
-                            // highlightDates={highlightDates}
-                            filterDate={(date) =>
-                              highlightDates.some(
-                                (highlightDate) =>
-                                  highlightDate.toDateString() === date.toDateString()
-                              )
-                            }
-                          />):("No slots are available at the moment.")
+              <div className="col-12 col-sm-12 col-md-12 col-lg-8 text-start">
+                
+                {/* Card 1: Select Booking Date */}
+                <div className="card time-date-card mb-4" style={{ padding: "24px", borderRadius: "16px" }}>
+                  <h4 className="mb-3" style={{ color: "#0F172A", fontWeight: "700" }}>
+                    <i className="feather-calendar me-2" style={{ color: "#22C55E" }} />
+                    Select Booking Date
+                  </h4>
+                  <div className="d-flex justify-content-center align-items-center py-2" style={{ background: "#F8FAFC", borderRadius: "12px", border: "1px solid #E2E8F0" }}>
+                    {dateData.length > 0 ? (
+                      <DatePicker
+                        selected={selectedDate}
+                        onChange={handleDateChange}
+                        inline
+                        minDate={minDate}
+                        filterDate={(date) =>
+                          highlightDates.some(
+                            (highlightDate) =>
+                              highlightDate.toDateString() === date.toDateString()
+                          )
                         }
-                        {/* <Dropdown>
-                          <Dropdown.Toggle variant="success" id="dropdown-basic">
-                            {selectedDate ? formatDate(selectedDate) : 'Select Date'}
-                          </Dropdown.Toggle>
-                          <Dropdown.Menu>
-                            {
-                              formateDateData?.map((data, index) => (
-                                <Dropdown.Item key={index} onClick={() => handleSelect(data?.id, data?.date)}>
-                                  {formatDate(data?.date)}
-                                </Dropdown.Item>
-                              ))
-                            }
-                          </Dropdown.Menu>
-                        </Dropdown> */}
-                      </div>
-                    </div>
-                    <div className="row">
-                      {slots?.map((slot: any, index) => (
-                        <div key={index} className="col-12 col-sm-4 col-md-3">
-                          <div
-                            className={`time-slot ${slot.isChecked ? "checked" : ""} ${slot.isBooked ? "disabled" : "active"}`}
-                            onClick={() => handleSlotClick(index)}
-                          >
-                            <div className="booking-info">
-                              <span className="time">
-                                <i className="feather-clock me-2" />
-                                {slot?.startTime}-{slot?.endTime}
-                              </span>
-                              <div className="price-container">
-                                <span className="price">
-                                  <span className="per-hour">₹</span>
-                                  {slot?.price}
-                                </span>
+                      />
+                    ) : (
+                      <div className="text-muted py-4">No slots are available at the moment.</div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Card 2: Available Time Slots */}
+                <div className="card time-date-card" style={{ padding: "24px", borderRadius: "16px" }}>
+                  <h4 className="mb-4" style={{ color: "#0F172A", fontWeight: "700" }}>
+                    <i className="feather-clock me-2" style={{ color: "#22C55E" }} />
+                    Available Time Slots
+                  </h4>
+                  <section className="booking-date">
+                    {selectedDate ? (
+                      slots && slots.length > 0 ? (
+                        <div className="row">
+                          {slots.map((slot: any, index) => (
+                            <div key={index} className="col-6 col-sm-4 col-md-3 col-lg-4 col-xl-3">
+                              <div
+                                className={`time-slot ${slot.isChecked ? "checked" : ""} ${slot.isBooked ? "disabled" : "active"}`}
+                                onClick={() => handleSlotClick(index)}
+                              >
+                                <div className="booking-info">
+                                  <span className="time">
+                                    <i className="feather-clock me-2" />
+                                    {slot?.startTime}-{slot?.endTime}
+                                  </span>
+                                  <div className="price-container">
+                                    <span className="price">
+                                      <span className="per-hour">₹</span>
+                                      {slot?.price}
+                                    </span>
+                                  </div>
+                                </div>
                               </div>
                             </div>
-                            {/* <i className="fa-regular fa-check-circle" /> */}
-                          </div>
+                          ))}
                         </div>
-                      ))}
-                    </div>
+                      ) : (
+                        <div className="text-muted text-center py-4">No slots available for the selected date.</div>
+                      )
+                    ) : (
+                      <div className="text-muted text-center py-5">
+                        <i className="feather-calendar" style={{ fontSize: "48px", color: "#94A3B8", display: "block", marginBottom: "16px" }} />
+                        <span style={{ fontSize: "16px", fontWeight: "500", color: "#64748B" }}>
+                          Please select a date from the calendar above to view available slots.
+                        </span>
+                      </div>
+                    )}
                   </section>
                 </div>
+
               </div>
               <div className="col-12 col-sm-12 col-md-12 col-lg-4">
                 <aside className="card booking-details">
@@ -660,12 +720,12 @@ const VenueTimeDate = () => {
             <div className="text-center btn-row">
               <Link
                 className="ki-btn-secondary me-3"
-                to={`/sports-venue`}
+                to={venueData ? `/sports-venue/${venueData.vendor_type || "cricket-turf"}/${venueData.name?.replace(/\s+/g, "-").toLowerCase()}/${id}` : `/sports-venue`}
               >
                 <i className="feather-arrow-left-circle me-1" /> Back
               </Link>
               <Link
-                className="ki-btn-primary text-dark"
+                className="ki-btn-primary"
                 onClick={handleSubmit}
                 to={""}
               >

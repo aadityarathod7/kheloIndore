@@ -424,6 +424,55 @@ const TrainingTimeDate = (props: any) => {
           color: #334155 !important;
         }
         
+        /* Custom buttons styling overrides */
+        .ki-btn-primary {
+          background: linear-gradient(135deg, #22C55E 0%, #16A34A 100%) !important;
+          color: #FFFFFF !important;
+          border: none !important;
+          border-radius: 50px !important;
+          font-weight: 700 !important;
+          font-size: 15px !important;
+          padding: 12px 30px !important;
+          display: inline-flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          box-shadow: 0 4px 14px rgba(34, 197, 94, 0.3) !important;
+          text-decoration: none !important;
+          cursor: pointer !important;
+        }
+        .ki-btn-primary:hover {
+          background: linear-gradient(135deg, #16A34A 0%, #15803D 100%) !important;
+          color: #FFFFFF !important;
+          box-shadow: 0 6px 20px rgba(22, 163, 74, 0.4) !important;
+        }
+        .ki-btn-primary * {
+          color: #FFFFFF !important;
+        }
+        
+        .ki-btn-secondary {
+          background: #FFFFFF !important;
+          color: #475569 !important;
+          border: 1px solid #CBD5E1 !important;
+          border-radius: 50px !important;
+          font-weight: 600 !important;
+          font-size: 15px !important;
+          padding: 12px 30px !important;
+          display: inline-flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+          text-decoration: none !important;
+          cursor: pointer !important;
+        }
+        .ki-btn-secondary:hover {
+          background: #F8FAFC !important;
+          border-color: #94A3B8 !important;
+          color: #0F172A !important;
+        }
+        .ki-btn-secondary * {
+          color: #475569 !important;
+        }
+        
         /* Slots items selector styling */
         .slot-item {
           border: 1px solid #E2E8F0 !important;
@@ -767,13 +816,13 @@ const TrainingTimeDate = (props: any) => {
 
               <div className="text-center btn-row">
                 <Link
-                  className="btn btn-primary me-3 btn-icon"
-                  to={`/personal-training/trainer/${id}`}
+                  className="ki-btn-secondary me-3"
+                  to={trainerData ? `/personal-training/trainer/${(trainerData.first_name + '-' + (trainerData.last_name || '')).replace(/\s+/g, '-').toLowerCase()}/${id}` : '/personal-training'}
                 >
                   <i className="feather-arrow-left-circle me-1" /> Back
                 </Link>
                 <button
-                  className="btn btn-secondary btn-icon"
+                  className="ki-btn-primary"
                   onClick={handleBooking}
                 >
                   Next <i className="feather-arrow-right-circle ms-1" />

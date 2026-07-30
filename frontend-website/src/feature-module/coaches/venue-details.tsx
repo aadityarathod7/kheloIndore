@@ -108,10 +108,13 @@ const VenueDetails = () => {
   }, []);
   
   useEffect(() => {
-    if (venueData) {
-      const nameofkey = Object.keys(venueData?.data)[0]
-      const nameofgame = venueData?.data[nameofkey]
-      setVenueType(nameofgame)
+    if (venueData && venueData.data && typeof venueData.data === 'object') {
+      const keys = Object.keys(venueData.data);
+      if (keys.length > 0) {
+        const nameofkey = keys[0];
+        const nameofgame = venueData.data[nameofkey];
+        setVenueType(nameofgame);
+      }
     }
   }, [venueData]);
   

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { createPortal } from "react-dom";
 import { all_routes } from "../router/all_routes";
 import ImageWithBasePath from "../../core/data/img/ImageWithBasePath";
 import "../../style/css/custom.css";
@@ -690,14 +691,27 @@ const Header = () => {
         style={{ zIndex: 1050 }}
       />
     )}
-    <div>
-        <div className="enquiry-btn">
+    {typeof document !== "undefined" && createPortal(
+      <div>
+        <div className="enquiry-btn" style={{ position: "fixed", bottom: "80px", right: "30px", zIndex: 999999 }}>
           <CButton
             onClick={() => setVisible(true)}
             className="btn btn-primary d-flex align-items-center gap-2"
+            style={{
+              background: "linear-gradient(135deg, #22C55E 0%, #16A34A 100%)",
+              border: "none",
+              color: "#FFFFFF",
+              boxShadow: "0 4px 15px rgba(22, 163, 74, 0.4)",
+              padding: "12px 24px",
+              borderRadius: "30px",
+              fontWeight: "700",
+              fontSize: "14px",
+              textTransform: "none",
+              transition: "all 0.3s ease"
+            }}
           >
-            <i className="fas fa-envelope" />
-            <span>Enquiry Now</span>
+            <i className="fas fa-envelope" style={{ color: "#FFFFFF" }} />
+            <span style={{ color: "#FFFFFF" }}>Enquiry Now</span>
           </CButton>
         </div>
         <COffcanvas
@@ -789,9 +803,10 @@ const Header = () => {
             </form>
           </COffcanvasBody>
         </COffcanvas>
-      </div>
-    </>
-  );
+      </div>,
+      document.body
+    )}
+  </>);
 };
 
 export default Header;
