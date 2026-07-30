@@ -160,10 +160,12 @@ function BookingList({ listType }) {
 
       const data = await response.json(); // Parse JSON response
 
-      if (response.ok && data.details?.success !== false) {
+      if (response.ok && data.success !== false) {
+        setShowModal(false);
+        fetchData();
         Swal.fire({
           title: "Success",
-          text: data.details?.message || "Refund Processed Successfully",
+          text: data.message || "Refund Processed Successfully",
           icon: "success",
           confirmButtonText: "Close",
         });
@@ -722,12 +724,18 @@ function BookingList({ listType }) {
                             )}
                         </td>
                         <td>
-                          <button
-                            class="btn btn-danger"
-                            onClick={() => openrefunedmodel(row.info._id)}
-                          >
-                            Refund
-                          </button>
+                          {row.info.cancellation_status === 1 ? (
+                            <span className="badge bg-success" style={{ padding: "8px 12px", fontSize: "12px", borderRadius: "6px" }}>
+                              Refunded
+                            </span>
+                          ) : (
+                            <button
+                              className="btn btn-danger"
+                              onClick={() => openrefunedmodel(row.info._id)}
+                            >
+                              Refund
+                            </button>
+                          )}
                         </td>
                       </tr>
                     );
@@ -886,12 +894,18 @@ function BookingList({ listType }) {
                           </div>
                         </td>
                         <td>
-                          <button
-                            class="btn btn-danger"
-                            onClick={() => openrefunedmodel(row.id)}
-                          >
-                            Refund
-                          </button>
+                          {row.cancellation_status === 1 ? (
+                            <span className="badge bg-success" style={{ padding: "8px 12px", fontSize: "12px", borderRadius: "6px" }}>
+                              Refunded
+                            </span>
+                          ) : (
+                            <button
+                              className="btn btn-danger"
+                              onClick={() => openrefunedmodel(row.id)}
+                            >
+                              Refund
+                            </button>
+                          )}
                         </td>
                       </tr>
                     ))
