@@ -57,8 +57,28 @@ const VenueDetails = () => {
   const id = idData.id;
   const name = idData.name;
   const type = idData.type; 
-  console.log(idData,'--------');
-  const location = useLocation();
+
+  const [isFavourite, setIsFavourite] = useState<boolean>(() => {
+    if (!id) return false;
+    return localStorage.getItem(`fav_venue_${id}`) === "true";
+  });
+
+  const handleToggleFavourite = () => {
+    const nextStatus = !isFavourite;
+    setIsFavourite(nextStatus);
+    if (id) {
+      localStorage.setItem(`fav_venue_${id}`, String(nextStatus));
+    }
+
+    Swal.fire({
+      icon: nextStatus ? "success" : "info",
+      title: nextStatus ? "Saved to Favourites!" : "Removed from Favourites",
+      text: nextStatus ? "Venue added to your favorites list." : "Venue removed from your favorites list.",
+      timer: 2000,
+      showConfirmButton: false,
+      confirmButtonColor: "#22C55E"
+    });
+  };
   
 
   const scrollToRef = (ref: any) => {
@@ -173,47 +193,78 @@ const VenueDetails = () => {
       ) : (
         <div className="khelo-pro-wrapper">
           <div className="max-container">
-            {/* 1. Breadcrumbs (Above Hero Section) */}
-            <div className="d-flex align-items-center gap-2 mb-3 text-secondary" style={{ fontSize: "14px", fontWeight: 500 }}>
-              <Link to="/" className="muted-text text-decoration-none d-inline-flex align-items-center gap-1">
-                <i className="feather-home" style={{ fontSize: "15px" }} /> Home
+            {/* 1. Breadcrumb Bar */}
+            <div className="pro-breadcrumb">
+              <Link to="/">
+                <i className="feather-home" /> Home
               </Link>
-              <span>/</span>
-              <Link to={routes.blogListSidebarLeft} className="muted-text text-decoration-none">
+              <span className="separator">/</span>
+              <Link to={routes.blogListSidebarLeft}>
                 Sports Venues
               </Link>
-              <span>/</span>
-              <span className="fw-bold text-dark text-capitalize">
+              <span className="separator">/</span>
+              <span className="current text-capitalize">
                 {venueData?.name || (name ? name.replaceAll('-', ' ') : "Venue Details")}
               </span>
             </div>
 
-            {/* 2. Hero Section & Booking Card Row (2-Column: Left 70% / Right 30%) */}
-            <div className="row g-4 mb-4">
-              {/* LEFT (70% / 8 Cols): Bento Gallery */}
+            {/* 2. MAIN 2-COLUMN LAYOUT (Left 70% / Right 30%) */}
+            <div className="row g-4">
+              {/* LEFT COLUMN (70% / 8 Cols) */}
               <div className="col-lg-8">
-                <div className="row g-3">
+                {/* A. Bento Hero Gallery */}
+                <div className="row g-3 mb-4">
                   {/* Main Featured Big Image */}
                   <div className={venueData?.images && venueData.images.length >= 2 ? "col-md-8" : "col-12"}>
                     <div className="bento-hero-main">
+                      {/* Ambient Blurred Background */}
+                      <img
+                        src={venueData?.images && venueData.images[0] ? `${IMG_URL}${venueData.images[0].src}` : "/assets/img/venues/venue-01.jpg"}
+                        alt="Ambient backdrop"
+                        className="ambient-bg"
+                        onError={(e: any) => {
+                          e.target.src = "/assets/img/venues/venue-01.jpg";
+                        }}
+                      />
+                      {/* Full Uncropped Main Image */}
                       <img
                         src={venueData?.images && venueData.images[0] ? `${IMG_URL}${venueData.images[0].src}` : "/assets/img/venues/venue-01.jpg"}
                         alt={venueData?.name}
+                        className="full-hero-img"
                         onClick={() => handleImageClick(0)}
                         onError={(e: any) => {
                           e.target.src = "/assets/img/venues/venue-01.jpg";
                         }}
                       />
                       {/* Featured Badge */}
-                      <div className="position-absolute top-0 start-0 p-4">
+                      <div className="position-absolute top-0 start-0 p-3" style={{ zIndex: 10 }}>
                         <span className="badge bg-success text-white px-3.5 py-2 rounded-pill shadow-sm" style={{ fontSize: "13px", fontWeight: 700 }}>
                           ⭐ Featured
                         </span>
                       </div>
+                      {/* Top-Right Action Buttons: Share & Favorite */}
+                      <div className="position-absolute top-0 end-0 p-3 d-flex align-items-center gap-2" style={{ zIndex: 10 }}>
+                        <button
+                          type="button"
+                          className="glass-icon-btn"
+                          onClick={handleShare}
+                          title="Share Venue"
+                        >
+                          <i className="fas fa-share-alt" />
+                        </button>
+                        <button
+                          type="button"
+                          className={`glass-icon-btn ${isFavourite ? "active-fav" : ""}`}
+                          onClick={handleToggleFavourite}
+                          title={isFavourite ? "Remove from Favourites" : "Save to Favourites"}
+                        >
+                          <i className={isFavourite ? "fas fa-heart text-danger" : "far fa-heart text-white"} />
+                        </button>
+                      </div>
                       {/* Bottom Overlay Container */}
                       <div
                         className="position-absolute bottom-0 start-0 end-0 text-white"
-                        style={{ background: "linear-gradient(to top, rgba(15, 23, 42, 0.9) 0%, rgba(15, 23, 42, 0) 75%)", padding: "32px" }}
+                        style={{ background: "linear-gradient(to top, rgba(15, 23, 42, 0.92) 0%, rgba(15, 23, 42, 0) 85%)", padding: "20px", zIndex: 10 }}
                       >
                         <h1 className="venue-hero-title mb-2 text-capitalize">
                           {venueData?.name || (name ? name.replaceAll('-', ' ') : "Sports Venue")}
@@ -236,7 +287,16 @@ const VenueDetails = () => {
                       <div className="bento-hero-thumb">
                         <img
                           src={`${IMG_URL}${venueData.images[1]?.src}`}
+                          alt="Ambient thumbnail 1"
+                          className="ambient-bg"
+                          onError={(e: any) => {
+                            e.target.src = "/assets/img/venues/venue-02.jpg";
+                          }}
+                        />
+                        <img
+                          src={`${IMG_URL}${venueData.images[1]?.src}`}
                           alt="Venue thumbnail 1"
+                          className="full-hero-img"
                           onClick={() => handleImageClick(1)}
                           onError={(e: any) => {
                             e.target.src = "/assets/img/venues/venue-02.jpg";
@@ -246,7 +306,16 @@ const VenueDetails = () => {
                       <div className="bento-hero-thumb">
                         <img
                           src={venueData.images[2] ? `${IMG_URL}${venueData.images[2]?.src}` : `${IMG_URL}${venueData.images[0]?.src}`}
+                          alt="Ambient thumbnail 2"
+                          className="ambient-bg"
+                          onError={(e: any) => {
+                            e.target.src = "/assets/img/venues/venue-03.jpg";
+                          }}
+                        />
+                        <img
+                          src={venueData.images[2] ? `${IMG_URL}${venueData.images[2]?.src}` : `${IMG_URL}${venueData.images[0]?.src}`}
                           alt="Venue thumbnail 2"
+                          className="full-hero-img"
                           onClick={() => handleImageClick(venueData.images[2] ? 2 : 0)}
                           onError={(e: any) => {
                             e.target.src = "/assets/img/venues/venue-03.jpg";
@@ -256,154 +325,105 @@ const VenueDetails = () => {
                     </div>
                   )}
                 </div>
-              </div>
 
-              {/* RIGHT (30% / 4 Cols): Sticky Booking Card */}
-              <div className="col-lg-4">
-                <div className="sticky-top" style={{ top: "100px", zIndex: 10 }}>
-                  <div className="pro-card d-flex flex-column justify-content-between mb-0">
-                    <div>
-                      {/* Badges */}
-                      <div className="d-flex align-items-center justify-content-between mb-2.5">
-                        <span className="badge bg-success bg-opacity-15 text-success px-3 py-1.5 rounded-pill fw-bold text-uppercase" style={{ fontSize: "11px", letterSpacing: "0.5px" }}>
-                          Available for Booking
-                        </span>
-                        <span className="fw-semibold text-dark-title" style={{ fontSize: "12px" }}>
-                          <i className="fas fa-shield-alt text-success me-1" /> Verified
-                        </span>
-                      </div>
+                {/* B. NAVIGATION TABS (Immediately follows Hero Gallery!) */}
+                <div className="tabs-container-card">
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab("overview")}
+                    className={`pro-tab-pill ${activeTab === "overview" ? "active" : "inactive"}`}
+                    style={{
+                      background: activeTab === "overview" ? "#22C55E" : "#F1F5F9",
+                      color: activeTab === "overview" ? "#FFFFFF" : "#1E293B",
+                      border: activeTab === "overview" ? "none" : "1px solid #E2E8F0"
+                    }}
+                  >
+                    <i className="fas fa-info-circle" style={{ color: activeTab === "overview" ? "#FFFFFF" : "#22C55E" }} />
+                    <span>Overview</span>
+                  </button>
 
-                      <h3 className="card-title-head mb-2">Book Court Slot</h3>
+                  {venueData?.gameType && (
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab("game")}
+                      className={`pro-tab-pill ${activeTab === "game" ? "active" : "inactive"}`}
+                      style={{
+                        background: activeTab === "game" ? "#22C55E" : "#F1F5F9",
+                        color: activeTab === "game" ? "#FFFFFF" : "#1E293B",
+                        border: activeTab === "game" ? "none" : "1px solid #E2E8F0"
+                      }}
+                    >
+                      <i className="fas fa-volleyball-ball" style={{ color: activeTab === "game" ? "#FFFFFF" : "#22C55E" }} />
+                      <span>Game Type</span>
+                    </button>
+                  )}
 
-                      {/* Selector / Calendar Pricing Card */}
-                      <div className="p-3 mb-3 rounded-3 text-center" style={{ background: "#F8FAFC", border: "1px solid #E5E7EB" }}>
-                        <div className="d-inline-flex align-items-center justify-content-center bg-success bg-opacity-10 rounded-circle mb-1.5" style={{ width: "40px", height: "40px" }}>
-                          <i className="fas fa-calendar-alt text-success" style={{ fontSize: "18px" }} />
-                        </div>
-                        {venueData?.price_per_hr ? (
-                          <div>
-                            <span className="d-block muted-text" style={{ fontSize: "11px" }}>Price Starting From</span>
-                            <div className="d-flex align-items-baseline justify-content-center gap-1">
-                              <span className="fw-extrabold text-brand-green" style={{ fontSize: "24px" }}>₹{venueData.price_per_hr}</span>
-                              <span className="muted-text" style={{ fontSize: "12px" }}>/ hour</span>
-                            </div>
-                          </div>
-                        ) : (
-                          <div>
-                            <h5 className="fw-bold text-dark-title mb-0.5" style={{ fontSize: "14px" }}>Check Availability for Pricing</h5>
-                            <span className="d-block muted-text" style={{ fontSize: "11px" }}>Select date and time to view price</span>
-                          </div>
-                        )}
-                      </div>
+                  {venueData?.amenities && venueData.amenities.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab("amenities")}
+                      className={`pro-tab-pill ${activeTab === "amenities" ? "active" : "inactive"}`}
+                      style={{
+                        background: activeTab === "amenities" ? "#22C55E" : "#F1F5F9",
+                        color: activeTab === "amenities" ? "#FFFFFF" : "#1E293B",
+                        border: activeTab === "amenities" ? "none" : "1px solid #E2E8F0"
+                      }}
+                    >
+                      <i className="fas fa-check-circle" style={{ color: activeTab === "amenities" ? "#FFFFFF" : "#22C55E" }} />
+                      <span>Amenities ({venueData.amenities.length})</span>
+                    </button>
+                  )}
 
-                      {/* Checklist */}
-                      <ul className="list-unstyled mb-3" style={{ fontSize: "13px" }}>
-                        <li className="d-flex align-items-center gap-2 py-1 fw-semibold text-dark-title">
-                          <i className="fas fa-check-circle text-success" /> Instant Slot Confirmation
-                        </li>
-                        <li className="d-flex align-items-center gap-2 py-1 fw-semibold text-dark-title">
-                          <i className="fas fa-check-circle text-success" /> Flexible Booking
-                        </li>
-                        <li className="d-flex align-items-center gap-2 py-1 fw-semibold text-dark-title">
-                          <i className="fas fa-check-circle text-success" /> Free Cancellation
-                        </li>
-                      </ul>
-                    </div>
+                  {venueData?.facilities && venueData.facilities.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab("facilities")}
+                      className={`pro-tab-pill ${activeTab === "facilities" ? "active" : "inactive"}`}
+                      style={{
+                        background: activeTab === "facilities" ? "#22C55E" : "#F1F5F9",
+                        color: activeTab === "facilities" ? "#FFFFFF" : "#1E293B",
+                        border: activeTab === "facilities" ? "none" : "1px solid #E2E8F0"
+                      }}
+                    >
+                      <i className="fas fa-building" style={{ color: activeTab === "facilities" ? "#FFFFFF" : "#22C55E" }} />
+                      <span>Facilities ({venueData.facilities.length})</span>
+                    </button>
+                  )}
 
-                    {/* CTAs */}
-                    <div className="d-flex flex-column gap-2">
-                      <button
-                        type="button"
-                        className="pro-btn-primary"
-                        onClick={handleBookNow}
-                      >
-                        <i className="fas fa-calendar-check" /> Check Availability
-                      </button>
-                      <button
-                        type="button"
-                        className="pro-btn-secondary"
-                        onClick={() => {
-                          Swal.fire({
-                            title: "Enquiry Now",
-                            text: `For booking enquiries regarding ${venueData?.name || 'this venue'}, please call +91 9977737801 or write to info@kheloindore.com`,
-                            icon: "info",
-                            confirmButtonColor: "#22C55E"
-                          });
-                        }}
-                      >
-                        <i className="fas fa-comment-dots" /> Enquiry Now
-                      </button>
-                    </div>
-                  </div>
+                  {venueData?.policiesAndRules && (
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab("rules")}
+                      className={`pro-tab-pill ${activeTab === "rules" ? "active" : "inactive"}`}
+                      style={{
+                        background: activeTab === "rules" ? "#22C55E" : "#F1F5F9",
+                        color: activeTab === "rules" ? "#FFFFFF" : "#1E293B",
+                        border: activeTab === "rules" ? "none" : "1px solid #E2E8F0"
+                      }}
+                    >
+                      <i className="fas fa-gavel" style={{ color: activeTab === "rules" ? "#FFFFFF" : "#22C55E" }} />
+                      <span>Rules & Policies</span>
+                    </button>
+                  )}
+
+                  {venueData?.additionalNotes && (
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab("notes")}
+                      className={`pro-tab-pill ${activeTab === "notes" ? "active" : "inactive"}`}
+                      style={{
+                        background: activeTab === "notes" ? "#22C55E" : "#F1F5F9",
+                        color: activeTab === "notes" ? "#FFFFFF" : "#1E293B",
+                        border: activeTab === "notes" ? "none" : "1px solid #E2E8F0"
+                      }}
+                    >
+                      <i className="fas fa-sticky-note" style={{ color: activeTab === "notes" ? "#FFFFFF" : "#22C55E" }} />
+                      <span>Notes</span>
+                    </button>
+                  )}
                 </div>
-              </div>
-            </div>
 
-            {/* 3. NAVIGATION TABS (Enclosed White Rounded Container Card) */}
-            <div className="tabs-container-card">
-              <button
-                type="button"
-                onClick={() => setActiveTab("overview")}
-                className={`pro-tab-pill ${activeTab === "overview" ? "active" : "inactive"}`}
-              >
-                <i className="fas fa-info-circle" /> Overview
-              </button>
-
-              {venueData?.gameType && (
-                <button
-                  type="button"
-                  onClick={() => setActiveTab("game")}
-                  className={`pro-tab-pill ${activeTab === "game" ? "active" : "inactive"}`}
-                >
-                  <i className="fas fa-volleyball-ball" /> Game Type
-                </button>
-              )}
-
-              {venueData?.amenities && venueData.amenities.length > 0 && (
-                <button
-                  type="button"
-                  onClick={() => setActiveTab("amenities")}
-                  className={`pro-tab-pill ${activeTab === "amenities" ? "active" : "inactive"}`}
-                >
-                  <i className="fas fa-check-circle" /> Amenities ({venueData.amenities.length})
-                </button>
-              )}
-
-              {venueData?.facilities && venueData.facilities.length > 0 && (
-                <button
-                  type="button"
-                  onClick={() => setActiveTab("facilities")}
-                  className={`pro-tab-pill ${activeTab === "facilities" ? "active" : "inactive"}`}
-                >
-                  <i className="fas fa-building" /> Facilities ({venueData.facilities.length})
-                </button>
-              )}
-
-              {venueData?.policiesAndRules && (
-                <button
-                  type="button"
-                  onClick={() => setActiveTab("rules")}
-                  className={`pro-tab-pill ${activeTab === "rules" ? "active" : "inactive"}`}
-                >
-                  <i className="fas fa-gavel" /> Rules & Policies
-                </button>
-              )}
-
-              {venueData?.additionalNotes && (
-                <button
-                  type="button"
-                  onClick={() => setActiveTab("notes")}
-                  className={`pro-tab-pill ${activeTab === "notes" ? "active" : "inactive"}`}
-                >
-                  <i className="fas fa-sticky-note" /> Notes
-                </button>
-              )}
-            </div>
-
-            {/* 4. CONTENT & SIDEBAR ROW */}
-            <div className="row g-4">
-              {/* LEFT COLUMN (70% / 8 Cols) */}
-              <div className="col-lg-8">
+                {/* C. Active Tab Content Card */}
                 <div className="pro-card">
                   {activeTab === "overview" && (
                     <div>
@@ -475,7 +495,7 @@ const VenueDetails = () => {
                           <div className="col" key={index}>
                             <div className="pro-amenity-card">
                               <i className="fas fa-check-circle" />
-                              <span>{amenity}</span>
+                              <span style={{ color: "#111827" }}>{amenity}</span>
                             </div>
                           </div>
                         ))}
@@ -491,7 +511,7 @@ const VenueDetails = () => {
                           <div className="col" key={index}>
                             <div className="pro-amenity-card">
                               <i className="fas fa-building" />
-                              <span>{facility}</span>
+                              <span style={{ color: "#111827" }}>{facility}</span>
                             </div>
                           </div>
                         ))}
@@ -518,7 +538,7 @@ const VenueDetails = () => {
                   )}
                 </div>
 
-                {/* Card 3: Additional Info Cards (4 Equal Cards) */}
+                {/* D. Additional Info Card */}
                 <div className="pro-card">
                   <h3 className="card-title-head mb-3">Venue Information</h3>
                   <div className="row row-cols-2 row-cols-md-4 g-3">
@@ -562,47 +582,123 @@ const VenueDetails = () => {
                 </div>
               </div>
 
-              {/* RIGHT COLUMN (30% / 4 Cols): Sidebar Cards */}
+              {/* RIGHT COLUMN (30% / 4 Cols): Sticky Sidebar */}
               <div className="col-lg-4">
-                <div className="d-flex flex-column gap-4">
-                  {/* Card: Top Amenities */}
+                <div className="sticky-top" style={{ top: "100px", zIndex: 10 }}>
+                  {/* Card 1: Book Court Slot */}
+                  <div className="pro-card mb-4 d-flex flex-column justify-content-between">
+                    <div>
+                      {/* Badges */}
+                      <div className="d-flex align-items-center justify-content-between mb-2.5">
+                        <span className="badge bg-success bg-opacity-15 text-success px-3 py-1.5 rounded-pill fw-bold text-uppercase" style={{ fontSize: "11px", letterSpacing: "0.5px" }}>
+                          Available for Booking
+                        </span>
+                        <span className="fw-semibold text-dark-title d-inline-flex align-items-center gap-1" style={{ fontSize: "12px", color: "#111827" }}>
+                          <i className="fas fa-shield-alt text-success" /> Verified
+                        </span>
+                      </div>
+
+                      <h3 className="card-title-head mb-2" style={{ color: "#111827" }}>Book Court Slot</h3>
+
+                      {/* Selector / Calendar Pricing Card */}
+                      <div className="p-3 mb-3 rounded-3 text-center" style={{ background: "#F8FAFC", border: "1px solid #E5E7EB" }}>
+                        <div className="d-inline-flex align-items-center justify-content-center bg-success bg-opacity-10 rounded-circle mb-1.5" style={{ width: "40px", height: "40px" }}>
+                          <i className="fas fa-calendar-alt text-success" style={{ fontSize: "18px" }} />
+                        </div>
+                        {venueData?.price_per_hr ? (
+                          <div>
+                            <span className="d-block muted-text" style={{ fontSize: "11px", color: "#6B7280" }}>Price Starting From</span>
+                            <div className="d-flex align-items-baseline justify-content-center gap-1">
+                              <span className="fw-extrabold text-brand-green" style={{ fontSize: "24px", color: "#16A34A" }}>₹{venueData.price_per_hr}</span>
+                              <span className="muted-text" style={{ fontSize: "12px", color: "#6B7280" }}>/ hour</span>
+                            </div>
+                          </div>
+                        ) : (
+                          <div>
+                            <h5 className="fw-bold text-dark-title mb-0.5" style={{ fontSize: "14px", color: "#111827" }}>Check Availability for Pricing</h5>
+                            <span className="d-block muted-text" style={{ fontSize: "11px", color: "#6B7280" }}>Select date and time to view price</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Checklist */}
+                      <ul className="booking-feature-list mb-3">
+                        <li style={{ color: "#111827" }}>
+                          <i className="fas fa-check-circle text-success" /> Instant Slot Confirmation
+                        </li>
+                        <li style={{ color: "#111827" }}>
+                          <i className="fas fa-check-circle text-success" /> Flexible Booking
+                        </li>
+                        <li style={{ color: "#111827" }}>
+                          <i className="fas fa-check-circle text-success" /> Free Cancellation
+                        </li>
+                      </ul>
+                    </div>
+
+                    {/* CTAs */}
+                    <div className="d-flex flex-column gap-2">
+                      <button
+                        type="button"
+                        className="pro-btn-primary"
+                        onClick={handleBookNow}
+                      >
+                        <i className="fas fa-calendar-check" /> Check Availability
+                      </button>
+                      <button
+                        type="button"
+                        className="pro-btn-secondary"
+                        onClick={() => {
+                          Swal.fire({
+                            title: "Enquiry Now",
+                            text: `For booking enquiries regarding ${venueData?.name || 'this venue'}, please call +91 9977737801 or write to info@kheloindore.com`,
+                            icon: "info",
+                            confirmButtonColor: "#22C55E"
+                          });
+                        }}
+                      >
+                        <i className="fas fa-comment-dots" /> Enquiry Now
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Card 2: Top Amenities */}
                   <div className="pro-card mb-0">
                     <h3 className="card-title-head mb-3">Top Amenities</h3>
                     <div className="row row-cols-2 g-2 mb-3">
                       <div className="col">
                         <div className="pro-amenity-card">
                           <span>🅿️</span>
-                          <span>Parking</span>
+                          <span style={{ color: "#111827" }}>Parking</span>
                         </div>
                       </div>
                       <div className="col">
                         <div className="pro-amenity-card">
                           <span>💧</span>
-                          <span>Drinking Water</span>
+                          <span style={{ color: "#111827" }}>Drinking Water</span>
                         </div>
                       </div>
                       <div className="col">
                         <div className="pro-amenity-card">
                           <span>💡</span>
-                          <span>Flood Lights</span>
+                          <span style={{ color: "#111827" }}>Flood Lights</span>
                         </div>
                       </div>
                       <div className="col">
                         <div className="pro-amenity-card">
                           <span>🚿</span>
-                          <span>Washroom</span>
+                          <span style={{ color: "#111827" }}>Washroom</span>
                         </div>
                       </div>
                       <div className="col">
                         <div className="pro-amenity-card">
                           <span>🎽</span>
-                          <span>Changing Room</span>
+                          <span style={{ color: "#111827" }}>Changing Room</span>
                         </div>
                       </div>
                       <div className="col">
                         <div className="pro-amenity-card">
                           <span>🔒</span>
-                          <span>Locker</span>
+                          <span style={{ color: "#111827" }}>Locker</span>
                         </div>
                       </div>
                     </div>
@@ -615,38 +711,6 @@ const VenueDetails = () => {
                     >
                       View All Amenities &gt;
                     </button>
-                  </div>
-
-                  {/* Card: Share & Save Venue */}
-                  <div className="pro-card mb-0">
-                    <h3 className="card-title-head mb-3">Share & Save</h3>
-                    <div className="d-flex flex-column gap-2">
-                      <button
-                        type="button"
-                        onClick={handleShare}
-                        className="pro-btn-secondary"
-                        style={{ height: "48px" }}
-                      >
-                        <i className="fas fa-share-alt" /> Share Venue
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          Swal.fire({
-                            icon: "success",
-                            title: "Saved!",
-                            text: "Venue added to your favorites.",
-                            timer: 2000,
-                            showConfirmButton: false,
-                            confirmButtonColor: "#22C55E"
-                          });
-                        }}
-                        className="pro-btn-secondary"
-                        style={{ height: "48px" }}
-                      >
-                        <i className="fas fa-heart text-danger" /> Save Favourite
-                      </button>
-                    </div>
                   </div>
                 </div>
               </div>

@@ -442,9 +442,21 @@ const Header = () => {
                     <div className="lt-btn">
                       <ul className="profile-dropdown">
                         <li className="ft-colr-ffff">
+                          <Link to={routes.userDashboard}>
+                            <i className="fas fa-th-large"></i> &nbsp;
+                            Dashboard
+                          </Link>
+                        </li>
+                        <li className="ft-colr-ffff">
                           <Link to={routes.userBookings}>
                             <i className="fas fa-calendar-alt"></i> &nbsp;
                             My Bookings
+                          </Link>
+                        </li>
+                        <li className="ft-colr-ffff">
+                          <Link to={`${routes.userDashboard}?tab=favourites`}>
+                            <i className="fas fa-heart"></i> &nbsp;
+                            My Favourites
                           </Link>
                         </li>
                         <li className="ft-colr-ffff">

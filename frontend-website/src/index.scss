@@ -2437,11 +2437,55 @@ body, html, h1, h2, h3, h4, h5, h6, p, span, a, label, input, select, button {
     padding: 0 20px !important;
   }
 
+  /* Breadcrumb Styling */
+  .pro-breadcrumb {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    margin-bottom: 20px !important;
+
+    a {
+      color: #475569 !important;
+      text-decoration: none !important;
+      font-weight: 600 !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 6px !important;
+      transition: color 0.2s ease !important;
+
+      &:hover {
+        color: #22C55E !important;
+
+        i {
+          color: #22C55E !important;
+        }
+      }
+
+      i {
+        color: #64748B !important;
+        font-size: 15px !important;
+        transition: color 0.2s ease !important;
+      }
+    }
+
+    .separator {
+      color: #CBD5E1 !important;
+      font-weight: 400 !important;
+    }
+
+    .current {
+      color: #0F172A !important;
+      font-weight: 700 !important;
+    }
+  }
+
   /* Typography Scale */
   .venue-hero-title {
-    font-size: 36px !important;
+    font-size: 26px !important;
     font-weight: 800 !important;
-    line-height: 1.15 !important;
+    line-height: 1.2 !important;
     color: #FFFFFF !important;
     text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6) !important;
   }
@@ -2460,6 +2504,11 @@ body, html, h1, h2, h3, h4, h5, h6, p, span, a, label, input, select, button {
     margin-bottom: 14px !important;
   }
 
+  .text-dark-title, .text-dark-main {
+    color: #111827 !important;
+    font-weight: 700 !important;
+  }
+
   .body-text {
     font-size: 16px !important;
     line-height: 1.7 !important;
@@ -2471,6 +2520,27 @@ body, html, h1, h2, h3, h4, h5, h6, p, span, a, label, input, select, button {
     color: #6B7280 !important;
   }
 
+  .booking-feature-list {
+    list-style: none !important;
+    padding: 0 !important;
+    margin: 0 0 16px 0 !important;
+
+    li {
+      color: #111827 !important;
+      font-size: 13px !important;
+      font-weight: 600 !important;
+      padding: 5px 0 !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 10px !important;
+
+      i {
+        color: #22C55E !important;
+        font-size: 16px !important;
+      }
+    }
+  }
+
   /* Glassmorphism Badge */
   .glass-pill {
     background: rgba(255, 255, 255, 0.25) !important;
@@ -2478,18 +2548,45 @@ body, html, h1, h2, h3, h4, h5, h6, p, span, a, label, input, select, button {
     -webkit-backdrop-filter: blur(10px) !important;
     border: 1px solid rgba(255, 255, 255, 0.4) !important;
     color: #FFFFFF !important;
-    font-size: 13px !important;
+    font-size: 12px !important;
     font-weight: 600 !important;
-    padding: 6px 14px !important;
+    padding: 5px 12px !important;
     border-radius: 9999px !important;
     display: inline-flex !important;
     align-items: center !important;
     gap: 6px !important;
   }
 
-  /* Bento Gallery Grid Images */
+  /* Glassmorphism Icon Action Buttons on Hero Image */
+  .glass-icon-btn {
+    width: 42px !important;
+    height: 42px !important;
+    border-radius: 50% !important;
+    background: rgba(15, 23, 42, 0.5) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.35) !important;
+    color: #FFFFFF !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 16px !important;
+    cursor: pointer !important;
+    transition: all 0.25s ease !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
+    outline: none !important;
+
+    &:hover {
+      background: #22C55E !important;
+      border-color: #22C55E !important;
+      color: #FFFFFF !important;
+      transform: scale(1.1) !important;
+    }
+  }
+
+  /* Bento Gallery Grid Images with Ambient Full View */
   .bento-hero-main {
-    height: 450px !important;
+    height: 360px !important;
     width: 100% !important;
     border-radius: 20px !important;
     overflow: hidden !important;
@@ -2498,20 +2595,35 @@ body, html, h1, h2, h3, h4, h5, h6, p, span, a, label, input, select, button {
     border: 1px solid #E5E7EB !important;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08) !important;
 
-    img {
+    .ambient-bg {
+      position: absolute !important;
+      top: 0 !important;
+      left: 0 !important;
       width: 100% !important;
       height: 100% !important;
       object-fit: cover !important;
-      transition: transform 0.4s ease !important;
+      filter: blur(20px) brightness(0.55) !important;
+      transform: scale(1.15) !important;
+      z-index: 1 !important;
     }
 
-    &:hover img {
-      transform: scale(1.03) !important;
+    .full-hero-img {
+      position: relative !important;
+      z-index: 2 !important;
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: contain !important;
+      transition: transform 0.4s ease !important;
+      cursor: pointer !important;
+    }
+
+    &:hover .full-hero-img {
+      transform: scale(1.02) !important;
     }
   }
 
   .bento-hero-thumb {
-    height: 218px !important;
+    height: 172px !important;
     width: 100% !important;
     border-radius: 20px !important;
     overflow: hidden !important;
@@ -2520,15 +2632,30 @@ body, html, h1, h2, h3, h4, h5, h6, p, span, a, label, input, select, button {
     border: 1px solid #E5E7EB !important;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06) !important;
 
-    img {
+    .ambient-bg {
+      position: absolute !important;
+      top: 0 !important;
+      left: 0 !important;
       width: 100% !important;
       height: 100% !important;
       object-fit: cover !important;
-      transition: transform 0.4s ease !important;
+      filter: blur(16px) brightness(0.55) !important;
+      transform: scale(1.15) !important;
+      z-index: 1 !important;
     }
 
-    &:hover img {
-      transform: scale(1.04) !important;
+    .full-hero-img {
+      position: relative !important;
+      z-index: 2 !important;
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: contain !important;
+      transition: transform 0.4s ease !important;
+      cursor: pointer !important;
+    }
+
+    &:hover .full-hero-img {
+      transform: scale(1.03) !important;
     }
   }
 
@@ -2553,53 +2680,187 @@ body, html, h1, h2, h3, h4, h5, h6, p, span, a, label, input, select, button {
     background-color: #FFFFFF !important;
     border: 1px solid #E5E7EB !important;
     border-radius: 16px !important;
-    padding: 14px !important;
+    padding: 6px !important;
     margin-bottom: 24px !important;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04) !important;
     display: flex !important;
+    width: 100% !important;
     align-items: center !important;
-    gap: 10px !important;
+    gap: 6px !important;
     overflow-x: auto !important;
     white-space: nowrap !important;
   }
 
-  .pro-tab-pill {
-    height: 44px !important;
-    padding: 0 22px !important;
+  button.pro-tab-pill, .pro-tab-pill {
+    flex: 1 !important;
+    height: 40px !important;
+    padding: 0 12px !important;
     border-radius: 9999px !important;
-    font-size: 14px !important;
-    font-weight: 600 !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
-    gap: 8px !important;
+    gap: 6px !important;
     transition: all 0.2s ease !important;
     cursor: pointer !important;
+    outline: none !important;
 
-    &.active {
+    &.active, &.btn-tab-pro-active {
+      background: #22C55E !important;
       background-color: #22C55E !important;
       color: #FFFFFF !important;
       border: none !important;
-      box-shadow: 0 4px 14px rgba(34, 197, 94, 0.35) !important;
+      box-shadow: 0 4px 14px rgba(34, 197, 94, 0.4) !important;
 
-      i {
+      i, span {
         color: #FFFFFF !important;
       }
     }
 
-    &.inactive {
-      background-color: #F8FAFC !important;
-      color: #374151 !important;
-      border: 1px solid #E5E7EB !important;
+    &.inactive, &.btn-tab-pro-inactive {
+      background: #F1F5F9 !important;
+      background-color: #F1F5F9 !important;
+      color: #1E293B !important;
+      border: 1px solid #E2E8F0 !important;
 
       &:hover {
-        background-color: #F1F5F9 !important;
-        border-color: #CBD5E1 !important;
-        color: #111827 !important;
+        background: #E2E8F0 !important;
+        background-color: #E2E8F0 !important;
+        color: #0F172A !important;
       }
 
       i {
         color: #22C55E !important;
+      }
+
+      span {
+        color: #1E293B !important;
+      }
+    }
+  }
+
+  /* Profile Settings Avatar & Cards */
+  .ki-profile-card {
+    background-color: #FFFFFF !important;
+    border: 1px solid #E5E7EB !important;
+    border-radius: 20px !important;
+    padding: 32px !important;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04) !important;
+  }
+
+  .ki-avatar-section {
+    display: flex !important;
+    align-items: center !important;
+    gap: 24px !important;
+  }
+
+  .ki-avatar-box {
+    width: 110px !important;
+    height: 110px !important;
+    min-width: 110px !important;
+    min-height: 110px !important;
+    max-width: 110px !important;
+    max-height: 110px !important;
+    border-radius: 50% !important;
+    overflow: hidden !important;
+    position: relative !important;
+    border: 3px solid #22C55E !important;
+    box-shadow: 0 6px 18px rgba(34, 197, 94, 0.2) !important;
+    background-color: #F8FAFC !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    img {
+      width: 110px !important;
+      height: 110px !important;
+      max-width: 110px !important;
+      max-height: 110px !important;
+      object-fit: cover !important;
+      border-radius: 50% !important;
+    }
+
+    span {
+      font-size: 36px !important;
+      font-weight: 800 !important;
+      color: #22C55E !important;
+    }
+  }
+
+  .ki-section-title {
+    font-size: 18px !important;
+    font-weight: 700 !important;
+    color: #0F172A !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    margin-bottom: 20px !important;
+
+    .ki-section-icon {
+      width: 36px !important;
+      height: 36px !important;
+      border-radius: 10px !important;
+      background: rgba(34, 197, 94, 0.12) !important;
+      color: #22C55E !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      font-size: 15px !important;
+    }
+  }
+
+  .ki-input-group {
+    margin-bottom: 4px !important;
+
+    .ki-field-label {
+      font-size: 13px !important;
+      font-weight: 700 !important;
+      color: #334155 !important;
+      margin-bottom: 6px !important;
+      display: block !important;
+    }
+
+    .ki-input-wrapper {
+      position: relative !important;
+      display: flex !important;
+      align-items: center !important;
+
+      .ki-input-icon {
+        position: absolute !important;
+        left: 14px !important;
+        color: #94A3B8 !important;
+        font-size: 14px !important;
+        pointer-events: none !important;
+        z-index: 2 !important;
+      }
+
+      input.form-control, textarea.form-control {
+        padding-left: 40px !important;
+        background-color: #FFFFFF !important;
+        border: 1px solid #CBD5E1 !important;
+        border-radius: 10px !important;
+        font-size: 14px !important;
+        color: #0F172A !important;
+        font-weight: 500 !important;
+        height: 44px !important;
+        transition: all 0.2s ease !important;
+
+        &:focus {
+          border-color: #22C55E !important;
+          box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.15) !important;
+          background-color: #FFFFFF !important;
+        }
+
+        &::placeholder {
+          color: #94A3B8 !important;
+          font-weight: 400 !important;
+        }
+      }
+
+      textarea.form-control {
+        padding-left: 14px !important;
+        height: auto !important;
       }
     }
   }
@@ -2663,7 +2924,7 @@ body, html, h1, h2, h3, h4, h5, h6, p, span, a, label, input, select, button {
   }
 
   /* Amenity Icon Card Grid */
-  .pro-amenity-card {
+  div.pro-amenity-card, .pro-amenity-card {
     background-color: #F8FAFC !important;
     border: 1px solid #E5E7EB !important;
     border-radius: 12px !important;
@@ -2674,6 +2935,11 @@ body, html, h1, h2, h3, h4, h5, h6, p, span, a, label, input, select, button {
     display: flex !important;
     align-items: center !important;
     gap: 10px !important;
+
+    span, p, label, div {
+      color: #111827 !important;
+      font-weight: 600 !important;
+    }
 
     i {
       color: #22C55E !important;
@@ -3258,8 +3524,7 @@ body .swal2-container {
   box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04), 0 1px 3px rgba(15, 23, 42, 0.02) !important;
   border: 1px solid #E2E8F0 !important;
   padding: 24px !important;
-  max-width: 680px !important;
-  margin: 0 auto !important;
+  width: 100% !important;
   transition: all 0.2s ease !important;
 
   .ki-section-title {

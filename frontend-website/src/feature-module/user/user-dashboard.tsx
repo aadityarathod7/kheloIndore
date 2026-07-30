@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import ImageWithBasePath from "../../core/data/img/ImageWithBasePath";
 import { all_routes } from "../router/all_routes";
 import { jwtDecode} from "jwt-decode";
-import { API_URL } from "../../ApiUrl";
+import { API_URL, IMG_URL } from "../../ApiUrl";
 import axios from "axios";
 
 interface JwtPayload {
@@ -52,81 +52,131 @@ const UserDashboard = () => {
         console.error("Error fetching user data:", error);
       }
     };
-    fetchUser();
-  },[user_id]);
+    if (user_id) {
+      fetchUser();
+    }
+  }, [user_id]);
+
+  const [favouriteVenues, setFavouriteVenues] = useState<Record<string, unknown>[]>([]);
+  const [favLoading, setFavLoading] = useState<boolean>(true);
+
+  const loadFavVenues = async () => {
+    try {
+      const favIds: string[] = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith("fav_venue_") && localStorage.getItem(key) === "true") {
+          const vId = key.replace("fav_venue_", "");
+          if (vId) favIds.push(vId);
+        }
+      }
+
+      if (favIds.length > 0) {
+        const promises = favIds.map((vId) =>
+          axios.get(`${API_URL}/venue/individual/${vId}`).then(res => res.data?.venue).catch(() => null)
+        );
+        const results = await Promise.all(promises);
+        setFavouriteVenues(results.filter((v): v is Record<string, unknown> => v !== null));
+      } else {
+        setFavouriteVenues([]);
+      }
+    } catch (err) {
+      console.error("Error loading favourite venues:", err);
+    } finally {
+      setFavLoading(false);
+    }
+  };
+
+  const location = useLocation();
+
+  useEffect(() => {
+    loadFavVenues();
+  }, []);
+
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    if (searchParams.get("tab") === "favourites") {
+      setTimeout(() => {
+        const favElem = document.getElementById("favourites-section");
+        if (favElem) {
+          favElem.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      }, 350);
+    }
+  }, [location.search]);
+
+  const handleRemoveFav = (venueId: string | number, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    localStorage.removeItem(`fav_venue_${venueId}`);
+    setFavouriteVenues((prev) => prev.filter((v) => String(v.id) !== String(venueId)));
+    Swal.fire({
+      icon: "info",
+      title: "Removed from Favourites",
+      timer: 1800,
+      showConfirmButton: false
+    });
+  };
 
 
   return (
-    <div>
-      {/* Breadcrumb */}
-      <section className="breadcrumb breadcrumb-list mb-0">
-        <span className="primary-right-round" />
-        <div className="container">
-          <h1 className="text-white">User Dashboard</h1>
-          <ul>
-            <li>
-              <Link to={routes.home}>Home</Link>
-            </li>
-            <li>User Dashboard</li>
-          </ul>
-        </div>
-      </section>
-      {/* /Breadcrumb */}
-      {/* Dashboard Menu */}
-      <div className="dashboard-section">
-        <div className="container">
-          <div className="row">
-            <div className="col-lg-12">
-              <div className="dashboard-menu">
-                <ul>
-                  <li>
-                    <Link to={routes.userDashboard} className="active">
-                      <ImageWithBasePath
-                        src="/assets/img/icons/dashboard-icon.svg"
-                        alt="Icon"
-                      />
-                      <span>Dashboard</span>
-                    </Link>
-                  </li>
-                  <li>
-                    <Link to={routes.userBookings}>
-                      <ImageWithBasePath src="/assets/img/icons/booking-icon.svg" alt="Icon" />
-                      <span>My Bookings</span>
-                    </Link>
-                  </li>
-                  {/* <li>
-                    <Link to={routes.userChat}>
-                      <ImageWithBasePath src="/assets/img/icons/chat-icon.svg" alt="Icon" />
-                      <span>Chat</span>
-                    </Link>
-                  </li> */}
-                  {/* <li>
-                    <Link to={routes.userInvoice}>
-                      <ImageWithBasePath src="/assets/img/icons/invoice-icon.svg" alt="Icon" />
-                      <span>Invoices</span>
-                    </Link>
-                  </li> */}
-                  {/* <li>
-                    <Link to={routes.userWallet}>
-                      <ImageWithBasePath src="/assets/img/icons/wallet-icon.svg" alt="Icon" />
-                      <span>Wallet</span>
-                    </Link>
-                  </li> */}
-                  <li>
-                    <Link to={routes.userProfile}>
-                      <ImageWithBasePath src="/assets/img/icons/profile-icon.svg" alt="Icon" />
-                      <span>Profile Setting</span>
-                    </Link>
-                  </li>
-                </ul>
+    <>
+      {/* Hero Section (Matching My Bookings Header) */}
+      <div className="hero-booking-section" style={{ background: "linear-gradient(135deg, #F0FDF4 0%, #ECFDF5 100%)", paddingTop: "175px", paddingBottom: "40px", position: "relative", overflow: "hidden", borderBottom: "1px solid #E5E7EB" }}>
+        <div className="hero-artwork-blend" style={{ position: "absolute", right: "-60px", top: 0, bottom: 0, width: "55%", backgroundImage: "url('/assets/img/bg/banner-illustration.png')", backgroundSize: "cover", backgroundPosition: "left center", backgroundRepeat: "no-repeat", maskImage: "linear-gradient(to left, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%)", WebkitMaskImage: "linear-gradient(to left, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%)", opacity: 0.9 }}></div>
+        
+        <div className="container" style={{ position: "relative", zIndex: 2 }}>
+          <div className="row align-items-center">
+            <div className="col-lg-7 text-start">
+              <span className="font-weight-bold" style={{ fontSize: "13px", letterSpacing: "1.5px", display: "block", marginBottom: "12px", color: "#22C55E", fontWeight: "700" }}>USER DASHBOARD</span>
+              <h1 className="d-flex align-items-center flex-wrap" style={{ fontSize: "48px", fontWeight: "800", color: "#0F172A", lineHeight: "1.1", marginBottom: "16px" }}>
+                User <span style={{ color: "#22C55E", marginLeft: "12px" }}>Dashboard</span>
+              </h1>
+              <p style={{ color: "#64748B", fontSize: "18px", marginBottom: "20px", fontWeight: "500", maxWidth: "480px" }}>
+                Welcome back, {userData?.first_name || 'User'} {userData?.last_name || ''} 👋
+              </p>
+              
+              <div className="d-flex align-items-center flex-wrap gap-2 mt-3">
+                <div className="d-inline-flex align-items-center bg-white px-3 py-2 rounded-pill shadow-sm" style={{ fontSize: "13px", border: "1px solid #E5E7EB" }}>
+                  <Link to="/" style={{ color: "#64748B", textDecoration: "none", fontWeight: "500" }}><i className="fas fa-home me-1" style={{ color: "#64748B" }} /> Home</Link>
+                  <span style={{ margin: "0 10px", color: "#64748B" }}><i className="fas fa-chevron-right" style={{ fontSize: "10px", color: "#64748B" }} /></span>
+                  <span style={{ color: "#22C55E", fontWeight: "600" }}>User Dashboard</span>
+                </div>
+
+                <div className="d-inline-flex align-items-center gap-2 ms-sm-2">
+                  <Link to={routes.userDashboard} className="ki-tab-btn active">
+                    <i className="fas fa-th-large me-2" />
+                    <span>Dashboard</span>
+                  </Link>
+                  <Link to={routes.userBookings} className="ki-tab-btn">
+                    <i className="fas fa-calendar-alt me-2" />
+                    <span>My Bookings</span>
+                  </Link>
+                  <a
+                    href="#favourites-section"
+                    className="ki-tab-btn"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      const elem = document.getElementById("favourites-section");
+                      if (elem) elem.scrollIntoView({ behavior: "smooth", block: "center" });
+                    }}
+                  >
+                    <i className="fas fa-heart text-danger me-2" />
+                    <span>My Favourites</span>
+                  </a>
+                  <Link to={routes.userProfile} className="ki-tab-btn">
+                    <i className="fas fa-user-edit me-2" />
+                    <span>Profile Settings</span>
+                  </Link>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-      {/* /Dashboard Menu */}
+
       {/* Page Content */}
-      <div className="content">
+      <div className="content court-bg">
         <div className="container">
           {/* Statistics Card */}
           <div className="row">
@@ -1141,7 +1191,7 @@ const UserDashboard = () => {
                   </div>
                 </div>
               </div>
-              <div className="card dashboard-card academy-card">
+              <div className="card dashboard-card academy-card" id="favourites-section">
                 <div className="card-header card-header-info">
                   <div className="card-header-inner">
                     <h4>My Favourites</h4>
@@ -1186,101 +1236,79 @@ const UserDashboard = () => {
                     aria-labelledby="nav-Favourites-tab"
                     tabIndex={0}
                   >
-                    <div className="table-responsive dashboard-table-responsive">
-                      <table className="table dashboard-card-table">
-                        <tbody>
-                          <tr>
-                            <td>
-                              <div className="academy-info academy-info">
-                                <Link
-                                  to={routes.userBookings}
-                                  className="academy-img"
-                                >
-                                  <ImageWithBasePath
-                                    src="/assets/img/booking/booking-03.jpg"
-                                    alt="Booking"
-                                  />
-                                </Link>
-                                <div className="academy-content">
-                                  <h6>
-                                    <Link to={routes.userBookings}>
-                                      Wing Sports Academy
-                                    </Link>
-                                  </h6>
-                                  <p>10 Bookings</p>
-                                </div>
-                              </div>
-                            </td>
-                            <td>
-                              <div className="academy-icon">
-                                <Link to={routes.userBookings}>
-                                  <i className="feather-chevron-right" />
-                                </Link>
-                              </div>
-                            </td>
-                          </tr>
-                          <tr>
-                            <td>
-                              <div className="academy-info academy-info">
-                                <Link
-                                  to={routes.userBookings}
-                                  className="academy-img"
-                                >
-                                  <ImageWithBasePath
-                                    src="/assets/img/booking/booking-04.jpg"
-                                    alt="Booking"
-                                  />
-                                </Link>
-                                <div className="academy-content">
-                                  <h6>
-                                    <Link to={routes.userBookings}>
-                                      Feather Badminton
-                                    </Link>
-                                  </h6>
-                                  <p>20 Bookings</p>
-                                </div>
-                              </div>
-                            </td>
-                            <td>
-                              <div className="academy-icon">
-                                <Link to={routes.userBookings}>
-                                  <i className="feather-chevron-right" />
-                                </Link>
-                              </div>
-                            </td>
-                          </tr>
-                          <tr>
-                            <td>
-                              <div className="academy-info academy-info">
-                                <Link
-                                  to={routes.userBookings}
-                                  className="academy-img"
-                                >
-                                  <ImageWithBasePath
-                                    src="/assets/img/booking/booking-05.jpg"
-                                    alt="Booking"
-                                  />
-                                </Link>
-                                <div className="academy-content">
-                                  <h6>
-                                    <Link to={routes.userBookings}>
-                                      Bwing Sports Academy
-                                    </Link>
-                                  </h6>
-                                  <p>30 Bookings</p>
-                                </div>
-                              </div>
-                            </td>
-                            <td>
-                              <div className="academy-icon">
-                                <Link to={routes.userBookings}>
-                                  <i className="feather-chevron-right" />
-                                </Link>
-                              </div>
-                            </td>
-                          </tr>
-                        </tbody>
-                      </table>
+                    <div className="p-3">
+                      {favLoading ? (
+                        <div className="text-center py-4">
+                          <i className="fas fa-spinner fa-spin text-success fa-2x mb-2 d-block" />
+                          <span>Loading your saved venues...</span>
+                        </div>
+                      ) : favouriteVenues.length > 0 ? (
+                        <div className="table-responsive dashboard-table-responsive">
+                          <table className="table dashboard-card-table align-middle">
+                            <tbody>
+                              {favouriteVenues.map((v: Record<string, any>, index: number) => {
+                                const imgPath = v.images && v.images[0]?.src
+                                  ? `${IMG_URL}${v.images[0].src}`
+                                  : "/assets/img/venues/venue-01.jpg";
+                                return (
+                                  <tr key={String(v.id || index)}>
+                                    <td>
+                                      <div className="academy-info d-flex align-items-center gap-3">
+                                        <Link to={`/coaches/venue-details/${v.id}`} className="academy-img" style={{ width: "60px", height: "60px", borderRadius: "12px", overflow: "hidden", flexShrink: 0 }}>
+                                          <img
+                                            src={imgPath}
+                                            alt={String(v.name || 'Venue')}
+                                            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                                            onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+                                              (e.target as HTMLImageElement).src = "/assets/img/venues/venue-01.jpg";
+                                            }}
+                                          />
+                                        </Link>
+                                        <div className="academy-content">
+                                          <h6 className="mb-1">
+                                            <Link to={`/coaches/venue-details/${v.id}`} className="fw-bold text-dark text-decoration-none">
+                                              {v.name}
+                                            </Link>
+                                          </h6>
+                                          <p className="mb-0 text-muted" style={{ fontSize: "12px" }}>
+                                            📍 {v.address ? `${v.address}, ${v.city || ''}` : "Indore"}
+                                          </p>
+                                        </div>
+                                      </div>
+                                    </td>
+                                    <td className="text-end align-middle">
+                                      <div className="d-flex align-items-center justify-content-end gap-2">
+                                        <button
+                                          type="button"
+                                          className="btn btn-sm btn-outline-danger rounded-pill px-3"
+                                          onClick={(e) => handleRemoveFav(v.id, e)}
+                                          title="Remove from Favourites"
+                                        >
+                                          <i className="fas fa-trash-alt me-1" /> Remove
+                                        </button>
+                                        <Link to={`/coaches/venue-details/${v.id}`} className="btn btn-sm btn-success text-white rounded-pill px-3" style={{ backgroundColor: "#22C55E", border: "none" }}>
+                                          Book Court
+                                        </Link>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
+                        </div>
+                      ) : (
+                        <div className="text-center py-4">
+                          <i className="fas fa-heart-broken text-muted fa-3x mb-3 d-block" />
+                          <h6 className="fw-bold text-dark">No favourite venues saved yet</h6>
+                          <p className="text-muted mb-3" style={{ fontSize: "13px" }}>
+                            Click the ❤️ heart icon on any venue page to save it here for quick access.
+                          </p>
+                          <Link to={routes.blogListSidebarLeft} className="btn btn-success text-white rounded-pill px-4" style={{ backgroundColor: "#22C55E", border: "none" }}>
+                            Explore Sports Venues
+                          </Link>
+                        </div>
+                      )}
                     </div>
                   </div>
                   <div
@@ -2962,10 +2990,8 @@ const UserDashboard = () => {
             </div>
           </div>
         </div>
-        {/* /Request Modal */}
       </div>
-
-    </div>
+    </>
   );
 };
 

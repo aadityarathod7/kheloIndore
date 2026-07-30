@@ -331,7 +331,7 @@ const UserProfile = () => {
   return (
     <>
       {/* Hero Section */}
-      <div className="hero-booking-section" style={{ background: "linear-gradient(135deg, #F0FDF4 0%, #ECFDF5 100%)", paddingTop: "175px", paddingBottom: "40px", position: "relative", overflow: "hidden", borderBottom: "1px solid #E5E7EB" }}>
+      <div className="hero-booking-section" style={{ background: "linear-gradient(135deg, #F0FDF4 0%, #ECFDF5 100%)", paddingTop: "195px", paddingBottom: "40px", position: "relative", overflow: "hidden", borderBottom: "1px solid #E5E7EB" }}>
         <div className="hero-artwork-blend" style={{ position: "absolute", right: "-60px", top: 0, bottom: 0, width: "55%", backgroundImage: "url('/assets/img/bg/banner-illustration.png')", backgroundSize: "cover", backgroundPosition: "left center", backgroundRepeat: "no-repeat", maskImage: "linear-gradient(to left, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%)", WebkitMaskImage: "linear-gradient(to left, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%)", opacity: 0.9 }}></div>
         
         <div className="container" style={{ position: "relative", zIndex: 2 }}>
@@ -351,9 +351,17 @@ const UserProfile = () => {
                 </div>
 
                 <div className="d-inline-flex align-items-center gap-2 ms-sm-2">
+                  <Link to={routes.userDashboard} className="ki-tab-btn">
+                    <i className="fas fa-th-large me-2" />
+                    <span>Dashboard</span>
+                  </Link>
                   <Link to={routes.userBookings} className="ki-tab-btn">
                     <i className="fas fa-calendar-alt me-2" />
                     <span>My Bookings</span>
+                  </Link>
+                  <Link to={`${routes.userDashboard}?tab=favourites`} className="ki-tab-btn">
+                    <i className="fas fa-heart text-danger me-2" />
+                    <span>My Favourites</span>
                   </Link>
                   <Link to={routes.userProfile} className="ki-tab-btn active">
                     <i className="fas fa-user-edit me-2" />
@@ -391,158 +399,195 @@ const UserProfile = () => {
         </div>
       )}
 
-      <div className="content court-bg py-5">
+      <div className="content court-bg py-4">
         <div className="container">
           <div className="row justify-content-center">
-            <div className="col-lg-8 col-xl-7">
-              <div className="ki-profile-card">
-                {/* Header Profile Photo Section */}
-                <div className="pb-4 mb-4 border-bottom">
-                  <div className="ki-section-title">
-                    <div className="ki-section-icon">
-                      <i className="fas fa-camera" />
-                    </div>
-                    Profile Photo
+            <div className="col-xl-11 col-lg-12">
+              {/* Top Compact Profile Photo Card */}
+              <div className="ki-profile-card mb-4">
+            <div className="d-flex flex-wrap align-items-center justify-content-between gap-4">
+              <div className="d-flex align-items-center gap-3">
+                <div
+                  style={{
+                    width: "80px",
+                    height: "80px",
+                    minWidth: "80px",
+                    minHeight: "80px",
+                    maxWidth: "80px",
+                    maxHeight: "80px",
+                    borderRadius: "50%",
+                    overflow: "hidden",
+                    border: "3px solid #22C55E",
+                    boxShadow: "0 6px 18px rgba(34, 197, 94, 0.25)",
+                    background: "#F8FAFC",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0
+                  }}
+                >
+                  {avatarSrc ? (
+                    <img
+                      src={avatarSrc}
+                      alt="Profile"
+                      style={{ width: "80px", height: "80px", minWidth: "80px", minHeight: "80px", maxWidth: "80px", maxHeight: "80px", objectFit: "cover", borderRadius: "50%" }}
+                    />
+                  ) : (
+                    <span style={{ fontSize: "28px", fontWeight: "800", color: "#22C55E" }}>{initialLetter}</span>
+                  )}
+                </div>
+                <div>
+                  <h4 className="mb-1 fw-bold text-dark" style={{ fontSize: "20px" }}>
+                    {userData.first_name || 'User'} {userData.last_name || ''}
+                  </h4>
+                  <p className="text-muted mb-0" style={{ fontSize: "13px" }}>
+                    {userData.email || 'user@kheloindore.com'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="d-flex flex-column align-items-end gap-1">
+                <div className="position-relative overflow-hidden d-inline-block">
+                  <button
+                    type="button"
+                    className="btn btn-sm text-white fw-bold px-4 py-2"
+                    style={{
+                      background: "linear-gradient(135deg, #22C55E 0%, #16A34A 100%)",
+                      borderRadius: "50px",
+                      boxShadow: "0 4px 12px rgba(34, 197, 94, 0.3)",
+                      border: "none",
+                      pointerEvents: "none"
+                    }}
+                  >
+                    <i className="fas fa-upload me-2" /> Upload New Photo
+                  </button>
+                  <input
+                    type="file"
+                    accept=".jpg,.jpeg,.png,.svg"
+                    onChange={handleFileUpload}
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      opacity: 0,
+                      width: "100%",
+                      height: "100%",
+                      cursor: "pointer"
+                    }}
+                  />
+                </div>
+                <small className="text-muted" style={{ fontSize: "11px" }}>
+                  JPG, PNG, SVG (Max 5MB)
+                </small>
+              </div>
+            </div>
+          </div>
+
+          {/* Side-by-Side 2-Column Horizontal Grid */}
+          <div className="row g-4">
+            {/* Column 1: Personal Information */}
+            <div className="col-lg-6">
+              <div className="ki-profile-card h-100">
+                <div className="ki-section-title mb-4">
+                  <div className="ki-section-icon">
+                    <i className="fas fa-user-circle" />
                   </div>
+                  Personal Information
+                </div>
 
-                  <div className="ki-avatar-section">
-                    <div className="ki-avatar-box">
-                      {avatarSrc ? (
-                        <img src={avatarSrc} alt="Profile" />
-                      ) : (
-                        <span>{initialLetter}</span>
-                      )}
-                      <div className="ki-avatar-badge">
-                        <i className="fas fa-camera me-1" /> Edit
-                      </div>
-                    </div>
-
-                    <div className="ki-upload-actions">
-                      <div className="ki-upload-btn-wrapper mb-2">
-                        <button
-                          type="button"
-                          className="btn btn-sm px-4 py-2 text-white font-weight-bold"
-                          style={{
-                            background: "linear-gradient(135deg, #22C55E 0%, #16A34A 100%)",
-                            borderRadius: "50px",
-                            boxShadow: "0 4px 12px rgba(34, 197, 94, 0.3)",
-                            border: "none"
-                          }}
-                        >
-                          <i className="fas fa-upload me-2" /> Upload New Photo
-                        </button>
+                <div className="row g-3">
+                  <div className="col-md-6">
+                    <div className="ki-input-group">
+                      <label className="ki-field-label">First Name *</label>
+                      <div className="ki-input-wrapper">
+                        <i className="fas fa-user ki-input-icon" />
                         <input
-                          type="file"
-                          accept=".jpg,.jpeg,.png,.svg"
-                          onChange={handleFileUpload}
+                          type="text"
+                          className="form-control"
+                          name="first_name"
+                          placeholder="First Name"
+                          value={userData.first_name || ""}
+                          onChange={handleInputChange}
                         />
                       </div>
-                      <small className="text-muted">
-                        Allowed Formats: JPG, PNG, SVG (Max size: 5MB)
-                      </small>
                     </div>
                   </div>
-                </div>
 
-                {/* Personal Information Section */}
-                <div className="pb-4 mb-4 border-bottom">
-                  <div className="ki-section-title">
-                    <div className="ki-section-icon">
-                      <i className="fas fa-user-circle" />
+                  <div className="col-md-6">
+                    <div className="ki-input-group">
+                      <label className="ki-field-label">Last Name *</label>
+                      <div className="ki-input-wrapper">
+                        <i className="fas fa-user ki-input-icon" />
+                        <input
+                          type="text"
+                          className="form-control"
+                          name="last_name"
+                          placeholder="Last Name"
+                          value={userData.last_name || ""}
+                          onChange={handleInputChange}
+                        />
+                      </div>
                     </div>
-                    Personal Information
                   </div>
 
-                  <div className="row g-3">
-                    <div className="col-md-6">
-                      <div className="ki-input-group">
-                        <label className="ki-field-label">First Name *</label>
-                        <div className="ki-input-wrapper">
-                          <i className="fas fa-user ki-input-icon" />
-                          <input
-                            type="text"
-                            className="form-control"
-                            name="first_name"
-                            placeholder="Enter First Name"
-                            value={userData.first_name || ""}
-                            onChange={handleInputChange}
-                          />
-                        </div>
+                  <div className="col-md-6">
+                    <div className="ki-input-group">
+                      <label className="ki-field-label">Email Address *</label>
+                      <div className="ki-input-wrapper">
+                        <i className="fas fa-envelope ki-input-icon" />
+                        <input
+                          type="email"
+                          className="form-control"
+                          name="email"
+                          placeholder="Email Address"
+                          value={userData.email || ""}
+                          onChange={handleInputChange}
+                        />
                       </div>
                     </div>
+                  </div>
 
-                    <div className="col-md-6">
-                      <div className="ki-input-group">
-                        <label className="ki-field-label">Last Name *</label>
-                        <div className="ki-input-wrapper">
-                          <i className="fas fa-user ki-input-icon" />
-                          <input
-                            type="text"
-                            className="form-control"
-                            name="last_name"
-                            placeholder="Enter Last Name"
-                            value={userData.last_name || ""}
-                            onChange={handleInputChange}
-                          />
-                        </div>
+                  <div className="col-md-6">
+                    <div className="ki-input-group">
+                      <label className="ki-field-label">Phone Number *</label>
+                      <div className="ki-input-wrapper">
+                        <i className="fas fa-phone-alt ki-input-icon" />
+                        <input
+                          type="text"
+                          className="form-control"
+                          name="mobile"
+                          placeholder="Phone Number"
+                          value={userData.mobile || ""}
+                          onChange={handleInputChange}
+                        />
                       </div>
                     </div>
+                  </div>
 
-                    <div className="col-md-6">
-                      <div className="ki-input-group">
-                        <label className="ki-field-label">Email Address *</label>
-                        <div className="ki-input-wrapper">
-                          <i className="fas fa-envelope ki-input-icon" />
-                          <input
-                            type="email"
-                            className="form-control"
-                            name="email"
-                            placeholder="Enter Email Address"
-                            value={userData.email || ""}
-                            onChange={handleInputChange}
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="col-md-6">
-                      <div className="ki-input-group">
-                        <label className="ki-field-label">Phone Number *</label>
-                        <div className="ki-input-wrapper">
-                          <i className="fas fa-phone-alt ki-input-icon" />
-                          <input
-                            type="text"
-                            className="form-control"
-                            name="mobile"
-                            placeholder="Enter Phone Number"
-                            value={userData.mobile || ""}
-                            onChange={handleInputChange}
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="col-12">
-                      <div className="ki-input-group">
-                        <label className="ki-field-label">About Yourself</label>
-                        <div className="ki-input-wrapper">
-                          <textarea
-                            className="form-control"
-                            rows={3}
-                            placeholder="Tell us about your favorite sports, hobbies, or bio..."
-                            name="user_info"
-                            value={userData.user_info || ""}
-                            onChange={handleInputChange}
-                          />
-                        </div>
+                  <div className="col-12">
+                    <div className="ki-input-group">
+                      <label className="ki-field-label">About Yourself</label>
+                      <div className="ki-input-wrapper">
+                        <textarea
+                          className="form-control"
+                          rows={2}
+                          placeholder="Favorite sports, bio..."
+                          name="user_info"
+                          value={userData.user_info || ""}
+                          onChange={handleInputChange}
+                        />
                       </div>
                     </div>
                   </div>
                 </div>
+              </div>
+            </div>
 
-                {/* Location & Address Section */}
+            {/* Column 2: Address & Location + Save */}
+            <div className="col-lg-6">
+              <div className="ki-profile-card h-100 d-flex flex-column justify-content-between">
                 <div>
-                  <div className="ki-section-title">
+                  <div className="ki-section-title mb-4">
                     <div className="ki-section-icon">
                       <i className="fas fa-map-marker-alt" />
                     </div>
@@ -567,7 +612,7 @@ const UserProfile = () => {
                       </div>
                     </div>
 
-                    <div className="col-md-4">
+                    <div className="col-md-6">
                       <div className="ki-input-group">
                         <label className="ki-field-label">State</label>
                         <div className="ki-input-wrapper">
@@ -586,7 +631,7 @@ const UserProfile = () => {
                       </div>
                     </div>
 
-                    <div className="col-md-4">
+                    <div className="col-md-6">
                       <div className="ki-input-group">
                         <label className="ki-field-label">City</label>
                         <div className="ki-input-wrapper">
@@ -605,7 +650,7 @@ const UserProfile = () => {
                       </div>
                     </div>
 
-                    <div className="col-md-4">
+                    <div className="col-12">
                       <div className="ki-input-group">
                         <label className="ki-field-label">Zipcode</label>
                         <div className="ki-input-wrapper">
@@ -630,20 +675,21 @@ const UserProfile = () => {
                 </div>
 
                 {/* Submit Action */}
-                <div className="mt-5 pt-3 border-top d-flex align-items-center justify-content-between">
+                <div className="mt-4 pt-3 border-top d-flex align-items-center justify-content-between">
                   <div>
-                    {error && <span className="text-danger font-weight-bold">{error}</span>}
-                    {success && <span className="text-success font-weight-bold">{success}</span>}
+                    {error && <span className="text-danger font-weight-bold" style={{ fontSize: "13px" }}>{error}</span>}
+                    {success && <span className="text-success font-weight-bold" style={{ fontSize: "13px" }}>{success}</span>}
                   </div>
                   <button
                     type="button"
                     onClick={handleSaveChange}
-                    className="btn ki-submit-btn"
+                    className="btn ki-submit-btn px-4 py-2"
                     disabled={loading}
+                    style={{ backgroundColor: "#22C55E", border: "none", borderRadius: "50px", color: "#FFFFFF", fontWeight: "700" }}
                   >
                     {loading ? (
                       <>
-                        <i className="fas fa-spinner fa-spin me-2" /> Saving Changes...
+                        <i className="fas fa-spinner fa-spin me-2" /> Saving...
                       </>
                     ) : (
                       <>
@@ -657,8 +703,10 @@ const UserProfile = () => {
           </div>
         </div>
       </div>
-    </>
-  );
+    </div>
+  </div>
+</>
+);
 };
 
 export default UserProfile;
