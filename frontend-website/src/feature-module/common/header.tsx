@@ -32,6 +32,85 @@ const Header = () => {
   const [userData, setUserData] = useState<JwtPayload | null>(null);
   const [isActive, setIsActive] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [globalSearchQuery, setGlobalSearchQuery] = useState("");
+
+  const handleGlobalSearch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!globalSearchQuery.trim()) return;
+    const query = globalSearchQuery.trim().toLowerCase();
+
+    // Check query directly for keywords
+    if (query.includes("coach") || query.includes("academy")) {
+      navigate(`${routes.coachesGrid}?search=${encodeURIComponent(globalSearchQuery.trim())}`);
+      return;
+    }
+    if (query.includes("trainer") || query.includes("personal training")) {
+      navigate(`${routes.blogList}?search=${encodeURIComponent(globalSearchQuery.trim())}`);
+      return;
+    }
+    if (query.includes("venue") || query.includes("court") || query.includes("turf") || query.includes("ground")) {
+      navigate(`${routes.blogListSidebarLeft}?search=${encodeURIComponent(globalSearchQuery.trim())}`);
+      return;
+    }
+
+    try {
+      // Parallel lightweight checks
+      const [coachesRes, trainersRes, venuesRes] = await Promise.all([
+        axios.get(`${API_URL}/web/fetch-all-coaches`).catch(() => ({ data: { data: [] } })),
+        axios.get(`${API_URL}/web/PersonalTraining/fetchAll`).catch(() => ({ data: { data: [] } })),
+        axios.get(`${API_URL}/web/venue/getVenue`).catch(() => ({ data: { data: [] } }))
+      ]);
+
+      const coaches = coachesRes.data?.data || [];
+      const trainers = trainersRes.data?.data || [];
+      const venues = venuesRes.data?.venue || []; // Wait, venue list API nests under venue key! Yes!
+
+      // Check for coach name/details match
+      const hasCoachMatch = coaches.some((c: any) => {
+        const fullName = `${c.first_name || ""} ${c.last_name || ""}`.toLowerCase();
+        const category = (c.category || "").toLowerCase();
+        const trainerType = (c.trainer_type || "").toLowerCase();
+        return fullName.includes(query) || category.includes(query) || trainerType.includes(query);
+      });
+
+      if (hasCoachMatch) {
+        navigate(`${routes.coachesGrid}?search=${encodeURIComponent(globalSearchQuery.trim())}`);
+        return;
+      }
+
+      // Check for trainer name/details match
+      const hasTrainerMatch = trainers.some((t: any) => {
+        const fullName = `${t.first_name || ""} ${t.last_name || ""}`.toLowerCase();
+        const category = (t.category || "").toLowerCase();
+        const trainerType = (t.trainer_type || "").toLowerCase();
+        return fullName.includes(query) || category.includes(query) || trainerType.includes(query);
+      });
+
+      if (hasTrainerMatch) {
+        navigate(`${routes.blogList}?search=${encodeURIComponent(globalSearchQuery.trim())}`);
+        return;
+      }
+
+      // Check for venue name/details match
+      const hasVenueMatch = venues.some((v: any) => {
+        const venueName = (v.name || "").toLowerCase();
+        const category = (v.category || "").toLowerCase();
+        return venueName.includes(query) || category.includes(query);
+      });
+
+      if (hasVenueMatch) {
+        navigate(`${routes.blogListSidebarLeft}?search=${encodeURIComponent(globalSearchQuery.trim())}`);
+        return;
+      }
+
+      // Default fallback
+      navigate(`${routes.blogListSidebarLeft}?search=${encodeURIComponent(globalSearchQuery.trim())}`);
+    } catch (err) {
+      console.error(err);
+      // Fallback
+      navigate(`${routes.blogListSidebarLeft}?search=${encodeURIComponent(globalSearchQuery.trim())}`);
+    }
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -261,7 +340,7 @@ const Header = () => {
         } ${isScrolled ? "fixed" : ""}`}
       >
       <div className="container-fluid">
-        <nav className="navbar navbar-expand-lg header-nav">
+        <nav className="navbar navbar-expand-lg header-nav" style={{ flexWrap: "nowrap" }}>
           <div className="navbar-header">
             <div className="mobile-navbar d-lg-none d-flex align-items-center justify-content-between w-100 py-2 px-3">
               <Link to="/" className="navbar-brand m-0">
@@ -401,7 +480,31 @@ const Header = () => {
               ))}
             </ul>
           </div>
+
           <ul className="nav header-navbar-rht">
+            {/* Global Search Bar (Only on Desktop) */}
+            <li className="nav-item d-none d-lg-block me-3">
+              <div className="nav-search-bar">
+                <form onSubmit={handleGlobalSearch} className="position-relative">
+                  <input
+                    type="text"
+                    value={globalSearchQuery}
+                    onChange={(e) => setGlobalSearchQuery(e.target.value)}
+                    className="form-control nav-search-input"
+                  />
+                  {!globalSearchQuery && (
+                    <div className="placeholder-marquee-container">
+                      <div className="placeholder-marquee-text">
+                        Search venues, coaches, trainers...
+                      </div>
+                    </div>
+                  )}
+                  <button type="submit" className="nav-search-btn">
+                    <i className="fas fa-search" />
+                  </button>
+                </form>
+              </div>
+            </li>
             <li className="nav-item">
               {/* <Link
                 className="nav-link btn btn-secondary"

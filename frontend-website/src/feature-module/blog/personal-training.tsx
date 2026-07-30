@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import ImageWithBasePath from "../../core/data/img/ImageWithBasePath";
 import { Dropdown } from "primereact/dropdown";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { all_routes } from "../router/all_routes";
 import axios from "axios";
 import { API_URL, IMG_URL } from "../../ApiUrl";
@@ -56,12 +56,69 @@ const options = [
   { value: "zumba", label: "Zumba" },
 ];
 
+const fuzzyMatch = (text: string, query: string): boolean => {
+  if (!text || !query) return false;
+  text = text.toLowerCase().trim();
+  query = query.toLowerCase().trim();
+  
+  if (text.includes(query)) return true;
+
+  const getEditDistance = (a: string, b: string): number => {
+    if (a.length === 0) return b.length;
+    if (b.length === 0) return a.length;
+    const matrix: number[][] = [];
+    for (let i = 0; i <= b.length; i++) {
+      matrix[i] = [i];
+    }
+    for (let j = 0; j <= a.length; j++) {
+      matrix[0][j] = j;
+    }
+    for (let i = 1; i <= b.length; i++) {
+      for (let j = 1; j <= a.length; j++) {
+        if (b.charAt(i - 1) === a.charAt(j - 1)) {
+          matrix[i][j] = matrix[i - 1][j - 1];
+        } else {
+          matrix[i][j] = Math.min(
+            matrix[i - 1][j - 1] + 1, // substitution
+            Math.min(
+              matrix[i][j - 1] + 1, // insertion
+              matrix[i - 1][j] + 1  // deletion
+            )
+          );
+        }
+      }
+    }
+    return matrix[b.length][a.length];
+  };
+
+  const words = text.split(/\s+/);
+  const qWords = query.split(/\s+/);
+  
+  return qWords.every((qw) => {
+    return words.some((w) => {
+      if (w.includes(qw)) return true;
+      if (qw.includes(w)) return true;
+      const distance = getEditDistance(w, qw);
+      const maxAllowedDistance = qw.length <= 2 ? 0 : qw.length <= 5 ? 1 : 2;
+      return distance <= maxAllowedDistance;
+    });
+  });
+};
+
 const BlogList = () => {
   const routes = all_routes;
   const [selectedItems, setSelectedItems] = useState(Array(9).fill(false));
   const [trainer, setTrainer] = useState<Trainer[]>([]);
   const [selectedSort, setSelectedSort] = useState<SortCriteria | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+
+  const [searchParams, setSearchParams] = useSearchParams();
+  const urlSearchQuery = searchParams.get("search") || "";
+  const [searchQuery, setSearchQuery] = useState(urlSearchQuery);
+
+  useEffect(() => {
+    setSearchQuery(urlSearchQuery);
+  }, [urlSearchQuery]);
   const [filterTrainer, setFilterTrainer] = useState<Trainer[]>([]);
   const [filterPriceOnly, setFilterPriceOnly] = useState<Trainer[]>([]);
   const [filterCategoryOnly, setFilterCategoryOnly] = useState<Trainer[]>([]);
@@ -136,6 +193,34 @@ const BlogList = () => {
   useEffect(() => {
     let filteredData = trainer;
 
+    const activeSearch = searchQuery || urlSearchQuery;
+    if (activeSearch) {
+      const q = activeSearch.toLowerCase().trim();
+      filteredData = filteredData.filter((t) => {
+        const firstName = String(t.first_name || "").toLowerCase();
+        const lastName = String(t.last_name || "").toLowerCase();
+        const fullName = `${firstName} ${lastName}`;
+        const category = String(t.category || "").toLowerCase();
+        const trainerType = String(t.trainer_type || "").toLowerCase();
+        const nearbyLoc = String(t.near_by_location || "").toLowerCase();
+        
+        let specMatch = false;
+        if (Array.isArray(t.specializations)) {
+          specMatch = t.specializations.some((s: string) => fuzzyMatch(s, q));
+        } else if (t.specializations) {
+          specMatch = fuzzyMatch(String(t.specializations), q);
+        }
+
+        return (
+          fuzzyMatch(fullName, q) ||
+          fuzzyMatch(category, q) ||
+          fuzzyMatch(trainerType, q) ||
+          fuzzyMatch(nearbyLoc, q) ||
+          specMatch
+        );
+      });
+    }
+
     if (selectedlocation) {
       filteredData = filteredData.filter((t) =>
         t.near_by_location?.toLowerCase()?.includes(selectedlocation.toLowerCase())
@@ -151,7 +236,7 @@ const BlogList = () => {
     }
 
     setFinalFilterTrainer(filteredData);
-  }, [selectedlocation, selectedCategory, trainer]);
+  }, [selectedlocation, selectedCategory, searchQuery, urlSearchQuery, trainer]);
 
   // useEffect(() => {
   //   if (location) {
@@ -284,88 +369,45 @@ const BlogList = () => {
       </div>
       {/* /Hero Section */}
       {/* Page Content */}
-      <div className="content blog-grid" style={{ backgroundColor: "#F8FAFC", padding: "32px 0 60px 0" }}>
+      <div className="content blog-grid" style={{ backgroundColor: "#F8FAFC", padding: "16px 0 40px 0" }}>
         <div className="container">
           <div className="row">
             <div className="col-lg-12">
-              <div className="sortby-section">
-                <div className="sorting-info">
-                  <div className="row d-flex align-items-center">
-                    <div className="col-xl-4 col-lg-3 col-sm-12 col-12">
-                      <div className="count-search">
-                        <p>
-                          <span>
-                            {selectedCategory ||
-                              selectedSort ||
-                              selectedlocation
-                              ? finalFilterTrainer.length
-                              : trainer.length}
-                          </span>{" "}
-                          Trainer are listed
-                        </p>
-                      </div>
-                    </div>
-                    <div className="col-xl-8 col-lg-9 col-sm-12 col-12">
-                      <div className="sortby-filter-group" >
-                        <div className="grid-listview">
-                          <ul className="nav">
-                            {/* <li>
-                              <span>View as</span>
-                            </li>
-                            <li>
-                              <Link to={""} className="active">
-                                <ImageWithBasePath
-                                  src="assets/img/icons/sort-01.svg"
-                                  alt="Icon"
-                                />
-                              </Link>
-                            </li> */}
-                            {/* <li>
-                              <Link to={routes.coachesList}>
-                                <ImageWithBasePath
-                                  src="assets/img/icons/sort-02.svg"
-                                  alt="Icon"
-                                />
-                              </Link>
-                            </li> */}
+              <div className="sortby-section d-flex align-items-center justify-content-between flex-wrap gap-3 py-2 px-3">
+                <div className="count-search mb-0">
+                  <p className="mb-0" style={{ fontSize: "14px", fontWeight: "600", color: "#475569" }}>
+                    <span>
+                      {selectedCategory || searchQuery || urlSearchQuery || selectedSort || selectedlocation
+                        ? finalFilterTrainer.length
+                        : trainer.length}
+                    </span>{" "}
+                    Trainers are listed
+                  </p>
+                </div>
+                
+                <div className="d-flex align-items-center flex-wrap gap-3">
+                  {/* Local Live Search Input */}
+                  <div className="position-relative" style={{ width: "260px" }}>
+                    <i className="fas fa-search listings-search-icon" />
+                    <input
+                      type="text"
+                      className="form-control listings-search-input"
+                      placeholder="Search trainer by name..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                  </div>
 
-                            {/* <div className="sorting-select">
-                              <Dropdown
-                                value={setSelectedLocation}
-                                // onChange={handleCategoryChange}
-                                options={sortLocation}
-                                placeholder={<ImageWithBasePath
-                                  src="assets/img/icons/sort-03.svg"
-                                  alt="Icon"
-                                />}
-                                className="select custom-select-list w-100"
-                              />
-                            </div> */}
-                          </ul>
-                        </div>
-                        <div className="sortbyset">
-                          <div className="sorting-select">
-                            <Dropdown
-                              value={selectedCategory}
-                              onChange={(e) => handleCategoryChange(e)}
-                              options={options}
-                              placeholder="Category"
-                              className="select custom-select-list w-100"
-                            />
-                          </div>
-                          {/* <div className="sorting-select">
-                            <Dropdown
-                              value={selectedSort}
-                              onChange={(e) => setSelectedSort(e.value)}
-                              options={sortOptions}
-                              optionLabel="name"
-                              placeholder="Price"
-                              className="select custom-select-list w-100"
-                            />
-                          </div> */}
-                        </div>
-                      </div>
-                    </div>
+                  {/* Category Dropdown */}
+                  <div style={{ width: "180px" }}>
+                    <Dropdown
+                      value={selectedCategory}
+                      onChange={(e) => handleCategoryChange(e)}
+                      options={options}
+                      placeholder="Category"
+                      className="select custom-select-list w-100"
+                      style={{ height: "36px", display: "flex", alignItems: "center" }}
+                    />
                   </div>
                 </div>
               </div>

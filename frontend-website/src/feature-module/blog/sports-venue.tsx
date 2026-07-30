@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import ImageWithBasePath from "../../core/data/img/ImageWithBasePath";
 import { all_routes } from "../router/all_routes";
 import axios from "axios";
@@ -40,11 +40,68 @@ interface FilterData {
   near_by_location: any;
 }
 
+const fuzzyMatch = (text: string, query: string): boolean => {
+  if (!text || !query) return false;
+  text = text.toLowerCase().trim();
+  query = query.toLowerCase().trim();
+  
+  if (text.includes(query)) return true;
+
+  const getEditDistance = (a: string, b: string): number => {
+    if (a.length === 0) return b.length;
+    if (b.length === 0) return a.length;
+    const matrix: number[][] = [];
+    for (let i = 0; i <= b.length; i++) {
+      matrix[i] = [i];
+    }
+    for (let j = 0; j <= a.length; j++) {
+      matrix[0][j] = j;
+    }
+    for (let i = 1; i <= b.length; i++) {
+      for (let j = 1; j <= a.length; j++) {
+        if (b.charAt(i - 1) === a.charAt(j - 1)) {
+          matrix[i][j] = matrix[i - 1][j - 1];
+        } else {
+          matrix[i][j] = Math.min(
+            matrix[i - 1][j - 1] + 1, // substitution
+            Math.min(
+              matrix[i][j - 1] + 1, // insertion
+              matrix[i - 1][j] + 1  // deletion
+            )
+          );
+        }
+      }
+    }
+    return matrix[b.length][a.length];
+  };
+
+  const words = text.split(/\s+/);
+  const qWords = query.split(/\s+/);
+  
+  return qWords.every((qw) => {
+    return words.some((w) => {
+      if (w.includes(qw)) return true;
+      if (qw.includes(w)) return true;
+      const distance = getEditDistance(w, qw);
+      const maxAllowedDistance = qw.length <= 2 ? 0 : qw.length <= 5 ? 1 : 2;
+      return distance <= maxAllowedDistance;
+    });
+  });
+};
+
 const BlogListSidebarLeft = (_props: { id: string; name: string }) => {
   const [venues, setVenues] = useState<Venues[]>([]);
   const [category, setCategory] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedLocation, setSelectedLocation] = useState("");
+
+  const [searchParams, setSearchParams] = useSearchParams();
+  const urlSearchQuery = searchParams.get("search") || "";
+  const [searchQuery, setSearchQuery] = useState(urlSearchQuery);
+
+  useEffect(() => {
+    setSearchQuery(urlSearchQuery);
+  }, [urlSearchQuery]);
   const [venueByLocation, setVenueByLocation] = useState<Venues[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -130,6 +187,31 @@ const BlogListSidebarLeft = (_props: { id: string; name: string }) => {
   useEffect(() => {
     let filteredData = venues;
     
+    // 0. Search Query Filter
+    const activeSearch = searchQuery || urlSearchQuery;
+    if (activeSearch) {
+      const q = activeSearch.toLowerCase().trim();
+      filteredData = filteredData.filter((v) => {
+        const venueName = String(v.name || "").toLowerCase();
+        const address = String(v.address || "").toLowerCase();
+        const city = String(v.city || "").toLowerCase();
+        const category = String(v.category || "").toLowerCase();
+        const vendorType = String(v.vendor_type || "").toLowerCase().replace("_", " ");
+        const activities = String(v.activities || "").toLowerCase();
+        const nearbyLoc = String(v.near_by_location || "").toLowerCase();
+
+        return (
+          fuzzyMatch(venueName, q) ||
+          fuzzyMatch(address, q) ||
+          fuzzyMatch(city, q) ||
+          fuzzyMatch(category, q) ||
+          fuzzyMatch(vendorType, q) ||
+          fuzzyMatch(activities, q) ||
+          fuzzyMatch(nearbyLoc, q)
+        );
+      });
+    }
+    
     // 1. Location Area Filter
     if (selectedLocation) {
       filteredData = filteredData.filter((t: any) =>
@@ -190,7 +272,7 @@ const BlogListSidebarLeft = (_props: { id: string; name: string }) => {
     }
 
     setVenueByLocation(filteredData);
-  }, [selectedLocation, selectedCategory, grassType, layoutType, floorType, selectedAmenities, sortBy, venues]);
+  }, [selectedLocation, selectedCategory, grassType, layoutType, floorType, selectedAmenities, sortBy, searchQuery, urlSearchQuery, venues]);
 
   const handleCategoryClick = (categoryName: any) => {
     setSelectedCategory(categoryName);
@@ -476,14 +558,28 @@ const BlogListSidebarLeft = (_props: { id: string; name: string }) => {
                 <div className="col-sm-12 col-md-8 col-lg-8">
                   
                   {/* Listings Header */}
-                  <div className="d-flex align-items-center justify-content-between mb-4">
-                    <h5 className="m-0" style={{ fontSize: "16px", fontWeight: "700", color: "#17222D" }}>
+                  <div className="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4 py-2 px-3 bg-white rounded shadow-sm border" style={{ borderColor: "#E2E8E3" }}>
+                    <h5 className="m-0" style={{ fontSize: "14px", fontWeight: "700", color: "#475569" }}>
                       <span style={{ color: "#3CAB4B", marginRight: "6px" }}>
-                        {venueByLocation.length > 0 ? venueByLocation.length : venues.length}
+                        {selectedCategory || searchQuery || urlSearchQuery || selectedLocation ? venueByLocation.length : venues.length}
                       </span> 
                       Venues Found
                     </h5>
-                    <div className="d-flex align-items-center gap-2">
+                    
+                    <div className="d-flex align-items-center flex-wrap gap-2">
+                      {/* Local Live Search Input */}
+                      <div className="position-relative" style={{ width: "200px" }}>
+                        <i className="fas fa-search listings-search-icon" style={{ left: "10px", top: "50%", transform: "translateY(-50%)", position: "absolute", color: "#94A3B8", fontSize: "12px" }} />
+                        <input
+                          type="text"
+                          className="form-control listings-search-input"
+                          placeholder="Search venues..."
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          style={{ height: "32px", fontSize: "12px", paddingLeft: "26px", borderRadius: "50px", border: "1px solid #E2E8F0" }}
+                        />
+                      </div>
+
                       <div className="d-flex align-items-center gap-1 bg-white px-2 py-1 rounded border" style={{ fontSize: "12px", height: "32px", borderColor: "#E2E8E3" }}>
                         <span className="text-muted pe-1">Sort by:</span>
                         <select className="form-select form-select-sm border-0 bg-transparent py-0 ps-0 pe-4" value={sortBy} onChange={(e) => setSortBy(e.target.value)} style={{ fontSize: "12px", fontWeight: "600", boxShadow: "none", width: "100px", backgroundPosition: "right 4px center" }}>
@@ -493,12 +589,6 @@ const BlogListSidebarLeft = (_props: { id: string; name: string }) => {
                           <option value="name">Name: A-Z</option>
                         </select>
                       </div>
-                      <button className="btn btn-sm btn-primary rounded d-flex align-items-center justify-content-center" style={{ width: "32px", height: "32px", backgroundColor: "#3CAB4B", borderColor: "#3CAB4B" }}>
-                        <i className="feather-grid" />
-                      </button>
-                      <button className="btn btn-sm btn-light rounded d-flex align-items-center justify-content-center border" style={{ width: "32px", height: "32px", backgroundColor: "#FFFFFF" }}>
-                        <i className="feather-list" />
-                      </button>
                     </div>
                   </div>
 
