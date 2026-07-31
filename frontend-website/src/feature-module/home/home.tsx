@@ -55,6 +55,15 @@ interface Venues {
   near_by_location: string;
 }
 
+const getVenueImage = (images: any): string => {
+  if (!images || !Array.isArray(images) || images.length === 0) return "assets/img/venues/venue-01.jpg";
+  const first = images[0];
+  const imgStr = typeof first === "string" ? first : (first?.src || first?.url || "");
+  if (!imgStr) return "assets/img/venues/venue-01.jpg";
+  if (imgStr.startsWith("http://") || imgStr.startsWith("https://")) return imgStr;
+  return `${IMG_URL}${imgStr}`;
+};
+
 interface Goto {
   name: string;
 }
@@ -828,26 +837,22 @@ const Home = () => {
                       <div className="featured-venues-item" key={index}>
                         <div className="listing-item home-venue border-white-10" style={{ background: "var(--ki-bg-surface)", border: "1px solid #E2E8E3", borderRadius: "24px", overflow: "hidden", margin: "10px", boxShadow: "var(--ki-shadow-card)" }}>
                           <div className="listing-img" style={{ height: "200px" }}>
-                            <div
-                              className="background-image"
-                              style={{
-                                backgroundImage: `url(${
-                                  venue?.images[0]?.src
-                                    ? `${IMG_URL}${venue?.images[0]?.src}`
-                                    : "/assets/img/no-img.png"
-                                })`,
-                              }}
-                            ></div>
                             <Link to={`/sports-venue/${venue.vendor_type.replace(/\s+/g, "-").toLowerCase()}/${venue.name.replace(/\s+/g, "-").toLowerCase()}/${venue._id}`}>
-                              <ImageWithBasePath
-                                src={
-                                  venue?.images[0]?.src
-                                    ? `${IMG_URL}${venue?.images[0]?.src}`
-                                    : "/assets/img/no-img.png"
-                                }
-                                className="img-fluid foreground-image"
-                                alt="Venue"
-                              />
+                              {getVenueImage(venue?.images).startsWith("http") ? (
+                                <img
+                                  src={getVenueImage(venue?.images)}
+                                  className="img-fluid"
+                                  alt={venue.name}
+                                  style={{ height: "100%", width: "100%", objectFit: "cover" }}
+                                />
+                              ) : (
+                                <ImageWithBasePath
+                                  src={getVenueImage(venue?.images)}
+                                  className="img-fluid"
+                                  alt={venue.name}
+                                  style={{ height: "100%", width: "100%", objectFit: "cover" }}
+                                />
+                              )}
                             </Link>
                             <div className="fav-item-venues news-sports" style={{ top: "12px", left: "12px" }}>
                               <span className="tag tag-blue" style={{ background: "var(--ki-primary)", color: "#FFFFFF", fontWeight: "700", borderRadius: "8px", fontSize: "12px", textTransform: "uppercase" }}>

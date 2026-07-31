@@ -24,6 +24,15 @@ interface Category {
   category_name: string;
 }
 
+const getVenueImage = (images: any): string => {
+  if (!images || !Array.isArray(images) || images.length === 0) return "assets/img/venues/venue-01.jpg";
+  const first = images[0];
+  const imgStr = typeof first === "string" ? first : (first?.src || first?.url || "");
+  if (!imgStr) return "assets/img/venues/venue-01.jpg";
+  if (imgStr.startsWith("http://") || imgStr.startsWith("https://")) return imgStr;
+  return `${IMG_URL}${imgStr}`;
+};
+
 interface FilterData {
   vendor_type: any;
   name: string;
@@ -135,16 +144,24 @@ export default function VenueByCategory(props: any) {
   };
 
   useEffect(() => {
-    if (categorySelected) {
+    if (categorySelected && venues.length > 0) {
+      const targetCat = categorySelected.toLowerCase().replace(/-/g, " ").trim();
       const filteredData = venues.filter((t: any) => {
-        const formattedvender_type = (t.vendor_type || "")
-          .toLowerCase()
-          .replace(/\s+/g, "-");
-        return formattedvender_type.includes(categorySelected);
+        const vendorType = (t.vendor_type || "").toLowerCase().replace(/_/g, " ").trim();
+        const category = (t.category || "").toLowerCase().replace(/_/g, " ").trim();
+
+        return (
+          vendorType.includes(targetCat) ||
+          category.includes(targetCat) ||
+          targetCat.includes(vendorType) ||
+          targetCat.includes(category)
+        );
       });
-      setCategoryVenue(filteredData);
+      setCategoryVenue(filteredData.length > 0 ? filteredData : venues);
+    } else {
+      setCategoryVenue(venues);
     }
-  }, [venues]);
+  }, [venues, categorySelected]);
 
   useEffect(() => {
     if (locationName) {
@@ -304,29 +321,24 @@ export default function VenueByCategory(props: any) {
                       <div className="featured-venues-item" key={index}>
                         <div className="listing-item venue-page">
                           <div className="listing-img">
-                            <div
-                              className="background-image"
-                              style={{
-                                backgroundImage: `url(${
-                                  venue?.images[0]?.src
-                                    ? `${IMG_URL}${venue?.images[0]?.src}`
-                                    : "/assets/img/no-img.png"
-                                })`,
-                              }}
-                            ></div>
                             <Link
                               to={`/sports-venue/${venue.vendor_type.replace(/\s+/g, "-").toLowerCase()}/${venue.name.replace(/\s+/g, "-").toLowerCase()}/${venue._id}`}
                             >
-                              <ImageWithBasePath
-                                // src="/assets/img/blog/blog-01.jpg"
-                                src={
-                                  venue.images[0]?.src
-                                    ? `${IMG_URL}${venue.images[0]?.src}`
-                                    : "/assets/img/no-img.png"
-                                }
-                                className="img-fluid foreground-image"
-                                alt="Venue"
-                              />
+                              {getVenueImage(venue?.images).startsWith("http") ? (
+                                <img
+                                  src={getVenueImage(venue?.images)}
+                                  className="img-fluid"
+                                  alt={venue.name}
+                                  style={{ height: "180px", width: "100%", objectFit: "cover" }}
+                                />
+                              ) : (
+                                <ImageWithBasePath
+                                  src={getVenueImage(venue?.images)}
+                                  className="img-fluid"
+                                  alt={venue.name}
+                                  style={{ height: "180px", width: "100%", objectFit: "cover" }}
+                                />
+                              )}
                             </Link>
                             <div className="fav-item-venues news-sports">
                               <span className="tag tag-blue">

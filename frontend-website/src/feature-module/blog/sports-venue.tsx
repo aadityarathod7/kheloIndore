@@ -90,6 +90,15 @@ const fuzzyMatch = (text: string, query: string): boolean => {
   });
 };
 
+const getVenueImage = (images: any): string => {
+  if (!images || !Array.isArray(images) || images.length === 0) return "assets/img/venues/venue-01.jpg";
+  const first = images[0];
+  const imgStr = typeof first === "string" ? first : (first?.src || first?.url || "");
+  if (!imgStr) return "assets/img/venues/venue-01.jpg";
+  if (imgStr.startsWith("http://") || imgStr.startsWith("https://")) return imgStr;
+  return `${IMG_URL}${imgStr}`;
+};
+
 const BlogListSidebarLeft = (_props: { id: string; name: string }) => {
   const [venues, setVenues] = useState<Venues[]>([]);
   const [category, setCategory] = useState<Category[]>([]);
@@ -260,6 +269,7 @@ const BlogListSidebarLeft = (_props: { id: string; name: string }) => {
     if (selectedCategory) {
       filteredData = filteredData.filter((t: any) =>
         t.vendor_type?.toLowerCase()?.replace("_", " ")?.includes(selectedCategory.toLowerCase()) ||
+        t.category?.toLowerCase()?.includes(selectedCategory.toLowerCase()) ||
         t.activities?.toLowerCase()?.includes(selectedCategory.toLowerCase())
       );
     }
@@ -634,31 +644,25 @@ const BlogListSidebarLeft = (_props: { id: string; name: string }) => {
                       <div className="col-lg-4 col-md-6 col-sm-12 mb-4 d-flex" key={index}>
                         <div className="listing-item venue-page ki-card-hover w-100 d-flex flex-column justify-content-between" style={{ margin: 0, overflow: "hidden", backgroundColor: "#FFFFFF", borderRadius: "16px", border: "1px solid #E2E8E3", boxShadow: "0 4px 15px rgba(0,0,0,0.01)" }}>
                           <div className="listing-img" style={{ height: "140px", position: "relative" }}>
-                            <div
-                              className="background-image"
-                              style={{
-                                backgroundImage: `url(${venue?.images[0]?.src
-                                    ? `${IMG_URL}${venue?.images[0]?.src}`
-                                    : "/assets/img/no-img.png"
-                                  })`,
-                                height: "100%",
-                                backgroundSize: "cover"
-                              }}
-                            ></div>
                             <Link
                               to={`/sports-venue/${venue.vendor_type.replace(/\s+/g, "-").toLowerCase()}/${venue.name.replace(/\s+/g, "-").toLowerCase()}/${venue._id}`}
-                              style={{ position: "absolute", inset: 0 }}
+                              style={{ position: "absolute", inset: 0, display: "block" }}
                             >
-                              <ImageWithBasePath
-                                src={
-                                  venue?.images[0]?.src
-                                    ? `${IMG_URL}${venue?.images[0]?.src}`
-                                    : "/assets/img/no-img.png"
-                                }
-                                className="img-fluid foreground-image"
-                                alt="Venue Image"
-                                style={{ height: "100%", width: "100%", objectFit: "cover", opacity: 0 }}
-                              />
+                              {getVenueImage(venue?.images).startsWith("http") ? (
+                                <img
+                                  src={getVenueImage(venue?.images)}
+                                  className="img-fluid"
+                                  alt={venue.name}
+                                  style={{ height: "100%", width: "100%", objectFit: "cover" }}
+                                />
+                              ) : (
+                                <ImageWithBasePath
+                                  src={getVenueImage(venue?.images)}
+                                  className="img-fluid"
+                                  alt={venue.name}
+                                  style={{ height: "100%", width: "100%", objectFit: "cover" }}
+                                />
+                              )}
                             </Link>
                             
                             {/* Favorite Heart Button */}
