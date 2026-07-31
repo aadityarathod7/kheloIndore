@@ -4,5 +4,5 @@
 // export const Image_URL = "http://192.168.0.159:4000";
 // export const Image_URL = 'http://localhost:4000';
 
-export const API_URL = 'http://127.0.0.1:3037/api';
-export const Image_URL = 'http://127.0.0.1:3037';
+export const API_URL = 'https://qa.kheloindore.in/api';
+export const Image_URL = 'https://qa.kheloindore.in';

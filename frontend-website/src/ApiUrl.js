@@ -9,6 +9,6 @@
 // export const IMG_URL = "https://api-kheloindore.swapinfotech.com";
 
 
-export const IMG_URL = "http://127.0.0.1:3037";
-export const API_URL ="http://127.0.0.1:3037/api";
+export const IMG_URL = "https://qa.kheloindore.in";
+export const API_URL = "https://qa.kheloindore.in/api";
 
