@@ -481,40 +481,7 @@ function VenueList() {
                       {venue.status ? "Active" : "Inactive"}
                     </td>
                     <td>
-                      <div style={{ display: 'flex' }}>
-
-                        {/* <Tooltip
-                          title={
-                            <span style={{ whiteSpace: 'pre-line' }}>
-                              {`Download`}
-                            </span>
-                          }
-                          arrow
-                        >
-                          <PDFDownloadLink
-                            document={generatePdfContent(venue)}
-                            fileName={`venuelist_details.pdf`}
-                            style={{ marginRight: '3%' }}
-                          >
-                            <DownloadOutlined
-                              className='delete_icon'
-                              onClick={() => handlePdf(venue)}
-                            />
-                          </PDFDownloadLink>
-                        </Tooltip> */}
-                        {/* <Tooltip
-                          title={
-                            <span style={{ whiteSpace: 'pre-line' }}>
-                              {`Venue Name: ${venue.name}\nAddress: ${venue.address}\nState: ${venue.state}\nCity: ${venue.city}\nZipcode: ${venue.zipcode}\nAmenities: ${venue.amenities}`}
-                            </span>
-                          }
-                          arrow
-                        >
-                          <InfoOutlined
-                            className='info_icon'
-                            onClick={() => handleInfo(venue)}
-                          />
-                        </Tooltip> */}
+                      <div className="d-flex align-items-center gap-3">
                         <Tooltip
                           title={
                             <span style={{ whiteSpace: 'pre-line' }}>
@@ -523,7 +490,7 @@ function VenueList() {
                           }
                           arrow
                         >
-                          <Link to={`/venues/edit/${venue._id}`} style={{ marginRight: '5px' }}>
+                          <Link to={`/venues/edit/${venue._id}`}>
                             <EditOutlined
                               className='edit_icon'
                               onClick={() => handleEdit(venue)}

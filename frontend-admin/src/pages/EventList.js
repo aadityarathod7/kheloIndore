@@ -363,7 +363,7 @@ function EventList() {
                       {row.status ? "Active" : "Inactive"}
                     </td>
                     <td>
-                      <div style={{ display: "flex" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                         <Tooltip
                           title={
                             <span style={{ whiteSpace: "pre-line" }}>

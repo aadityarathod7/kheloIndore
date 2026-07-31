@@ -196,6 +196,7 @@ const BlogListSidebarLeft = (_props: { id: string; name: string }) => {
           near_by_location: venues.near_by_location,
           vendor_type: venues.vendor_type,
           price_per_hr: venues.price_per_hr,
+          google_location: venues.google_location,
         }));
         setVenues(mappedData);
         setLoading(false);
@@ -708,10 +709,24 @@ const BlogListSidebarLeft = (_props: { id: string; name: string }) => {
                                 {venue.name}
                               </Link>
                             </h3>
-                            <p className="mb-2 text-truncate" style={{ fontSize: "12px", color: "#606D76" }}>
-                              <i className="feather-map-pin me-1" style={{ color: "#606D76" }} />
-                              {venue.near_by_location}, Indore
-                            </p>
+                             <div className="d-flex align-items-center justify-content-between mb-2">
+                               <p className="mb-0 text-truncate" style={{ fontSize: "12px", color: "#606D76" }}>
+                                 <i className="feather-map-pin me-1" style={{ color: "#3CAB4B" }} />
+                                 {venue.near_by_location}, Indore
+                               </p>
+                               {(venue as any).google_location && (
+                                 <a
+                                   href={(venue as any).google_location.startsWith("http") ? (venue as any).google_location : `https://${(venue as any).google_location}`}
+                                   target="_blank"
+                                   rel="noopener noreferrer"
+                                   title="Open Google Maps"
+                                   className="text-success ms-1 flex-shrink-0"
+                                   style={{ fontSize: "11px", fontWeight: "600" }}
+                                 >
+                                   Map 🗺️
+                                 </a>
+                               )}
+                             </div>
                             <div className="d-flex align-items-center justify-content-between pt-2" style={{ borderTop: "1px solid #E2E8E3" }}>
                               <span style={{ fontSize: "14px", fontWeight: "700", color: "#17222D" }}>
                                 ₹{venue.price_per_hr || "750"} <span style={{ fontSize: "10px", fontWeight: "normal", color: "#606D76" }}>/ hr</span>

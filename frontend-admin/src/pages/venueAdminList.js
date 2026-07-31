@@ -285,7 +285,7 @@ export default function VenueAdminList() {
                                             {row.status ? "Active" : "Inactive"}
                                         </td>
                                         <td>
-                                            <div style={{ display: "flex" }}>
+                                            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                                                 {role === 'Super Admin' && (
                                                     <Tooltip title={`Download`} arrow>
                                                         <PDFDownloadLink

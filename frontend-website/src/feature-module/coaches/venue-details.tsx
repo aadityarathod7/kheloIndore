@@ -37,6 +37,17 @@ interface VenueData {
   policiesAndRules: any;
 }
 
+const getVenueImgUrl = (images: any, index = 0): string => {
+  const fallback = "https://images.unsplash.com/photo-1517649763962-0c623266010b?w=800&auto=format&fit=crop&q=80";
+  if (!images || !Array.isArray(images) || images.length === 0) return fallback;
+  const item = images[index] !== undefined ? images[index] : images[0];
+  if (!item) return fallback;
+  const str = typeof item === "string" ? item : (item.src || item.url || "");
+  if (!str) return fallback;
+  if (str.startsWith("http://") || str.startsWith("https://")) return str;
+  return `${IMG_URL}${str}`;
+};
+
 const VenueDetails = () => {
   const routes = all_routes;
   const [selectedItems, setSelectedItems] = useState(Array(4).fill(false));
@@ -251,22 +262,16 @@ const VenueDetails = () => {
                     <div className="bento-hero-main">
                       {/* Ambient Blurred Background */}
                       <img
-                        src={venueData?.images && venueData.images[0] ? `${IMG_URL}${venueData.images[0].src}` : "/assets/img/venues/venue-01.jpg"}
+                        src={getVenueImgUrl(venueData?.images, 0)}
                         alt="Ambient backdrop"
                         className="ambient-bg"
-                        onError={(e: any) => {
-                          e.target.src = "/assets/img/venues/venue-01.jpg";
-                        }}
                       />
                       {/* Full Uncropped Main Image */}
                       <img
-                        src={venueData?.images && venueData.images[0] ? `${IMG_URL}${venueData.images[0].src}` : "/assets/img/venues/venue-01.jpg"}
+                        src={getVenueImgUrl(venueData?.images, 0)}
                         alt={venueData?.name}
                         className="full-hero-img"
                         onClick={() => handleImageClick(0)}
-                        onError={(e: any) => {
-                          e.target.src = "/assets/img/venues/venue-01.jpg";
-                        }}
                       />
                       {/* Featured Badge */}
                       <div className="position-absolute top-0 start-0 p-3" style={{ zIndex: 10 }}>
@@ -305,6 +310,17 @@ const VenueDetails = () => {
                           <span className="glass-pill">
                             📍 {venueData?.address ? `${venueData.address}, ${venueData.city || ''}` : "Indore, Madhya Pradesh"}
                           </span>
+                          {venueData?.google_location && (
+                            <a
+                              href={venueData.google_location.startsWith("http") ? venueData.google_location : `https://${venueData.google_location}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="glass-pill text-decoration-none"
+                              style={{ color: "#FFFFFF", backgroundColor: "rgba(34, 197, 94, 0.4)", borderColor: "rgba(34, 197, 94, 0.8)", fontWeight: 700 }}
+                            >
+                              🗺️ View on Google Maps <i className="fas fa-external-link-alt ms-1" style={{ fontSize: "10px" }} />
+                            </a>
+                          )}
                           <span className="glass-pill">
                             ⭐ 4.8 (128 Reviews)
                           </span>
@@ -318,40 +334,28 @@ const VenueDetails = () => {
                     <div className="col-md-4 d-flex flex-column gap-3">
                       <div className="bento-hero-thumb">
                         <img
-                          src={`${IMG_URL}${venueData.images[1]?.src}`}
+                          src={getVenueImgUrl(venueData?.images, 1)}
                           alt="Ambient thumbnail 1"
                           className="ambient-bg"
-                          onError={(e: any) => {
-                            e.target.src = "/assets/img/venues/venue-02.jpg";
-                          }}
                         />
                         <img
-                          src={`${IMG_URL}${venueData.images[1]?.src}`}
+                          src={getVenueImgUrl(venueData?.images, 1)}
                           alt="Venue thumbnail 1"
                           className="full-hero-img"
                           onClick={() => handleImageClick(1)}
-                          onError={(e: any) => {
-                            e.target.src = "/assets/img/venues/venue-02.jpg";
-                          }}
                         />
                       </div>
                       <div className="bento-hero-thumb">
                         <img
-                          src={venueData.images[2] ? `${IMG_URL}${venueData.images[2]?.src}` : `${IMG_URL}${venueData.images[0]?.src}`}
+                          src={getVenueImgUrl(venueData?.images, 2)}
                           alt="Ambient thumbnail 2"
                           className="ambient-bg"
-                          onError={(e: any) => {
-                            e.target.src = "/assets/img/venues/venue-03.jpg";
-                          }}
                         />
                         <img
-                          src={venueData.images[2] ? `${IMG_URL}${venueData.images[2]?.src}` : `${IMG_URL}${venueData.images[0]?.src}`}
+                          src={getVenueImgUrl(venueData?.images, 2)}
                           alt="Venue thumbnail 2"
                           className="full-hero-img"
-                          onClick={() => handleImageClick(venueData.images[2] ? 2 : 0)}
-                          onError={(e: any) => {
-                            e.target.src = "/assets/img/venues/venue-03.jpg";
-                          }}
+                          onClick={() => handleImageClick(2)}
                         />
                       </div>
                     </div>
@@ -612,6 +616,42 @@ const VenueDetails = () => {
                     </div>
                   </div>
                 </div>
+
+                {/* E. Location & Google Maps Card with Minimap */}
+                <div className="pro-card">
+                  <div className="mb-3">
+                    <h3 className="card-title-head mb-0" style={{ color: "#111827" }}>Location & Map</h3>
+                  </div>
+
+                  <div className="p-3 rounded-3 bg-light border d-flex align-items-center gap-3 mb-3" style={{ borderColor: "#E5E7EB" }}>
+                    <div className="d-inline-flex align-items-center justify-content-center bg-success bg-opacity-10 rounded-circle flex-shrink-0" style={{ width: "44px", height: "44px" }}>
+                      <i className="fas fa-map-marker-alt text-success" style={{ fontSize: "20px" }} />
+                    </div>
+                    <div>
+                      <h6 className="fw-bold mb-1" style={{ color: "#111827", fontSize: "14px" }}>
+                        {venueData?.name || "Venue Address"}
+                      </h6>
+                      <p className="mb-0 text-muted" style={{ fontSize: "13px", color: "#4B5563" }}>
+                        {venueData?.address ? `${venueData.address}, ${venueData.city || 'Indore'}, ${venueData.state || 'Madhya Pradesh'}` : "Indore, Madhya Pradesh"}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Embedded Google Minimap */}
+                  <div className="rounded-3 overflow-hidden border" style={{ height: "240px", borderColor: "#E2E8F0" }}>
+                    <iframe
+                      title="Venue Location Minimap"
+                      width="100%"
+                      height="100%"
+                      style={{ border: 0 }}
+                      loading="lazy"
+                      allowFullScreen
+                      src={`https://maps.google.com/maps?q=${encodeURIComponent(
+                        (venueData?.name || '') + " " + (venueData?.address || '') + " Indore Madhya Pradesh"
+                      )}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
+                    ></iframe>
+                  </div>
+                </div>
               </div>
 
               {/* RIGHT COLUMN (30% / 4 Cols): Sticky Sidebar */}
@@ -633,24 +673,17 @@ const VenueDetails = () => {
                       <h3 className="card-title-head mb-2" style={{ color: "#111827" }}>Book Court Slot</h3>
 
                       {/* Selector / Calendar Pricing Card */}
-                      <div className="p-3 mb-3 rounded-3 text-center" style={{ background: "#F8FAFC", border: "1px solid #E5E7EB" }}>
-                        <div className="d-inline-flex align-items-center justify-content-center bg-success bg-opacity-10 rounded-circle mb-1.5" style={{ width: "40px", height: "40px" }}>
+                      <div className="pricing-box-visible text-center">
+                        <div className="d-inline-flex align-items-center justify-content-center bg-success bg-opacity-10 rounded-circle mb-2" style={{ width: "42px", height: "42px" }}>
                           <i className="fas fa-calendar-alt text-success" style={{ fontSize: "18px" }} />
                         </div>
-                        {venueData?.price_per_hr ? (
-                          <div>
-                            <span className="d-block muted-text" style={{ fontSize: "11px", color: "#6B7280" }}>Price Starting From</span>
-                            <div className="d-flex align-items-baseline justify-content-center gap-1">
-                              <span className="fw-extrabold text-brand-green" style={{ fontSize: "24px", color: "#16A34A" }}>₹{venueData.price_per_hr}</span>
-                              <span className="muted-text" style={{ fontSize: "12px", color: "#6B7280" }}>/ hour</span>
-                            </div>
+                        <div>
+                          <span className="pricing-label-text d-block mb-1">Price Starting From</span>
+                          <div className="d-flex align-items-baseline justify-content-center gap-1">
+                            <span className="pricing-amount-text">₹{venueData?.price_per_hr || 1000}</span>
+                            <span className="pricing-unit-text">/ hour</span>
                           </div>
-                        ) : (
-                          <div>
-                            <h5 className="fw-bold text-dark-title mb-0.5" style={{ fontSize: "14px", color: "#111827" }}>Check Availability for Pricing</h5>
-                            <span className="d-block muted-text" style={{ fontSize: "11px", color: "#6B7280" }}>Select date and time to view price</span>
-                          </div>
-                        )}
+                        </div>
                       </div>
 
                       {/* Checklist */}

@@ -72,3 +72,35 @@
   border-bottom: 0px;
   height: 4rem !important;
 }
+
+/* Table Action Icon Styles */
+.edit_icon,
+.delete_icon,
+.info_icon {
+  font-size: 18px !important;
+  cursor: pointer !important;
+  transition: transform 0.15s ease, opacity 0.15s ease !important;
+  margin: 0 5px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.edit_icon {
+  color: #097e52 !important;
+}
+
+.delete_icon {
+  color: #EF4444 !important;
+}
+
+.info_icon {
+  color: #3B82F6 !important;
+}
+
+.edit_icon:hover,
+.delete_icon:hover,
+.info_icon:hover {
+  transform: scale(1.15) !important;
+  opacity: 0.85 !important;
+}
