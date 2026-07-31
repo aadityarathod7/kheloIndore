@@ -377,7 +377,7 @@ const UserProfile = () => {
       {isFirstTime && (
         <div className="container mt-4">
           <div
-            className="alert border-0 d-flex align-items-center p-4 rounded-4 shadow-sm"
+            className="alert border-0 d-flex align-items-center p-4 rounded-4 shadow-sm ki-profile-alert"
             style={{ background: "linear-gradient(135deg, #FEF3C7 0%, #FFFBEB 100%)", borderLeft: "5px solid #F59E0B" }}
             role="alert"
           >
@@ -388,11 +388,11 @@ const UserProfile = () => {
               <i className="fas fa-user-clock fs-5" />
             </div>
             <div>
-              <strong className="d-block mb-1" style={{ fontSize: "16px", color: "#92400E" }}>
+              <strong className="d-block mb-1 ki-profile-alert-title" style={{ fontSize: "16px", color: "#92400E" }}>
                 Complete Your Profile
               </strong>
-              <span style={{ fontSize: "14px", color: "#B45309" }}>
-                Please fill in your <strong>First Name</strong>, <strong>Last Name</strong>, and verify your <strong>Email Address</strong> to activate full access for venue and coach bookings.
+              <span className="ki-profile-alert-desc" style={{ fontSize: "14px", color: "#B45309" }}>
+                Please fill in your <strong style={{ color: "#78350F" }}>First Name</strong>, <strong style={{ color: "#78350F" }}>Last Name</strong>, and verify your <strong style={{ color: "#78350F" }}>Email Address</strong> to activate full access for venue and coach bookings.
               </span>
             </div>
           </div>

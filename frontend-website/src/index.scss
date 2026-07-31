@@ -4143,3 +4143,18 @@ body .swal2-container {
     font-weight: 700 !important;
   }
 }
+
+/* High-contrast Complete Your Profile Alert */
+.ki-profile-alert {
+  .ki-profile-alert-title {
+    color: #92400E !important;
+  }
+  .ki-profile-alert-desc {
+    color: #B45309 !important;
+    
+    strong {
+      color: #78350F !important;
+    }
+  }
+}
+
