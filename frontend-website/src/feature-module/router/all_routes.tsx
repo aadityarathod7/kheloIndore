@@ -1,5 +1,3 @@
-import venueByCategory from "../blog/venue-by-category";
-
 export const all_routes = {
   home: "/",
 

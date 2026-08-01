@@ -90,7 +90,6 @@ import LessonPayment from "../coaches/lesson-payment";
 import LessonPersonalinfo from "../coaches/lessonPersonalinfo";
 import UserChat from "../user/user-chat";
 import UserCoaches from "../user/user-coaches";
-import Signin from "../auth/register";
 import UserWallet from "../user/user-wallet";
 import VenueDetails from "../coaches/venue-details";
 import Login from "../auth/login";

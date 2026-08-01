@@ -233,6 +233,78 @@ const VenueDetails = () => {
             .venue-hero-section a { color: #64748B !important; text-decoration: none !important; }
             .venue-hero-section .breadcrumb-pill span.active-crumb { color: #22C55E !important; font-weight: 600 !important; }
             .venue-hero-section .breadcrumb-pill i { color: #64748B !important; }
+
+            .about-venue-box {
+              transition: all 0.3s ease !important;
+            }
+            .about-venue-box:hover {
+              border-color: #22C55E !important;
+              box-shadow: 0 8px 16px rgba(34, 197, 94, 0.04) !important;
+              background-color: #FFFFFF !important;
+            }
+            .spec-info-card {
+              transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+              width: 100% !important;
+            }
+            .spec-info-card:hover {
+              transform: translateY(-4px) !important;
+              border-color: #22C55E !important;
+              box-shadow: 0 10px 25px -5px rgba(34, 197, 94, 0.1), 0 8px 10px -6px rgba(34, 197, 94, 0.1) !important;
+            }
+            .spec-info-card:hover .icon-wrapper {
+              transform: scale(1.1) rotate(4deg) !important;
+              background-color: #22C55E !important;
+              color: #FFFFFF !important;
+            }
+            .spec-info-card .icon-wrapper {
+              transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            }
+            .spec-info-card .spec-label {
+              color: #475569 !important;
+              font-size: 11px !important;
+              font-weight: 600 !important;
+              text-transform: uppercase !important;
+              letter-spacing: 0.5px !important;
+              display: block !important;
+              margin-bottom: 2px !important;
+            }
+            .spec-info-card .spec-value {
+              color: #0F172A !important;
+              font-size: 13px !important;
+              font-weight: 700 !important;
+              display: block !important;
+            }
+
+            .venue-info-row {
+              display: flex !important;
+              flex-wrap: wrap !important;
+              width: 100% !important;
+            }
+            .venue-info-row > .col {
+              flex: 0 0 25% !important;
+              max-width: 25% !important;
+              width: 25% !important;
+            }
+            
+            .venue-info-row-5 {
+              display: flex !important;
+              flex-wrap: wrap !important;
+              width: 100% !important;
+            }
+            .venue-info-row-5 > .col {
+              flex: 0 0 20% !important;
+              max-width: 20% !important;
+              width: 20% !important;
+            }
+
+            @media (max-width: 767.98px) {
+              .venue-info-row > .col,
+              .venue-info-row-5 > .col {
+                flex: 0 0 50% !important;
+                max-width: 50% !important;
+                width: 50% !important;
+              }
+            }
           `}} />
 
           {/* Hero Section - matches listing pages */}
@@ -452,11 +524,26 @@ const VenueDetails = () => {
                   {activeTab === "overview" && (
                     <div>
                       {/* Card 1: About this Venue */}
-                      <h2 className="section-title">About this Venue</h2>
+                      <div className="d-flex align-items-center gap-2 mb-3">
+                        <span className="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-1 font-weight-bold" style={{ fontSize: "11px", letterSpacing: "0.5px", textTransform: "uppercase" }}>Overview</span>
+                      </div>
+                      <h3 className="card-title-head mb-3" style={{ fontSize: "18px", fontWeight: "800", color: "#0F172A" }}>About this Venue</h3>
                       <div
-                        dangerouslySetInnerHTML={{ __html: venueData?.description || "No description available." }}
-                        className="body-text mb-4"
-                      />
+                        className="about-venue-box p-4 rounded-3 border-start border-4"
+                        style={{
+                          borderLeft: "4px solid #22C55E",
+                          backgroundColor: "#F8FAFC",
+                          borderTop: "1px solid #E2E8F0",
+                          borderRight: "1px solid #E2E8F0",
+                          borderBottom: "1px solid #E2E8F0",
+                        }}
+                      >
+                        <div
+                          dangerouslySetInnerHTML={{ __html: venueData?.description || "No description available." }}
+                          className="body-text text-secondary mb-0"
+                          style={{ fontSize: "14px", lineHeight: "1.7", color: "#475569" }}
+                        />
+                      </div>
 
                       <hr className="my-4" style={{ borderColor: "#E5E7EB" }} />
 
@@ -464,7 +551,7 @@ const VenueDetails = () => {
                       {venueType && venueType.length > 0 && (
                         <div>
                           <h3 className="card-title-head">Venue Specifications</h3>
-                          <div className="row row-cols-2 row-cols-md-5 g-3">
+                          <div className="row row-cols-2 row-cols-md-5 g-3 venue-info-row-5">
                             {venueType.map((spec: any, index: any) => {
                               const k = spec.key.toLowerCase();
                               let iconClass = "fas fa-th-large";
@@ -550,42 +637,94 @@ const VenueDetails = () => {
 
                 {/* D. Additional Info Card */}
                 <div className="pro-card">
-                  <h3 className="card-title-head mb-3">Venue Information</h3>
-                  <div className="row row-cols-2 row-cols-md-4 g-3">
+                  <div className="d-flex align-items-center gap-2 mb-3">
+                    <span className="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-1 font-weight-bold" style={{ fontSize: "11px", letterSpacing: "0.5px", textTransform: "uppercase" }}>Specifications</span>
+                  </div>
+                  <h3 className="card-title-head mb-3" style={{ fontSize: "18px", fontWeight: "800", color: "#0F172A" }}>Venue Information</h3>
+                  <div className="row row-cols-2 row-cols-md-4 g-3 venue-info-row">
                     <div className="col">
-                      <div className="p-3 rounded-3 bg-light border text-center h-100" style={{ borderColor: "#E5E7EB" }}>
-                        <div className="d-inline-flex align-items-center justify-content-center bg-success bg-opacity-10 rounded-circle mb-2" style={{ width: "38px", height: "38px" }}>
-                          <i className="fas fa-running text-success" style={{ fontSize: "16px" }} />
+                      <div className="spec-info-card p-2 py-3 rounded-3 border text-center h-100" 
+                           style={{ 
+                             borderColor: "#E2E8F0", 
+                             background: "linear-gradient(135deg, #FFFFFF 0%, #F8FAFC 100%)",
+                             boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.01)"
+                           }}>
+                        <div className="icon-wrapper d-inline-flex align-items-center justify-content-center rounded-circle mb-2" 
+                             style={{ 
+                               width: "38px", 
+                               height: "38px", 
+                               backgroundColor: "#DCFCE7", 
+                               color: "#16A34A"
+                             }}>
+                          <i className="fas fa-running" style={{ fontSize: "16px" }} />
                         </div>
-                        <span className="d-block muted-text mb-1" style={{ fontSize: "12px", fontWeight: 600 }}>Best For</span>
-                        <span className="fw-extrabold text-dark-title d-block" style={{ fontSize: "14px" }}>{type ? type.replaceAll('-', ' ') : "Cricket, Football"}</span>
+                        <span className="spec-label">Best For</span>
+                        <span className="spec-value text-truncate">
+                          {type ? type.replaceAll('-', ' ') : "Cricket, Football"}
+                        </span>
                       </div>
                     </div>
+
                     <div className="col">
-                      <div className="p-3 rounded-3 bg-light border text-center h-100" style={{ borderColor: "#E5E7EB" }}>
-                        <div className="d-inline-flex align-items-center justify-content-center bg-success bg-opacity-10 rounded-circle mb-2" style={{ width: "38px", height: "38px" }}>
-                          <i className="fas fa-users text-success" style={{ fontSize: "16px" }} />
+                      <div className="spec-info-card p-2 py-3 rounded-3 border text-center h-100" 
+                           style={{ 
+                             borderColor: "#E2E8F0", 
+                             background: "linear-gradient(135deg, #FFFFFF 0%, #F8FAFC 100%)",
+                             boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.01)"
+                           }}>
+                        <div className="icon-wrapper d-inline-flex align-items-center justify-content-center rounded-circle mb-2" 
+                             style={{ 
+                               width: "38px", 
+                               height: "38px", 
+                               backgroundColor: "#DCFCE7", 
+                               color: "#16A34A"
+                             }}>
+                          <i className="fas fa-users" style={{ fontSize: "16px" }} />
                         </div>
-                        <span className="d-block muted-text mb-1" style={{ fontSize: "12px", fontWeight: 600 }}>Players</span>
-                        <span className="fw-extrabold text-dark-title d-block" style={{ fontSize: "14px" }}>22 Players</span>
+                        <span className="spec-label">Players</span>
+                        <span className="spec-value text-truncate">22 Players</span>
                       </div>
                     </div>
+
                     <div className="col">
-                      <div className="p-3 rounded-3 bg-light border text-center h-100" style={{ borderColor: "#E5E7EB" }}>
-                        <div className="d-inline-flex align-items-center justify-content-center bg-success bg-opacity-10 rounded-circle mb-2" style={{ width: "38px", height: "38px" }}>
-                          <i className="fas fa-clock text-success" style={{ fontSize: "16px" }} />
+                      <div className="spec-info-card p-2 py-3 rounded-3 border text-center h-100" 
+                           style={{ 
+                             borderColor: "#E2E8F0", 
+                             background: "linear-gradient(135deg, #FFFFFF 0%, #F8FAFC 100%)",
+                             boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.01)"
+                           }}>
+                        <div className="icon-wrapper d-inline-flex align-items-center justify-content-center rounded-circle mb-2" 
+                             style={{ 
+                               width: "38px", 
+                               height: "38px", 
+                               backgroundColor: "#DCFCE7", 
+                               color: "#16A34A"
+                             }}>
+                          <i className="fas fa-clock" style={{ fontSize: "16px" }} />
                         </div>
-                        <span className="d-block muted-text mb-1" style={{ fontSize: "12px", fontWeight: 600 }}>Timing</span>
-                        <span className="fw-extrabold text-dark-title d-block" style={{ fontSize: "14px" }}>6:00 AM – 11:00 PM</span>
+                        <span className="spec-label">Timing</span>
+                        <span className="spec-value text-truncate">6:00 AM – 11:00 PM</span>
                       </div>
                     </div>
+
                     <div className="col">
-                      <div className="p-3 rounded-3 bg-light border text-center h-100" style={{ borderColor: "#E5E7EB" }}>
-                        <div className="d-inline-flex align-items-center justify-content-center bg-success bg-opacity-10 rounded-circle mb-2" style={{ width: "38px", height: "38px" }}>
-                          <i className="fas fa-calendar-alt text-success" style={{ fontSize: "16px" }} />
+                      <div className="spec-info-card p-2 py-3 rounded-3 border text-center h-100" 
+                           style={{ 
+                             borderColor: "#E2E8F0", 
+                             background: "linear-gradient(135deg, #FFFFFF 0%, #F8FAFC 100%)",
+                             boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.01)"
+                           }}>
+                        <div className="icon-wrapper d-inline-flex align-items-center justify-content-center rounded-circle mb-2" 
+                             style={{ 
+                               width: "38px", 
+                               height: "38px", 
+                               backgroundColor: "#DCFCE7", 
+                               color: "#16A34A"
+                             }}>
+                          <i className="fas fa-calendar-alt" style={{ fontSize: "16px" }} />
                         </div>
-                        <span className="d-block muted-text mb-1" style={{ fontSize: "12px", fontWeight: 600 }}>Booking Type</span>
-                        <span className="fw-extrabold text-dark-title d-block" style={{ fontSize: "14px" }}>Hourly</span>
+                        <span className="spec-label">Booking Type</span>
+                        <span className="spec-value text-truncate">Hourly</span>
                       </div>
                     </div>
                   </div>

@@ -21,6 +21,7 @@ $__font__size__15: 15px;
 $__font__size__16: 16px;
 $__font__size__18: 18px;
 $__font__size__20: 20px;
+$__font__size__22: 22px;
 $__font__size__24: 24px;
 $__font__size__28: 28px;
 $__font__size__30: 30px;
@@ -29,6 +30,7 @@ $__font__size__36: 36px;
 $__font__size__40: 40px;
 $__font__size__48: 48px;
 $__font__size__56: 56px;
+$__font__size__62: 62px;
 
 :root {
   --font-family-base: #{$__body__font__family};
@@ -124,38 +126,38 @@ h6 {
 
 h1 {
   font-weight: var(--font-weight-extrabold);
-  font-size: clamp(#{$__font__size__28}, 3.2vw, #{$__font__size__40});
+  font-size: clamp(#{$__font__size__20}, 2.4vw, #{$__font__size__28});
   @include respond-below(custom991) {
-    font-size: clamp(#{$__font__size__24}, 4.6vw, #{$__font__size__32});
+    font-size: clamp(#{$__font__size__18}, 3.6vw, #{$__font__size__24});
   }
 }
 
 h2 {
   font-weight: var(--font-weight-bold);
-  font-size: clamp(#{$__font__size__24}, 2.6vw, #{$__font__size__32});
+  font-size: clamp(#{$__font__size__18}, 2.0vw, #{$__font__size__24});
   @include respond-below(custom991) {
-    font-size: clamp(#{$__font__size__20}, 3.6vw, #{$__font__size__28});
+    font-size: clamp(#{$__font__size__16}, 2.8vw, #{$__font__size__20});
   }
 }
 
 h3 {
   font-weight: var(--font-weight-semibold);
-  font-size: clamp(#{$__font__size__20}, 2.2vw, #{$__font__size__24});
+  font-size: clamp(#{$__font__size__16}, 1.6vw, #{$__font__size__20});
 }
 
 h4 {
   font-weight: var(--font-weight-semibold);
-  font-size: clamp(#{$__font__size__18}, 1.8vw, #{$__font__size__20});
+  font-size: clamp(#{$__font__size__15}, 1.3vw, #{$__font__size__18});
 }
 
 h5 {
   font-weight: var(--font-weight-medium);
-  font-size: clamp(#{$__font__size__16}, 1.4vw, #{$__font__size__18});
+  font-size: clamp(#{$__font__size__14}, 1.1vw, #{$__font__size__16});
 }
 
 h6 {
   font-weight: var(--font-weight-medium);
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-sm);
 }
 
 p {
@@ -184,23 +186,23 @@ small,
 }
 
 .page-title {
-  font-size: clamp(#{$__font__size__24}, 3vw, #{$__font__size__36});
+  font-size: clamp(#{$__font__size__20}, 2.2vw, #{$__font__size__28});
 }
 
 .section-title {
-  font-size: clamp(#{$__font__size__20}, 2.3vw, #{$__font__size__28});
+  font-size: clamp(#{$__font__size__18}, 1.8vw, #{$__font__size__22});
 }
 
 .card-title {
-  font-size: var(--font-size-xl);
+  font-size: var(--font-size-lg);
 }
 
 .hero-title {
-  font-size: clamp(#{$__font__size__28}, 4vw, #{$__font__size__56});
+  font-size: clamp(#{$__font__size__24}, 3vw, #{$__font__size__40});
 }
 
 .hero-subtitle {
-  font-size: clamp(#{$__font__size__14}, 1.8vw, #{$__font__size__20});
+  font-size: clamp(#{$__font__size__13}, 1.4vw, #{$__font__size__16});
   font-weight: var(--font-weight-medium);
   line-height: 1.6;
   color: $__lightgray;
@@ -283,4 +285,12 @@ button,
   .table th {
     font-size: 14px;
   }
+}
+
+/* Global Hero and Banner Title Headings Override */
+.hero-booking-section h1,
+.venue-hero-section h1 {
+  font-size: clamp(#{$__font__size__20}, 2.4vw, #{$__font__size__28}) !important;
+  font-weight: 800 !important;
+  line-height: 1.15 !important;
 }
