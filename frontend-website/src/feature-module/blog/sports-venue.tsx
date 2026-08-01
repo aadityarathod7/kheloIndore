@@ -1,11 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
-import ImageWithBasePath from "../../core/data/img/ImageWithBasePath";
-import { all_routes } from "../router/all_routes";
+import { Link } from "react-router-dom";
 import axios from "axios";
-import { API_URL, IMG_URL } from "../../ApiUrl";
+import { API_URL } from "../../ApiUrl";
 import Loader from "../loader/loader";
-import Swal from "sweetalert2";
 
 interface Venues {
   name: string;
@@ -22,84 +19,8 @@ interface Venues {
   vendor_type: any;
   price_per_hr: any;
 }
-interface Category {
-  category_name: string;
-}
 
-interface FilterData {
-  vendor_type: any;
-  name: string;
-  address: string;
-  city: string;
-  state: string;
-  zipcode: string;
-  activities: string;
-  category: string;
-  _id: string;
-  images: any;
-  src: string;
-  near_by_location: any;
-}
-
-const fuzzyMatch = (text: string, query: string): boolean => {
-  if (!text || !query) return false;
-  text = text.toLowerCase().trim();
-  query = query.toLowerCase().trim();
-  
-  if (text.includes(query)) return true;
-
-  const getEditDistance = (a: string, b: string): number => {
-    if (a.length === 0) return b.length;
-    if (b.length === 0) return a.length;
-    const matrix: number[][] = [];
-    for (let i = 0; i <= b.length; i++) {
-      matrix[i] = [i];
-    }
-    for (let j = 0; j <= a.length; j++) {
-      matrix[0][j] = j;
-    }
-    for (let i = 1; i <= b.length; i++) {
-      for (let j = 1; j <= a.length; j++) {
-        if (b.charAt(i - 1) === a.charAt(j - 1)) {
-          matrix[i][j] = matrix[i - 1][j - 1];
-        } else {
-          matrix[i][j] = Math.min(
-            matrix[i - 1][j - 1] + 1, // substitution
-            Math.min(
-              matrix[i][j - 1] + 1, // insertion
-              matrix[i - 1][j] + 1  // deletion
-            )
-          );
-        }
-      }
-    }
-    return matrix[b.length][a.length];
-  };
-
-  const words = text.split(/\s+/);
-  const qWords = query.split(/\s+/);
-  
-  return qWords.every((qw) => {
-    return words.some((w) => {
-      if (w.includes(qw)) return true;
-      if (qw.includes(w)) return true;
-      const distance = getEditDistance(w, qw);
-      const maxAllowedDistance = qw.length <= 2 ? 0 : qw.length <= 5 ? 1 : 2;
-      return distance <= maxAllowedDistance;
-    });
-  });
-};
-
-const getVenueImage = (images: any): string => {
-  if (!images || !Array.isArray(images) || images.length === 0) return "assets/img/venues/venue-01.jpg";
-  const first = images[0];
-  const imgStr = typeof first === "string" ? first : (first?.src || first?.url || "");
-  if (!imgStr) return "assets/img/venues/venue-01.jpg";
-  if (imgStr.startsWith("http://") || imgStr.startsWith("https://")) return imgStr;
-  return `${IMG_URL}${imgStr}`;
-};
-
-const BlogListSidebarLeft = (_props: { id: string; name: string }) => {
+const BlogListSidebarLeft = () => {
   const [venues, setVenues] = useState<Venues[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
