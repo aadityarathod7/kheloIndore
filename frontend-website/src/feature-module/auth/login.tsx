@@ -41,8 +41,9 @@ const Login = () => {
   const handleSendOtp = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
 
-    if (!mobileNumber.trim() || mobileNumber.length !== 10) {
-      setMobileApiError("Please enter a valid 10-digit mobile number");
+    const mobileRegex = /^[6-9]\d{9}$/;
+    if (!mobileNumber.trim() || !mobileRegex.test(mobileNumber)) {
+      setMobileApiError("Please enter a valid 10-digit mobile number starting with 6, 7, 8, or 9");
       return;
     }
 

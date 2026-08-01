@@ -6,54 +6,42 @@
 @import "primereact/resources/themes/lara-light-indigo/theme.css";
 
 // ─── Global Cursor & Text-Selection Reset ────────────────────────────────────
-// Apply universally: no text-cursor or pointer on any static element.
-// Selectively restored below for interactive elements only.
-*,
-*::before,
-*::after {
+// Prevent text I-beam (text selection cursor) on general static text containers.
+body,
+h1, h2, h3, h4, h5, h6,
+p, span, li, label:not([for]), small, strong, em, blockquote,
+td, th, tr, tbody, thead, table,
+.listing-title, .section-heading, .sub-title, .badge {
   cursor: default !important;
-  user-select: none !important;
-  -webkit-user-select: none !important;
-  -moz-user-select: none !important;
-  -ms-user-select: none !important;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
-// Restore pointer cursor for interactive elements
+// Ensure interactive elements have pointer cursor
 a,
-a *,
 button,
-button *,
+select,
 [role="button"],
-[role="button"] *,
 .btn,
-.btn *,
 .nav-link,
-.nav-link *,
 .dropdown-item,
-.dropdown-item *,
 .clickable,
-.clickable *,
 label[for],
-[onClick],
-select {
+[onClick] {
   cursor: pointer !important;
+  user-select: auto;
+  -webkit-user-select: auto;
 }
 
-// Restore text cursor + selection for form inputs
+// Allow normal text input selection and text cursor
 input,
-input::placeholder,
 textarea,
-textarea::placeholder,
-[contenteditable="true"],
-[contenteditable="true"] * {
+[contenteditable="true"] {
   cursor: text !important;
   user-select: text !important;
   -webkit-user-select: text !important;
-  -moz-user-select: text !important;
-  -ms-user-select: text !important;
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
+// ───────────────────────────────────────────────────────────────────────────── ─────────────────────────────────────────────────────────────────────────────
 
 .stickybar {
   top: 0;
