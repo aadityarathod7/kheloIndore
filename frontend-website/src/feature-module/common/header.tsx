@@ -34,84 +34,131 @@ const Header = () => {
   const [isActive, setIsActive] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [globalSearchQuery, setGlobalSearchQuery] = useState("");
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [cachedData, setCachedData] = useState<{ venues: any[]; coaches: any[]; trainers: any[] } | null>(null);
+  const [suggestionsLoading, setSuggestionsLoading] = useState(false);
+  const suggestionsRef = React.useRef<HTMLDivElement>(null);
+  const debounceRef = React.useRef<any>(null);
 
-  const handleGlobalSearch = async (e: React.FormEvent) => {
+  const handleGlobalSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (!globalSearchQuery.trim()) return;
-    const query = globalSearchQuery.trim().toLowerCase();
+    setShowSuggestions(false);
+    navigate(`/search?q=${encodeURIComponent(globalSearchQuery.trim())}`);
+  };
 
-    // Check query directly for keywords
-    if (query.includes("coach") || query.includes("academy")) {
-      navigate(`${routes.coachesGrid}?search=${encodeURIComponent(globalSearchQuery.trim())}`);
-      return;
-    }
-    if (query.includes("trainer") || query.includes("personal training")) {
-      navigate(`${routes.blogList}?search=${encodeURIComponent(globalSearchQuery.trim())}`);
-      return;
-    }
-    if (query.includes("venue") || query.includes("court") || query.includes("turf") || query.includes("ground")) {
-      navigate(`${routes.blogListSidebarLeft}?search=${encodeURIComponent(globalSearchQuery.trim())}`);
-      return;
-    }
-
+  // ─── Fetch & cache data for suggestions ───
+  const fetchSuggestionsData = async () => {
+    if (cachedData) return cachedData;
+    setSuggestionsLoading(true);
     try {
-      // Parallel lightweight checks
-      const [coachesRes, trainersRes, venuesRes] = await Promise.all([
+      const [venuesRes, coachesRes, trainersRes] = await Promise.all([
+        axios.get(`${API_URL}/web/venue/getVenue`).catch(() => ({ data: { venue: [] } })),
         axios.get(`${API_URL}/web/fetch-all-coaches`).catch(() => ({ data: { data: [] } })),
         axios.get(`${API_URL}/web/PersonalTraining/fetchAll`).catch(() => ({ data: { data: [] } })),
-        axios.get(`${API_URL}/web/venue/getVenue`).catch(() => ({ data: { data: [] } }))
       ]);
-
-      const coaches = coachesRes.data?.data || [];
-      const trainers = trainersRes.data?.data || [];
-      const venues = venuesRes.data?.venue || []; // Wait, venue list API nests under venue key! Yes!
-
-      // Check for coach name/details match
-      const hasCoachMatch = coaches.some((c: any) => {
-        const fullName = `${c.first_name || ""} ${c.last_name || ""}`.toLowerCase();
-        const category = (c.category || "").toLowerCase();
-        const trainerType = (c.trainer_type || "").toLowerCase();
-        return fullName.includes(query) || category.includes(query) || trainerType.includes(query);
-      });
-
-      if (hasCoachMatch) {
-        navigate(`${routes.coachesGrid}?search=${encodeURIComponent(globalSearchQuery.trim())}`);
-        return;
-      }
-
-      // Check for trainer name/details match
-      const hasTrainerMatch = trainers.some((t: any) => {
-        const fullName = `${t.first_name || ""} ${t.last_name || ""}`.toLowerCase();
-        const category = (t.category || "").toLowerCase();
-        const trainerType = (t.trainer_type || "").toLowerCase();
-        return fullName.includes(query) || category.includes(query) || trainerType.includes(query);
-      });
-
-      if (hasTrainerMatch) {
-        navigate(`${routes.blogList}?search=${encodeURIComponent(globalSearchQuery.trim())}`);
-        return;
-      }
-
-      // Check for venue name/details match
-      const hasVenueMatch = venues.some((v: any) => {
-        const venueName = (v.name || "").toLowerCase();
-        const category = (v.category || "").toLowerCase();
-        return venueName.includes(query) || category.includes(query);
-      });
-
-      if (hasVenueMatch) {
-        navigate(`${routes.blogListSidebarLeft}?search=${encodeURIComponent(globalSearchQuery.trim())}`);
-        return;
-      }
-
-      // Default fallback
-      navigate(`${routes.blogListSidebarLeft}?search=${encodeURIComponent(globalSearchQuery.trim())}`);
-    } catch (err) {
-      console.error(err);
-      // Fallback
-      navigate(`${routes.blogListSidebarLeft}?search=${encodeURIComponent(globalSearchQuery.trim())}`);
+      const data = {
+        venues: venuesRes.data?.venue || [],
+        coaches: coachesRes.data?.data || [],
+        trainers: trainersRes.data?.data || [],
+      };
+      setCachedData(data);
+      return data;
+    } catch {
+      return { venues: [], coaches: [], trainers: [] };
+    } finally {
+      setSuggestionsLoading(false);
     }
   };
+
+  // ─── Filter suggestions from cached data ───
+  const filterSuggestions = (data: { venues: any[]; coaches: any[]; trainers: any[] }, q: string) => {
+    const results: any[] = [];
+    const ql = q.toLowerCase();
+
+    // Venues
+    data.venues.forEach((v: any) => {
+      const name = (v.name || "").toLowerCase();
+      const vendorType = (v.vendor_type || "").toLowerCase();
+      const category = (v.category || "").toLowerCase();
+      if (name.includes(ql) || vendorType.includes(ql) || category.includes(ql)) {
+        results.push({
+          type: "venue",
+          label: v.name,
+          subtitle: v.near_by_location ? `${v.near_by_location}, Indore` : "Indore",
+          icon: "feather-map-pin",
+          link: `/sports-venue/${vendorType.replace(/\s+/g, "-") || "venue"}/${name.replace(/\s+/g, "-")}/${v._id}`,
+          badge: v.vendor_type?.replace("_", " ") || "Venue",
+        });
+      }
+    });
+
+    // Coaches
+    data.coaches.forEach((c: any) => {
+      const fullName = `${c.first_name || ""} ${c.last_name || ""}`.toLowerCase();
+      const trainerType = (c.trainer_type || "").toLowerCase();
+      const category = (c.category || "").toLowerCase();
+      if (fullName.includes(ql) || trainerType.includes(ql) || category.includes(ql)) {
+        results.push({
+          type: "coach",
+          label: c.full_name || c.first_name,
+          subtitle: c.trainer_type || "Coach",
+          icon: "feather-users",
+          link: `/coaches/${trainerType.replace(/\s+/g, "-")}/${(c.first_name || "").replace(/\s+/g, "-").toLowerCase()}/${c._id}`,
+          badge: c.trainer_type || "Coach",
+        });
+      }
+    });
+
+    // Trainers
+    data.trainers.forEach((t: any) => {
+      const fullName = `${t.first_name || ""} ${t.last_name || ""}`.toLowerCase();
+      const trainerType = (t.trainer_type || "").toLowerCase();
+      if (fullName.includes(ql) || trainerType.includes(ql)) {
+        results.push({
+          type: "trainer",
+          label: `${t.first_name || ""} ${t.last_name || ""}`.trim(),
+          subtitle: t.trainer_type || "Personal Trainer",
+          icon: "feather-award",
+          link: `/personal-training/trainer/${(t.first_name || "").replace(/\s+/g, "-").toLowerCase()}/${t._id}`,
+          badge: t.trainer_type || "Trainer",
+        });
+      }
+    });
+
+    return results.slice(0, 8); // Max 8 suggestions
+  };
+
+  // ─── Handle search input change with debounce ───
+  const handleSearchInputChange = (val: string) => {
+    setGlobalSearchQuery(val);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+
+    if (val.trim().length < 2) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+
+    debounceRef.current = setTimeout(async () => {
+      const data = await fetchSuggestionsData();
+      const filtered = filterSuggestions(data, val.trim());
+      setSuggestions(filtered);
+      setShowSuggestions(true);
+    }, 300);
+  };
+
+  // ─── Close suggestions on outside click ───
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (suggestionsRef.current && !suggestionsRef.current.contains(e.target as Node)) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -485,13 +532,15 @@ const Header = () => {
           <ul className="nav header-navbar-rht">
             {/* Global Search Bar (Only on Desktop) */}
             <li className="nav-item d-none d-lg-block me-3">
-              <div className="nav-search-bar">
+              <div className="nav-search-bar" ref={suggestionsRef} style={{ position: "relative" }}>
                 <form onSubmit={handleGlobalSearch} className="position-relative">
                   <input
                     type="text"
                     value={globalSearchQuery}
-                    onChange={(e) => setGlobalSearchQuery(e.target.value)}
+                    onChange={(e) => handleSearchInputChange(e.target.value)}
+                    onFocus={() => { if (suggestions.length > 0 && globalSearchQuery.trim().length >= 2) setShowSuggestions(true); }}
                     className="form-control nav-search-input"
+                    autoComplete="off"
                   />
                   {!globalSearchQuery && (
                     <div className="placeholder-marquee-container">
@@ -504,6 +553,103 @@ const Header = () => {
                     <i className="fas fa-search" />
                   </button>
                 </form>
+
+                {/* ─── Live Search Suggestions Dropdown ─── */}
+                {showSuggestions && (
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: "100%",
+                      right: 0,
+                      left: "auto",
+                      width: "360px",
+                      marginTop: "6px",
+                      backgroundColor: "#FFFFFF",
+                      borderRadius: "14px",
+                      border: "1px solid #E2E8F0",
+                      boxShadow: "0 12px 40px rgba(0,0,0,0.12)",
+                      zIndex: 9999,
+                      overflow: "hidden",
+                      padding: "8px 0",
+                      maxHeight: "400px",
+                      overflowY: "auto",
+                    }}
+                  >
+                    {suggestionsLoading ? (
+                      <div className="d-flex align-items-center justify-content-center py-4 gap-2" style={{ color: "#64748B", fontSize: "13px" }}>
+                        <div className="spinner-border spinner-border-sm text-success" role="status" />
+                        <span>Searching...</span>
+                      </div>
+                    ) : suggestions.length > 0 ? (
+                      <>
+                        {suggestions.map((item: any, idx: number) => (
+                          <Link
+                            key={idx}
+                            to={item.link}
+                            onClick={() => { setShowSuggestions(false); setGlobalSearchQuery(""); }}
+                            className="d-flex align-items-center gap-3 px-3.5 py-3 text-decoration-none"
+                            style={{
+                              borderBottom: idx < suggestions.length - 1 ? "1px solid #F1F5F9" : "none",
+                              transition: "background-color 0.15s ease",
+                              cursor: "pointer",
+                            }}
+                            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#F8FAFC")}
+                            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+                          >
+                            <div
+                              className="d-flex align-items-center justify-content-center rounded-circle flex-shrink-0"
+                              style={{
+                                width: "36px",
+                                height: "36px",
+                                backgroundColor: item.type === "venue" ? "#F0FDF4" : item.type === "coach" ? "#EFF6FF" : "#FDF4FF",
+                                color: item.type === "venue" ? "#22C55E" : item.type === "coach" ? "#3B82F6" : "#A855F7",
+                              }}
+                            >
+                              <i className={item.icon} style={{ fontSize: "15px" }} />
+                            </div>
+                            <div className="flex-grow-1 min-w-0">
+                              <div className="fw-bold text-truncate" style={{ fontSize: "13px", color: "#0F172A", lineHeight: "1.3" }}>
+                                {item.label}
+                              </div>
+                              <div className="text-truncate" style={{ fontSize: "11px", color: "#64748B" }}>
+                                {item.subtitle}
+                              </div>
+                            </div>
+                            <span
+                              className="badge rounded-pill flex-shrink-0"
+                              style={{
+                                fontSize: "9px",
+                                fontWeight: "700",
+                                padding: "4px 10px",
+                                textTransform: "uppercase",
+                                letterSpacing: "0.5px",
+                                backgroundColor: item.type === "venue" ? "#F0FDF4" : item.type === "coach" ? "#EFF6FF" : "#FDF4FF",
+                                color: item.type === "venue" ? "#166534 !important" : item.type === "coach" ? "#1D4ED8 !important" : "#7E22CE !important",
+                              }}
+                            >
+                              {item.badge}
+                            </span>
+                          </Link>
+                        ))}
+                        {/* View All Results link */}
+                        <Link
+                          to={`/search?q=${encodeURIComponent(globalSearchQuery.trim())}`}
+                          onClick={() => { setShowSuggestions(false); }}
+                          className="d-flex align-items-center justify-content-center gap-2 py-3 text-decoration-none"
+                          style={{ backgroundColor: "#F8FAFC", borderTop: "1px solid #E2E8F0", color: "#22C55E", fontSize: "13px", fontWeight: "600", marginTop: "4px" }}
+                        >
+                          <i className="feather-search" style={{ fontSize: "14px" }} />
+                          View all results for &ldquo;{globalSearchQuery.trim()}&rdquo;
+                        </Link>
+                      </>
+                    ) : (
+                      <div className="text-center py-4" style={{ color: "#94A3B8", fontSize: "13px" }}>
+                        <i className="feather-search d-block mb-2" style={{ fontSize: "20px" }} />
+                        No suggestions found
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </li>
             <li className="nav-item">

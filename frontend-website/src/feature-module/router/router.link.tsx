@@ -107,6 +107,7 @@ import VenueByCategory from "../blog/venue-by-category";
 import PaymentSuccess from "../pages/payment-success";
 import PaymentFailed from "../pages/payment-failed";
 import CommonPage from "../pages/common-page";
+import SearchResults from "../pages/search-results";
 
 const routes = all_routes;
 
@@ -625,6 +626,11 @@ const publicRoutes = [
     path:routes.commonpage,
     element:<CommonPage />,
     route:Route,
+  },
+  {
+    path: routes.searchResults,
+    element: <SearchResults />,
+    route: Route,
   },
 ];
 

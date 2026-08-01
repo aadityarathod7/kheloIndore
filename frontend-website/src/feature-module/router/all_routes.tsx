@@ -107,6 +107,7 @@ export const all_routes = {
   paymentFailed: "/payment-failed",
   commonpage: "/go-to",
   venueByCategory: "/sports-venue/:type",
+  searchResults: "/search",
 
   venueDetails: "/sports-venue/:type/:name/:id",
   CoachTimeDate: "/coaches/coach-timedate/:id",
