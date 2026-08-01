@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { Link, useLocation, useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import ImageWithBasePath from "../../core/data/img/ImageWithBasePath";
-import { all_routes } from "../router/all_routes";
 import axios from "axios";
 import { API_URL, IMG_URL } from "../../ApiUrl";
 import Swal from "sweetalert2";
@@ -42,8 +41,7 @@ const SLOT_TIMING_OPTIONS = [
   { id: "night", label: "Night (09:00 PM - 11:00 PM)" },
 ];
 
-export default function VenueByCategory(props: any) {
-  const routes = all_routes;
+export default function VenueByCategory() {
   const [venues, setVenues] = useState<Venues[]>([]);
   const [favorites, setFavorites] = useState<Record<string, boolean>>({});
 
@@ -58,7 +56,6 @@ export default function VenueByCategory(props: any) {
   const [selectedGrassType, setSelectedGrassType] = useState<string>("any");
   const [selectedAmenity, setSelectedAmenity] = useState<string>("any");
   const [sortBy, setSortBy] = useState<string>("popular");
-  const [showMoreFilters, setShowMoreFilters] = useState<boolean>(false);
 
   useEffect(() => {
     if (categorySelected) {
@@ -136,7 +133,7 @@ export default function VenueByCategory(props: any) {
 
   // Unified Filtering & Sorting Engine
   const displayList = useMemo(() => {
-    let result = venues.filter((t: any) => {
+    const result = venues.filter((t: any) => {
       // 1. Sports Filter
       if (selectedSport && selectedSport !== "all") {
         const vt = (t.vendor_type || "").toLowerCase().replace(/_/g, " ").trim();
