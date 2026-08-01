@@ -56,6 +56,33 @@ const VenueDetails = () => {
   const [loading, setLoading] = useState<boolean>(true)
   const [activeTab, setActiveTab] = useState<string>("overview");
 
+  // ─── Custom Lightbox States & Handlers ───
+  const [lightboxOpen, setLightboxOpen] = useState<boolean>(false);
+  const [lightboxIndex, setLightboxIndex] = useState<number>(0);
+
+  const handlePrevImage = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    if (!venueData?.images || venueData.images.length === 0) return;
+    setLightboxIndex((prev) => (prev === 0 ? venueData.images.length - 1 : prev - 1));
+  };
+
+  const handleNextImage = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    if (!venueData?.images || venueData.images.length === 0) return;
+    setLightboxIndex((prev) => (prev === venueData.images.length - 1 ? 0 : prev + 1));
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!lightboxOpen) return;
+      if (e.key === "Escape") setLightboxOpen(false);
+      if (e.key === "ArrowLeft") handlePrevImage();
+      if (e.key === "ArrowRight") handleNextImage();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [lightboxOpen, venueData]);
+
   const overviewRef = useRef(null);
   const includesRef = useRef(null);
   const rulesRef = useRef(null);
@@ -157,18 +184,8 @@ const VenueDetails = () => {
   };
   
   const handleImageClick = (index: number) => {
-    const imageUrl = venueData?.images[index]?.src
-      ? `${IMG_URL}${venueData.images[index]?.src}`
-      : "assets/img/venues/venues-01.jpg";
-
-    Swal.fire({
-      imageUrl: imageUrl,
-      imageAlt: 'Image preview',
-      width: '60%',
-      padding: '1rem',
-      showCloseButton: true,
-      showConfirmButton: false,
-    });
+    setLightboxIndex(index);
+    setLightboxOpen(true);
   };
 
   const handleBookNow = async (e:any) => {
@@ -801,6 +818,163 @@ const VenueDetails = () => {
             </div>
             </div>
           </div>
+
+          {/* Custom Premium Lightbox Modal */}
+          {lightboxOpen && (
+            <div 
+              className="position-fixed top-0 start-0 w-100 h-100 d-flex flex-column align-items-center justify-content-center"
+              style={{ 
+                zIndex: 10000, 
+                backgroundColor: "rgba(15, 23, 42, 0.95)", 
+                backdropFilter: "blur(12px)",
+                WebkitBackdropFilter: "blur(12px)",
+                transition: "opacity 0.3s ease"
+              }}
+              onClick={() => setLightboxOpen(false)}
+            >
+              {/* Header Info & Close Button */}
+              <div 
+                className="position-absolute top-0 start-0 w-100 d-flex align-items-center justify-content-between px-4 py-3"
+                style={{ zIndex: 10002 }}
+              >
+                <div className="text-white">
+                  <h5 className="fw-bold mb-0" style={{ fontSize: "16px" }}>{venueData?.name}</h5>
+                  <span style={{ fontSize: "12px", opacity: 0.7, fontWeight: "500" }}>
+                    Image {lightboxIndex + 1} of {venueData?.images?.length || 1}
+                  </span>
+                </div>
+                <button 
+                  type="button"
+                  className="btn btn-link text-white text-decoration-none d-flex align-items-center justify-content-center rounded-circle"
+                  onClick={() => setLightboxOpen(false)}
+                  style={{ 
+                    width: "40px", 
+                    height: "40px", 
+                    backgroundColor: "rgba(255,255,255,0.1)", 
+                    border: "none",
+                    transition: "all 0.2s"
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.2)"}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.1)"}
+                >
+                  <i className="feather-x" style={{ fontSize: "20px" }} />
+                </button>
+              </div>
+
+              {/* Left Navigation Arrow */}
+              {venueData?.images && venueData.images.length > 1 && (
+                <button
+                  type="button"
+                  className="position-absolute start-0 ms-4 btn d-flex align-items-center justify-content-center rounded-circle text-white shadow-lg"
+                  onClick={handlePrevImage}
+                  style={{
+                    width: "50px",
+                    height: "50px",
+                    backgroundColor: "rgba(255,255,255,0.1)",
+                    border: "1px solid rgba(255,255,255,0.2)",
+                    zIndex: 10003,
+                    transition: "all 0.2s"
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = "#22C55E";
+                    e.currentTarget.style.borderColor = "#22C55E";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.1)";
+                    e.currentTarget.style.borderColor = "rgba(255,255,255,0.2)";
+                  }}
+                >
+                  <i className="feather-chevron-left" style={{ fontSize: "24px" }} />
+                </button>
+              )}
+
+              {/* Main Lightbox Image Viewport */}
+              <div 
+                className="d-flex align-items-center justify-content-center p-3"
+                style={{ maxWidth: "85%", maxHeight: "70%", zIndex: 10001 }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <img
+                  src={getVenueImgUrl(venueData?.images, lightboxIndex)}
+                  alt="Lightbox View"
+                  className="img-fluid rounded-3 shadow-2xl"
+                  style={{ 
+                    maxHeight: "70vh", 
+                    maxWidth: "100%", 
+                    objectFit: "contain",
+                    border: "4px solid rgba(255,255,255,0.15)",
+                    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+                  }}
+                />
+              </div>
+
+              {/* Right Navigation Arrow */}
+              {venueData?.images && venueData.images.length > 1 && (
+                <button
+                  type="button"
+                  className="position-absolute end-0 me-4 btn d-flex align-items-center justify-content-center rounded-circle text-white shadow-lg"
+                  onClick={handleNextImage}
+                  style={{
+                    width: "50px",
+                    height: "50px",
+                    backgroundColor: "rgba(255,255,255,0.1)",
+                    border: "1px solid rgba(255,255,255,0.2)",
+                    zIndex: 10003,
+                    transition: "all 0.2s"
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = "#22C55E";
+                    e.currentTarget.style.borderColor = "#22C55E";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.1)";
+                    e.currentTarget.style.borderColor = "rgba(255,255,255,0.2)";
+                  }}
+                >
+                  <i className="feather-chevron-right" style={{ fontSize: "24px" }} />
+                </button>
+              )}
+
+              {/* Horizontal Clickable Thumbnail Previews */}
+              {venueData?.images && venueData.images.length > 1 && (
+                <div 
+                  className="position-absolute bottom-0 mb-4 d-flex align-items-center justify-content-center gap-2 p-2 rounded-4"
+                  style={{ 
+                    backgroundColor: "rgba(15, 23, 42, 0.6)", 
+                    backdropFilter: "blur(8px)",
+                    border: "1px solid rgba(255,255,255,0.1)",
+                    zIndex: 10002,
+                    maxWidth: "90%",
+                    overflowX: "auto"
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {venueData.images.map((img: any, idx: number) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => setLightboxIndex(idx)}
+                      className="btn p-0 rounded-3 overflow-hidden border"
+                      style={{
+                        width: "56px",
+                        height: "42px",
+                        borderColor: lightboxIndex === idx ? "#22C55E" : "transparent",
+                        borderWidth: "2.5px",
+                        opacity: lightboxIndex === idx ? 1 : 0.5,
+                        transition: "all 0.2s"
+                      }}
+                    >
+                      <img 
+                        src={getVenueImgUrl(venueData.images, idx)} 
+                        alt="thumbnail"
+                        style={{ width: "100%", height: "100%", objectFit: "cover" }} 
+                      />
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </>
       )}
     </>
