@@ -16,6 +16,7 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [mobileApiError, setMobileApiError] = useState("");
   const [otpApiError, setOtpApiError] = useState("");
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
 
   const { URL } = location.state || {};
 
@@ -250,7 +251,7 @@ const Login = () => {
             <button
               type="submit"
               className="btn btn-submit w-100 fw-bold"
-              disabled={loading || mobileNumber.length !== 10}
+              disabled={loading || mobileNumber.length !== 10 || !agreedToTerms}
             >
               {loading ? (
                 <span>
@@ -336,8 +337,40 @@ const Login = () => {
           </form>
         )}
 
-        <div className="mt-4 pt-3 border-top text-center" style={{ fontSize: "12px", color: "#94A3B8" }}>
-          By continuing, you agree to Khelo Indore&apos;s <Link to="/contact-us" style={{ color: "#64748B" }}>Terms</Link> &amp; <Link to="/contact-us" style={{ color: "#64748B" }}>Privacy Policy</Link>.
+        <div className="mt-4 pt-3 border-top">
+          <label
+            htmlFor="terms-checkbox"
+            style={{
+              display: "flex",
+              alignItems: "flex-start",
+              gap: "10px",
+              cursor: "pointer",
+              fontSize: "12px",
+              color: "#64748B",
+              lineHeight: "1.5",
+            }}
+          >
+            <input
+              id="terms-checkbox"
+              type="checkbox"
+              checked={agreedToTerms}
+              onChange={(e) => setAgreedToTerms(e.target.checked)}
+              style={{
+                width: "16px",
+                height: "16px",
+                minWidth: "16px",
+                marginTop: "1px",
+                accentColor: "#22C55E",
+                cursor: "pointer",
+              }}
+            />
+            <span>
+              By continuing, I agree to Khelo Indore&apos;s{" "}
+              <Link to="/contact-us" style={{ color: "#22C55E", fontWeight: 600 }}>Terms of Service</Link>
+              {" "}&amp;{" "}
+              <Link to="/contact-us" style={{ color: "#22C55E", fontWeight: 600 }}>Privacy Policy</Link>.
+            </span>
+          </label>
         </div>
       </div>
     </div>
