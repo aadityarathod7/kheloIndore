@@ -148,6 +148,18 @@ const Home = () => {
     { name: "Dewas Naka" },
   ]);
 
+  const [sportsOptions, setSportsOptions] = useState<{ name: string }[]>([
+    { name: "Cricket" },
+    { name: "Football" },
+    { name: "Badminton" },
+    { name: "Tennis" },
+    { name: "Swimming" },
+    { name: "Basketball" },
+    { name: "Volleyball" },
+    { name: "Gym & Fitness" },
+    { name: "Table Tennis" },
+  ]);
+
   useEffect(() => {
     const cleanLocation = (loc: string): string => {
       if (!loc) return "";
@@ -163,11 +175,15 @@ const Home = () => {
     };
 
     const locationsSet = new Set<string>();
+    const sportsSet = new Set<string>();
     
     // Collect from venues
     venues.forEach(v => {
       if (v.near_by_location) {
         locationsSet.add(cleanLocation(v.near_by_location));
+      }
+      if (v.category) {
+        sportsSet.add(v.category.trim());
       }
     });
 
@@ -176,6 +192,9 @@ const Home = () => {
       if (c.near_by_location) {
         locationsSet.add(cleanLocation(c.near_by_location));
       }
+      if (c.category) {
+        sportsSet.add(c.category.trim());
+      }
     });
 
     // Collect from trainers
@@ -183,9 +202,12 @@ const Home = () => {
       if (t.near_by_location) {
         locationsSet.add(cleanLocation(t.near_by_location));
       }
+      if (t.category) {
+        sportsSet.add(t.category.trim());
+      }
     });
 
-    // Filter, sort, and map to options format
+    // Filter, sort, and map locations
     const uniqueSorted = Array.from(locationsSet)
       .filter(loc => loc.length > 0 && loc.toLowerCase() !== "indore") // omit general 'Indore'
       .sort()
@@ -194,18 +216,30 @@ const Home = () => {
     if (uniqueSorted.length > 0) {
       setSortOptions(uniqueSorted);
     }
+
+    // Filter, sort, and map sports
+    const uniqueSports = Array.from(sportsSet)
+      .filter(sport => sport.length > 0)
+      .map(sport => {
+        // Clean up category names (e.g. swiming -> Swimming, turf -> Turf)
+        let name = sport.charAt(0).toUpperCase() + sport.slice(1).toLowerCase();
+        if (name.toLowerCase() === "swiming") name = "Swimming";
+        return { name };
+      });
+
+    // Deduplicate
+    const uniqueSportsMap = new Map();
+    uniqueSports.forEach(s => {
+      uniqueSportsMap.set(s.name.toLowerCase(), s);
+    });
+    
+    const finalSports = Array.from(uniqueSportsMap.values())
+      .sort((a, b) => a.name.localeCompare(b.name));
+
+    if (finalSports.length > 0) {
+      setSportsOptions(finalSports);
+    }
   }, [venues, coaches, trainer]);
-  const sportsOptions = [
-    { name: "Cricket" },
-    { name: "Football" },
-    { name: "Badminton" },
-    { name: "Tennis" },
-    { name: "Swimming" },
-    { name: "Basketball" },
-    { name: "Volleyball" },
-    { name: "Gym & Fitness" },
-    { name: "Table Tennis" },
-  ];
 
   const settings = {
     dots: false,
