@@ -1174,93 +1174,76 @@ input, select, textarea, .form-control {
   }
 }
 
-// Redesign Footer: Modern, Minimalist, Stylish & Premium LIGHT Theme
+// Redesign Footer: Modern, Compact, Stylish & Premium LIGHT Theme
 .footer {
-  background: linear-gradient(180deg, #EDF3EE 0%, #E2E8E3 100%) !important; // Premium light sage-green gradient
-  border-top: 1px solid #C8D5C9 !important;
-  padding: 50px 0 0 !important;
+  background: linear-gradient(180deg, #F2F7F3 0%, #E5ECE6 100%) !important; // Premium light sage gradient
+  border-top: 1px solid #D2E0D4 !important;
+  padding: 24px 0 0 !important;
   position: relative !important;
+  box-shadow: 0 -4px 20px rgba(23, 34, 45, 0.03) !important;
   
   &::before {
-    display: none !important; // Hide default old gradient line
-  }
-
-  // Integrated CTA Banner
-  .footer-join {
-    background: transparent !important;
-    border: none !important;
-    border-radius: 0 !important;
-    padding: 0 0 40px 0 !important; // Clean vertical space
-    margin-bottom: 30px !important;
-    box-shadow: none !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-    max-width: 800px !important;
-    
-    h2 {
-      font-family: 'Space Grotesk', sans-serif !important;
-      font-weight: 800 !important;
-      font-size: 30px !important;
-      color: #17222D !important; // Dark charcoal
-      letter-spacing: -0.5px !important;
-      margin-bottom: 8px !important;
-    }
-    
-    .sub-title {
-      color: #606D76 !important; // Muted dark grey
-      font-weight: 500 !important;
-      font-size: 15px !important;
-      margin-bottom: 20px !important;
-    }
-
-    .btn-primary {
-      padding: 10px 24px !important;
-      border-radius: 12px !important;
-    }
+    display: none !important;
   }
 
   .footer-top {
-    padding: 20px 0 !important; 
-    border-top: 1px solid #D6E4D8 !important;
+    padding: 10px 0 16px 0 !important; 
+    border-top: none !important;
+
+    .footer-about {
+      .footer-desc {
+        color: #606D76 !important;
+        font-size: 13px !important;
+        line-height: 1.5 !important;
+      }
+    }
   }
 
-  // Minimalist Column Titles
+  // Minimalist Compact Column Titles
   .footer-title {
     font-family: 'Space Grotesk', sans-serif !important;
-    font-size: 13px !important;
-    font-weight: 800 !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
     text-transform: uppercase !important;
-    letter-spacing: 1.5px !important;
-    color: #17222D !important; // Dark charcoal instead of white
-    margin-bottom: 20px !important;
+    letter-spacing: 1.2px !important;
+    color: #17222D !important;
+    margin-bottom: 12px !important;
     padding-bottom: 0 !important;
     border-bottom: none !important;
 
     &::after {
-      display: none !important; // Hide old accent line
+      display: none !important;
     }
   }
 
-  // Modern Sliding Green Links
+  // Compact Modern Links
   .footer-menu {
     ul {
+      padding: 0 !important;
+      margin: 0 !important;
+      list-style: none !important;
+
       li {
-        margin-bottom: 10px !important;
+        margin-bottom: 6px !important;
         
+        &:last-child {
+          margin-bottom: 0 !important;
+        }
+
         a {
-          color: #606D76 !important; // Muted dark grey links
-          font-size: 14px !important;
+          color: #55636E !important;
+          font-size: 13px !important;
           font-weight: 500 !important;
-          transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+          transition: all 0.2s ease !important;
           padding-left: 0 !important;
 
           &::after {
-            display: none !important; // Hide old underline effect
+            display: none !important;
           }
 
           &:hover {
-            color: #3CAB4B !important; // Garmin Green
-            transform: translateX(4px) !important; // Subtle slide
+            color: #43B649 !important;
+            transform: translateX(3px) !important;
             padding-left: 0 !important;
           }
         }
@@ -1268,40 +1251,41 @@ input, select, textarea, .form-control {
     }
   }
 
-  // Modern Social Icon Circles
+  // Modern Compact Social Icon Circles
   .social-icon {
-    margin-top: 12px !important;
+    margin-top: 10px !important;
     
     ul {
       display: inline-flex !important;
-      gap: 10px !important;
+      gap: 8px !important;
       
       li {
         margin-right: 0 !important;
         
         a {
-          background: #FBFCFB !important; // Solid off-white icon background
-          border: 1px solid #D6E4D8 !important;
+          background: #FFFFFF !important;
+          border: 1px solid #D2E0D4 !important;
           border-radius: 50% !important;
-          width: 36px !important;
-          height: 36px !important;
+          width: 32px !important;
+          height: 32px !important;
           display: flex !important;
           align-items: center !important;
           justify-content: center !important;
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+          transition: all 0.25s ease !important;
           padding: 0 !important;
+          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04) !important;
 
           i {
-            color: #606D76 !important; // Dark icon
-            font-size: 13px !important;
-            transition: all 0.3s ease !important;
+            color: #55636E !important;
+            font-size: 12px !important;
+            transition: all 0.25s ease !important;
           }
 
           &:hover {
-            background: #3CAB4B !important; // Garmin Green
-            border-color: #3CAB4B !important;
-            transform: translateY(-3px) !important;
-            box-shadow: 0 8px 20px rgba(60, 171, 75, 0.25) !important;
+            background: #43B649 !important;
+            border-color: #43B649 !important;
+            transform: translateY(-2px) !important;
+            box-shadow: 0 4px 12px rgba(67, 182, 73, 0.3) !important;
 
             i {
               color: #FFFFFF !important;
@@ -1315,16 +1299,16 @@ input, select, textarea, .form-control {
   // Footer Bottom copyright
   .footer-bottom {
     border-top: 1px solid #D6E4D8 !important;
-    padding: 16px 0 !important;
-    margin-top: 20px !important;
+    padding: 12px 0 !important;
+    margin-top: 12px !important;
 
     .copyright-text p {
-      color: #606D76 !important; // Muted dark grey copyright text
-      font-size: 13px !important;
+      color: #606D76 !important;
+      font-size: 12px !important;
       font-weight: 500 !important;
 
       strong {
-        color: #17222D !important; // Dark charcoal
+        color: #17222D !important;
         font-weight: 600 !important;
       }
     }
@@ -1333,7 +1317,7 @@ input, select, textarea, .form-control {
   // Brand logo modern constraints
   .footer-logo {
     img {
-      max-height: 55px !important;
+      max-height: 42px !important;
       width: auto !important;
       object-fit: contain !important;
     }
@@ -1342,7 +1326,7 @@ input, select, textarea, .form-control {
   // Brand description contrast fix
   .footer-about {
     p {
-      color: #606D76 !important; // Muted dark grey instead of transparent white-50
+      color: #606D76 !important;
     }
   }
 }
