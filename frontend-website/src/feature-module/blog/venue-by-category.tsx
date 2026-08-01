@@ -145,18 +145,39 @@ export default function VenueByCategory(props: any) {
 
   useEffect(() => {
     if (categorySelected && venues.length > 0) {
-      const targetCat = categorySelected.toLowerCase().replace(/-/g, " ").trim();
-      const filteredData = venues.filter((t: any) => {
-        const vendorType = (t.vendor_type || "").toLowerCase().replace(/_/g, " ").trim();
-        const category = (t.category || "").toLowerCase().replace(/_/g, " ").trim();
+      let filteredData;
+      if (categorySelected.toLowerCase() === "other-sports") {
+        filteredData = venues.filter((t: any) => {
+          const vt = (t.vendor_type || "").toLowerCase().replace(/_/g, " ").trim();
+          const cat = (t.category || "").toLowerCase().replace(/_/g, " ").trim();
+          const name = (t.name || "").toLowerCase();
+          const desc = (t.description || "").toLowerCase();
 
-        return (
-          vendorType.includes(targetCat) ||
-          category.includes(targetCat) ||
-          targetCat.includes(vendorType) ||
-          targetCat.includes(category)
-        );
-      });
+          const isCricket = vt.includes("cricket") || cat.includes("cricket") || name.includes("cricket") || desc.includes("cricket") || vt.includes("turf") || cat.includes("turf");
+          const isBadminton = vt.includes("badminton") || cat.includes("badminton") || name.includes("badminton");
+          const isSwimming = vt.includes("swim") || cat.includes("swim") || name.includes("swim");
+          const isFootball = vt.includes("football") || cat.includes("football") || name.includes("football");
+          const isPickleball = vt.includes("pickle") || cat.includes("pickle") || name.includes("pickle");
+          const isTennis = (vt.includes("tennis") || cat.includes("tennis") || name.includes("tennis")) && !vt.includes("table") && !cat.includes("table") && !name.includes("table");
+          const isBasketball = vt.includes("basketball") || cat.includes("basketball") || name.includes("basketball");
+          const isTableTennis = vt.includes("table tennis") || cat.includes("table tennis") || name.includes("table tennis");
+
+          return !(isCricket || isBadminton || isSwimming || isFootball || isPickleball || isTennis || isBasketball || isTableTennis);
+        });
+      } else {
+        const targetCat = categorySelected.toLowerCase().replace(/-/g, " ").trim();
+        filteredData = venues.filter((t: any) => {
+          const vendorType = (t.vendor_type || "").toLowerCase().replace(/_/g, " ").trim();
+          const category = (t.category || "").toLowerCase().replace(/_/g, " ").trim();
+
+          return (
+            vendorType.includes(targetCat) ||
+            category.includes(targetCat) ||
+            targetCat.includes(vendorType) ||
+            targetCat.includes(category)
+          );
+        });
+      }
       setCategoryVenue(filteredData.length > 0 ? filteredData : venues);
     } else {
       setCategoryVenue(venues);
