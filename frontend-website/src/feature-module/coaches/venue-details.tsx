@@ -94,7 +94,7 @@ const VenueDetails = () => {
   const idData = useParams();
   const id = idData.id;
   const name = idData.name;
-  const type = idData.type; 
+  const type = idData.type;
 
   const [isFavourite, setIsFavourite] = useState<boolean>(() => {
     if (!id) return false;
@@ -117,7 +117,7 @@ const VenueDetails = () => {
       confirmButtonColor: "#22C55E"
     });
   };
-  
+
 
   const scrollToRef = (ref: any) => {
     ref.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -127,9 +127,9 @@ const VenueDetails = () => {
     window.scrollTo(0, 0)
   }, [])
 
-  
-  
-  
+
+
+
   useEffect(() => {
     const fetchVenueId = async () => {
       try {
@@ -144,7 +144,7 @@ const VenueDetails = () => {
     };
     fetchVenueId();
   }, []);
-  
+
   useEffect(() => {
     if (venueData && venueData.data && typeof venueData.data === 'object') {
       const keys = Object.keys(venueData.data);
@@ -155,11 +155,11 @@ const VenueDetails = () => {
       }
     }
   }, [venueData]);
-  
+
   useEffect(() => {
-       document.title = `Sports Venue - ${type}/${name}/${id}}`;  
-   }, []);
-  
+    document.title = `Sports Venue - ${type}/${name}/${id}}`;
+  }, []);
+
   const handleShare = () => {
     const shareUrl = window.location.href;
     if (navigator.share) {
@@ -182,13 +182,13 @@ const VenueDetails = () => {
       });
     }
   };
-  
+
   const handleImageClick = (index: number) => {
     setLightboxIndex(index);
     setLightboxOpen(true);
   };
 
-  const handleBookNow = async (e:any) => {
+  const handleBookNow = async (e: any) => {
     e.preventDefault();
     console.log("click -=-=-=-")
     const token = localStorage.getItem("token");
@@ -224,7 +224,8 @@ const VenueDetails = () => {
       ) : (
         <>
           {/* Hero CSS overrides */}
-          <style dangerouslySetInnerHTML={{__html: `
+          <style dangerouslySetInnerHTML={{
+            __html: `
             .venue-hero-section { background: linear-gradient(135deg, #F0FDF4 0%, #ECFDF5 100%) !important; }
             .venue-hero-section h1 { color: #0F172A !important; font-weight: 800 !important; }
             .venue-hero-section h1 span { color: #22C55E !important; }
@@ -268,505 +269,505 @@ const VenueDetails = () => {
           <div className="khelo-pro-wrapper" style={{ paddingTop: "32px" }}>
             <div className="max-container">
 
-            {/* 2. MAIN 2-COLUMN LAYOUT (Left 70% / Right 30%) */}
-            <div className="row g-4">
-              {/* LEFT COLUMN (70% / 8 Cols) */}
-              <div className="col-lg-8">
-                {/* A. Bento Hero Gallery */}
-                <div className="row g-3 mb-4">
-                  {/* Main Featured Big Image */}
-                  <div className={venueData?.images && venueData.images.length >= 2 ? "col-md-8" : "col-12"}>
-                    <div className="bento-hero-main">
-                      {/* Ambient Blurred Background */}
-                      <img
-                        src={getVenueImgUrl(venueData?.images, 0)}
-                        alt="Ambient backdrop"
-                        className="ambient-bg"
-                      />
-                      {/* Full Uncropped Main Image */}
-                      <img
-                        src={getVenueImgUrl(venueData?.images, 0)}
-                        alt={venueData?.name}
-                        className="full-hero-img"
-                        onClick={() => handleImageClick(0)}
-                      />
-                      {/* Featured Badge */}
-                      <div className="position-absolute top-0 start-0 p-3" style={{ zIndex: 10 }}>
-                        <span className="badge bg-success text-white px-3.5 py-2 rounded-pill shadow-sm" style={{ fontSize: "13px", fontWeight: 700 }}>
-                          ⭐ Featured
-                        </span>
-                      </div>
-                      {/* Top-Right Action Buttons: Share & Favorite */}
-                      <div className="position-absolute top-0 end-0 p-3 d-flex align-items-center gap-2" style={{ zIndex: 10 }}>
-                        <button
-                          type="button"
-                          className="glass-icon-btn"
-                          onClick={handleShare}
-                          title="Share Venue"
-                        >
-                          <i className="fas fa-share-alt" />
-                        </button>
-                        <button
-                          type="button"
-                          className={`glass-icon-btn ${isFavourite ? "active-fav" : ""}`}
-                          onClick={handleToggleFavourite}
-                          title={isFavourite ? "Remove from Favourites" : "Save to Favourites"}
-                        >
-                          <i className={isFavourite ? "fas fa-heart text-danger" : "far fa-heart text-white"} />
-                        </button>
-                      </div>
-                      {/* Bottom Overlay Container */}
-                      <div
-                        className="position-absolute bottom-0 start-0 end-0 text-white"
-                        style={{ background: "linear-gradient(to top, rgba(15, 23, 42, 0.92) 0%, rgba(15, 23, 42, 0) 85%)", padding: "20px", zIndex: 10 }}
-                      >
-                        <h1 className="venue-hero-title mb-2 text-capitalize">
-                          {venueData?.name || (name ? name.replaceAll('-', ' ') : "Sports Venue")}
-                        </h1>
-                        <div className="d-flex flex-wrap align-items-center gap-2">
-                          <span className="glass-pill">
-                            📍 {venueData?.address ? `${venueData.address}, ${venueData.city || ''}` : "Indore, Madhya Pradesh"}
-                          </span>
-                          {venueData?.google_location && (
-                            <a
-                              href={venueData.google_location.startsWith("http") ? venueData.google_location : `https://${venueData.google_location}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="glass-pill text-decoration-none"
-                              style={{ color: "#FFFFFF", backgroundColor: "rgba(34, 197, 94, 0.4)", borderColor: "rgba(34, 197, 94, 0.8)", fontWeight: 700 }}
-                            >
-                              🗺️ View on Google Maps <i className="fas fa-external-link-alt ms-1" style={{ fontSize: "10px" }} />
-                            </a>
-                          )}
-                          <span className="glass-pill">
-                            ⭐ 4.8 (128 Reviews)
+              {/* 2. MAIN 2-COLUMN LAYOUT (Left 70% / Right 30%) */}
+              <div className="row g-4">
+                {/* LEFT COLUMN (70% / 8 Cols) */}
+                <div className="col-lg-8">
+                  {/* A. Bento Hero Gallery */}
+                  <div className="row g-3 mb-4">
+                    {/* Main Featured Big Image */}
+                    <div className={venueData?.images && venueData.images.length >= 2 ? "col-md-8" : "col-12"}>
+                      <div className="bento-hero-main">
+                        {/* Ambient Blurred Background */}
+                        <img
+                          src={getVenueImgUrl(venueData?.images, 0)}
+                          alt="Ambient backdrop"
+                          className="ambient-bg"
+                        />
+                        {/* Full Uncropped Main Image */}
+                        <img
+                          src={getVenueImgUrl(venueData?.images, 0)}
+                          alt={venueData?.name}
+                          className="full-hero-img"
+                          onClick={() => handleImageClick(0)}
+                        />
+                        {/* Featured Badge */}
+                        <div className="position-absolute top-0 start-0 p-3" style={{ zIndex: 10 }}>
+                          <span className="badge bg-success text-white px-3.5 py-2 rounded-pill shadow-sm" style={{ fontSize: "13px", fontWeight: 700 }}>
+                            ⭐ Featured
                           </span>
                         </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Right 2 Stacked Gallery Thumbnails */}
-                  {venueData?.images && venueData.images.length >= 2 && (
-                    <div className="col-md-4 d-flex flex-column gap-3">
-                      <div className="bento-hero-thumb">
-                        <img
-                          src={getVenueImgUrl(venueData?.images, 1)}
-                          alt="Ambient thumbnail 1"
-                          className="ambient-bg"
-                        />
-                        <img
-                          src={getVenueImgUrl(venueData?.images, 1)}
-                          alt="Venue thumbnail 1"
-                          className="full-hero-img"
-                          onClick={() => handleImageClick(1)}
-                        />
-                      </div>
-                      <div className="bento-hero-thumb">
-                        <img
-                          src={getVenueImgUrl(venueData?.images, 2)}
-                          alt="Ambient thumbnail 2"
-                          className="ambient-bg"
-                        />
-                        <img
-                          src={getVenueImgUrl(venueData?.images, 2)}
-                          alt="Venue thumbnail 2"
-                          className="full-hero-img"
-                          onClick={() => handleImageClick(2)}
-                        />
-                      </div>
-                    </div>
-                  )}
-                </div>
-                {/* B. NAVIGATION TABS (Immediately follows Hero Gallery!) */}
-                {(venueData?.gameType || (venueData?.facilities && venueData.facilities.length > 0) || venueData?.policiesAndRules || venueData?.additionalNotes) && (
-                  <div className="tabs-container-card">
-                    {venueData?.gameType && (
-                      <button
-                        type="button"
-                        onClick={() => setActiveTab("game")}
-                        className={`pro-tab-pill ${activeTab === "game" ? "active" : "inactive"}`}
-                        style={{
-                          background: activeTab === "game" ? "#22C55E" : "#F1F5F9",
-                          color: activeTab === "game" ? "#FFFFFF" : "#1E293B",
-                          border: activeTab === "game" ? "none" : "1px solid #E2E8F0"
-                        }}
-                      >
-                        <i className="fas fa-volleyball-ball" style={{ color: activeTab === "game" ? "#FFFFFF" : "#22C55E" }} />
-                        <span>Game Type</span>
-                      </button>
-                    )}
-
-                    {venueData?.facilities && venueData.facilities.length > 0 && (
-                      <button
-                        type="button"
-                        onClick={() => setActiveTab("facilities")}
-                        className={`pro-tab-pill ${activeTab === "facilities" ? "active" : "inactive"}`}
-                        style={{
-                          background: activeTab === "facilities" ? "#22C55E" : "#F1F5F9",
-                          color: activeTab === "facilities" ? "#FFFFFF" : "#1E293B",
-                          border: activeTab === "facilities" ? "none" : "1px solid #E2E8F0"
-                        }}
-                      >
-                        <i className="fas fa-building" style={{ color: activeTab === "facilities" ? "#FFFFFF" : "#22C55E" }} />
-                        <span>Facilities ({venueData.facilities.length})</span>
-                      </button>
-                    )}
-
-                    {venueData?.policiesAndRules && (
-                      <button
-                        type="button"
-                        onClick={() => setActiveTab("rules")}
-                        className={`pro-tab-pill ${activeTab === "rules" ? "active" : "inactive"}`}
-                        style={{
-                          background: activeTab === "rules" ? "#22C55E" : "#F1F5F9",
-                          color: activeTab === "rules" ? "#FFFFFF" : "#1E293B",
-                          border: activeTab === "rules" ? "none" : "1px solid #E2E8F0"
-                        }}
-                      >
-                        <i className="fas fa-gavel" style={{ color: activeTab === "rules" ? "#FFFFFF" : "#22C55E" }} />
-                        <span>Rules & Policies</span>
-                      </button>
-                    )}
-
-                    {venueData?.additionalNotes && (
-                      <button
-                        type="button"
-                        onClick={() => setActiveTab("notes")}
-                        className={`pro-tab-pill ${activeTab === "notes" ? "active" : "inactive"}`}
-                        style={{
-                          background: activeTab === "notes" ? "#22C55E" : "#F1F5F9",
-                          color: activeTab === "notes" ? "#FFFFFF" : "#1E293B",
-                          border: activeTab === "notes" ? "none" : "1px solid #E2E8F0"
-                        }}
-                      >
-                        <i className="fas fa-sticky-note" style={{ color: activeTab === "notes" ? "#FFFFFF" : "#22C55E" }} />
-                        <span>Notes</span>
-                      </button>
-                    )}
-                  </div>
-                )}
-
-                {/* C. Active Tab Content Card */}
-                <div className="pro-card">
-                  {activeTab === "overview" && (
-                    <div>
-                      {/* Card 1: About this Venue */}
-                      <h2 className="section-title">About this Venue</h2>
-                      <div
-                        dangerouslySetInnerHTML={{ __html: venueData?.description || "No description available." }}
-                        className="body-text mb-4"
-                      />
-
-                      <hr className="my-4" style={{ borderColor: "#E5E7EB" }} />
-
-                      {/* Card 2: Venue Specifications */}
-                      {venueType && venueType.length > 0 && (
-                        <div>
-                          <h3 className="card-title-head">Venue Specifications</h3>
-                          <div className="row row-cols-2 row-cols-md-5 g-3">
-                            {venueType.map((spec: any, index: any) => {
-                              const k = spec.key.toLowerCase();
-                              let iconClass = "fas fa-th-large";
-                              const defaultTitle = spec.key.replaceAll('_', ' ');
-                              let unit = "Feet";
-                              if (k.includes("area")) { iconClass = "fas fa-vector-square"; unit = "sq ft"; }
-                              if (k.includes("length")) { iconClass = "fas fa-arrows-alt-h"; unit = "ft"; }
-                              if (k.includes("height")) { iconClass = "fas fa-arrows-alt-v"; unit = "ft"; }
-                              if (k.includes("width")) { iconClass = "fas fa-arrows-alt-h"; unit = "ft"; }
-                              if (k.includes("surface") || k.includes("type")) { iconClass = "fas fa-layer-group"; unit = "Turf"; }
-
-                              return (
-                                <div className="col" key={index}>
-                                  <div className="pro-spec-card">
-                                    <div className="icon-circle">
-                                      <i className={iconClass} />
-                                    </div>
-                                    <span className="spec-label text-truncate w-100">
-                                      {defaultTitle}
-                                    </span>
-                                    <span className="spec-val text-truncate w-100">
-                                      {Array.isArray(spec.value) ? spec.value.join(", ") : spec.value}
-                                    </span>
-                                    <span className="spec-unit">
-                                      {unit}
-                                    </span>
-                                  </div>
-                                </div>
-                              );
-                            })}
+                        {/* Top-Right Action Buttons: Share & Favorite */}
+                        <div className="position-absolute top-0 end-0 p-3 d-flex align-items-center gap-2" style={{ zIndex: 10 }}>
+                          <button
+                            type="button"
+                            className="glass-icon-btn"
+                            onClick={handleShare}
+                            title="Share Venue"
+                          >
+                            <i className="fas fa-share-alt" />
+                          </button>
+                          <button
+                            type="button"
+                            className={`glass-icon-btn ${isFavourite ? "active-fav" : ""}`}
+                            onClick={handleToggleFavourite}
+                            title={isFavourite ? "Remove from Favourites" : "Save to Favourites"}
+                          >
+                            <i className={isFavourite ? "fas fa-heart text-danger" : "far fa-heart text-white"} />
+                          </button>
+                        </div>
+                        {/* Bottom Overlay Container */}
+                        <div
+                          className="position-absolute bottom-0 start-0 end-0 text-white"
+                          style={{ background: "linear-gradient(to top, rgba(15, 23, 42, 0.92) 0%, rgba(15, 23, 42, 0) 85%)", padding: "20px", zIndex: 10 }}
+                        >
+                          <h1 className="venue-hero-title mb-2 text-capitalize">
+                            {venueData?.name || (name ? name.replaceAll('-', ' ') : "Sports Venue")}
+                          </h1>
+                          <div className="d-flex flex-wrap align-items-center gap-2">
+                            <span className="glass-pill">
+                              📍 {venueData?.address ? `${venueData.address}, ${venueData.city || ''}` : "Indore, Madhya Pradesh"}
+                            </span>
+                            {venueData?.google_location && (
+                              <a
+                                href={venueData.google_location.startsWith("http") ? venueData.google_location : `https://${venueData.google_location}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="glass-pill text-decoration-none"
+                                style={{ color: "#FFFFFF", backgroundColor: "rgba(34, 197, 94, 0.4)", borderColor: "rgba(34, 197, 94, 0.8)", fontWeight: 700 }}
+                              >
+                                🗺️ View on Google Maps <i className="fas fa-external-link-alt ms-1" style={{ fontSize: "10px" }} />
+                              </a>
+                            )}
+                            <span className="glass-pill">
+                              ⭐ 4.8 (128 Reviews)
+                            </span>
                           </div>
                         </div>
+                      </div>
+                    </div>
+
+                    {/* Right 2 Stacked Gallery Thumbnails */}
+                    {venueData?.images && venueData.images.length >= 2 && (
+                      <div className="col-md-4 d-flex flex-column gap-3">
+                        <div className="bento-hero-thumb">
+                          <img
+                            src={getVenueImgUrl(venueData?.images, 1)}
+                            alt="Ambient thumbnail 1"
+                            className="ambient-bg"
+                          />
+                          <img
+                            src={getVenueImgUrl(venueData?.images, 1)}
+                            alt="Venue thumbnail 1"
+                            className="full-hero-img"
+                            onClick={() => handleImageClick(1)}
+                          />
+                        </div>
+                        <div className="bento-hero-thumb">
+                          <img
+                            src={getVenueImgUrl(venueData?.images, 2)}
+                            alt="Ambient thumbnail 2"
+                            className="ambient-bg"
+                          />
+                          <img
+                            src={getVenueImgUrl(venueData?.images, 2)}
+                            alt="Venue thumbnail 2"
+                            className="full-hero-img"
+                            onClick={() => handleImageClick(2)}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  {/* B. NAVIGATION TABS (Immediately follows Hero Gallery!) */}
+                  {(venueData?.gameType || (venueData?.facilities && venueData.facilities.length > 0) || venueData?.policiesAndRules || venueData?.additionalNotes) && (
+                    <div className="tabs-container-card">
+                      {venueData?.gameType && (
+                        <button
+                          type="button"
+                          onClick={() => setActiveTab("game")}
+                          className={`pro-tab-pill ${activeTab === "game" ? "active" : "inactive"}`}
+                          style={{
+                            background: activeTab === "game" ? "#22C55E" : "#F1F5F9",
+                            color: activeTab === "game" ? "#FFFFFF" : "#1E293B",
+                            border: activeTab === "game" ? "none" : "1px solid #E2E8F0"
+                          }}
+                        >
+                          <i className="fas fa-volleyball-ball" style={{ color: activeTab === "game" ? "#FFFFFF" : "#22C55E" }} />
+                          <span>Game Type</span>
+                        </button>
+                      )}
+
+                      {venueData?.facilities && venueData.facilities.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => setActiveTab("facilities")}
+                          className={`pro-tab-pill ${activeTab === "facilities" ? "active" : "inactive"}`}
+                          style={{
+                            background: activeTab === "facilities" ? "#22C55E" : "#F1F5F9",
+                            color: activeTab === "facilities" ? "#FFFFFF" : "#1E293B",
+                            border: activeTab === "facilities" ? "none" : "1px solid #E2E8F0"
+                          }}
+                        >
+                          <i className="fas fa-building" style={{ color: activeTab === "facilities" ? "#FFFFFF" : "#22C55E" }} />
+                          <span>Facilities ({venueData.facilities.length})</span>
+                        </button>
+                      )}
+
+                      {venueData?.policiesAndRules && (
+                        <button
+                          type="button"
+                          onClick={() => setActiveTab("rules")}
+                          className={`pro-tab-pill ${activeTab === "rules" ? "active" : "inactive"}`}
+                          style={{
+                            background: activeTab === "rules" ? "#22C55E" : "#F1F5F9",
+                            color: activeTab === "rules" ? "#FFFFFF" : "#1E293B",
+                            border: activeTab === "rules" ? "none" : "1px solid #E2E8F0"
+                          }}
+                        >
+                          <i className="fas fa-gavel" style={{ color: activeTab === "rules" ? "#FFFFFF" : "#22C55E" }} />
+                          <span>Rules & Policies</span>
+                        </button>
+                      )}
+
+                      {venueData?.additionalNotes && (
+                        <button
+                          type="button"
+                          onClick={() => setActiveTab("notes")}
+                          className={`pro-tab-pill ${activeTab === "notes" ? "active" : "inactive"}`}
+                          style={{
+                            background: activeTab === "notes" ? "#22C55E" : "#F1F5F9",
+                            color: activeTab === "notes" ? "#FFFFFF" : "#1E293B",
+                            border: activeTab === "notes" ? "none" : "1px solid #E2E8F0"
+                          }}
+                        >
+                          <i className="fas fa-sticky-note" style={{ color: activeTab === "notes" ? "#FFFFFF" : "#22C55E" }} />
+                          <span>Notes</span>
+                        </button>
                       )}
                     </div>
                   )}
 
-                  {activeTab === "game" && (
-                    <div>
-                      <h2 className="section-title">Game Type</h2>
-                      <div className="p-4 rounded-3 bg-light border fw-semibold body-text" style={{ borderColor: "#E5E7EB" }}>
-                        <i className="fas fa-volleyball-ball text-success me-2" />
-                        {venueData?.gameType || "All Sports Allowed"}
-                      </div>
-                    </div>
-                  )}
+                  {/* C. Active Tab Content Card */}
+                  <div className="pro-card">
+                    {activeTab === "overview" && (
+                      <div>
+                        {/* Card 1: About this Venue */}
+                        <h2 className="section-title">About this Venue</h2>
+                        <div
+                          dangerouslySetInnerHTML={{ __html: venueData?.description || "No description available." }}
+                          className="body-text mb-4"
+                        />
 
+                        <hr className="my-4" style={{ borderColor: "#E5E7EB" }} />
 
+                        {/* Card 2: Venue Specifications */}
+                        {venueType && venueType.length > 0 && (
+                          <div>
+                            <h3 className="card-title-head">Venue Specifications</h3>
+                            <div className="row row-cols-2 row-cols-md-5 g-3">
+                              {venueType.map((spec: any, index: any) => {
+                                const k = spec.key.toLowerCase();
+                                let iconClass = "fas fa-th-large";
+                                const defaultTitle = spec.key.replaceAll('_', ' ');
+                                let unit = "Feet";
+                                if (k.includes("area")) { iconClass = "fas fa-vector-square"; unit = "sq ft"; }
+                                if (k.includes("length")) { iconClass = "fas fa-arrows-alt-h"; unit = "ft"; }
+                                if (k.includes("height")) { iconClass = "fas fa-arrows-alt-v"; unit = "ft"; }
+                                if (k.includes("width")) { iconClass = "fas fa-arrows-alt-h"; unit = "ft"; }
+                                if (k.includes("surface") || k.includes("type")) { iconClass = "fas fa-layer-group"; unit = "Turf"; }
 
-                  {activeTab === "facilities" && (
-                    <div>
-                      <h2 className="section-title">Available Facilities ({venueData?.facilities?.length || 0})</h2>
-                      <div className="row row-cols-2 row-cols-md-3 g-3">
-                        {venueData?.facilities?.map((facility: any, index: any) => (
-                          <div className="col" key={index}>
-                            <div className="pro-amenity-card">
-                              <i className="fas fa-building" />
-                              <span style={{ color: "#111827" }}>{facility}</span>
+                                return (
+                                  <div className="col" key={index}>
+                                    <div className="pro-spec-card">
+                                      <div className="icon-circle">
+                                        <i className={iconClass} />
+                                      </div>
+                                      <span className="spec-label text-truncate w-100">
+                                        {defaultTitle}
+                                      </span>
+                                      <span className="spec-val text-truncate w-100">
+                                        {Array.isArray(spec.value) ? spec.value.join(", ") : spec.value}
+                                      </span>
+                                      <span className="spec-unit">
+                                        {unit}
+                                      </span>
+                                    </div>
+                                  </div>
+                                );
+                              })}
                             </div>
                           </div>
-                        ))}
+                        )}
                       </div>
-                    </div>
-                  )}
+                    )}
 
-                  {activeTab === "rules" && (
-                    <div>
-                      <h2 className="section-title">Rules & Policies</h2>
-                      <div className="p-4 rounded-3 bg-light border body-text" style={{ borderColor: "#E5E7EB" }}>
-                        <div dangerouslySetInnerHTML={{ __html: venueData?.policiesAndRules || "Standard sports venue rules apply." }} />
-                      </div>
-                    </div>
-                  )}
-
-                  {activeTab === "notes" && (
-                    <div>
-                      <h2 className="section-title">Additional Notes</h2>
-                      <div className="p-4 rounded-3 bg-light border body-text" style={{ borderColor: "#E5E7EB" }}>
-                        {venueData?.additionalNotes || "No additional notes provided by vendor."}
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* D. Additional Info Card */}
-                <div className="pro-card">
-                  <h3 className="card-title-head mb-3">Venue Information</h3>
-                  <div className="row row-cols-2 row-cols-md-4 g-3">
-                    <div className="col">
-                      <div className="p-3 rounded-3 bg-light border text-center h-100" style={{ borderColor: "#E5E7EB" }}>
-                        <div className="d-inline-flex align-items-center justify-content-center bg-success bg-opacity-10 rounded-circle mb-2" style={{ width: "38px", height: "38px" }}>
-                          <i className="fas fa-running text-success" style={{ fontSize: "16px" }} />
-                        </div>
-                        <span className="d-block muted-text mb-1" style={{ fontSize: "12px", fontWeight: 600 }}>Best For</span>
-                        <span className="fw-extrabold text-dark-title d-block" style={{ fontSize: "14px" }}>{type ? type.replaceAll('-', ' ') : "Cricket, Football"}</span>
-                      </div>
-                    </div>
-                    <div className="col">
-                      <div className="p-3 rounded-3 bg-light border text-center h-100" style={{ borderColor: "#E5E7EB" }}>
-                        <div className="d-inline-flex align-items-center justify-content-center bg-success bg-opacity-10 rounded-circle mb-2" style={{ width: "38px", height: "38px" }}>
-                          <i className="fas fa-users text-success" style={{ fontSize: "16px" }} />
-                        </div>
-                        <span className="d-block muted-text mb-1" style={{ fontSize: "12px", fontWeight: 600 }}>Players</span>
-                        <span className="fw-extrabold text-dark-title d-block" style={{ fontSize: "14px" }}>22 Players</span>
-                      </div>
-                    </div>
-                    <div className="col">
-                      <div className="p-3 rounded-3 bg-light border text-center h-100" style={{ borderColor: "#E5E7EB" }}>
-                        <div className="d-inline-flex align-items-center justify-content-center bg-success bg-opacity-10 rounded-circle mb-2" style={{ width: "38px", height: "38px" }}>
-                          <i className="fas fa-clock text-success" style={{ fontSize: "16px" }} />
-                        </div>
-                        <span className="d-block muted-text mb-1" style={{ fontSize: "12px", fontWeight: 600 }}>Timing</span>
-                        <span className="fw-extrabold text-dark-title d-block" style={{ fontSize: "14px" }}>6:00 AM – 11:00 PM</span>
-                      </div>
-                    </div>
-                    <div className="col">
-                      <div className="p-3 rounded-3 bg-light border text-center h-100" style={{ borderColor: "#E5E7EB" }}>
-                        <div className="d-inline-flex align-items-center justify-content-center bg-success bg-opacity-10 rounded-circle mb-2" style={{ width: "38px", height: "38px" }}>
-                          <i className="fas fa-calendar-alt text-success" style={{ fontSize: "16px" }} />
-                        </div>
-                        <span className="d-block muted-text mb-1" style={{ fontSize: "12px", fontWeight: 600 }}>Booking Type</span>
-                        <span className="fw-extrabold text-dark-title d-block" style={{ fontSize: "14px" }}>Hourly</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* E. Location & Google Maps Card with Minimap */}
-                <div className="pro-card">
-                  <div className="mb-3">
-                    <h3 className="card-title-head mb-0" style={{ color: "#111827" }}>Location & Map</h3>
-                  </div>
-
-                  <div className="p-3 rounded-3 bg-light border d-flex align-items-center gap-3 mb-3" style={{ borderColor: "#E5E7EB" }}>
-                    <div className="d-inline-flex align-items-center justify-content-center bg-success bg-opacity-10 rounded-circle flex-shrink-0" style={{ width: "44px", height: "44px" }}>
-                      <i className="fas fa-map-marker-alt text-success" style={{ fontSize: "20px" }} />
-                    </div>
-                    <div>
-                      <h6 className="fw-bold mb-1" style={{ color: "#111827", fontSize: "14px" }}>
-                        {venueData?.name || "Venue Address"}
-                      </h6>
-                      <p className="mb-0 text-muted" style={{ fontSize: "13px", color: "#4B5563" }}>
-                        {venueData?.address ? `${venueData.address}, ${venueData.city || 'Indore'}, ${venueData.state || 'Madhya Pradesh'}` : "Indore, Madhya Pradesh"}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Embedded Google Minimap */}
-                  <div className="rounded-3 overflow-hidden border" style={{ height: "240px", borderColor: "#E2E8F0" }}>
-                    <iframe
-                      title="Venue Location Minimap"
-                      width="100%"
-                      height="100%"
-                      style={{ border: 0 }}
-                      loading="lazy"
-                      allowFullScreen
-                      src={`https://maps.google.com/maps?q=${encodeURIComponent(
-                        (venueData?.name || '') + " " + (venueData?.address || '') + " Indore Madhya Pradesh"
-                      )}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
-                    ></iframe>
-                  </div>
-                </div>
-              </div>
-
-              {/* RIGHT COLUMN (30% / 4 Cols): Sticky Sidebar */}
-              <div className="col-lg-4">
-                <div className="sticky-top" style={{ top: "100px", zIndex: 10 }}>
-                  {/* Card 1: Book Court Slot */}
-                  <div className="pro-card mb-4 d-flex flex-column justify-content-between">
-                    <div>
-                      {/* Badges */}
-                      <div className="d-flex align-items-center justify-content-between mb-2.5">
-                        <span className="badge bg-success bg-opacity-15 text-success px-3 py-1.5 rounded-pill fw-bold text-uppercase" style={{ fontSize: "11px", letterSpacing: "0.5px" }}>
-                          Available for Booking
-                        </span>
-                        <span className="fw-semibold text-dark-title d-inline-flex align-items-center gap-1" style={{ fontSize: "12px", color: "#111827" }}>
-                          <i className="fas fa-shield-alt text-success" /> Verified
-                        </span>
-                      </div>
-
-                      <h3 className="card-title-head mb-2" style={{ color: "#111827" }}>Book Court Slot</h3>
-
-                      {/* Selector / Calendar Pricing Card */}
-                      <div className="pricing-box-visible text-center">
-                        <div className="d-inline-flex align-items-center justify-content-center bg-success bg-opacity-10 rounded-circle mb-2" style={{ width: "42px", height: "42px" }}>
-                          <i className="fas fa-calendar-alt text-success" style={{ fontSize: "18px" }} />
-                        </div>
-                        <div>
-                          <span className="pricing-label-text d-block mb-1">Price Starting From</span>
-                          <div className="d-flex align-items-baseline justify-content-center gap-1">
-                            <span className="pricing-amount-text">₹{venueData?.price_per_hr || 1000}</span>
-                            <span className="pricing-unit-text">/ hour</span>
-                          </div>
+                    {activeTab === "game" && (
+                      <div>
+                        <h2 className="section-title">Game Type</h2>
+                        <div className="p-4 rounded-3 bg-light border fw-semibold body-text" style={{ borderColor: "#E5E7EB" }}>
+                          <i className="fas fa-volleyball-ball text-success me-2" />
+                          {venueData?.gameType || "All Sports Allowed"}
                         </div>
                       </div>
+                    )}
 
-                      {/* Checklist */}
-                      <ul className="booking-feature-list mb-3">
-                        <li style={{ color: "#111827" }}>
-                          <i className="fas fa-check-circle text-success" /> Instant Slot Confirmation
-                        </li>
-                        <li style={{ color: "#111827" }}>
-                          <i className="fas fa-check-circle text-success" /> Flexible Booking
-                        </li>
-                        <li style={{ color: "#111827" }}>
-                          <i className="fas fa-check-circle text-success" /> Free Cancellation
-                        </li>
-                      </ul>
-                    </div>
 
-                    {/* CTAs */}
-                    <div className="d-flex flex-column gap-2">
-                      <button
-                        type="button"
-                        className="pro-btn-primary"
-                        onClick={handleBookNow}
-                      >
-                        <i className="fas fa-calendar-check" /> Check Availability
-                      </button>
-                      <button
-                        type="button"
-                        className="pro-btn-secondary"
-                        onClick={() => {
-                          Swal.fire({
-                            title: "Enquiry Now",
-                            text: `For booking enquiries regarding ${venueData?.name || 'this venue'}, please call +91 9977737801 or write to info@kheloindore.com`,
-                            icon: "info",
-                            confirmButtonColor: "#22C55E"
-                          });
-                        }}
-                      >
-                        <i className="fas fa-comment-dots" /> Enquiry Now
-                      </button>
-                    </div>
-                  </div>
 
-                  {/* Card 2: Top Amenities */}
-                  <div className="pro-card mb-0">
-                    <h3 className="card-title-head mb-3">Top Amenities</h3>
-                    {(() => {
-                      const amenityEmojiMap: Record<string, string> = {
-                        parking: "🅿️",
-                        "drinking water": "💧",
-                        water: "💧",
-                        floodlight: "💡",
-                        floodlights: "💡",
-                        "flood lights": "💡",
-                        washroom: "🚿",
-                        washrooms: "🚿",
-                        restroom: "🚿",
-                        "changing room": "🎽",
-                        "changing rooms": "🎽",
-                        locker: "🔒",
-                        lockers: "🔒",
-                        "first aid": "🩹",
-                        "first-aid": "🩹",
-                        scoreboard: "📊",
-                        "seating area": "🪑",
-                        seating: "🪑",
-                        wifi: "📶",
-                        "wi-fi": "📶",
-                        cafeteria: "☕",
-                        canteen: "🍽️",
-                        "air conditioning": "❄️",
-                        ac: "❄️",
-                        cctv: "📷",
-                        security: "🔐",
-                        "equipment rental": "🏏",
-                        equipment: "🏏",
-                        coaching: "🧑‍🏫",
-                        "pro shop": "🛍️",
-                      };
-                      const getEmoji = (name: string) => {
-                        const key = name.toLowerCase().trim();
-                        return amenityEmojiMap[key] || "✅";
-                      };
-                      const amenityList: string[] = Array.isArray(venueData?.amenities)
-                        ? venueData!.amenities
-                        : [];
-                      const topAmenities = amenityList.slice(0, 6);
-                      if (topAmenities.length === 0) {
-                        return (
-                          <p className="text-muted small">No amenities listed for this venue.</p>
-                        );
-                      }
-                      return (
-                        <div className="row row-cols-2 g-2 mb-3">
-                          {topAmenities.map((amenity: string, idx: number) => (
-                            <div className="col" key={idx}>
+                    {activeTab === "facilities" && (
+                      <div>
+                        <h2 className="section-title">Available Facilities ({venueData?.facilities?.length || 0})</h2>
+                        <div className="row row-cols-2 row-cols-md-3 g-3">
+                          {venueData?.facilities?.map((facility: any, index: any) => (
+                            <div className="col" key={index}>
                               <div className="pro-amenity-card">
-                                <span>{getEmoji(amenity)}</span>
-                                <span style={{ color: "#111827" }}>{amenity}</span>
+                                <i className="fas fa-building" />
+                                <span style={{ color: "#111827" }}>{facility}</span>
                               </div>
                             </div>
                           ))}
                         </div>
-                      );
-                    })()}
+                      </div>
+                    )}
+
+                    {activeTab === "rules" && (
+                      <div>
+                        <h2 className="section-title">Rules & Policies</h2>
+                        <div className="p-4 rounded-3 bg-light border body-text" style={{ borderColor: "#E5E7EB" }}>
+                          <div dangerouslySetInnerHTML={{ __html: venueData?.policiesAndRules || "Standard sports venue rules apply." }} />
+                        </div>
+                      </div>
+                    )}
+
+                    {activeTab === "notes" && (
+                      <div>
+                        <h2 className="section-title">Additional Notes</h2>
+                        <div className="p-4 rounded-3 bg-light border body-text" style={{ borderColor: "#E5E7EB" }}>
+                          {venueData?.additionalNotes || "No additional notes provided by vendor."}
+                        </div>
+                      </div>
+                    )}
                   </div>
 
+                  {/* D. Additional Info Card */}
+                  <div className="pro-card">
+                    <h3 className="card-title-head mb-3">Venue Information</h3>
+                    <div className="row row-cols-2 row-cols-md-4 g-3">
+                      <div className="col">
+                        <div className="p-3 rounded-3 bg-light border text-center h-100" style={{ borderColor: "#E5E7EB" }}>
+                          <div className="d-inline-flex align-items-center justify-content-center bg-success bg-opacity-10 rounded-circle mb-2" style={{ width: "38px", height: "38px" }}>
+                            <i className="fas fa-running text-success" style={{ fontSize: "16px" }} />
+                          </div>
+                          <span className="d-block muted-text mb-1" style={{ fontSize: "12px", fontWeight: 600 }}>Best For</span>
+                          <span className="fw-extrabold text-dark-title d-block" style={{ fontSize: "14px" }}>{type ? type.replaceAll('-', ' ') : "Cricket, Football"}</span>
+                        </div>
+                      </div>
+                      <div className="col">
+                        <div className="p-3 rounded-3 bg-light border text-center h-100" style={{ borderColor: "#E5E7EB" }}>
+                          <div className="d-inline-flex align-items-center justify-content-center bg-success bg-opacity-10 rounded-circle mb-2" style={{ width: "38px", height: "38px" }}>
+                            <i className="fas fa-users text-success" style={{ fontSize: "16px" }} />
+                          </div>
+                          <span className="d-block muted-text mb-1" style={{ fontSize: "12px", fontWeight: 600 }}>Players</span>
+                          <span className="fw-extrabold text-dark-title d-block" style={{ fontSize: "14px" }}>22 Players</span>
+                        </div>
+                      </div>
+                      <div className="col">
+                        <div className="p-3 rounded-3 bg-light border text-center h-100" style={{ borderColor: "#E5E7EB" }}>
+                          <div className="d-inline-flex align-items-center justify-content-center bg-success bg-opacity-10 rounded-circle mb-2" style={{ width: "38px", height: "38px" }}>
+                            <i className="fas fa-clock text-success" style={{ fontSize: "16px" }} />
+                          </div>
+                          <span className="d-block muted-text mb-1" style={{ fontSize: "12px", fontWeight: 600 }}>Timing</span>
+                          <span className="fw-extrabold text-dark-title d-block" style={{ fontSize: "14px" }}>6:00 AM – 11:00 PM</span>
+                        </div>
+                      </div>
+                      <div className="col">
+                        <div className="p-3 rounded-3 bg-light border text-center h-100" style={{ borderColor: "#E5E7EB" }}>
+                          <div className="d-inline-flex align-items-center justify-content-center bg-success bg-opacity-10 rounded-circle mb-2" style={{ width: "38px", height: "38px" }}>
+                            <i className="fas fa-calendar-alt text-success" style={{ fontSize: "16px" }} />
+                          </div>
+                          <span className="d-block muted-text mb-1" style={{ fontSize: "12px", fontWeight: 600 }}>Booking Type</span>
+                          <span className="fw-extrabold text-dark-title d-block" style={{ fontSize: "14px" }}>Hourly</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* E. Location & Google Maps Card with Minimap */}
+                  <div className="pro-card">
+                    <div className="mb-3">
+                      <h3 className="card-title-head mb-0" style={{ color: "#111827" }}>Location & Map</h3>
+                    </div>
+
+                    <div className="p-3 rounded-3 bg-light border d-flex align-items-center gap-3 mb-3" style={{ borderColor: "#E5E7EB" }}>
+                      <div className="d-inline-flex align-items-center justify-content-center bg-success bg-opacity-10 rounded-circle flex-shrink-0" style={{ width: "44px", height: "44px" }}>
+                        <i className="fas fa-map-marker-alt text-success" style={{ fontSize: "20px" }} />
+                      </div>
+                      <div>
+                        <h6 className="fw-bold mb-1" style={{ color: "#111827", fontSize: "14px" }}>
+                          {venueData?.name || "Venue Address"}
+                        </h6>
+                        <p className="mb-0 text-muted" style={{ fontSize: "13px", color: "#4B5563" }}>
+                          {venueData?.address ? `${venueData.address}, ${venueData.city || 'Indore'}, ${venueData.state || 'Madhya Pradesh'}` : "Indore, Madhya Pradesh"}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Embedded Google Minimap */}
+                    <div className="rounded-3 overflow-hidden border" style={{ height: "240px", borderColor: "#E2E8F0" }}>
+                      <iframe
+                        title="Venue Location Minimap"
+                        width="100%"
+                        height="100%"
+                        style={{ border: 0 }}
+                        loading="lazy"
+                        allowFullScreen
+                        src={`https://maps.google.com/maps?q=${encodeURIComponent(
+                          (venueData?.name || '') + " " + (venueData?.address || '') + " Indore Madhya Pradesh"
+                        )}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
+                      ></iframe>
+                    </div>
+                  </div>
+                </div>
+
+                {/* RIGHT COLUMN (30% / 4 Cols): Sticky Sidebar */}
+                <div className="col-lg-4">
+                  <div className="sticky-top" style={{ top: "100px", zIndex: 10 }}>
+                    {/* Card 1: Book Court Slot */}
+                    <div className="pro-card mb-4 d-flex flex-column justify-content-between">
+                      <div>
+                        {/* Badges */}
+                        <div className="d-flex align-items-center justify-content-between mb-2.5">
+                          <span className="badge bg-success bg-opacity-15 text-success px-3 py-1.5 rounded-pill fw-bold text-uppercase" style={{ fontSize: "11px", letterSpacing: "0.5px" }}>
+                            Available for Booking
+                          </span>
+                          <span className="fw-semibold text-dark-title d-inline-flex align-items-center gap-1" style={{ fontSize: "12px", color: "#111827" }}>
+                            <i className="fas fa-shield-alt text-success" /> Verified
+                          </span>
+                        </div>
+
+                        <h3 className="card-title-head mb-2" style={{ color: "#111827" }}>Book Court Slot</h3>
+
+                        {/* Selector / Calendar Pricing Card */}
+                        <div className="pricing-box-visible text-center">
+                          <div className="d-inline-flex align-items-center justify-content-center bg-success bg-opacity-10 rounded-circle mb-2" style={{ width: "42px", height: "42px" }}>
+                            <i className="fas fa-calendar-alt text-success" style={{ fontSize: "18px" }} />
+                          </div>
+                          <div>
+                            <span className="pricing-label-text d-block mb-1">Price Starting From</span>
+                            <div className="d-flex align-items-baseline justify-content-center gap-1">
+                              <span className="pricing-amount-text">₹{venueData?.price_per_hr || 1000}</span>
+                              <span className="pricing-unit-text">/ hour</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Checklist */}
+                        <ul className="booking-feature-list mb-3">
+                          <li style={{ color: "#111827" }}>
+                            <i className="fas fa-check-circle text-success" /> Instant Slot Confirmation
+                          </li>
+                          <li style={{ color: "#111827" }}>
+                            <i className="fas fa-check-circle text-success" /> Flexible Booking
+                          </li>
+                          <li style={{ color: "#111827" }}>
+                            <i className="fas fa-check-circle text-success" /> Free Cancellation
+                          </li>
+                        </ul>
+                      </div>
+
+                      {/* CTAs */}
+                      <div className="d-flex flex-column gap-2">
+                        <button
+                          type="button"
+                          className="pro-btn-primary"
+                          onClick={handleBookNow}
+                        >
+                          <i className="fas fa-calendar-check" /> Check Availability
+                        </button>
+                        <button
+                          type="button"
+                          className="pro-btn-secondary"
+                          onClick={() => {
+                            Swal.fire({
+                              title: "Enquiry Now",
+                              text: `For booking enquiries regarding ${venueData?.name || 'this venue'}, please call +91 9977737801 or write to info@kheloindore.com`,
+                              icon: "info",
+                              confirmButtonColor: "#22C55E"
+                            });
+                          }}
+                        >
+                          <i className="fas fa-comment-dots" /> Enquiry Now
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Card 2: Top Amenities */}
+                    <div className="pro-card mb-0">
+                      <h3 className="card-title-head mb-3">Top Amenities</h3>
+                      {(() => {
+                        const amenityEmojiMap: Record<string, string> = {
+                          parking: "🅿️",
+                          "drinking water": "💧",
+                          water: "💧",
+                          floodlight: "💡",
+                          floodlights: "💡",
+                          "flood lights": "💡",
+                          washroom: "🚿",
+                          washrooms: "🚿",
+                          restroom: "🚿",
+                          "changing room": "🎽",
+                          "changing rooms": "🎽",
+                          locker: "🔒",
+                          lockers: "🔒",
+                          "first aid": "🩹",
+                          "first-aid": "🩹",
+                          scoreboard: "📊",
+                          "seating area": "🪑",
+                          seating: "🪑",
+                          wifi: "📶",
+                          "wi-fi": "📶",
+                          cafeteria: "☕",
+                          canteen: "🍽️",
+                          "air conditioning": "❄️",
+                          ac: "❄️",
+                          cctv: "📷",
+                          security: "🔐",
+                          "equipment rental": "🏏",
+                          equipment: "🏏",
+                          coaching: "🧑‍🏫",
+                          "pro shop": "🛍️",
+                        };
+                        const getEmoji = (name: string) => {
+                          const key = name.toLowerCase().trim();
+                          return amenityEmojiMap[key] || "✅";
+                        };
+                        const amenityList: string[] = Array.isArray(venueData?.amenities)
+                          ? venueData!.amenities
+                          : [];
+                        const topAmenities = amenityList.slice(0, 6);
+                        if (topAmenities.length === 0) {
+                          return (
+                            <p className="text-muted small">No amenities listed for this venue.</p>
+                          );
+                        }
+                        return (
+                          <div className="row row-cols-2 g-2 mb-3">
+                            {topAmenities.map((amenity: string, idx: number) => (
+                              <div className="col" key={idx}>
+                                <div className="pro-amenity-card">
+                                  <span>{getEmoji(amenity)}</span>
+                                  <span style={{ color: "#111827" }}>{amenity}</span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        );
+                      })()}
+                    </div>
+
+                  </div>
                 </div>
               </div>
-            </div>
 
 
 
@@ -775,11 +776,11 @@ const VenueDetails = () => {
 
           {/* Custom Premium Lightbox Modal */}
           {lightboxOpen && (
-            <div 
+            <div
               className="position-fixed top-0 start-0 w-100 h-100 d-flex flex-column align-items-center justify-content-center"
-              style={{ 
-                zIndex: 10000, 
-                backgroundColor: "rgba(15, 23, 42, 0.95)", 
+              style={{
+                zIndex: 10000,
+                backgroundColor: "rgba(15, 23, 42, 0.95)",
                 backdropFilter: "blur(12px)",
                 WebkitBackdropFilter: "blur(12px)",
                 transition: "opacity 0.3s ease"
@@ -787,7 +788,7 @@ const VenueDetails = () => {
               onClick={() => setLightboxOpen(false)}
             >
               {/* Header Info & Close Button */}
-              <div 
+              <div
                 className="position-absolute top-0 start-0 w-100 d-flex align-items-center justify-content-between px-4 py-3"
                 style={{ zIndex: 10002 }}
               >
@@ -797,14 +798,14 @@ const VenueDetails = () => {
                     Image {lightboxIndex + 1} of {venueData?.images?.length || 1}
                   </span>
                 </div>
-                <button 
+                <button
                   type="button"
                   className="btn btn-link text-white text-decoration-none d-flex align-items-center justify-content-center rounded-circle"
                   onClick={() => setLightboxOpen(false)}
-                  style={{ 
-                    width: "40px", 
-                    height: "40px", 
-                    backgroundColor: "rgba(255,255,255,0.1)", 
+                  style={{
+                    width: "40px",
+                    height: "40px",
+                    backgroundColor: "rgba(255,255,255,0.1)",
                     border: "none",
                     transition: "all 0.2s"
                   }}
@@ -843,7 +844,7 @@ const VenueDetails = () => {
               )}
 
               {/* Main Lightbox Image Viewport */}
-              <div 
+              <div
                 className="d-flex align-items-center justify-content-center p-3"
                 style={{ maxWidth: "85%", maxHeight: "70%", zIndex: 10001 }}
                 onClick={(e) => e.stopPropagation()}
@@ -852,9 +853,9 @@ const VenueDetails = () => {
                   src={getVenueImgUrl(venueData?.images, lightboxIndex)}
                   alt="Lightbox View"
                   className="img-fluid rounded-3 shadow-2xl"
-                  style={{ 
-                    maxHeight: "70vh", 
-                    maxWidth: "100%", 
+                  style={{
+                    maxHeight: "70vh",
+                    maxWidth: "100%",
                     objectFit: "contain",
                     border: "4px solid rgba(255,255,255,0.15)",
                     transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
@@ -891,10 +892,10 @@ const VenueDetails = () => {
 
               {/* Horizontal Clickable Thumbnail Previews */}
               {venueData?.images && venueData.images.length > 1 && (
-                <div 
+                <div
                   className="position-absolute bottom-0 mb-4 d-flex align-items-center justify-content-center gap-2 p-2 rounded-4"
-                  style={{ 
-                    backgroundColor: "rgba(15, 23, 42, 0.6)", 
+                  style={{
+                    backgroundColor: "rgba(15, 23, 42, 0.6)",
                     backdropFilter: "blur(8px)",
                     border: "1px solid rgba(255,255,255,0.1)",
                     zIndex: 10002,
@@ -918,10 +919,10 @@ const VenueDetails = () => {
                         transition: "all 0.2s"
                       }}
                     >
-                      <img 
-                        src={getVenueImgUrl(venueData.images, idx)} 
+                      <img
+                        src={getVenueImgUrl(venueData.images, idx)}
                         alt="thumbnail"
-                        style={{ width: "100%", height: "100%", objectFit: "cover" }} 
+                        style={{ width: "100%", height: "100%", objectFit: "cover" }}
                       />
                     </button>
                   ))}

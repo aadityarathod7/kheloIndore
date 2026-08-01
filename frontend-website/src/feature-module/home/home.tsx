@@ -167,7 +167,7 @@ const Home = () => {
         .replace(/,\s*Indore/gi, "")
         .replace(/,\s*Ind/gi, "")
         .replace(/\s+/g, " ");
-      
+
       // Capitalize words
       return cleaned.split(" ")
         .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
@@ -176,7 +176,7 @@ const Home = () => {
 
     const locationsSet = new Set<string>();
     const sportsSet = new Set<string>();
-    
+
     // Collect from venues
     venues.forEach(v => {
       if (v.near_by_location) {
@@ -223,7 +223,7 @@ const Home = () => {
         const cleaned = sport.trim();
         // Skip invalid characters, hyphens, and empty entries
         if (cleaned === "-" || cleaned === "_" || cleaned.length < 2) return null;
-        
+
         // Capitalize each word (Title Case)
         let formatted = cleaned.split(" ")
           .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
@@ -231,7 +231,7 @@ const Home = () => {
 
         // Fix common spelling errors
         if (formatted.toLowerCase() === "swiming") formatted = "Swimming";
-        
+
         return { name: formatted };
       })
       .filter((s): s is { name: string } => s !== null);
@@ -241,7 +241,7 @@ const Home = () => {
     uniqueSports.forEach(s => {
       uniqueSportsMap.set(s.name.toLowerCase(), s);
     });
-    
+
     const finalSports = Array.from(uniqueSportsMap.values())
       .sort((a, b) => a.name.localeCompare(b.name));
 
@@ -512,7 +512,7 @@ const Home = () => {
                         <div style={{ color: "#334155", fontSize: "11.5px", fontWeight: "600" }}>Certified &amp; Experienced</div>
                       </div>
                     </div>
-                    
+
                     <div className="d-flex align-items-center gap-2">
                       <div className="d-flex align-items-center justify-content-center rounded-circle flex-shrink-0" style={{ width: "32px", height: "32px", background: "#EAF5EB", color: "#3CAB4B" }}>
                         <i className="feather-grid" style={{ fontSize: "13px" }} />
@@ -537,7 +537,7 @@ const Home = () => {
                   {/* Search Box Capsule */}
                   <div className="ki-search-card">
                     <form>
-                      
+
                       {/* Column 1: Category */}
                       <div className="search-col">
                         <div className="form-group">
@@ -614,9 +614,9 @@ const Home = () => {
                     <span className="ki-popular-searches me-2">Popular Searches:</span>
                     <div className="d-inline-flex gap-2 flex-wrap">
                       {["Cricket", "Football", "Badminton", "Tennis", "Basketball"].map((sportName) => (
-                        <span 
+                        <span
                           key={sportName}
-                          className="ki-search-tag" 
+                          className="ki-search-tag"
                           onClick={() => {
                             setSelectedTimeframe({ name: "Sports Venue" });
                             setSelectedSport({ name: sportName });
@@ -813,7 +813,7 @@ const Home = () => {
               Select a sport category to view all registered venues, coaches, and academies.
             </p>
           </div>
-          
+
           <div className="ki-auto-slider-wrapper">
             <div className="ki-auto-slider-track py-2">
               {[
@@ -838,13 +838,13 @@ const Home = () => {
                 { name: "Table Tennis", slug: "table-tennis", count: "10 Listings", icon: "fas fa-table-tennis", color: "#DB2777", bg: "#FCE7F3" },
                 { name: "Other Sports", slug: "other-sports", count: "514 Listings", icon: "fas fa-trophy", color: "#4F46E5", bg: "#E0E7FF" }
               ].map((cat, idx) => (
-                <div 
+                <div
                   key={idx}
-                  className="ki-category-slider-card p-3 text-center d-flex flex-column align-items-center justify-content-between" 
+                  className="ki-category-slider-card p-3 text-center d-flex flex-column align-items-center justify-content-between"
                   style={{ height: "175px" }}
                   onClick={() => navigate(`/sports-venue/${cat.slug}`)}
                 >
-                  <div 
+                  <div
                     className="category-icon-wrap d-flex align-items-center justify-content-center mb-2"
                     style={{
                       width: "48px",
@@ -860,7 +860,7 @@ const Home = () => {
                     <h4 className="ki-cat-name mb-0">{cat.name}</h4>
                     <p className="ki-cat-count mb-0">{cat.count}</p>
                   </div>
-                  <button 
+                  <button
                     className="btn rounded-pill ki-category-explore-btn w-100"
                     style={{
                       fontSize: "11px",
@@ -901,25 +901,25 @@ const Home = () => {
           {/* Unified Category Tabs */}
           <div className="d-flex justify-content-center mb-5 aos" data-aos="fade-up">
             <div className="btn-group p-1" style={{ background: "#F3F7F3", border: "1px solid #D6E4D8", borderRadius: "30px" }}>
-              <button 
+              <button
                 type="button"
-                onClick={() => setActiveTopRatedTab("venues")} 
+                onClick={() => setActiveTopRatedTab("venues")}
                 className={`btn btn-sm px-4 py-2 rounded-pill font-weight-bold transition-all ${activeTopRatedTab === "venues" ? "btn-primary text-white" : ""}`}
                 style={{ fontSize: "14px", fontWeight: "700", color: activeTopRatedTab === "venues" ? "#FFFFFF" : "#17222D", background: activeTopRatedTab === "venues" ? "linear-gradient(90deg, #49BC4F, #38A941)" : "transparent" }}
               >
                 Venues
               </button>
-              <button 
+              <button
                 type="button"
-                onClick={() => setActiveTopRatedTab("coaches")} 
+                onClick={() => setActiveTopRatedTab("coaches")}
                 className={`btn btn-sm px-4 py-2 rounded-pill font-weight-bold transition-all ${activeTopRatedTab === "coaches" ? "btn-primary text-white" : ""}`}
                 style={{ fontSize: "14px", fontWeight: "700", color: activeTopRatedTab === "coaches" ? "#FFFFFF" : "#17222D", background: activeTopRatedTab === "coaches" ? "linear-gradient(90deg, #49BC4F, #38A941)" : "transparent" }}
               >
                 Coaches
               </button>
-              <button 
+              <button
                 type="button"
-                onClick={() => setActiveTopRatedTab("trainers")} 
+                onClick={() => setActiveTopRatedTab("trainers")}
                 className={`btn btn-sm px-4 py-2 rounded-pill font-weight-bold transition-all ${activeTopRatedTab === "trainers" ? "btn-primary text-white" : ""}`}
                 style={{ fontSize: "14px", fontWeight: "700", color: activeTopRatedTab === "trainers" ? "#FFFFFF" : "#17222D", background: activeTopRatedTab === "trainers" ? "linear-gradient(90deg, #49BC4F, #38A941)" : "transparent" }}
               >
@@ -1212,7 +1212,7 @@ const Home = () => {
               to={routes.blogList}
               className="btn btn-primary d-inline-flex align-items-center"
             >
-              Book a Training{" "}
+              Book a Trainer{" "}
               <span className="lh-1">
                 <i className="feather-arrow-right-circle ms-2" />
               </span>
@@ -1525,7 +1525,7 @@ const Home = () => {
                   </ul>
                 </div>
                 <Link
-                  to={routes.login}
+                  to={routes.contactUs}
                   className="btn btn-primary w-100 d-flex align-items-center justify-content-center py-2"
                   style={{ background: "linear-gradient(90deg, #49BC4F, #38A941)", border: "none", borderRadius: "12px", fontWeight: "700" }}
                 >
