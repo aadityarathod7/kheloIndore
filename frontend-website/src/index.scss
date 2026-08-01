@@ -4265,10 +4265,15 @@ body .swal2-container {
   font-weight: 600 !important;
   padding: 8px 20px !important;
   font-family: 'Space Grotesk', sans-serif !important;
+  background-color: #16A34A !important;
+  color: #ffffff !important;
+  border: none !important;
   box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3) !important;
   transition: all 0.2s ease !important;
 
   &:hover {
+    background-color: #15803D !important;
+    color: #ffffff !important;
     box-shadow: 0 6px 16px rgba(22, 163, 74, 0.4) !important;
     transform: translateY(-1px) !important;
   }
@@ -4280,6 +4285,15 @@ body .swal2-container {
   font-weight: 600 !important;
   padding: 8px 20px !important;
   font-family: 'Space Grotesk', sans-serif !important;
+  background-color: #64748B !important;
+  color: #ffffff !important;
+  border: none !important;
   transition: all 0.2s ease !important;
+
+  &:hover {
+    background-color: #475569 !important;
+    color: #ffffff !important;
+  }
 }
+
 
