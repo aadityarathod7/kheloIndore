@@ -127,44 +127,67 @@ const Home = () => {
     { name: "Rajendra Nagar" },
     { name: "Navlakha" },
     { name: "MG Road" },
-    { name: "Geeta Bhawan Square" },
-    { name: "Tower Square" },
-    { name: "Rajwada" },
-    { name: "Regal Square" },
-    { name: "Bhawarkuan Square" },
+    { name: "Bengali Square" },
+    { name: "Kanadia Road" },
+    { name: "Mahalaxmi Nagar" },
+    { name: "LIG Square" },
+    { name: "Bhawarkuan" },
     { name: "Khajrana Square" },
-    { name: "Patnipura Square" },
-    { name: "IT Park" },
-    { name: "Rajiv Gandhi" },
+    { name: "Nipania" },
+    { name: "Rau" },
+    { name: "Tejaji Nagar" },
+    { name: "Palda" },
+    { name: "Limbodi" },
+    { name: "Silicon City" },
+    { name: "Tillor Khurd" },
+    { name: "Singapore Township" },
+    { name: "Super Corridor" },
+    { name: "Musakhedi" },
+    { name: "Airport Road" },
+    { name: "MR 10" },
+    { name: "Dewas Naka" },
   ]);
 
   useEffect(() => {
+    const cleanLocation = (loc: string): string => {
+      if (!loc) return "";
+      let cleaned = loc.trim()
+        .replace(/,\s*Indore/gi, "")
+        .replace(/,\s*Ind/gi, "")
+        .replace(/\s+/g, " ");
+      
+      // Capitalize words
+      return cleaned.split(" ")
+        .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+        .join(" ");
+    };
+
     const locationsSet = new Set<string>();
     
     // Collect from venues
     venues.forEach(v => {
       if (v.near_by_location) {
-        locationsSet.add(v.near_by_location.trim());
+        locationsSet.add(cleanLocation(v.near_by_location));
       }
     });
 
     // Collect from coaches
     coaches.forEach(c => {
       if (c.near_by_location) {
-        locationsSet.add(c.near_by_location.trim());
+        locationsSet.add(cleanLocation(c.near_by_location));
       }
     });
 
     // Collect from trainers
     trainer.forEach(t => {
       if (t.near_by_location) {
-        locationsSet.add(t.near_by_location.trim());
+        locationsSet.add(cleanLocation(t.near_by_location));
       }
     });
 
     // Filter, sort, and map to options format
     const uniqueSorted = Array.from(locationsSet)
-      .filter(loc => loc.length > 0)
+      .filter(loc => loc.length > 0 && loc.toLowerCase() !== "indore") // omit general 'Indore'
       .sort()
       .map(loc => ({ name: loc }));
 
