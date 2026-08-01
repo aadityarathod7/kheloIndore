@@ -378,103 +378,74 @@ const VenueDetails = () => {
                     </div>
                   )}
                 </div>
-
                 {/* B. NAVIGATION TABS (Immediately follows Hero Gallery!) */}
-                <div className="tabs-container-card">
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab("overview")}
-                    className={`pro-tab-pill ${activeTab === "overview" ? "active" : "inactive"}`}
-                    style={{
-                      background: activeTab === "overview" ? "#22C55E" : "#F1F5F9",
-                      color: activeTab === "overview" ? "#FFFFFF" : "#1E293B",
-                      border: activeTab === "overview" ? "none" : "1px solid #E2E8F0"
-                    }}
-                  >
-                    <i className="fas fa-info-circle" style={{ color: activeTab === "overview" ? "#FFFFFF" : "#22C55E" }} />
-                    <span>Overview</span>
-                  </button>
+                {(venueData?.gameType || (venueData?.facilities && venueData.facilities.length > 0) || venueData?.policiesAndRules || venueData?.additionalNotes) && (
+                  <div className="tabs-container-card">
+                    {venueData?.gameType && (
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab("game")}
+                        className={`pro-tab-pill ${activeTab === "game" ? "active" : "inactive"}`}
+                        style={{
+                          background: activeTab === "game" ? "#22C55E" : "#F1F5F9",
+                          color: activeTab === "game" ? "#FFFFFF" : "#1E293B",
+                          border: activeTab === "game" ? "none" : "1px solid #E2E8F0"
+                        }}
+                      >
+                        <i className="fas fa-volleyball-ball" style={{ color: activeTab === "game" ? "#FFFFFF" : "#22C55E" }} />
+                        <span>Game Type</span>
+                      </button>
+                    )}
 
-                  {venueData?.gameType && (
-                    <button
-                      type="button"
-                      onClick={() => setActiveTab("game")}
-                      className={`pro-tab-pill ${activeTab === "game" ? "active" : "inactive"}`}
-                      style={{
-                        background: activeTab === "game" ? "#22C55E" : "#F1F5F9",
-                        color: activeTab === "game" ? "#FFFFFF" : "#1E293B",
-                        border: activeTab === "game" ? "none" : "1px solid #E2E8F0"
-                      }}
-                    >
-                      <i className="fas fa-volleyball-ball" style={{ color: activeTab === "game" ? "#FFFFFF" : "#22C55E" }} />
-                      <span>Game Type</span>
-                    </button>
-                  )}
+                    {venueData?.facilities && venueData.facilities.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab("facilities")}
+                        className={`pro-tab-pill ${activeTab === "facilities" ? "active" : "inactive"}`}
+                        style={{
+                          background: activeTab === "facilities" ? "#22C55E" : "#F1F5F9",
+                          color: activeTab === "facilities" ? "#FFFFFF" : "#1E293B",
+                          border: activeTab === "facilities" ? "none" : "1px solid #E2E8F0"
+                        }}
+                      >
+                        <i className="fas fa-building" style={{ color: activeTab === "facilities" ? "#FFFFFF" : "#22C55E" }} />
+                        <span>Facilities ({venueData.facilities.length})</span>
+                      </button>
+                    )}
 
-                  {venueData?.amenities && venueData.amenities.length > 0 && (
-                    <button
-                      type="button"
-                      onClick={() => setActiveTab("amenities")}
-                      className={`pro-tab-pill ${activeTab === "amenities" ? "active" : "inactive"}`}
-                      style={{
-                        background: activeTab === "amenities" ? "#22C55E" : "#F1F5F9",
-                        color: activeTab === "amenities" ? "#FFFFFF" : "#1E293B",
-                        border: activeTab === "amenities" ? "none" : "1px solid #E2E8F0"
-                      }}
-                    >
-                      <i className="fas fa-check-circle" style={{ color: activeTab === "amenities" ? "#FFFFFF" : "#22C55E" }} />
-                      <span>Amenities ({venueData.amenities.length})</span>
-                    </button>
-                  )}
+                    {venueData?.policiesAndRules && (
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab("rules")}
+                        className={`pro-tab-pill ${activeTab === "rules" ? "active" : "inactive"}`}
+                        style={{
+                          background: activeTab === "rules" ? "#22C55E" : "#F1F5F9",
+                          color: activeTab === "rules" ? "#FFFFFF" : "#1E293B",
+                          border: activeTab === "rules" ? "none" : "1px solid #E2E8F0"
+                        }}
+                      >
+                        <i className="fas fa-gavel" style={{ color: activeTab === "rules" ? "#FFFFFF" : "#22C55E" }} />
+                        <span>Rules & Policies</span>
+                      </button>
+                    )}
 
-                  {venueData?.facilities && venueData.facilities.length > 0 && (
-                    <button
-                      type="button"
-                      onClick={() => setActiveTab("facilities")}
-                      className={`pro-tab-pill ${activeTab === "facilities" ? "active" : "inactive"}`}
-                      style={{
-                        background: activeTab === "facilities" ? "#22C55E" : "#F1F5F9",
-                        color: activeTab === "facilities" ? "#FFFFFF" : "#1E293B",
-                        border: activeTab === "facilities" ? "none" : "1px solid #E2E8F0"
-                      }}
-                    >
-                      <i className="fas fa-building" style={{ color: activeTab === "facilities" ? "#FFFFFF" : "#22C55E" }} />
-                      <span>Facilities ({venueData.facilities.length})</span>
-                    </button>
-                  )}
-
-                  {venueData?.policiesAndRules && (
-                    <button
-                      type="button"
-                      onClick={() => setActiveTab("rules")}
-                      className={`pro-tab-pill ${activeTab === "rules" ? "active" : "inactive"}`}
-                      style={{
-                        background: activeTab === "rules" ? "#22C55E" : "#F1F5F9",
-                        color: activeTab === "rules" ? "#FFFFFF" : "#1E293B",
-                        border: activeTab === "rules" ? "none" : "1px solid #E2E8F0"
-                      }}
-                    >
-                      <i className="fas fa-gavel" style={{ color: activeTab === "rules" ? "#FFFFFF" : "#22C55E" }} />
-                      <span>Rules & Policies</span>
-                    </button>
-                  )}
-
-                  {venueData?.additionalNotes && (
-                    <button
-                      type="button"
-                      onClick={() => setActiveTab("notes")}
-                      className={`pro-tab-pill ${activeTab === "notes" ? "active" : "inactive"}`}
-                      style={{
-                        background: activeTab === "notes" ? "#22C55E" : "#F1F5F9",
-                        color: activeTab === "notes" ? "#FFFFFF" : "#1E293B",
-                        border: activeTab === "notes" ? "none" : "1px solid #E2E8F0"
-                      }}
-                    >
-                      <i className="fas fa-sticky-note" style={{ color: activeTab === "notes" ? "#FFFFFF" : "#22C55E" }} />
-                      <span>Notes</span>
-                    </button>
-                  )}
-                </div>
+                    {venueData?.additionalNotes && (
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab("notes")}
+                        className={`pro-tab-pill ${activeTab === "notes" ? "active" : "inactive"}`}
+                        style={{
+                          background: activeTab === "notes" ? "#22C55E" : "#F1F5F9",
+                          color: activeTab === "notes" ? "#FFFFFF" : "#1E293B",
+                          border: activeTab === "notes" ? "none" : "1px solid #E2E8F0"
+                        }}
+                      >
+                        <i className="fas fa-sticky-note" style={{ color: activeTab === "notes" ? "#FFFFFF" : "#22C55E" }} />
+                        <span>Notes</span>
+                      </button>
+                    )}
+                  </div>
+                )}
 
                 {/* C. Active Tab Content Card */}
                 <div className="pro-card">
@@ -540,21 +511,7 @@ const VenueDetails = () => {
                     </div>
                   )}
 
-                  {activeTab === "amenities" && (
-                    <div>
-                      <h2 className="section-title">Included Amenities ({venueData?.amenities?.length || 0})</h2>
-                      <div className="row row-cols-2 row-cols-md-3 g-3">
-                        {venueData?.amenities?.map((amenity: any, index: any) => (
-                          <div className="col" key={index}>
-                            <div className="pro-amenity-card">
-                              <i className="fas fa-check-circle" />
-                              <span style={{ color: "#111827" }}>{amenity}</span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+
 
                   {activeTab === "facilities" && (
                     <div>
@@ -746,76 +703,73 @@ const VenueDetails = () => {
                   {/* Card 2: Top Amenities */}
                   <div className="pro-card mb-0">
                     <h3 className="card-title-head mb-3">Top Amenities</h3>
-                    <div className="row row-cols-2 g-2 mb-3">
-                      <div className="col">
-                        <div className="pro-amenity-card">
-                          <span>🅿️</span>
-                          <span style={{ color: "#111827" }}>Parking</span>
+                    {(() => {
+                      const amenityEmojiMap: Record<string, string> = {
+                        parking: "🅿️",
+                        "drinking water": "💧",
+                        water: "💧",
+                        floodlight: "💡",
+                        floodlights: "💡",
+                        "flood lights": "💡",
+                        washroom: "🚿",
+                        washrooms: "🚿",
+                        restroom: "🚿",
+                        "changing room": "🎽",
+                        "changing rooms": "🎽",
+                        locker: "🔒",
+                        lockers: "🔒",
+                        "first aid": "🩹",
+                        "first-aid": "🩹",
+                        scoreboard: "📊",
+                        "seating area": "🪑",
+                        seating: "🪑",
+                        wifi: "📶",
+                        "wi-fi": "📶",
+                        cafeteria: "☕",
+                        canteen: "🍽️",
+                        "air conditioning": "❄️",
+                        ac: "❄️",
+                        cctv: "📷",
+                        security: "🔐",
+                        "equipment rental": "🏏",
+                        equipment: "🏏",
+                        coaching: "🧑‍🏫",
+                        "pro shop": "🛍️",
+                      };
+                      const getEmoji = (name: string) => {
+                        const key = name.toLowerCase().trim();
+                        return amenityEmojiMap[key] || "✅";
+                      };
+                      const amenityList: string[] = Array.isArray(venueData?.amenities)
+                        ? venueData!.amenities
+                        : [];
+                      const topAmenities = amenityList.slice(0, 6);
+                      if (topAmenities.length === 0) {
+                        return (
+                          <p className="text-muted small">No amenities listed for this venue.</p>
+                        );
+                      }
+                      return (
+                        <div className="row row-cols-2 g-2 mb-3">
+                          {topAmenities.map((amenity: string, idx: number) => (
+                            <div className="col" key={idx}>
+                              <div className="pro-amenity-card">
+                                <span>{getEmoji(amenity)}</span>
+                                <span style={{ color: "#111827" }}>{amenity}</span>
+                              </div>
+                            </div>
+                          ))}
                         </div>
-                      </div>
-                      <div className="col">
-                        <div className="pro-amenity-card">
-                          <span>💧</span>
-                          <span style={{ color: "#111827" }}>Drinking Water</span>
-                        </div>
-                      </div>
-                      <div className="col">
-                        <div className="pro-amenity-card">
-                          <span>💡</span>
-                          <span style={{ color: "#111827" }}>Flood Lights</span>
-                        </div>
-                      </div>
-                      <div className="col">
-                        <div className="pro-amenity-card">
-                          <span>🚿</span>
-                          <span style={{ color: "#111827" }}>Washroom</span>
-                        </div>
-                      </div>
-                      <div className="col">
-                        <div className="pro-amenity-card">
-                          <span>🎽</span>
-                          <span style={{ color: "#111827" }}>Changing Room</span>
-                        </div>
-                      </div>
-                      <div className="col">
-                        <div className="pro-amenity-card">
-                          <span>🔒</span>
-                          <span style={{ color: "#111827" }}>Locker</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={() => setActiveTab("amenities")}
-                      className="pro-btn-secondary"
-                      style={{ height: "44px" }}
-                    >
-                      View All Amenities &gt;
-                    </button>
+                      );
+                    })()}
                   </div>
+
                 </div>
               </div>
             </div>
 
-            {/* Floating CTA for Mobile / Quick Enquiry */}
-            <div className="position-fixed bottom-0 end-0 p-4" style={{ zIndex: 1000 }}>
-              <button
-                type="button"
-                className="pro-btn-primary shadow-lg"
-                onClick={() => {
-                  Swal.fire({
-                    title: "Enquiry Now",
-                    text: `For booking enquiries regarding ${venueData?.name || 'this venue'}, please call +91 9977737801 or write to info@kheloindore.com`,
-                    icon: "info",
-                    confirmButtonColor: "#22C55E"
-                  });
-                }}
-                style={{ width: "auto", padding: "0 28px", height: "48px" }}
-              >
-                <i className="fas fa-comment-dots" style={{ fontSize: "16px" }} /> Enquiry Now
-              </button>
-            </div>
+
+
             </div>
           </div>
 
