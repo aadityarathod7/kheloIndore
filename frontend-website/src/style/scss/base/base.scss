@@ -6,11 +6,14 @@ html {
 	scroll-behavior: smooth;
 }
 
+body, html {
+	background: linear-gradient(135deg, #E5ECE3 0%, #DEE7DD 30%, #E8EFE8 70%, #D7E3DA 100%) !important;
+}
+
 body, html, input, button, select, textarea {
 	font-family: 'Inter', sans-serif !important;
 	font-size: 18px;
 	color: #606D76;
-	background: linear-gradient(135deg, #E5ECE3 0%, #DEE7DD 30%, #E8EFE8 70%, #D7E3DA 100%) !important;
 	font-weight: 500;
 	line-height: 1.6;
 	-webkit-font-smoothing: antialiased;

@@ -4219,15 +4219,15 @@ body .swal2-container {
   }
 }
 
-/* Compact, themed SweetAlert2 popups */
-.ki-swal-popup {
+/* Compact, themed SweetAlert2 popups globally */
+body .swal2-container .swal2-popup {
   border-radius: 16px !important;
   padding: 24px 20px 20px !important;
   font-family: 'Space Grotesk', 'Inter', sans-serif !important;
 
   .swal2-icon {
-    transform: scale(0.6) !important;
-    margin: -8px auto 0 !important;
+    transform: scale(0.65) !important;
+    margin: -4px auto 8px !important;
   }
 
   .swal2-icon.swal2-success {
@@ -4241,32 +4241,49 @@ body .swal2-container {
       background-color: #16A34A !important;
     }
   }
-}
 
-.ki-swal-title {
-  font-size: 18px !important;
-  font-weight: 700 !important;
-  color: #0F172A !important;
-  padding: 0 !important;
-  margin-bottom: 4px !important;
-}
+  .swal2-icon.swal2-error {
+    border-color: #EF4444 !important;
+    .swal2-x-mark-line-left,
+    .swal2-x-mark-line-right {
+      background-color: #EF4444 !important;
+    }
+  }
 
-.ki-swal-text {
-  font-size: 13px !important;
-  color: #64748B !important;
-  font-weight: 400 !important;
-  margin: 0 !important;
-  padding: 0 8px !important;
-}
+  .swal2-icon.swal2-warning {
+    border-color: #F59E0B !important;
+    color: #F59E0B !important;
+  }
 
-body .swal2-container .swal2-popup.ki-swal-popup {
+  .swal2-icon.swal2-info {
+    border-color: #3B82F6 !important;
+    color: #3B82F6 !important;
+  }
+
+  .swal2-title {
+    font-size: 18px !important;
+    font-weight: 700 !important;
+    color: #0F172A !important;
+    padding: 0 !important;
+    margin-bottom: 6px !important;
+    font-family: 'Space Grotesk', sans-serif !important;
+  }
+
+  .swal2-html-container {
+    font-size: 13px !important;
+    color: #64748B !important;
+    font-weight: 400 !important;
+    margin: 0 !important;
+    padding: 0 8px !important;
+    font-family: 'Inter', sans-serif !important;
+  }
+
   .swal2-actions {
-    button.swal2-confirm,
-    button.ki-swal-confirm {
+    button.swal2-confirm {
       border-radius: 10px !important;
-      font-size: 13px !important;
+      font-size: 14px !important;
       font-weight: 600 !important;
-      padding: 8px 20px !important;
+      padding: 10px 24px !important;
       font-family: 'Space Grotesk', sans-serif !important;
       background-color: #16A34A !important;
       background: #16A34A !important;
@@ -4284,12 +4301,11 @@ body .swal2-container .swal2-popup.ki-swal-popup {
       }
     }
 
-    button.swal2-cancel,
-    button.ki-swal-cancel {
+    button.swal2-cancel {
       border-radius: 10px !important;
-      font-size: 13px !important;
+      font-size: 14px !important;
       font-weight: 600 !important;
-      padding: 8px 20px !important;
+      padding: 10px 24px !important;
       font-family: 'Space Grotesk', sans-serif !important;
       background-color: #64748B !important;
       background: #64748B !important;
