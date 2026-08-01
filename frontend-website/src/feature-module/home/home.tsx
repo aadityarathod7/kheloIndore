@@ -440,6 +440,8 @@ const Home = () => {
         popup: "ki-swal-popup",
         title: "ki-swal-title",
         htmlContainer: "ki-swal-text",
+        confirmButton: "ki-swal-confirm",
+        cancelButton: "ki-swal-cancel",
       },
       didOpen: (popup) => {
         const confirmBtn = popup.querySelector(".swal2-confirm") as HTMLElement;

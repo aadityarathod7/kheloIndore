@@ -4261,13 +4261,15 @@ body .swal2-container {
 
 body .swal2-container .swal2-popup.ki-swal-popup {
   .swal2-actions {
-    button.swal2-confirm.ki-swal-confirm {
+    button.swal2-confirm,
+    button.ki-swal-confirm {
       border-radius: 10px !important;
       font-size: 13px !important;
       font-weight: 600 !important;
       padding: 8px 20px !important;
       font-family: 'Space Grotesk', sans-serif !important;
       background-color: #16A34A !important;
+      background: #16A34A !important;
       color: #ffffff !important;
       border: none !important;
       box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3) !important;
@@ -4275,25 +4277,29 @@ body .swal2-container .swal2-popup.ki-swal-popup {
 
       &:hover {
         background-color: #15803D !important;
+        background: #15803D !important;
         color: #ffffff !important;
         box-shadow: 0 6px 16px rgba(22, 163, 74, 0.4) !important;
         transform: translateY(-1px) !important;
       }
     }
 
-    button.swal2-cancel.ki-swal-cancel {
+    button.swal2-cancel,
+    button.ki-swal-cancel {
       border-radius: 10px !important;
       font-size: 13px !important;
       font-weight: 600 !important;
       padding: 8px 20px !important;
       font-family: 'Space Grotesk', sans-serif !important;
       background-color: #64748B !important;
+      background: #64748B !important;
       color: #ffffff !important;
       border: none !important;
       transition: all 0.2s ease !important;
 
       &:hover {
         background-color: #475569 !important;
+        background: #475569 !important;
         color: #ffffff !important;
       }
     }
