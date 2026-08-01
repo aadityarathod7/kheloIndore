@@ -71,6 +71,7 @@ body {
   color: $__darkgray;
 }
 
+body,
 h1,
 h2,
 h3,
@@ -78,21 +79,35 @@ h4,
 h5,
 h6,
 p,
-small,
+span,
+li,
 label,
+small,
+strong,
+em,
+blockquote,
+td,
+th,
+tr,
+tbody,
+thead,
+table,
+a,
 button,
-input,
-textarea,
 select,
-.table,
+.btn,
 .nav-link,
+.dropdown-item,
+.form-control,
+.form-select,
 .breadcrumb-item,
-.form-text,
-.invalid-feedback,
+.table,
 .card-title,
 .section-title,
-.page-title {
-  font-family: var(--font-family-heading);
+.page-title,
+.form-text,
+.invalid-feedback {
+  font-family: var(--font-family-heading) !important;
 }
 
 h1,
