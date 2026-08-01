@@ -151,7 +151,7 @@ const Home = () => {
   useEffect(() => {
     const cleanLocation = (loc: string): string => {
       if (!loc) return "";
-      let cleaned = loc.trim()
+      const cleaned = loc.trim()
         .replace(/,\s*Indore/gi, "")
         .replace(/,\s*Ind/gi, "")
         .replace(/\s+/g, " ");
