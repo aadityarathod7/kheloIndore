@@ -1761,6 +1761,10 @@ select.form-select {
       box-shadow: 0 0 0 3px rgba(60, 171, 75, 0.12) !important;
       background-color: #FFFFFF !important;
     }
+
+    &.ki-search-input-has-icon {
+      padding-left: 38px !important;
+    }
   }
 
   .ki-card {

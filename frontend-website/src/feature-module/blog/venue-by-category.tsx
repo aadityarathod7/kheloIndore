@@ -437,19 +437,19 @@ export default function VenueByCategory(props: any) {
                         position: "absolute", 
                         color: "#94A3B8", 
                         fontSize: "13px",
-                        pointerEvents: "none"
+                        pointerEvents: "none",
+                        zIndex: 2
                       }} 
                     />
                     <input
                       type="text"
-                      className="form-control"
+                      className="form-control ki-search-input-has-icon"
                       placeholder="Search area..."
                       value={searchLocation}
                       onChange={searchingLocations}
                       style={{ 
                         height: "38px", 
                         fontSize: "12px", 
-                        paddingLeft: "36px", 
                         borderRadius: "10px", 
                         border: "1px solid #E2E8F0",
                         backgroundColor: "#FAFAFA"
