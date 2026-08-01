@@ -693,119 +693,211 @@ const Header = () => {
     )}
     {typeof document !== "undefined" && createPortal(
       <div>
-        <div className="enquiry-btn" style={{ position: "fixed", bottom: "80px", right: "30px", zIndex: 999999 }}>
-          <CButton
-            onClick={() => setVisible(true)}
-            className="btn btn-primary d-flex align-items-center gap-2"
-            style={{
-              background: "linear-gradient(135deg, #22C55E 0%, #16A34A 100%)",
-              border: "none",
-              color: "#FFFFFF",
-              boxShadow: "0 4px 15px rgba(22, 163, 74, 0.4)",
-              padding: "12px 24px",
-              borderRadius: "30px",
-              fontWeight: "700",
-              fontSize: "14px",
-              textTransform: "none",
-              transition: "all 0.3s ease"
-            }}
-          >
-            <i className="fas fa-envelope" style={{ color: "#FFFFFF" }} />
-            <span style={{ color: "#FFFFFF" }}>Enquiry Now</span>
-          </CButton>
-        </div>
+        {!visible && (
+          <div className="enquiry-btn" style={{ position: "fixed", bottom: "80px", right: "30px", zIndex: 999999 }}>
+            <CButton
+              onClick={() => setVisible(true)}
+              className="btn btn-primary d-flex align-items-center gap-2"
+              style={{
+                background: "linear-gradient(135deg, #22C55E 0%, #16A34A 100%)",
+                border: "none",
+                color: "#FFFFFF",
+                boxShadow: "0 4px 15px rgba(22, 163, 74, 0.4)",
+                padding: "12px 24px",
+                borderRadius: "30px",
+                fontWeight: "700",
+                fontSize: "14px",
+                textTransform: "none",
+                transition: "all 0.3s ease"
+              }}
+            >
+              <i className="fas fa-envelope" style={{ color: "#FFFFFF" }} />
+              <span style={{ color: "#FFFFFF" }}>Enquiry Now</span>
+            </CButton>
+          </div>
+        )}
         <COffcanvas
           placement="end"
           scroll={true}
           visible={visible}
           onHide={() => setVisible(false)}
+          style={{ width: "420px", border: "none", boxShadow: "-8px 0 40px rgba(0,0,0,0.15)" }}
         >
-          <COffcanvasHeader>
-            <COffcanvasTitle>ENQUIRY</COffcanvasTitle>
-            <CCloseButton
-              className="text-reset"
-              onClick={() => setVisible(false)}
-            />
-          </COffcanvasHeader>
-          <COffcanvasBody>
-            <form className="contact-us enquiry" onSubmit={handleInquiries}>
-              <div className="row">
-                <div className="col mb-3">
-                  {/* <label htmlFor="subject" className="form-label">
-                                    Name
-                                </label> */}
-                  <input
-                    type="text"
-                    className="form-control"
-                    id="full-name"
-                    name="first_name"
-                    placeholder=" Full Name"
-                    value={input.first_name}
-                    onChange={handleInputChange}
-                  />
+          {/* ── Premium Green Header ── */}
+          <COffcanvasHeader
+            style={{
+              background: "linear-gradient(135deg, #16A34A 0%, #15803D 100%)",
+              padding: "16px 20px",
+              borderBottom: "none",
+              position: "relative",
+              overflow: "hidden",
+            }}
+          >
+            {/* decorative bubbles */}
+            <div style={{ position:"absolute",top:"-30px",right:"-30px",width:"110px",height:"110px",background:"rgba(255,255,255,0.08)",borderRadius:"50%",pointerEvents:"none" }}/>
+            <div style={{ position:"absolute",bottom:"-20px",left:"10px",width:"65px",height:"65px",background:"rgba(255,255,255,0.06)",borderRadius:"50%",pointerEvents:"none" }}/>
+
+            {/* single row: icon + text | close */}
+            <div style={{ display:"flex",alignItems:"center",justifyContent:"space-between",width:"100%",position:"relative",zIndex:1 }}>
+              <div style={{ display:"flex",alignItems:"center",gap:"12px" }}>
+                <div style={{ display:"flex",alignItems:"center",justifyContent:"center",width:"38px",height:"38px",background:"rgba(255,255,255,0.2)",borderRadius:"10px",flexShrink:0 }}>
+                  <i className="fas fa-paper-plane" style={{ color:"#FFFFFF",fontSize:"15px" }}/>
                 </div>
-              </div>
-              <div className="row">
-                <div className="col mb-3">
-                  {/* <label htmlFor="subject" className="form-label">
-                                    Phone number
-                                </label> */}
-                  <input
-                    type="number"
-                    className="form-control"
-                    id="phone"
-                    name="phone"
-                    placeholder="Phone Number"
-                    value={input.mobile}
-                    onChange={handleInputChange}
-                  />
+                <div>
+                  <h5 style={{ color:"#FFFFFF",fontFamily:"'Space Grotesk',sans-serif",fontWeight:800,margin:0,fontSize:"17px",letterSpacing:"-0.3px" }}>
+                    Send Enquiry
+                  </h5>
+                  <p style={{ color:"rgba(255,255,255,0.78)",fontSize:"12px",margin:"2px 0 0",fontWeight:400 }}>
+                    We&apos;ll reply within 24 hours
+                  </p>
                 </div>
-              </div>
-              <div className="row">
-                <div className="col mb-3">
-                  {/* <label htmlFor="subject" className="form-label">
-                                    E-mail
-                                </label> */}
-                  <input
-                    type="text"
-                    className="form-control"
-                    id="e-mail"
-                    name="email"
-                    placeholder="E-mail  Address"
-                    value={input.email}
-                    onChange={handleInputChange}
-                  />
-                </div>
-              </div>
-              <div>
-                {/* <label htmlFor="comments" className="form-label">
-                                Comments
-                            </label> */}
-                <textarea
-                  className="form-control"
-                  id="comments"
-                  name="comments"
-                  rows={3}
-                  placeholder="Message"
-                  value={input.comments}
-                  onChange={handleInputChange}
-                  defaultValue={""}
-                />
               </div>
               <button
+                type="button"
+                onClick={() => setVisible(false)}
+                style={{ background:"rgba(255,255,255,0.18)",border:"none",borderRadius:"8px",width:"30px",height:"30px",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",color:"#FFFFFF",fontSize:"14px",flexShrink:0 }}
+              >✕</button>
+            </div>
+          </COffcanvasHeader>
+
+          {/* ── Form Body ── */}
+          <COffcanvasBody style={{ padding:"18px 20px 16px", background:"#F8FAFC", overflowY:"auto" }}>
+            <form onSubmit={handleInquiries} noValidate>
+
+              {/* ── Field helper ── */}
+              {[
+                { label:"Full Name",       id:"full-name",  name:"first_name", type:"text",   icon:"fa-user",        placeholder:"Enter your full name",     value:input.first_name },
+                { label:"Phone Number",    id:"phone",      name:"phone",      type:"number", icon:"fa-phone",       placeholder:"Enter 10-digit number",    value:input.mobile },
+                { label:"Email Address",   id:"e-mail",     name:"email",      type:"text",   icon:"fa-envelope",    placeholder:"Enter your email",         value:input.email },
+              ].map(({ label, id, name, type, icon, placeholder, value }) => (
+                <div key={id} style={{ marginBottom:"10px" }}>
+                  <label
+                    htmlFor={id}
+                    style={{ display:"block",fontFamily:"'Space Grotesk',sans-serif",fontSize:"10px",fontWeight:700,color:"#374151",textTransform:"uppercase",letterSpacing:"0.7px",marginBottom:"4px" }}
+                  >
+                    {label}
+                  </label>
+                  <div style={{ position:"relative" }}>
+                    <i
+                      className={`fas ${icon}`}
+                      style={{ position:"absolute",left:"14px",top:"50%",transform:"translateY(-50%)",color:"#9CA3AF",fontSize:"13px",zIndex:3,pointerEvents:"none" }}
+                    />
+                    <input
+                      id={id}
+                      type={type}
+                      name={name}
+                      placeholder={placeholder}
+                      value={value}
+                      onChange={handleInputChange}
+                      style={{
+                        display:"block",
+                        width:"100%",
+                        paddingLeft:"40px",
+                        paddingRight:"14px",
+                        height:"40px",
+                        borderRadius:"10px",
+                        border:"1.5px solid #E5E7EB",
+                        fontSize:"13px",
+                        color:"#111827",
+                        background:"#FFFFFF",
+                        outline:"none",
+                        transition:"border 0.2s ease, box-shadow 0.2s ease",
+                        fontFamily:"'Inter','Space Grotesk',sans-serif",
+                        boxSizing:"border-box",
+                      }}
+                      onFocus={e => { e.target.style.border="1.5px solid #22C55E"; e.target.style.boxShadow="0 0 0 3px rgba(34,197,94,0.12)"; }}
+                      onBlur={e  => { e.target.style.border="1.5px solid #E5E7EB"; e.target.style.boxShadow="none"; }}
+                    />
+                  </div>
+                </div>
+              ))}
+
+              {/* ── Message ── */}
+              <div style={{ marginBottom:"12px" }}>
+                <label
+                  htmlFor="comments"
+                  style={{ display:"block",fontFamily:"'Space Grotesk',sans-serif",fontSize:"10px",fontWeight:700,color:"#374151",textTransform:"uppercase",letterSpacing:"0.7px",marginBottom:"4px" }}
+                >
+                  Message
+                </label>
+                <div style={{ position:"relative" }}>
+                  <i
+                    className="fas fa-comment-dots"
+                    style={{ position:"absolute",left:"14px",top:"11px",color:"#9CA3AF",fontSize:"13px",zIndex:3,pointerEvents:"none" }}
+                  />
+                  <textarea
+                    id="comments"
+                    name="comments"
+                    rows={2}
+                    placeholder="Tell us about your enquiry..."
+                    value={input.comments}
+                    onChange={handleInputChange}
+                    style={{
+                      display:"block",
+                      width:"100%",
+                      paddingLeft:"40px",
+                      paddingRight:"14px",
+                      paddingTop:"10px",
+                      borderRadius:"10px",
+                      border:"1.5px solid #E5E7EB",
+                      fontSize:"13px",
+                      color:"#111827",
+                      background:"#FFFFFF",
+                      outline:"none",
+                      resize:"none",
+                      transition:"border 0.2s ease, box-shadow 0.2s ease",
+                      fontFamily:"'Inter','Space Grotesk',sans-serif",
+                      boxSizing:"border-box",
+                    }}
+                    onFocus={e => { e.target.style.border="1.5px solid #22C55E"; e.target.style.boxShadow="0 0 0 3px rgba(34,197,94,0.12)"; }}
+                    onBlur={e  => { e.target.style.border="1.5px solid #E5E7EB"; e.target.style.boxShadow="none"; }}
+                  />
+                </div>
+              </div>
+
+              {/* ── Submit ── */}
+              <button
                 type="submit"
-                className="btn btn-secondary d-flex align-items-center"
-                // onClick={handleInquiries}
+                style={{
+                  width:"100%",
+                  height:"42px",
+                  background:"linear-gradient(135deg,#22C55E 0%,#16A34A 100%)",
+                  border:"none",
+                  borderRadius:"10px",
+                  color:"#FFFFFF",
+                  fontFamily:"'Space Grotesk',sans-serif",
+                  fontWeight:700,
+                  fontSize:"14px",
+                  display:"flex",
+                  alignItems:"center",
+                  justifyContent:"center",
+                  gap:"8px",
+                  cursor:"pointer",
+                  boxShadow:"0 4px 14px rgba(34,197,94,0.36)",
+                  transition:"all 0.2s ease",
+                  letterSpacing:"0.2px",
+                }}
+                onMouseOver={e => { (e.currentTarget as HTMLButtonElement).style.transform="translateY(-2px)"; (e.currentTarget as HTMLButtonElement).style.boxShadow="0 8px 22px rgba(34,197,94,0.48)"; }}
+                onMouseOut={e  => { (e.currentTarget as HTMLButtonElement).style.transform="translateY(0)"; (e.currentTarget as HTMLButtonElement).style.boxShadow="0 4px 16px rgba(34,197,94,0.38)"; }}
               >
-                Submit
-                <i className="feather-arrow-right-circle ms-2" />
+                <i className="fas fa-paper-plane" style={{ fontSize:"14px" }}/>
+                Send Enquiry
               </button>
+
+              {/* trust badge */}
+              <div style={{ display:"flex",alignItems:"center",justifyContent:"center",gap:"5px",marginTop:"8px" }}>
+                <i className="fas fa-shield-alt" style={{ color:"#9CA3AF",fontSize:"11px" }}/>
+                <span style={{ fontSize:"11px",color:"#9CA3AF",fontWeight:500 }}>Your information is 100% confidential</span>
+              </div>
+
             </form>
           </COffcanvasBody>
         </COffcanvas>
+
       </div>,
       document.body
     )}
+
   </>);
 };
 
