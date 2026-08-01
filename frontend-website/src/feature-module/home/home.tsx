@@ -824,7 +824,7 @@ const Home = () => {
                 { name: "Pickleball", slug: "pickleball", count: "24 Listings", icon: "fas fa-table-tennis", color: "#D97706", bg: "#FEF3C7" },
                 { name: "Tennis", slug: "tennis", count: "8 Listings", icon: "fas fa-basketball-ball", color: "#7C3AED", bg: "#EDE9FE" },
                 { name: "Basketball", slug: "basketball", count: "6 Listings", icon: "fas fa-basketball-ball", color: "#DC2626", bg: "#FEE2E2" },
-                { name: "Table Tennis", slug: "table-tennis", count: "10 Listings", icon: "fas fa-ping-pong-paddle", color: "#DB2777", bg: "#FCE7F3" },
+                { name: "Table Tennis", slug: "table-tennis", count: "10 Listings", icon: "fas fa-table-tennis", color: "#DB2777", bg: "#FCE7F3" },
                 { name: "Other Sports", slug: "other-sports", count: "514 Listings", icon: "fas fa-trophy", color: "#4F46E5", bg: "#E0E7FF" },
 
                 // Duplicated for seamless 360 infinite loop
@@ -835,39 +835,40 @@ const Home = () => {
                 { name: "Pickleball", slug: "pickleball", count: "24 Listings", icon: "fas fa-table-tennis", color: "#D97706", bg: "#FEF3C7" },
                 { name: "Tennis", slug: "tennis", count: "8 Listings", icon: "fas fa-basketball-ball", color: "#7C3AED", bg: "#EDE9FE" },
                 { name: "Basketball", slug: "basketball", count: "6 Listings", icon: "fas fa-basketball-ball", color: "#DC2626", bg: "#FEE2E2" },
-                { name: "Table Tennis", slug: "table-tennis", count: "10 Listings", icon: "fas fa-ping-pong-paddle", color: "#DB2777", bg: "#FCE7F3" },
+                { name: "Table Tennis", slug: "table-tennis", count: "10 Listings", icon: "fas fa-table-tennis", color: "#DB2777", bg: "#FCE7F3" },
                 { name: "Other Sports", slug: "other-sports", count: "514 Listings", icon: "fas fa-trophy", color: "#4F46E5", bg: "#E0E7FF" }
               ].map((cat, idx) => (
                 <div 
                   key={idx}
                   className="ki-category-slider-card p-3 text-center d-flex flex-column align-items-center justify-content-between" 
+                  style={{ height: "175px" }}
                   onClick={() => navigate(`/sports-venue/${cat.slug}`)}
                 >
                   <div 
                     className="category-icon-wrap d-flex align-items-center justify-content-center mb-2"
                     style={{
-                      width: "52px",
-                      height: "52px",
+                      width: "48px",
+                      height: "48px",
                       borderRadius: "50%",
                       background: cat.bg,
                       color: cat.color
                     }}
                   >
-                    <i className={`${cat.icon}`} style={{ fontSize: "20px" }} />
+                    <i className={`${cat.icon}`} style={{ fontSize: "18px", color: cat.color }} />
                   </div>
-                  <h4 className="mb-1" style={{ fontSize: "16px", fontWeight: "700", fontFamily: "Space Grotesk, sans-serif", color: "#17222D" }}>{cat.name}</h4>
-                  <p className="mb-3" style={{ fontSize: "12px", color: "#64748B", fontWeight: "500" }}>
-                    {cat.count}
-                  </p>
+                  <div>
+                    <h4 className="ki-cat-name mb-0">{cat.name}</h4>
+                    <p className="ki-cat-count mb-0">{cat.count}</p>
+                  </div>
                   <button 
                     className="btn rounded-pill ki-category-explore-btn w-100"
                     style={{
-                      fontSize: "12px",
+                      fontSize: "11px",
                       border: "1.5px solid #22C55E",
                       color: "#16A34A",
                       background: "transparent",
                       fontWeight: "600",
-                      padding: "4px 12px"
+                      padding: "3px 10px"
                     }}
                   >
                     Explore

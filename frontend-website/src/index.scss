@@ -4401,6 +4401,25 @@ body .ki-category-card {
   transition: all 0.3s ease !important;
   cursor: pointer;
 
+  h4, .ki-cat-name {
+    color: #17222D !important;
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    margin-bottom: 2px !important;
+    font-family: 'Space Grotesk', sans-serif !important;
+    display: block !important;
+    opacity: 1 !important;
+  }
+
+  p, .ki-cat-count {
+    color: #64748B !important;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    margin-bottom: 12px !important;
+    display: block !important;
+    opacity: 1 !important;
+  }
+
   &:hover {
     transform: translateY(-5px) !important;
     box-shadow: 0 12px 25px rgba(34, 197, 94, 0.15) !important;
