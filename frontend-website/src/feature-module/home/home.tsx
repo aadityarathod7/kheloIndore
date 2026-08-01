@@ -444,7 +444,6 @@ const Home = () => {
         htmlContainer: "ki-swal-text",
         confirmButton: "ki-swal-confirm",
         cancelButton: "ki-swal-cancel",
-        icon: "ki-swal-icon",
       },
     }).then((result) => {
       if (result.isConfirmed) {
