@@ -222,7 +222,7 @@ const BlogListSidebarLeft = (_props: { id: string; name: string }) => {
       id: "football",
       name: "football",
       slug: "football",
-      image: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?q=80&w=800&auto=format&fit=crop",
+      image: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?q=80&w=800&auto=format&fit=crop",
     },
     {
       id: "pickleball",
@@ -290,27 +290,14 @@ const BlogListSidebarLeft = (_props: { id: string; name: string }) => {
                     <div className="col-lg-4 col-md-6 col-sm-12" key={cat.id}>
                       <Link 
                         to={`/sports-venue/${cat.slug}`}
-                        className="d-block position-relative rounded-4 overflow-hidden shadow-sm" 
-                        style={{ 
-                          height: "220px", 
-                          textDecoration: "none", 
-                          boxShadow: "0 4px 15px rgba(0,0,0,0.05)",
-                          transition: "all 0.3s ease",
-                          cursor: "pointer"
-                        }}
+                        className="ki-category-card" 
                         onMouseEnter={(e) => {
                           const img = e.currentTarget.querySelector(".category-img") as HTMLElement;
-                          const card = e.currentTarget;
                           if (img) img.style.transform = "scale(1.06)";
-                          card.style.transform = "translateY(-4px)";
-                          card.style.boxShadow = "0 12px 25px rgba(34, 197, 94, 0.15)";
                         }}
                         onMouseLeave={(e) => {
                           const img = e.currentTarget.querySelector(".category-img") as HTMLElement;
-                          const card = e.currentTarget;
                           if (img) img.style.transform = "scale(1)";
-                          card.style.transform = "translateY(0)";
-                          card.style.boxShadow = "0 4px 15px rgba(0,0,0,0.05)";
                         }}
                       >
                         {/* Background Image */}
@@ -335,26 +322,10 @@ const BlogListSidebarLeft = (_props: { id: string; name: string }) => {
                         
                         {/* Category Info */}
                         <div className="position-absolute bottom-0 start-0 p-4 text-start">
-                          <h3 
-                            style={{ 
-                              color: "#FFFFFF", 
-                              fontSize: "24px", 
-                              fontWeight: "700", 
-                              marginBottom: "4px",
-                              fontFamily: "'Space Grotesk', sans-serif",
-                              textTransform: "lowercase"
-                            }}
-                          >
+                          <h3 className="ki-category-title">
                             {cat.name}
                           </h3>
-                          <span 
-                            style={{ 
-                              color: "#E2E8F0", 
-                              fontSize: "13px", 
-                              fontWeight: "500",
-                              opacity: 0.95
-                            }}
-                          >
+                          <span className="ki-category-count">
                             {facilityCount} {facilityCount === 1 ? "facility" : "facilities"}
                           </span>
                         </div>

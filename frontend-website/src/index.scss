@@ -4322,5 +4322,40 @@ body .swal2-container .swal2-popup {
   }
 }
 
+/* Category Landing Page Styles */
+body .ki-category-card {
+  display: block;
+  position: relative;
+  border-radius: 16px !important;
+  overflow: hidden;
+  height: 220px;
+  text-decoration: none;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05) !important;
+  transition: all 0.3s ease !important;
+  cursor: pointer;
+
+  &:hover {
+    transform: translateY(-4px) !important;
+    box-shadow: 0 12px 25px rgba(34, 197, 94, 0.15) !important;
+  }
+
+  .ki-category-title {
+    color: #FFFFFF !important;
+    font-size: 24px !important;
+    font-weight: 700 !important;
+    margin-bottom: 4px !important;
+    font-family: 'Space Grotesk', sans-serif !important;
+    text-transform: lowercase !important;
+  }
+
+  .ki-category-count {
+    color: #E2E8F0 !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    opacity: 0.95 !important;
+    font-family: 'Inter', sans-serif !important;
+  }
+}
+
 
 
