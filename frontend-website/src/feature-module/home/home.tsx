@@ -435,15 +435,34 @@ const Home = () => {
       showCancelButton: true,
       confirmButtonText: "View Listings",
       cancelButtonText: "Cancel",
-      confirmButtonColor: "#16A34A",
-      cancelButtonColor: "#64748B",
       width: "380px",
       customClass: {
         popup: "ki-swal-popup",
         title: "ki-swal-title",
         htmlContainer: "ki-swal-text",
-        confirmButton: "ki-swal-confirm",
-        cancelButton: "ki-swal-cancel",
+      },
+      didOpen: (popup) => {
+        const confirmBtn = popup.querySelector(".swal2-confirm") as HTMLElement;
+        const cancelBtn = popup.querySelector(".swal2-cancel") as HTMLElement;
+        if (confirmBtn) {
+          confirmBtn.style.setProperty("background-color", "#16A34A", "important");
+          confirmBtn.style.setProperty("color", "#ffffff", "important");
+          confirmBtn.style.setProperty("border", "none", "important");
+          confirmBtn.style.setProperty("border-radius", "10px", "important");
+          confirmBtn.style.setProperty("padding", "8px 20px", "important");
+          confirmBtn.style.setProperty("font-size", "13px", "important");
+          confirmBtn.style.setProperty("font-weight", "600", "important");
+          confirmBtn.style.setProperty("box-shadow", "0 4px 12px rgba(22,163,74,0.3)", "important");
+        }
+        if (cancelBtn) {
+          cancelBtn.style.setProperty("background-color", "#64748B", "important");
+          cancelBtn.style.setProperty("color", "#ffffff", "important");
+          cancelBtn.style.setProperty("border", "none", "important");
+          cancelBtn.style.setProperty("border-radius", "10px", "important");
+          cancelBtn.style.setProperty("padding", "8px 20px", "important");
+          cancelBtn.style.setProperty("font-size", "13px", "important");
+          cancelBtn.style.setProperty("font-weight", "600", "important");
+        }
       },
     }).then((result) => {
       if (result.isConfirmed) {
