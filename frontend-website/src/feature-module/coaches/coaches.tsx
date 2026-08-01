@@ -586,10 +586,6 @@ const CoachesGrid = (_props: { id?: string }) => {
                             <i className="fas fa-star text-warning" style={{ fontSize: "10px" }} />
                             <span style={{ fontSize: "10px", fontWeight: "700", color: "#17222D" }}>4.7</span>
                           </div>
-                          <span style={{ fontSize: "10px", color: "#606D76", fontWeight: "600" }}>
-                            <i className="feather-grid me-1" style={{ color: "#3CAB4B", fontSize: "10px" }} />
-                            Standard
-                          </span>
                         </div>
                         <h3 className="listing-title mb-1" style={{ fontSize: "15px", fontWeight: "700" }}>
                           <Link
@@ -612,18 +608,25 @@ const CoachesGrid = (_props: { id?: string }) => {
                         <span style={{ fontSize: "14px", fontWeight: "700", color: "#17222D" }}>
                           ₹{coach.price_per_hr || "500"} <span style={{ fontSize: "10px", fontWeight: "normal", color: "#606D76" }}>/ hr</span>
                         </span>
-                        <div className="d-flex gap-1">
+                        <div className="d-flex gap-1.5">
                           <Link 
                             to={`/coaches/${coach.trainer_type?.replace(/\s+/g, "-").toLowerCase()}/${coach.first_name?.replace(/\s+/g, "-").toLowerCase()}/${coach._id}`}
                             className="btn btn-outline-success btn-sm rounded-pill px-2.5 py-1"
-                            style={{ fontSize: "10px", fontWeight: "600", borderColor: "#3CAB4B", color: "#3CAB4B" }}
+                            style={{ fontSize: "11px", fontWeight: "600", borderColor: "#3CAB4B", color: "#3CAB4B" }}
                           >
                             View
                           </Link>
                           <button 
                             onClick={() => checkToken(coach?._id)}
-                            className="btn btn-primary btn-sm rounded-pill px-2.5 py-1"
-                            style={{ fontSize: "10px", fontWeight: "600", backgroundColor: "#3CAB4B", borderColor: "#3CAB4B" }}
+                            className="btn btn-primary btn-sm rounded-pill px-3 py-1 shadow-sm"
+                            style={{ 
+                              fontSize: "11px", 
+                              fontWeight: "700", 
+                              background: "linear-gradient(135deg, #43B649 0%, #349E3A 100%)", 
+                              border: "none",
+                              color: "#FFFFFF",
+                              boxShadow: "0 4px 12px rgba(67, 182, 73, 0.28)" 
+                            }}
                           >
                             Book
                           </button>
