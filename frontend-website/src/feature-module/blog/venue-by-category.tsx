@@ -188,7 +188,7 @@ export default function VenueByCategory(props: any) {
   }, [locationName, categoryVenue]);
 
   const [currentPage, setCurrentPage] = useState(1);
-  const venuesPerPage = 8;
+  const venuesPerPage = 9;
   const indexOfLastVenue = currentPage * venuesPerPage;
   const indexOfFirstVenue = indexOfLastVenue - venuesPerPage;
 
@@ -203,27 +203,27 @@ export default function VenueByCategory(props: any) {
 
   return (
     <div>
-      {/* Hero Header Section */}
-      <div className="hero-booking-section" style={{ background: "linear-gradient(135deg, #F0FDF4 0%, #ECFDF5 100%)", paddingTop: "110px", paddingBottom: "40px", position: "relative", overflow: "hidden", borderBottom: "1px solid #E5E7EB" }}>
+      {/* Hero Header Section with ample top padding to prevent fixed navbar overlap */}
+      <div className="hero-booking-section" style={{ background: "linear-gradient(135deg, #F0FDF4 0%, #ECFDF5 100%)", paddingTop: "150px", paddingBottom: "40px", position: "relative", overflow: "hidden", borderBottom: "1px solid #E5E7EB" }}>
         <div className="hero-artwork-blend" style={{ position: "absolute", right: "-60px", top: 0, bottom: 0, width: "55%", backgroundImage: "url('/assets/img/bg/banner-illustration.png')", backgroundSize: "cover", backgroundPosition: "left center", backgroundRepeat: "no-repeat", maskImage: "linear-gradient(to left, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%)", WebkitMaskImage: "linear-gradient(to left, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%)", opacity: 0.9 }}></div>
         
         <div className="container" style={{ position: "relative", zIndex: 2 }}>
           <div className="row align-items-center">
             <div className="col-lg-7 text-start">
               <span className="font-weight-bold" style={{ fontSize: "13px", letterSpacing: "1.5px", display: "block", marginBottom: "12px", color: "#22C55E", fontWeight: "700" }}>BOOK. PLAY. ENJOY</span>
-              <h1 className="d-flex align-items-center flex-wrap" style={{ fontSize: "56px", fontWeight: "800", color: "#0F172A", lineHeight: "1.1", marginBottom: "16px" }}>
-                {categoryTitle} <span style={{ color: "#22C55E", marginLeft: "12px" }}>Venues</span>
+              <h1 className="d-flex align-items-center flex-wrap" style={{ fontSize: "44px", fontWeight: "800", color: "#0F172A", lineHeight: "1.1", marginBottom: "12px" }}>
+                {categoryTitle} <span style={{ color: "#22C55E", marginLeft: "10px" }}>Venues</span>
               </h1>
-              <p style={{ color: "#64748B", fontSize: "20px", marginBottom: "24px", fontWeight: "500", maxWidth: "480px" }}>
+              <p style={{ color: "#64748B", fontSize: "18px", marginBottom: "20px", fontWeight: "500", maxWidth: "480px" }}>
                 Browse and book top-rated {categoryTitle.toLowerCase()} venues across Indore
               </p>
               
               {/* Breadcrumb pill */}
-              <div className="d-inline-flex align-items-center bg-white px-3 py-2 rounded-pill shadow-sm" style={{ fontSize: "13px", border: "1px solid #E5E7EB" }}>
+              <div className="d-inline-flex align-items-center bg-white px-3 py-1.5 rounded-pill shadow-sm" style={{ fontSize: "12px", border: "1px solid #E5E7EB" }}>
                 <Link to="/" style={{ color: "#64748B", textDecoration: "none", fontWeight: "500" }}><i className="feather-home me-1" style={{ color: "#64748B" }} /> Home</Link>
-                <span style={{ margin: "0 10px", color: "#64748B" }}><i className="feather-chevron-right" style={{ fontSize: "12px", color: "#64748B" }} /></span>
+                <span style={{ margin: "0 8px", color: "#94A3B8" }}><i className="feather-chevron-right" style={{ fontSize: "11px" }} /></span>
                 <Link to="/sports-venue" style={{ color: "#64748B", textDecoration: "none", fontWeight: "500" }}>Sports Venues</Link>
-                <span style={{ margin: "0 10px", color: "#64748B" }}><i className="feather-chevron-right" style={{ fontSize: "12px", color: "#64748B" }} /></span>
+                <span style={{ margin: "0 8px", color: "#94A3B8" }}><i className="feather-chevron-right" style={{ fontSize: "11px" }} /></span>
                 <span style={{ color: "#22C55E", fontWeight: "600" }}>{categoryTitle}</span>
               </div>
             </div>
@@ -233,38 +233,38 @@ export default function VenueByCategory(props: any) {
       {/* /Hero Header Section */}
 
       {/* Page Content */}
-      <div className="content blog-grid" style={{ backgroundColor: "#F8FAFC", padding: "40px 0 60px 0" }}>
+      <div className="content blog-grid" style={{ backgroundColor: "#F8FAFC", padding: "32px 0 60px 0" }}>
         <div className="container">
           <div className="row">
             
-            {/* Venue Listings (2-Column Grid) */}
+            {/* Venue Listings (Sleek Compact 3-Column Cards inside 8-col area) */}
             <div className="col-sm-12 col-md-8 col-lg-8">
               
               {/* Results Header */}
-              <div className="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4 py-2 px-3 bg-white rounded shadow-sm border" style={{ borderColor: "#E2E8E3" }}>
-                <h5 className="m-0" style={{ fontSize: "14px", fontWeight: "700", color: "#475569" }}>
+              <div className="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3 py-2 px-3 bg-white rounded-3 shadow-sm border" style={{ borderColor: "#E2E8E3" }}>
+                <h5 className="m-0" style={{ fontSize: "13px", fontWeight: "700", color: "#475569" }}>
                   <span style={{ color: "#3CAB4B", marginRight: "6px" }}>{displayList.length}</span> 
                   {categoryTitle} Venues {locationName ? `in ${locationName}` : ""}
                 </h5>
                 {locationName && (
                   <button 
                     onClick={() => setLocationName("")}
-                    className="btn btn-sm btn-link p-0 text-decoration-none" style={{ fontSize: "12px", color: "#EF4444", fontWeight: "600" }}
+                    className="btn btn-sm btn-link p-0 text-decoration-none" style={{ fontSize: "11px", color: "#EF4444", fontWeight: "600" }}
                   >
                     Clear location filter ✕
                   </button>
                 )}
               </div>
 
-              {/* Cards Grid */}
-              <div className="row">
+              {/* Cards Grid (3 cards per row for compact look) */}
+              <div className="row g-3">
                 {currentVenues.length > 0 ? (
                   currentVenues.map((venue, index) => (
-                    <div className="col-lg-6 col-md-6 col-sm-12 mb-4 d-flex" key={index}>
-                      <div className="listing-item venue-page ki-card-hover w-100 d-flex flex-column justify-content-between" style={{ margin: 0, overflow: "hidden", backgroundColor: "#FFFFFF", borderRadius: "16px", border: "1px solid #E2E8E3", boxShadow: "0 4px 15px rgba(0,0,0,0.01)" }}>
+                    <div className="col-lg-4 col-md-6 col-sm-12 d-flex" key={index}>
+                      <div className="listing-item venue-page ki-card-hover w-100 d-flex flex-column justify-content-between" style={{ margin: 0, overflow: "hidden", backgroundColor: "#FFFFFF", borderRadius: "12px", border: "1px solid #E2E8E3", boxShadow: "0 2px 8px rgba(0,0,0,0.02)" }}>
                         
-                        {/* Card Image Header */}
-                        <div className="listing-img" style={{ height: "150px", position: "relative" }}>
+                        {/* Compact Card Image Header */}
+                        <div className="listing-img" style={{ height: "115px", position: "relative" }}>
                           <Link
                             to={`/sports-venue/${venue.vendor_type ? venue.vendor_type.replace(/\s+/g, "-").toLowerCase() : "venue"}/${venue.name.replace(/\s+/g, "-").toLowerCase()}/${venue._id}`}
                             style={{ position: "absolute", inset: 0, display: "block" }}
@@ -287,54 +287,55 @@ export default function VenueByCategory(props: any) {
                           </Link>
                           
                           {/* Favorite Button */}
-                          <div style={{ position: "absolute", top: "8px", right: "8px", zIndex: 2 }}>
+                          <div style={{ position: "absolute", top: "6px", right: "6px", zIndex: 2 }}>
                             <button 
                               onClick={(e) => {
                                 e.preventDefault();
                                 toggleFavorite(venue._id);
                               }}
                               className="btn btn-white rounded-circle d-flex align-items-center justify-content-center shadow-sm" 
-                              style={{ width: "28px", height: "28px", padding: 0, backgroundColor: "#FFFFFF", border: "none" }}
+                              style={{ width: "24px", height: "24px", padding: 0, backgroundColor: "#FFFFFF", border: "none" }}
                             >
                               <i 
                                 className={favorites[venue._id] ? "fas fa-heart text-danger" : "feather-heart text-muted"} 
-                                style={{ fontSize: "13px" }} 
+                                style={{ fontSize: "11px" }} 
                               />
                             </button>
                           </div>
 
                           {/* Category Badge */}
-                          <div style={{ position: "absolute", top: "8px", left: "8px", zIndex: 2 }}>
-                            <span className="tag tag-blue" style={{ background: "#2D3E33", color: "#FFFFFF", fontWeight: "700", fontSize: "10px", padding: "4px 8px", borderRadius: "4px", textTransform: "uppercase" }}>
+                          <div style={{ position: "absolute", top: "6px", left: "6px", zIndex: 2 }}>
+                            <span className="tag tag-blue" style={{ background: "#2D3E33", color: "#FFFFFF", fontWeight: "700", fontSize: "9px", padding: "3px 6px", borderRadius: "4px", textTransform: "uppercase" }}>
                               {venue?.vendor_type ? venue.vendor_type.replace("_", " ") : "Venue"}
                             </span>
                           </div>
                         </div>
 
-                        {/* Card Content Body */}
-                        <div className="listing-content news-content p-3" style={{ background: "#FFFFFF" }}>
-                          <div className="d-flex align-items-center justify-content-between mb-1" style={{ fontSize: "11px" }}>
+                        {/* Compact Card Body */}
+                        <div className="listing-content news-content p-2.5" style={{ background: "#FFFFFF", padding: "10px" }}>
+                          <div className="d-flex align-items-center justify-content-between mb-1" style={{ fontSize: "10px" }}>
                             <div className="rating-wrap d-flex align-items-center gap-1">
-                              <i className="fas fa-star text-warning" style={{ fontSize: "10px" }} />
+                              <i className="fas fa-star text-warning" style={{ fontSize: "9px" }} />
                               <span style={{ fontSize: "10px", fontWeight: "700", color: "#17222D" }}>4.8</span>
                             </div>
-                            <span style={{ fontSize: "10px", color: "#606D76", fontWeight: "600" }}>
-                              <i className="feather-grid me-1" style={{ color: "#3CAB4B", fontSize: "10px" }} />
+                            <span style={{ fontSize: "9px", color: "#606D76", fontWeight: "600" }}>
+                              <i className="feather-grid me-1" style={{ color: "#3CAB4B", fontSize: "9px" }} />
                               Standard
                             </span>
                           </div>
                           
-                          <h3 className="listing-title mb-1" style={{ fontSize: "15px", fontWeight: "700" }}>
+                          <h3 className="listing-title mb-1" style={{ fontSize: "13px", fontWeight: "700", lineHeight: "1.2" }}>
                             <Link
                               to={`/sports-venue/${venue.vendor_type ? venue.vendor_type.replace(/\s+/g, "-").toLowerCase() : "venue"}/${venue.name.replace(/\s+/g, "-").toLowerCase()}/${venue._id}`}
                               className="text-truncate d-block" style={{ color: "#17222D" }}
+                              title={venue.name}
                             >
                               {venue.name}
                             </Link>
                           </h3>
                           
-                          <div className="d-flex align-items-center justify-content-between mb-2">
-                            <p className="mb-0 text-truncate" style={{ fontSize: "12px", color: "#606D76" }}>
+                          <div className="d-flex align-items-center justify-content-between mb-1.5" style={{ fontSize: "11px" }}>
+                            <p className="mb-0 text-truncate" style={{ fontSize: "11px", color: "#606D76" }}>
                               <i className="feather-map-pin me-1" style={{ color: "#3CAB4B" }} />
                               {venue.near_by_location || "Indore"}, Indore
                             </p>
@@ -345,21 +346,21 @@ export default function VenueByCategory(props: any) {
                                 rel="noopener noreferrer"
                                 title="Open Google Maps"
                                 className="text-success ms-1 flex-shrink-0"
-                                style={{ fontSize: "11px", fontWeight: "600" }}
+                                style={{ fontSize: "10px", fontWeight: "600" }}
                               >
                                 Map 🗺️
                               </a>
                             )}
                           </div>
                           
-                          <div className="d-flex align-items-center justify-content-between pt-2" style={{ borderTop: "1px solid #E2E8E3" }}>
-                            <span style={{ fontSize: "14px", fontWeight: "700", color: "#17222D" }}>
-                              ₹{venue.price_per_hr || "750"} <span style={{ fontSize: "10px", fontWeight: "normal", color: "#606D76" }}>/ hr</span>
+                          <div className="d-flex align-items-center justify-content-between pt-1.5" style={{ borderTop: "1px solid #F1F5F9" }}>
+                            <span style={{ fontSize: "13px", fontWeight: "700", color: "#17222D" }}>
+                              ₹{venue.price_per_hr || "750"} <span style={{ fontSize: "9px", fontWeight: "normal", color: "#606D76" }}>/ hr</span>
                             </span>
                             <Link 
                               to={`/sports-venue/${venue.vendor_type ? venue.vendor_type.replace(/\s+/g, "-").toLowerCase() : "venue"}/${venue.name.replace(/\s+/g, "-").toLowerCase()}/${venue._id}`}
-                              className="btn btn-primary btn-sm rounded-pill px-3 py-1"
-                              style={{ fontSize: "11px", fontWeight: "600", backgroundColor: "#3CAB4B", borderColor: "#3CAB4B" }}
+                              className="btn btn-primary btn-sm rounded-pill px-2.5 py-0.5"
+                              style={{ fontSize: "10px", fontWeight: "600", backgroundColor: "#3CAB4B", borderColor: "#3CAB4B" }}
                             >
                               Book Slot
                             </Link>
@@ -370,10 +371,10 @@ export default function VenueByCategory(props: any) {
                     </div>
                   ))
                 ) : (
-                  <div className="col-12 text-center py-5 bg-white rounded-4 border" style={{ borderColor: "#E2E8E3" }}>
-                    <i className="feather-alert-circle text-muted mb-2" style={{ fontSize: "32px" }} />
-                    <h5 className="fw-bold text-dark">No Venues Found</h5>
-                    <p className="text-muted fs-6 mb-0">Try clearing location search to view available facilities</p>
+                  <div className="col-12 text-center py-5 bg-white rounded-3 border" style={{ borderColor: "#E2E8E3" }}>
+                    <i className="feather-alert-circle text-muted mb-2" style={{ fontSize: "28px" }} />
+                    <h6 className="fw-bold text-dark mb-1">No Venues Found</h6>
+                    <p className="text-muted small mb-0">Try clearing location search to view available facilities</p>
                   </div>
                 )}
               </div>
@@ -405,36 +406,54 @@ export default function VenueByCategory(props: any) {
 
             </div>
 
-            {/* Location Sidebar on Right */}
+            {/* Location Sidebar on Right with clean search input padding */}
             <div className="col-sm-12 col-md-4 col-lg-4 blog-sidebar theiaStickySidebar">
               <div className="stickybar">
                 <div className="ki-card filter-sidebar-card p-3 mb-0" style={{ backgroundColor: "#FFFFFF", borderRadius: "16px", border: "1px solid #E2E8E3", boxShadow: "0 4px 20px rgba(0,0,0,0.02)" }}>
                   
                   <div className="d-flex align-items-center justify-content-between pb-2 mb-3" style={{ borderBottom: "1px solid #E2E8E3" }}>
-                    <h4 className="m-0 d-flex align-items-center gap-2" style={{ fontSize: "15px", fontWeight: "700", color: "#17222D" }}>
-                      <i className="feather-map-pin text-muted" style={{ fontSize: "16px" }} />
+                    <h4 className="m-0 d-flex align-items-center gap-2" style={{ fontSize: "14px", fontWeight: "700", color: "#17222D" }}>
+                      <i className="feather-map-pin text-muted" style={{ fontSize: "15px" }} />
                       Filter by Location
                     </h4>
                     {locationName && (
                       <button 
                         onClick={() => setLocationName("")} 
-                        className="btn btn-link p-0 text-decoration-none" style={{ fontSize: "12px", color: "#3CAB4B", fontWeight: "600" }}
+                        className="btn btn-link p-0 text-decoration-none" style={{ fontSize: "11px", color: "#3CAB4B", fontWeight: "600" }}
                       >
                         Reset
                       </button>
                     )}
                   </div>
 
-                  {/* Search Location Input */}
+                  {/* Search Location Input with NO icon overlap */}
                   <div className="position-relative mb-3">
-                    <i className="fas fa-search listings-search-icon" style={{ left: "10px", top: "50%", transform: "translateY(-50%)", position: "absolute", color: "#94A3B8", fontSize: "12px" }} />
+                    <i 
+                      className="feather-search" 
+                      style={{ 
+                        left: "14px", 
+                        top: "50%", 
+                        transform: "translateY(-50%)", 
+                        position: "absolute", 
+                        color: "#94A3B8", 
+                        fontSize: "13px",
+                        pointerEvents: "none"
+                      }} 
+                    />
                     <input
                       type="text"
                       className="form-control"
                       placeholder="Search area..."
                       value={searchLocation}
                       onChange={searchingLocations}
-                      style={{ height: "36px", fontSize: "12px", paddingLeft: "28px", borderRadius: "8px", border: "1px solid #E2E8F0" }}
+                      style={{ 
+                        height: "38px", 
+                        fontSize: "12px", 
+                        paddingLeft: "36px", 
+                        borderRadius: "10px", 
+                        border: "1px solid #E2E8F0",
+                        backgroundColor: "#FAFAFA"
+                      }}
                     />
                   </div>
 
@@ -447,9 +466,9 @@ export default function VenueByCategory(props: any) {
                           <li key={index} className="mb-1">
                             <button
                               onClick={() => handleLocationClick(loc)}
-                              className="btn w-100 text-start d-flex align-items-center justify-content-between py-2 px-3 rounded"
+                              className="btn w-100 text-start d-flex align-items-center justify-content-between py-1.5 px-3 rounded"
                               style={{
-                                fontSize: "13px",
+                                fontSize: "12px",
                                 fontWeight: isSelected ? "700" : "500",
                                 color: isSelected ? "#15803D" : "#475569",
                                 backgroundColor: isSelected ? "#F0FDF4" : "transparent",
@@ -458,7 +477,7 @@ export default function VenueByCategory(props: any) {
                               }}
                             >
                               <span>{loc}</span>
-                              {isSelected && <i className="feather-check text-success" style={{ fontSize: "14px" }} />}
+                              {isSelected && <i className="feather-check text-success" style={{ fontSize: "13px" }} />}
                             </button>
                           </li>
                         );
