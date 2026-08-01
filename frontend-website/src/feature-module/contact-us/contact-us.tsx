@@ -174,27 +174,10 @@ const ContactUs = () => {
               >
                 BOOK. PLAY. ENJOY
               </span>
-              <h1
-                className="d-flex align-items-center flex-wrap"
-                style={{
-                  fontSize: "56px",
-                  fontWeight: "800",
-                  color: "#0F172A",
-                  lineHeight: "1.1",
-                  marginBottom: "16px",
-                }}
-              >
+              <h1 className="hero-title d-flex align-items-center flex-wrap mb-3">
                 Contact <span style={{ color: "#22C55E", marginLeft: "12px" }}>Us</span>
               </h1>
-              <p
-                style={{
-                  color: "#64748B",
-                  fontSize: "20px",
-                  marginBottom: "24px",
-                  fontWeight: "500",
-                  maxWidth: "480px",
-                }}
-              >
+              <p className="hero-subtitle mb-4" style={{ maxWidth: "480px" }}>
                 Share your query and our team will get back to you soon.
               </p>
 

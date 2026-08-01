@@ -184,6 +184,13 @@ small,
   font-size: clamp(#{$__font__size__28}, 4vw, #{$__font__size__56});
 }
 
+.hero-subtitle {
+  font-size: clamp(#{$__font__size__14}, 1.8vw, #{$__font__size__20});
+  font-weight: var(--font-weight-medium);
+  line-height: 1.6;
+  color: $__lightgray;
+}
+
 label,
 .form-label {
   font-size: var(--font-size-sm);
