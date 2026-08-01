@@ -408,12 +408,20 @@ const ALL_STANDARD_SLOTS = [
         <div className="container" style={{ position: "relative", zIndex: 2 }}>
           <div className="row align-items-center">
             <div className="col-lg-7 text-start">
-              {/* Breadcrumb pill matching design mockup */}
-              <div className="d-inline-flex align-items-center bg-white px-3 py-1.5 rounded-pill shadow-sm" style={{ fontSize: "12px", border: "1px solid #E5E7EB" }}>
+              <span className="font-weight-bold" style={{ fontSize: "13px", letterSpacing: "1.5px", display: "block", marginBottom: "8px", color: "#22C55E", fontWeight: "700" }}>BOOK. PLAY. ENJOY</span>
+              <h1 className="d-flex align-items-center flex-wrap" style={{ fontSize: "44px", fontWeight: "800", color: "#0F172A", lineHeight: "1.1", marginBottom: "12px" }}>
+                Book <span style={{ color: "#22C55E", marginLeft: "10px" }}>{venueData?.name || "Venue"}</span>
+              </h1>
+              <p style={{ color: "#64748B", fontSize: "18px", marginBottom: "16px", fontWeight: "500", maxWidth: "480px" }}>
+                Pick your date, time slot, and book the perfect sports venue
+              </p>
+              
+              {/* Breadcrumb pill matching other pages */}
+              <div className="d-inline-flex align-items-center bg-white px-3 py-2 rounded-pill shadow-sm" style={{ fontSize: "13px", border: "1px solid #E5E7EB" }}>
                 <Link to="/" style={{ color: "#64748B", textDecoration: "none", fontWeight: "500" }}><i className="feather-home me-1" style={{ color: "#64748B" }} /> Home</Link>
-                <span style={{ margin: "0 8px", color: "#94A3B8" }}><i className="feather-chevron-right" style={{ fontSize: "11px" }} /></span>
-                <span style={{ color: "#64748B", fontWeight: "500" }}>Book Venue</span>
-                <span style={{ margin: "0 8px", color: "#94A3B8" }}><i className="feather-chevron-right" style={{ fontSize: "11px" }} /></span>
+                <span style={{ margin: "0 10px", color: "#64748B" }}><i className="feather-chevron-right" style={{ fontSize: "12px", color: "#64748B" }} /></span>
+                <Link to="/sports-venue" style={{ color: "#64748B", textDecoration: "none", fontWeight: "500" }}>Sports Venues</Link>
+                <span style={{ margin: "0 10px", color: "#64748B" }}><i className="feather-chevron-right" style={{ fontSize: "12px", color: "#64748B" }} /></span>
                 <span style={{ color: "#22C55E", fontWeight: "600" }}>Time & Date</span>
               </div>
             </div>
