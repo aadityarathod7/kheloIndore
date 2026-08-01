@@ -5,15 +5,65 @@
 @import "primereact/resources/primereact.css";
 @import "primereact/resources/themes/lara-light-indigo/theme.css";
 
+// ─── Global Cursor & Text-Selection Reset ────────────────────────────────────
+// Apply universally: no text-cursor or pointer on any static element.
+// Selectively restored below for interactive elements only.
+*,
+*::before,
+*::after {
+  cursor: default !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+}
+
+// Restore pointer cursor for interactive elements
+a,
+a *,
+button,
+button *,
+[role="button"],
+[role="button"] *,
+.btn,
+.btn *,
+.nav-link,
+.nav-link *,
+.dropdown-item,
+.dropdown-item *,
+.clickable,
+.clickable *,
+label[for],
+[onClick],
+select {
+  cursor: pointer !important;
+}
+
+// Restore text cursor + selection for form inputs
+input,
+input::placeholder,
+textarea,
+textarea::placeholder,
+[contenteditable="true"],
+[contenteditable="true"] * {
+  cursor: text !important;
+  user-select: text !important;
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  -ms-user-select: text !important;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 .stickybar {
   top: 0;
   // position: sticky;
 }
 
-.team-slider .slick-slider div.slick-slide > div,
-.testimonial-slide .slick-slider div.slick-slide > div,
-.gallery-slider .slick-slider div.slick-slide > div,
-.featured-slider-group .slick-slider div.slick-slide > div {
+.team-slider .slick-slider div.slick-slide>div,
+.testimonial-slide .slick-slider div.slick-slide>div,
+.gallery-slider .slick-slider div.slick-slide>div,
+.featured-slider-group .slick-slider div.slick-slide>div {
   margin-right: 20px;
 }
 
@@ -104,17 +154,11 @@ button.slick-prev:before {
   box-shadow: none;
 }
 
-.p-dropdown-panel
-  .p-dropdown-items-wrapper
-  .p-dropdown-items
-  .p-dropdown-item.p-highlight {
+.p-dropdown-panel .p-dropdown-items-wrapper .p-dropdown-items .p-dropdown-item.p-highlight {
   background: #ddd;
 }
 
-.p-dropdown-panel
-  .p-dropdown-items-wrapper
-  .p-dropdown-items
-  .p-dropdown-item:not(.p-highlight):not(.p-disabled):hover {
+.p-dropdown-panel .p-dropdown-items-wrapper .p-dropdown-items .p-dropdown-item:not(.p-highlight):not(.p-disabled):hover {
   background-color: #192335;
   color: #fff;
 }
@@ -131,9 +175,7 @@ button.slick-prev:before {
   position: absolute;
 }
 
-div.p-dropdown-panel
-  .p-dropdown-items
-  .p-dropdown-item:not(.p-highlight):not(.p-disabled).p-focus {
+div.p-dropdown-panel .p-dropdown-items .p-dropdown-item:not(.p-highlight):not(.p-disabled).p-focus {
   background: none;
 }
 
@@ -163,8 +205,7 @@ div.p-dropdown-panel
   position: absolute;
 }
 
-.table.datatable
-  div.p-dropdown.p-component.p-inputwrapper.p-inputwrapper-filled {
+.table.datatable div.p-dropdown.p-component.p-inputwrapper.p-inputwrapper-filled {
   align-items: center;
   border: 1px solid #eaedf0;
   color: #1b2559;
@@ -299,8 +340,7 @@ div.select-bg.p-dropdown.p-component.p-inputwrapper.p-inputwrapper-filled {
 }
 
 .list-sidebar-select .p-dropdown-label.p-inputtext.p-placeholder,
-.list-sidebar-select.p-dropdown.p-component.p-inputwrapper
-  .p-dropdown-label.p-inputtext {
+.list-sidebar-select.p-dropdown.p-component.p-inputwrapper .p-dropdown-label.p-inputtext {
   padding-left: 20px;
 }
 
@@ -352,18 +392,16 @@ table.p-datepicker-calendar tr td {
   display: none;
 }
 
-div.p-datepicker table td.p-datepicker-today > span {
-  background: linear-gradient(
-    93.86deg,
-    #006177 -2.6%,
-    #269089 67.39%,
-    #7abc82 110.84%
-  );
+div.p-datepicker table td.p-datepicker-today>span {
+  background: linear-gradient(93.86deg,
+      #006177 -2.6%,
+      #269089 67.39%,
+      #7abc82 110.84%);
   color: #fff;
   border: none;
 }
 
-div.p-datepicker table td.p-datepicker-today > span:focus {
+div.p-datepicker table td.p-datepicker-today>span:focus {
   box-shadow: none;
 }
 
@@ -381,12 +419,7 @@ div.p-datepicker table td.p-datepicker-today > span:focus {
   // }
 }
 
-.venue-coach-details
-  .bannergallery-section
-  .slick-slider
-  .slick-list
-  .slick-slide
-  div {
+.venue-coach-details .bannergallery-section .slick-slider .slick-list .slick-slide div {
   margin: 0 3px !important;
 }
 
@@ -409,17 +442,13 @@ div.p-datepicker table td.p-datepicker-today > span:focus {
   height: 300px;
   width: 100%;
 }
+
 .home-banner {
-margin-top: -85PX !important;
+  margin-top: -85PX !important;
 }
 
 
-.home-banner
-  .section-search
-  .search-box
-  .search-input
-  .form-group
-  .select.custom-select-list.p-dropdown.p-component.p-inputwrapper {
+.home-banner .section-search .search-box .search-input .form-group .select.custom-select-list.p-dropdown.p-component.p-inputwrapper {
   height: 31px;
   line-height: 43px;
   font-size: 15px;
@@ -462,8 +491,7 @@ margin-top: -85PX !important;
   z-index: 1000;
 }
 
-.sorting-select
-  .select.custom-select-list.week-select.p-dropdown.p-component.p-inputwrapper {
+.sorting-select .select.custom-select-list.week-select.p-dropdown.p-component.p-inputwrapper {
   background-repeat: no-repeat;
   background-position: 10% 50%;
   background-image: url(../src/style/img/calendar-icon.svg);
@@ -498,7 +526,7 @@ margin-top: -85PX !important;
     .p-dropdown-trigger {
       padding: 0 !important;
       width: 16px !important;
-      
+
       svg {
         right: 0 !important;
         color: rgba(30, 41, 59, 0.5) !important;
@@ -564,7 +592,7 @@ margin-top: -85PX !important;
   .profile-trigger {
     background: rgba(0, 0, 0, 0.04) !important;
     border: 1px solid rgba(0, 0, 0, 0.06) !important;
-    
+
     &:hover {
       background: rgba(0, 0, 0, 0.08) !important;
       border-color: rgba(22, 163, 74, 0.2) !important;
@@ -590,7 +618,7 @@ margin-top: -85PX !important;
     visibility: hidden;
     display: block !important;
     width: 180px !important;
-    
+
     &::before {
       background: #FFFFFF !important;
       border-left: 1px solid rgba(0, 0, 0, 0.08) !important;
@@ -599,7 +627,8 @@ margin-top: -85PX !important;
   }
 
   // Handle visibility on hover/show
-  &.show .lt-btn, &:hover .lt-btn {
+  &.show .lt-btn,
+  &:hover .lt-btn {
     opacity: 1 !important;
     visibility: visible !important;
   }
@@ -666,7 +695,7 @@ margin-top: -85PX !important;
     .p-dropdown-trigger {
       padding: 0 !important;
       width: 16px !important;
-      
+
       svg {
         right: 0 !important;
         color: rgba(30, 41, 59, 0.5) !important;
@@ -718,7 +747,8 @@ margin-top: -85PX !important;
     z-index: 2 !important;
   }
 
-  .sub-title, .sub-info {
+  .sub-title,
+  .sub-info {
     color: #0F172A !important;
     font-weight: 600 !important;
     opacity: 1 !important;
@@ -728,7 +758,7 @@ margin-top: -85PX !important;
     color: #1E293B !important;
     font-weight: 600 !important;
   }
-  
+
   .home-banner {
     min-height: auto !important;
     margin-top: 0 !important;
@@ -751,6 +781,7 @@ margin-top: -85PX !important;
     font-size: 26px;
     animation-delay: 0s;
   }
+
   &.leaf-2 {
     bottom: 20%;
     right: -10%;
@@ -758,6 +789,7 @@ margin-top: -85PX !important;
     transform: rotate(45deg);
     animation-delay: 2.2s;
   }
+
   &.leaf-3 {
     top: 72%;
     left: -8%;
@@ -765,6 +797,7 @@ margin-top: -85PX !important;
     transform: rotate(-30deg);
     animation-delay: 4.5s;
   }
+
   &.leaf-4 {
     top: -5%;
     right: 5%;
@@ -778,9 +811,11 @@ margin-top: -85PX !important;
   0% {
     transform: translateY(0) rotate(0deg);
   }
+
   50% {
     transform: translateY(-16px) translateX(8px) rotate(15deg);
   }
+
   100% {
     transform: translateY(0) rotate(0deg);
   }
@@ -795,15 +830,45 @@ margin-top: -85PX !important;
 }
 
 // Global visual theme enforcement to align other pages with the hero layout
-body, html, .main-wrapper, .page-wrapper {
+body,
+html,
+.main-wrapper,
+.page-wrapper {
   background: linear-gradient(135deg, #E5ECE3 0%, #DEE7DD 30%, #E8EFE8 70%, #D7E3DA 100%) !important;
 }
 
-.main-wrapper, .content, .inner-content, .page-wrapper, .section, section {
+.main-wrapper,
+.content,
+.inner-content,
+.page-wrapper,
+.section,
+section {
   background: transparent !important;
 }
 
-.card, .listing-card, .venue-card, .coach-card, .blog-card, .trainer-card, .mini-card, .booking-card, .profile-card, .dashboard-card, .listing-item, .item-details, .login-wrapper, .login-body, .login-card, .sidebar-filter, .filter-widget, .listing-filter, .filter-card, .listing-header, .sort-by, .grid-list-view, .ki-card {
+.card,
+.listing-card,
+.venue-card,
+.coach-card,
+.blog-card,
+.trainer-card,
+.mini-card,
+.booking-card,
+.profile-card,
+.dashboard-card,
+.listing-item,
+.item-details,
+.login-wrapper,
+.login-body,
+.login-card,
+.sidebar-filter,
+.filter-widget,
+.listing-filter,
+.filter-card,
+.listing-header,
+.sort-by,
+.grid-list-view,
+.ki-card {
   background-color: #FBFCFB !important;
   border: 1px solid #E2E8E3 !important;
   border-radius: 28px !important;
@@ -811,25 +876,58 @@ body, html, .main-wrapper, .page-wrapper {
   color: #606D76 !important;
   transition: all 0.3s ease !important;
 
-  h1, h2, h3, h4, h5, h6, .card-title, .title, a, p, span, div, li, strong, b, label, td, th, i {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  .card-title,
+  .title,
+  a,
+  p,
+  span,
+  div,
+  li,
+  strong,
+  b,
+  label,
+  td,
+  th,
+  i {
     color: #17222D !important;
-    
-    &.sub-title, &.desc, &.text-muted, &.subtext, &.description, &.time, &.location, .feather-map-pin, .feather-user {
+
+    &.sub-title,
+    &.desc,
+    &.text-muted,
+    &.subtext,
+    &.description,
+    &.time,
+    &.location,
+    .feather-map-pin,
+    .feather-user {
       color: #606D76 !important;
     }
   }
 
-  .badge, .ki-badge, .btn-primary, .btn-primary * {
+  .badge,
+  .ki-badge,
+  .btn-primary,
+  .btn-primary * {
     color: #FFFFFF !important;
   }
 }
 
-input, select, textarea, .form-control {
+input,
+select,
+textarea,
+.form-control {
   background-color: #FBFCFB !important;
   border: 1px solid #E2E8E3 !important;
   color: #17222D !important;
   border-radius: 12px !important;
   font-family: 'Inter', sans-serif !important;
+
   &:focus {
     border-color: #43B649 !important;
     box-shadow: 0 0 0 3px rgba(67, 182, 73, 0.15) !important;
@@ -837,7 +935,8 @@ input, select, textarea, .form-control {
 }
 
 // PrimeReact & Dropdown theme overrides to eliminate indigo/blue colors
-.p-highlight, .p-highlight * {
+.p-highlight,
+.p-highlight * {
   background-color: #EAF5EB !important;
   color: #3CAB4B !important;
 }
@@ -847,11 +946,11 @@ input, select, textarea, .form-control {
   border: 1px solid #E2E8E3 !important;
   border-radius: 16px !important;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08) !important;
-  
+
   .p-dropdown-items {
     background: #FBFCFB !important;
     padding: 6px 0 !important;
-    
+
     .p-dropdown-item {
       color: #17222D !important;
       font-family: 'Inter', sans-serif !important;
@@ -859,12 +958,12 @@ input, select, textarea, .form-control {
       font-size: 14px !important;
       padding: 10px 16px !important;
       background: transparent !important;
-      
+
       &.p-highlight {
         background-color: #EAF5EB !important;
         color: #3CAB4B !important;
       }
-      
+
       &:hover {
         background-color: #F3F7F3 !important;
         color: #3CAB4B !important;
@@ -873,29 +972,42 @@ input, select, textarea, .form-control {
   }
 }
 
-.p-checkbox-box.p-highlight, .p-radiobutton-box.p-highlight {
+.p-checkbox-box.p-highlight,
+.p-radiobutton-box.p-highlight {
   background: #43B649 !important;
   border-color: #43B649 !important;
 }
 
-.p-focus, .p-inputwrapper-focus {
+.p-focus,
+.p-inputwrapper-focus {
   border-color: #43B649 !important;
   box-shadow: 0 0 0 3px rgba(67, 182, 73, 0.15) !important;
 }
 
 // Home Page custom section text contrast fixes
-.work-section, .category-section, .featured-venues, .service-section, .convenient-section, .earn-money {
+.work-section,
+.category-section,
+.featured-venues,
+.service-section,
+.convenient-section,
+.earn-money {
   background: transparent !important;
-  
-  .section-heading, .section-header {
-    h2, h3 {
+
+  .section-heading,
+  .section-header {
+
+    h2,
+    h3 {
       color: #17222D !important;
       font-family: 'Space Grotesk', sans-serif !important;
+
       span {
         color: #43B649 !important;
       }
     }
-    p, .sub-title {
+
+    p,
+    .sub-title {
       color: #606D76 !important;
     }
   }
@@ -904,11 +1016,15 @@ input, select, textarea, .form-control {
 // Convenient & Scheduling Section text fixes
 .convenient-section {
   background: transparent !important;
+
   .convenient-content {
-    h2, h3 {
+
+    h2,
+    h3 {
       color: #17222D !important;
       font-family: 'Space Grotesk', sans-serif !important;
     }
+
     p {
       color: #606D76 !important;
     }
@@ -918,12 +1034,19 @@ input, select, textarea, .form-control {
 // Earn Money section text fixes
 .earn-money {
   background: transparent !important;
-  h2, h3, .tab-content h2, .tab-content h3 {
+
+  h2,
+  h3,
+  .tab-content h2,
+  .tab-content h3 {
     color: #17222D !important;
     font-family: 'Space Grotesk', sans-serif !important;
   }
-  p, .earn-list ul li {
+
+  p,
+  .earn-list ul li {
     color: #606D76 !important;
+
     i {
       color: #43B649 !important;
     }
@@ -938,7 +1061,7 @@ input, select, textarea, .form-control {
   box-shadow: 0 15px 45px rgba(0, 0, 0, 0.06) !important;
   padding: 30px !important;
   transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
-  
+
   &:hover {
     transform: translateY(-5px) !important;
     box-shadow: 0 20px 50px rgba(67, 182, 73, 0.1) !important;
@@ -956,30 +1079,36 @@ input, select, textarea, .form-control {
     align-items: center !important;
     justify-content: center !important;
     margin-bottom: 20px !important;
+
     img {
       filter: sepia(1) saturate(5) hue-rotate(80deg) !important; // Forces legacy orange SVG icons to render in theme green
     }
   }
 
   .work-content {
-    h5, h3 {
+
+    h5,
+    h3 {
       font-family: 'Space Grotesk', sans-serif !important;
       font-weight: 700 !important;
       margin-bottom: 12px !important;
+
       a {
         color: #17222D !important;
         text-decoration: none !important;
       }
     }
+
     p {
       color: #606D76 !important;
       font-size: 14px !important;
       line-height: 1.6 !important;
       margin-bottom: 20px !important;
     }
-    
+
     // Format buttons inside work grid as custom green outline buttons
-    .btn, a.btn {
+    .btn,
+    a.btn {
       border: 1.5px solid #43B649 !important;
       color: #3CAB4B !important;
       background: transparent !important;
@@ -992,7 +1121,7 @@ input, select, textarea, .form-control {
       gap: 6px !important;
       box-shadow: none !important;
       transition: all 0.2s ease !important;
-      
+
       &:hover {
         background: #43B649 !important;
         color: #FFFFFF !important;
@@ -1025,18 +1154,21 @@ input, select, textarea, .form-control {
 .ki-category-scroll {
   padding-top: 16px !important;
   padding-bottom: 16px !important;
-  
+
   &::-webkit-scrollbar {
     height: 6px !important;
   }
+
   &::-webkit-scrollbar-track {
     background: rgba(0, 0, 0, 0.03) !important;
     border-radius: 10px !important;
   }
+
   &::-webkit-scrollbar-thumb {
     background: #C4D3C6 !important;
     border-radius: 10px !important;
   }
+
   &::-webkit-scrollbar-thumb:hover {
     background: #3CAB4B !important;
   }
@@ -1049,18 +1181,21 @@ input, select, textarea, .form-control {
 
 // Fix clipping of active pill buttons inside capsule wrappers globally
 .btn-group {
-  &.p-1, &.p-2 {
+
+  &.p-1,
+  &.p-2 {
     display: inline-flex !important;
     align-items: center !important;
     gap: 4px !important;
-    
-    .btn, button {
+
+    .btn,
+    button {
       margin: 0 !important;
       border-radius: 50px !important;
       border: none !important;
       position: relative !important;
       flex: none !important;
-      
+
       &.btn-primary {
         box-shadow: none !important;
       }
@@ -1085,6 +1220,7 @@ input, select, textarea, .form-control {
       font-family: 'Space Grotesk', sans-serif !important;
       font-weight: 800 !important;
     }
+
     p {
       color: #606D76 !important; // Muted dark grey description
       font-weight: 500 !important;
@@ -1112,8 +1248,9 @@ input, select, textarea, .form-control {
       font-family: 'Space Grotesk', sans-serif !important;
       font-weight: 800 !important;
     }
-    
-    p, li {
+
+    p,
+    li {
       color: #606D76 !important;
       font-weight: 500 !important;
     }
@@ -1128,7 +1265,8 @@ input, select, textarea, .form-control {
       align-items: center !important;
       gap: 4px !important;
 
-      .become-venue, .become-coche {
+      .become-venue,
+      .become-coche {
         margin: 0 !important;
         border-radius: 50px !important;
         border: none !important;
@@ -1150,7 +1288,9 @@ input, select, textarea, .form-control {
 
 // Ensure icons and span inside secondary outline buttons inherit the green color
 .btn-secondary {
-  i, span {
+
+  i,
+  span {
     color: inherit !important;
   }
 }
@@ -1162,11 +1302,12 @@ input, select, textarea, .form-control {
       color: #17222D !important; // Dark charcoal instead of white
       font-family: 'Space Grotesk', sans-serif !important;
       font-weight: 800 !important;
-      
+
       span {
         color: var(--ki-primary) !important; // Garmin Green
       }
     }
+
     .sub-title {
       color: #606D76 !important; // Muted dark grey instead of white
       font-weight: 500 !important;
@@ -1181,13 +1322,13 @@ input, select, textarea, .form-control {
   padding: 24px 0 0 !important;
   position: relative !important;
   box-shadow: 0 -4px 20px rgba(23, 34, 45, 0.03) !important;
-  
+
   &::before {
     display: none !important;
   }
 
   .footer-top {
-    padding: 10px 0 16px 0 !important; 
+    padding: 10px 0 16px 0 !important;
     border-top: none !important;
 
     .footer-about {
@@ -1225,7 +1366,7 @@ input, select, textarea, .form-control {
 
       li {
         margin-bottom: 6px !important;
-        
+
         &:last-child {
           margin-bottom: 0 !important;
         }
@@ -1254,14 +1395,14 @@ input, select, textarea, .form-control {
   // Modern Compact Social Icon Circles
   .social-icon {
     margin-top: 10px !important;
-    
+
     ul {
       display: inline-flex !important;
       gap: 8px !important;
-      
+
       li {
         margin-right: 0 !important;
-        
+
         a {
           background: #FFFFFF !important;
           border: 1px solid #D2E0D4 !important;
@@ -1337,21 +1478,28 @@ input, select, textarea, .form-control {
 }
 
 // Clear any default focus outline or borders from Slick slides
-.slick-slide, .slick-slide *, .slick-active, .slick-current, .featured-venues-item {
+.slick-slide,
+.slick-slide *,
+.slick-active,
+.slick-current,
+.featured-venues-item {
   outline: none !important;
   border-color: transparent !important;
-  
-  &:hover, &:focus, &:active {
+
+  &:hover,
+  &:focus,
+  &:active {
     outline: none !important;
     border-color: transparent !important;
   }
 }
 
 // Re-theme Listing Cards hover behavior
-.listing-item, .home-venue {
+.listing-item,
+.home-venue {
   transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1) !important;
   border: 1px solid #E2E8E3 !important;
-  
+
   &:hover {
     transform: translateY(-6px) !important;
     border-color: rgba(67, 182, 73, 0.3) !important; // Subtle brand green border on hover
@@ -1376,7 +1524,9 @@ input, select, textarea, .form-control {
   border-top-left-radius: 24px !important;
   border-top-right-radius: 24px !important;
 
-  img, .background-image, .foreground-image {
+  img,
+  .background-image,
+  .foreground-image {
     width: 100% !important;
     height: 100% !important;
     object-fit: cover !important;
@@ -1392,7 +1542,9 @@ input, select, textarea, .form-control {
 
 // Category Badges on cards - mapped to green button colors
 .fav-item-venues {
-  .tag, .tag-blue {
+
+  .tag,
+  .tag-blue {
     background: linear-gradient(90deg, #49BC4F, #38A941) !important; // Vibrant brand green gradient
     color: #FFFFFF !important; // Crisp white text
     border: none !important;
@@ -1416,7 +1568,7 @@ input, select, textarea, .form-control {
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08) !important;
   border-radius: 12px !important;
   padding: 8px 0 !important;
-  
+
   &::before {
     background: #FBFCFB !important;
     border-left: 1px solid #E2E8E3 !important;
@@ -1431,14 +1583,15 @@ input, select, textarea, .form-control {
   box-shadow: none !important;
   padding: 0 !important;
   margin: 0 !important;
-  
-  li, li.ft-colr-ffff {
+
+  li,
+  li.ft-colr-ffff {
     background: transparent !important;
     border: none !important;
     list-style: none !important;
     padding: 0 !important;
     margin: 0 !important;
-    
+
     a {
       display: flex !important;
       align-items: center !important;
@@ -1450,14 +1603,14 @@ input, select, textarea, .form-control {
       font-size: 14px !important;
       text-decoration: none !important;
       transition: all 0.2s ease !important;
-      
+
       i {
         color: #3CAB4B !important; // Vibrant green icons
         font-size: 14px !important;
         width: 18px !important;
         text-align: center !important;
       }
-      
+
       &:hover {
         background-color: #F3F7F3 !important; // Soft green hover highlight
         color: #3CAB4B !important; // Green text on hover
@@ -1470,7 +1623,7 @@ input, select, textarea, .form-control {
 .user-profile-nav ul.profile-dropdown li a,
 .user-profile-nav ul.profile-dropdown li.ft-colr-ffff a {
   color: #17222D !important;
-  
+
   &:hover {
     color: #3CAB4B !important;
     background-color: #F3F7F3 !important;
@@ -1478,18 +1631,26 @@ input, select, textarea, .form-control {
 }
 
 // Breadcrumb reinforcement to fully override style.css colors
-.breadcrumb.breadcrumb-list, .breadcrumb {
+.breadcrumb.breadcrumb-list,
+.breadcrumb {
   background: linear-gradient(180deg, #EDF3EE 0%, #E2E8E3 100%) !important;
   border-bottom: 1px solid #D6E4D8 !important;
   padding: 40px 0 !important;
 
-  h1, h2, h3, h4, h5, h6, .text-white {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  .text-white {
     color: #17222D !important; // Charcoal title
     font-family: 'Space Grotesk', sans-serif !important;
     font-weight: 800 !important;
   }
 
-  ul, li {
+  ul,
+  li {
     color: #606D76 !important; // Charcoal/grey for active/muted breadcrumb text
     font-size: 14px !important;
     font-weight: 600 !important;
@@ -1522,34 +1683,42 @@ input, select, textarea, .form-control {
 .breadcrumb .text-white {
   color: #17222D !important;
 }
+
 .content .text-white-50,
 .breadcrumb .text-white-50 {
   color: #606D76 !important;
 }
 
 // Global border-white overrides
-.border-white-10, .border-white-15, .border-white-20 {
+.border-white-10,
+.border-white-15,
+.border-white-20 {
   border-color: #E2E8E3 !important;
 }
 
 // All page inner content light-theme alignment overrides (venues, coaches, trainers, blogs)
-.content, .content.blog-grid {
+.content,
+.content.blog-grid {
   background: transparent !important;
-  
+
   // Force Bootstrap white text helper classes to slate grey/charcoal inside daylight pages
   .text-white {
     color: #17222D !important;
   }
+
   .text-white-50 {
     color: #606D76 !important;
   }
-  
+
   // Clean daylight forms & sidebar widgets
-  .form-control, .form-select, input, select {
+  .form-control,
+  .form-select,
+  input,
+  select {
     background-color: #FBFCFB !important;
     border: 1px solid #E2E8E3 !important;
     color: #17222D !important;
-    
+
     &:focus {
       border-color: #43B649 !important;
       box-shadow: 0 0 0 3px rgba(67, 182, 73, 0.15) !important;
@@ -1565,14 +1734,20 @@ input, select, textarea, .form-control {
   }
 
   // Sidebar widget styling overrides
-  .stickybar, .blog-sidebar, .sidebar-filter, .filter-widget {
+  .stickybar,
+  .blog-sidebar,
+  .sidebar-filter,
+  .filter-widget {
     background-color: #FBFCFB !important;
     border: 1px solid #E2E8E3 !important;
     border-radius: 24px !important;
     padding: 24px !important;
     box-shadow: 0 15px 45px rgba(0, 0, 0, 0.04) !important;
-    
-    h4, h5, .card-title, .widget-title {
+
+    h4,
+    h5,
+    .card-title,
+    .widget-title {
       color: #17222D !important;
       font-family: 'Space Grotesk', sans-serif !important;
       font-weight: 700 !important;
@@ -1580,28 +1755,32 @@ input, select, textarea, .form-control {
       padding-bottom: 12px !important;
       margin-bottom: 16px !important;
     }
-    
-    .form-check-label, label {
+
+    .form-check-label,
+    label {
       color: #606D76 !important;
     }
   }
-  
+
   // Card text body border separation adjustments - stripped to prevent double-border layout issues
-  .listing-content, .listing-content.news-content, .listing-content.list-coche-content {
+  .listing-content,
+  .listing-content.news-content,
+  .listing-content.list-coche-content {
     background: transparent !important;
     border: none !important;
     box-shadow: none !important;
     border-radius: 0 !important;
     padding: 16px 20px 20px !important;
-    
+
     .border-top {
       border-top: 1px solid #E2E8E3 !important;
     }
+
     .border-white-10 {
       border-color: #E2E8E3 !important;
     }
   }
-  
+
   // Sorting section text elements alignment
   .sortby-section {
     background: #FFFFFF !important;
@@ -1610,11 +1789,14 @@ input, select, textarea, .form-control {
     padding: 10px 20px !important;
     margin-bottom: 20px !important;
     box-shadow: 0 4px 20px rgba(15, 23, 42, 0.03) !important;
-    
-    span, p, div, label {
+
+    span,
+    p,
+    div,
+    label {
       color: #475569 !important;
     }
-    
+
     .count-search span {
       color: #22C55E !important; // Green count number
       font-weight: 700 !important;
@@ -1657,7 +1839,7 @@ input, select, textarea, .form-control {
   margin-top: 40px !important;
   margin-bottom: 20px !important;
   flex-wrap: wrap !important;
-  
+
   .page-item {
     .page-link {
       width: 42px !important;
@@ -1673,7 +1855,7 @@ input, select, textarea, .form-control {
       font-size: 14px !important;
       padding: 0 !important;
       transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
-      
+
       &:hover {
         background-color: #EAF5EB !important;
         color: #3CAB4B !important;
@@ -1681,7 +1863,7 @@ input, select, textarea, .form-control {
         transform: scale(1.05) !important;
       }
     }
-    
+
     &.active .page-link {
       background: linear-gradient(135deg, #49BC4F 0%, #38A941 100%) !important;
       color: #FFFFFF !important;
@@ -1692,13 +1874,18 @@ input, select, textarea, .form-control {
 }
 
 // Global Card Content Reset to prevent double-border layout bug
-.listing-item, .featured-venues-item, .ki-card, .listing-card {
+.listing-item,
+.featured-venues-item,
+.ki-card,
+.listing-card {
   background-color: #FBFCFB !important;
   border: 1px solid #E2E8E3 !important;
   border-radius: 24px !important;
   overflow: hidden !important;
-  
-  .listing-content, .listing-content.news-content, .listing-content.list-coche-content {
+
+  .listing-content,
+  .listing-content.news-content,
+  .listing-content.list-coche-content {
     background: transparent !important;
     border: none !important;
     box-shadow: none !important;
@@ -1730,8 +1917,14 @@ select.form-select {
 }
 
 // Premium form controls inside sidebar filters
-.stickybar, .sidebar-filter, .filter-widget {
-  .form-control, .form-select, input, select {
+.stickybar,
+.sidebar-filter,
+.filter-widget {
+
+  .form-control,
+  .form-select,
+  input,
+  select {
     background-color: #FBFCFB !important;
     border: 1px solid #D6E4D8 !important;
     border-radius: 12px !important;
@@ -1806,17 +1999,19 @@ select.form-select {
 // Pagination chevron prev/next overrides
 .pagination {
   .page-item {
-    &.prev .page-link, &.next .page-link {
+
+    &.prev .page-link,
+    &.next .page-link {
       background: #EAF5EB !important;
       color: #3CAB4B !important;
       border-color: transparent !important;
-      
+
       &:hover {
         background: #3CAB4B !important;
         color: #FFFFFF !important;
       }
     }
-    
+
     &.disabled {
       opacity: 0.5 !important;
       pointer-events: none !important;
@@ -1860,7 +2055,9 @@ select.form-select {
         color: #17222D !important;
         margin-bottom: 6px !important;
       }
-      p, a {
+
+      p,
+      a {
         font-size: 14px !important;
         color: #606D76 !important;
         margin: 0 !important;
@@ -1892,7 +2089,8 @@ select.form-select {
       margin-bottom: 8px !important;
     }
 
-    input, textarea {
+    input,
+    textarea {
       border-radius: 12px !important;
       background: #FBFCFB !important;
       border: 1px solid #D6E4D8 !important;
@@ -1969,7 +2167,8 @@ select.form-select {
     display: block !important;
   }
 
-  .compact-input, .compact-select {
+  .compact-input,
+  .compact-select {
     padding: 6px 10px !important;
     font-size: 12px !important;
     height: auto !important;
@@ -1986,8 +2185,8 @@ select.form-select {
 }
 
 // Override template double container designs to remove duplicate card borders and trailing white space
-div.blog-sidebar, 
-div.theiaStickySidebar, 
+div.blog-sidebar,
+div.theiaStickySidebar,
 div.stickybar,
 aside.blog-sidebar,
 .blog-sidebar.theiaStickySidebar {
@@ -2000,7 +2199,8 @@ aside.blog-sidebar,
 }
 
 // Premium Modern Breadcrumb Redesign
-.breadcrumb, .breadcrumb.breadcrumb-list {
+.breadcrumb,
+.breadcrumb.breadcrumb-list {
   background: #F0F6F1 url('/assets/img/bg/stadium-turf.png') no-repeat right center !important;
   background-size: auto 100% !important;
   background-color: #F0F6F1 !important;
@@ -2013,25 +2213,25 @@ aside.blog-sidebar,
   // Floating breadcrumb pill contrast fix
   .rounded-pill {
     background-color: #FFFFFF !important;
-    
+
     a {
       color: #606D76 !important;
       font-weight: 500 !important;
       text-decoration: none !important;
-      
+
       &:hover {
         color: #3CAB4B !important;
       }
-      
+
       i {
         color: #606D76 !important;
       }
     }
-    
+
     span {
       color: #606D76 !important;
       font-weight: 600 !important;
-      
+
       i {
         color: #C2D5C4 !important;
       }
@@ -2039,7 +2239,10 @@ aside.blog-sidebar,
   }
 
   // Strip template background blobs
-  &:before, &:after, span.primary-right-round, ul:after {
+  &:before,
+  &:after,
+  span.primary-right-round,
+  ul:after {
     display: none !important;
     content: none !important;
     opacity: 0 !important;
@@ -2053,7 +2256,7 @@ aside.blog-sidebar,
     letter-spacing: -1px !important;
     margin-bottom: 8px !important;
     line-height: 1.1 !important;
-    
+
     span {
       color: #3CAB4B !important;
     }
@@ -2126,7 +2329,21 @@ aside.blog-sidebar,
 
 
 // Apply premium global typography (Awwwards / Linear style)
-body, html, h1, h2, h3, h4, h5, h6, p, span, a, label, input, select, button {
+body,
+html,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+span,
+a,
+label,
+input,
+select,
+button {
   font-family: 'Plus Jakarta Sans', 'Inter', sans-serif !important;
 }
 
@@ -2160,23 +2377,24 @@ body, html, h1, h2, h3, h4, h5, h6, p, span, a, label, input, select, button {
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.01) !important;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
   overflow: hidden !important;
-  
+
   &:hover {
     transform: translateY(-8px) !important;
     box-shadow: 0 12px 40px rgba(15, 23, 42, 0.08) !important;
-    
+
     .background-image {
       transform: scale(1.08) !important;
     }
   }
-  
+
   .background-image {
     transition: transform 0.4s ease !important;
   }
 }
 
 // Availability and Badge adjustments
-.tag-blue, .tag {
+.tag-blue,
+.tag {
   background-color: #2D3E33 !important;
   border-radius: 6px !important;
 }
@@ -2191,7 +2409,7 @@ body, html, h1, h2, h3, h4, h5, h6, p, span, a, label, input, select, button {
     font-weight: 800 !important;
     line-height: 1.1 !important;
     margin-bottom: 16px !important;
-    
+
     span {
       color: #22C55E !important;
     }
@@ -2238,7 +2456,17 @@ body, html, h1, h2, h3, h4, h5, h6, p, span, a, label, input, select, button {
   border: 1px solid #E2E8F0 !important;
   color: #0F172A !important;
 
-  p, div, span, h1, h2, h3, h4, h5, h6, li, a {
+  p,
+  div,
+  span,
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  li,
+  a {
     color: #0F172A !important;
   }
 
@@ -2298,7 +2526,10 @@ body, html, h1, h2, h3, h4, h5, h6, p, span, a, label, input, select, button {
     color: #FFFFFF !important;
     padding: 10px 14px !important;
 
-    h6, span, div, i {
+    h6,
+    span,
+    div,
+    i {
       color: #FFFFFF !important;
     }
 
@@ -2376,22 +2607,35 @@ body, html, h1, h2, h3, h4, h5, h6, p, span, a, label, input, select, button {
 // Blog Grid Listings Specificity Rules
 .content.blog-grid {
   background-color: #F8FAFC !important;
-  
-  h1, h2, h3, h4, h5, h6 {
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     color: #0F172A !important;
   }
-  
-  p, span, label, li {
+
+  p,
+  span,
+  label,
+  li {
     color: #64748B !important;
   }
 
   // Badges & Tag text color
-  .tag, .tag-blue, .badge {
+  .tag,
+  .tag-blue,
+  .badge {
     color: #FFFFFF !important;
     font-weight: 700 !important;
   }
 
-  .text-primary, .text-success, span.text-primary, span.text-success {
+  .text-primary,
+  .text-success,
+  span.text-primary,
+  span.text-success {
     color: #22C55E !important;
   }
 
@@ -2520,7 +2764,8 @@ body, html, h1, h2, h3, h4, h5, h6, p, span, a, label, input, select, button {
     margin-bottom: 14px !important;
   }
 
-  .text-dark-title, .text-dark-main {
+  .text-dark-title,
+  .text-dark-main {
     color: #111827 !important;
     font-weight: 700 !important;
   }
@@ -2707,7 +2952,8 @@ body, html, h1, h2, h3, h4, h5, h6, p, span, a, label, input, select, button {
     white-space: nowrap !important;
   }
 
-  button.pro-tab-pill, .pro-tab-pill {
+  button.pro-tab-pill,
+  .pro-tab-pill {
     flex: 1 !important;
     height: 40px !important;
     padding: 0 12px !important;
@@ -2722,19 +2968,22 @@ body, html, h1, h2, h3, h4, h5, h6, p, span, a, label, input, select, button {
     cursor: pointer !important;
     outline: none !important;
 
-    &.active, &.btn-tab-pro-active {
+    &.active,
+    &.btn-tab-pro-active {
       background: #22C55E !important;
       background-color: #22C55E !important;
       color: #FFFFFF !important;
       border: none !important;
       box-shadow: 0 4px 14px rgba(34, 197, 94, 0.4) !important;
 
-      i, span {
+      i,
+      span {
         color: #FFFFFF !important;
       }
     }
 
-    &.inactive, &.btn-tab-pro-inactive {
+    &.inactive,
+    &.btn-tab-pro-inactive {
       background: #F1F5F9 !important;
       background-color: #F1F5F9 !important;
       color: #1E293B !important;
@@ -2851,7 +3100,8 @@ body, html, h1, h2, h3, h4, h5, h6, p, span, a, label, input, select, button {
         z-index: 2 !important;
       }
 
-      input.form-control, textarea.form-control {
+      input.form-control,
+      textarea.form-control {
         padding-left: 40px !important;
         background-color: #FFFFFF !important;
         border: 1px solid #CBD5E1 !important;
@@ -2940,7 +3190,8 @@ body, html, h1, h2, h3, h4, h5, h6, p, span, a, label, input, select, button {
   }
 
   /* Amenity Icon Card Grid */
-  div.pro-amenity-card, .pro-amenity-card {
+  div.pro-amenity-card,
+  .pro-amenity-card {
     background-color: #F8FAFC !important;
     border: 1px solid #E5E7EB !important;
     border-radius: 12px !important;
@@ -2952,7 +3203,10 @@ body, html, h1, h2, h3, h4, h5, h6, p, span, a, label, input, select, button {
     align-items: center !important;
     gap: 10px !important;
 
-    span, p, label, div {
+    span,
+    p,
+    label,
+    div {
       color: #111827 !important;
       font-weight: 600 !important;
     }
@@ -3101,7 +3355,9 @@ body, html, h1, h2, h3, h4, h5, h6, p, span, a, label, input, select, button {
 }
 
 // Flush Top Backdrop & Floating Card Header Layout (Desktop & Mobile)
-body, #root, .main-wrapper {
+body,
+#root,
+.main-wrapper {
   margin-top: 0 !important;
   padding-top: 0 !important;
 }
@@ -3121,13 +3377,14 @@ header.header {
   z-index: 999 !important;
 }
 
-header.header.fixed, 
+header.header.fixed,
 header.header.header-sticky {
   position: fixed !important;
   top: 12px !important;
 }
 
 @media (max-width: 991.98px) {
+
   .main-menu-wrapper,
   .menu-header,
   .menu-logo,
@@ -3168,7 +3425,8 @@ header.header.header-sticky {
   border: 1px solid #E2E8E3 !important;
   transition: all 0.2s ease !important;
 
-  &:hover, &:active {
+  &:hover,
+  &:active {
     background-color: #EAF5EB !important;
   }
 }
@@ -3181,7 +3439,7 @@ header.header.header-sticky {
   .offcanvas-header {
     background-color: #FFFFFF !important;
   }
-  
+
   .offcanvas-body {
     padding: 16px !important;
     background-color: #FFFFFF !important;
@@ -3189,7 +3447,7 @@ header.header.header-sticky {
 }
 
 // Global Hero Section Spacing & Flush Top Layout
-.hero-section, 
+.hero-section,
 .hero-booking-section {
   margin-top: 0 !important;
   padding-top: 115px !important;
@@ -3224,7 +3482,10 @@ header.header.header-sticky {
 // Contact Us & Section Headings High Contrast Fix
 .contact-us-page,
 .contact-group {
-  h2, h3, h4 {
+
+  h2,
+  h3,
+  h4 {
     color: #0F172A !important;
     font-weight: 700 !important;
   }
@@ -3434,7 +3695,8 @@ body .swal2-container {
   &:hover {
     border-color: #22C55E !important;
 
-    i, span {
+    i,
+    span {
       color: #16A34A !important;
     }
   }
@@ -3445,7 +3707,8 @@ body .swal2-container {
     color: #FFFFFF !important;
     box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3) !important;
 
-    i, span {
+    i,
+    span {
       color: #FFFFFF !important;
     }
   }
@@ -3590,8 +3853,8 @@ body .swal2-container {
         z-index: 2 !important;
       }
 
-      > .form-control,
-      > input {
+      >.form-control,
+      >input {
         width: 100% !important;
         height: 38px !important;
         padding-left: 34px !important;
@@ -3656,7 +3919,9 @@ body .swal2-container {
       font-size: 13px !important;
     }
 
-    &:hover, &:focus, &:active {
+    &:hover,
+    &:focus,
+    &:active {
       background: linear-gradient(135deg, #16A34A 0%, #15803D 100%) !important;
       color: #FFFFFF !important;
       box-shadow: 0 6px 16px rgba(34, 197, 94, 0.4) !important;
@@ -3665,17 +3930,18 @@ body .swal2-container {
         color: #FFFFFF !important;
       }
     }
-   .ki-avatar-section {
-    display: flex !important;
-    align-items: center !important;
-    gap: 16px !important;
 
-    .avatar-wrapper {
-      position: relative !important;
-      width: 64px !important;
-      height: 64px !important;
-      border-radius: 50% !important;
-      overflow: hidden !important;
+    .ki-avatar-section {
+      display: flex !important;
+      align-items: center !important;
+      gap: 16px !important;
+
+      .avatar-wrapper {
+        position: relative !important;
+        width: 64px !important;
+        height: 64px !important;
+        border-radius: 50% !important;
+        overflow: hidden !important;
         object-fit: cover !important;
       }
 
@@ -3911,7 +4177,10 @@ body .swal2-container {
       line-height: 1.5 !important;
       padding: 14px 16px !important;
 
-      p, div, li, span {
+      p,
+      div,
+      li,
+      span {
         color: #334155 !important;
         font-size: 13px !important;
       }
@@ -3995,11 +4264,23 @@ body .swal2-container {
 .content.court-bg {
   color: #334155 !important;
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     color: #0F172A !important;
   }
 
-  p, span, label, td, th, a, li {
+  p,
+  span,
+  label,
+  td,
+  th,
+  a,
+  li {
+
     // Keep text dark Slate unless it is a badge, specific white texts, or active button
     &:not(.text-white):not(.badge):not(.text-success):not(.pro-tab-pill):not(.ki-tab-btn):not(.btn):not(.btn-primary):not(.active) {
       color: #334155 !important;
@@ -4007,9 +4288,13 @@ body .swal2-container {
   }
 
   // Ensure active tab pills keep their white color
-  .active, .pro-tab-pill.active, .ki-tab-btn.active {
+  .active,
+  .pro-tab-pill.active,
+  .ki-tab-btn.active {
     color: #FFFFFF !important;
-    i, span {
+
+    i,
+    span {
       color: #FFFFFF !important;
     }
   }
@@ -4020,7 +4305,7 @@ body .swal2-container {
   width: 170px !important;
   margin-left: 8px !important;
   margin-right: 8px !important;
-  
+
   .nav-search-input {
     height: 38px !important;
     border-radius: 50px !important;
@@ -4091,13 +4376,14 @@ body .swal2-container {
     0% {
       transform: translate3d(0, 0, 0);
     }
+
     100% {
       transform: translate3d(-100%, 0, 0);
     }
   }
 
   /* Hide placeholder marquee text when input is focused */
-  .nav-search-input:focus ~ .placeholder-marquee-container {
+  .nav-search-input:focus~.placeholder-marquee-container {
     display: none !important;
   }
 }
@@ -4137,9 +4423,10 @@ body .swal2-container {
   .ki-profile-alert-title {
     color: #92400E !important;
   }
+
   .ki-profile-alert-desc {
     color: #B45309 !important;
-    
+
     strong {
       color: #78350F !important;
     }
@@ -4160,17 +4447,20 @@ body .swal2-container {
     background: #ffffff !important;
     max-height: 200px !important;
     border-radius: 10px !important;
-    
+
     /* Modern minimalist scrollbar */
     &::-webkit-scrollbar {
       width: 6px !important;
     }
+
     &::-webkit-scrollbar-track {
       background: transparent !important;
     }
+
     &::-webkit-scrollbar-thumb {
       background: #CBD5E1 !important;
       border-radius: 10px !important;
+
       &:hover {
         background: #94A3B8 !important;
       }
@@ -4195,7 +4485,9 @@ body .swal2-container {
     font-weight: 500 !important;
     background: transparent !important;
 
-    &:hover, &:focus, &.p-highlight {
+    &:hover,
+    &:focus,
+    &.p-highlight {
       background: rgba(34, 197, 94, 0.08) !important;
       color: #16A34A !important;
       font-weight: 600 !important;
@@ -4232,6 +4524,7 @@ body .swal2-container .swal2-popup {
 
   .swal2-icon.swal2-error {
     border-color: #EF4444 !important;
+
     .swal2-x-mark-line-left,
     .swal2-x-mark-line-right {
       background-color: #EF4444 !important;
@@ -4318,7 +4611,7 @@ body .ki-category-card {
   overflow: hidden;
   height: 220px;
   text-decoration: none;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.05) !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05) !important;
   transition: all 0.3s ease !important;
   cursor: pointer;
 
@@ -4350,6 +4643,7 @@ body .ki-category-card {
   0% {
     transform: translateX(0%);
   }
+
   100% {
     transform: translateX(-50%);
   }
@@ -4360,7 +4654,7 @@ body .ki-category-card {
   width: 100%;
   position: relative;
   padding: 10px 0;
-  
+
   &:hover .ki-auto-slider-track {
     animation-play-state: paused;
   }
@@ -4381,11 +4675,12 @@ body .ki-category-card {
   background: #FFFFFF !important;
   border-radius: 20px !important;
   border: 1px solid #E2E8E3 !important;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.03) !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03) !important;
   transition: all 0.3s ease !important;
   cursor: pointer;
 
-  h4, .ki-cat-name {
+  h4,
+  .ki-cat-name {
     color: #17222D !important;
     font-size: 15px !important;
     font-weight: 700 !important;
@@ -4395,7 +4690,8 @@ body .ki-category-card {
     opacity: 1 !important;
   }
 
-  p, .ki-cat-count {
+  p,
+  .ki-cat-count {
     color: #64748B !important;
     font-size: 12px !important;
     font-weight: 500 !important;
@@ -4420,6 +4716,3 @@ body .ki-category-card {
     transition: all 0.2s ease !important;
   }
 }
-
-
-

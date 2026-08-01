@@ -318,10 +318,6 @@ export default function VenueByCategory(props: any) {
                               <i className="fas fa-star text-warning" style={{ fontSize: "9px" }} />
                               <span style={{ fontSize: "10px", fontWeight: "700", color: "#17222D" }}>4.8</span>
                             </div>
-                            <span style={{ fontSize: "9px", color: "#606D76", fontWeight: "600" }}>
-                              <i className="feather-grid me-1" style={{ color: "#3CAB4B", fontSize: "9px" }} />
-                              Standard
-                            </span>
                           </div>
                           
                           <h3 className="listing-title mb-1" style={{ fontSize: "13px", fontWeight: "700", lineHeight: "1.2" }}>
@@ -359,8 +355,16 @@ export default function VenueByCategory(props: any) {
                             </span>
                             <Link 
                               to={`/sports-venue/${venue.vendor_type ? venue.vendor_type.replace(/\s+/g, "-").toLowerCase() : "venue"}/${venue.name.replace(/\s+/g, "-").toLowerCase()}/${venue._id}`}
-                              className="btn btn-primary btn-sm rounded-pill px-2.5 py-0.5"
-                              style={{ fontSize: "10px", fontWeight: "600", backgroundColor: "#3CAB4B", borderColor: "#3CAB4B" }}
+                              className="btn btn-primary btn-sm rounded-pill px-3 py-1 d-inline-flex align-items-center justify-content-center shadow-sm"
+                              style={{ 
+                                fontSize: "11px", 
+                                fontWeight: "700", 
+                                background: "linear-gradient(135deg, #43B649 0%, #349E3A 100%)", 
+                                border: "none",
+                                color: "#FFFFFF",
+                                boxShadow: "0 4px 12px rgba(67, 182, 73, 0.28)",
+                                transition: "all 0.25s ease"
+                              }}
                             >
                               Book Slot
                             </Link>
