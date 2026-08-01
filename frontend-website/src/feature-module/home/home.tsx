@@ -219,13 +219,22 @@ const Home = () => {
 
     // Filter, sort, and map sports
     const uniqueSports = Array.from(sportsSet)
-      .filter(sport => sport.length > 0)
       .map(sport => {
-        // Clean up category names (e.g. swiming -> Swimming, turf -> Turf)
-        let name = sport.charAt(0).toUpperCase() + sport.slice(1).toLowerCase();
-        if (name.toLowerCase() === "swiming") name = "Swimming";
-        return { name };
-      });
+        const cleaned = sport.trim();
+        // Skip invalid characters, hyphens, and empty entries
+        if (cleaned === "-" || cleaned === "_" || cleaned.length < 2) return null;
+        
+        // Capitalize each word (Title Case)
+        let formatted = cleaned.split(" ")
+          .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+          .join(" ");
+
+        // Fix common spelling errors
+        if (formatted.toLowerCase() === "swiming") formatted = "Swimming";
+        
+        return { name: formatted };
+      })
+      .filter((s): s is { name: string } => s !== null);
 
     // Deduplicate
     const uniqueSportsMap = new Map();
