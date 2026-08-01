@@ -121,7 +121,7 @@ const Home = () => {
     { name: "Coaches" },
     { name: "Personal Trainer" },
   ];
-  const sortOptions = [
+  const [sortOptions, setSortOptions] = useState<{ name: string }[]>([
     { name: "Vijay Nagar" },
     { name: "Palasia" },
     { name: "Rajendra Nagar" },
@@ -136,7 +136,42 @@ const Home = () => {
     { name: "Patnipura Square" },
     { name: "IT Park" },
     { name: "Rajiv Gandhi" },
-  ];
+  ]);
+
+  useEffect(() => {
+    const locationsSet = new Set<string>();
+    
+    // Collect from venues
+    venues.forEach(v => {
+      if (v.near_by_location) {
+        locationsSet.add(v.near_by_location.trim());
+      }
+    });
+
+    // Collect from coaches
+    coaches.forEach(c => {
+      if (c.near_by_location) {
+        locationsSet.add(c.near_by_location.trim());
+      }
+    });
+
+    // Collect from trainers
+    trainer.forEach(t => {
+      if (t.near_by_location) {
+        locationsSet.add(t.near_by_location.trim());
+      }
+    });
+
+    // Filter, sort, and map to options format
+    const uniqueSorted = Array.from(locationsSet)
+      .filter(loc => loc.length > 0)
+      .sort()
+      .map(loc => ({ name: loc }));
+
+    if (uniqueSorted.length > 0) {
+      setSortOptions(uniqueSorted);
+    }
+  }, [venues, coaches, trainer]);
   const sportsOptions = [
     { name: "Cricket" },
     { name: "Football" },
@@ -303,19 +338,19 @@ const Home = () => {
 
     if (categoryName === "Sports Venue") {
       count = venues.filter(v => {
-        const matchLocation = !locationName || v.near_by_location === locationName;
+        const matchLocation = !locationName || v.near_by_location?.toLowerCase()?.includes(locationName.toLowerCase()) || locationName.toLowerCase()?.includes(v.near_by_location?.toLowerCase());
         const matchSport = !sportName || v.category?.toLowerCase()?.includes(sportName) || v.activities?.toLowerCase()?.includes(sportName);
         return matchLocation && matchSport;
       }).length;
     } else if (categoryName === "Coaches") {
       count = coaches.filter(c => {
-        const matchLocation = !locationName || c.near_by_location === locationName;
+        const matchLocation = !locationName || c.near_by_location?.toLowerCase()?.includes(locationName.toLowerCase()) || locationName.toLowerCase()?.includes(c.near_by_location?.toLowerCase());
         const matchSport = !sportName || c.category?.toLowerCase()?.includes(sportName);
         return matchLocation && matchSport;
       }).length;
     } else if (categoryName === "Personal Trainer") {
       count = trainer.filter(t => {
-        const matchLocation = !locationName || t.near_by_location === locationName;
+        const matchLocation = !locationName || t.near_by_location?.toLowerCase()?.includes(locationName.toLowerCase()) || locationName.toLowerCase()?.includes(t.near_by_location?.toLowerCase());
         const matchSport = !sportName || t.category?.toLowerCase()?.includes(sportName) || t.specializations?.toLowerCase()?.includes(sportName);
         return matchLocation && matchSport;
       }).length;
