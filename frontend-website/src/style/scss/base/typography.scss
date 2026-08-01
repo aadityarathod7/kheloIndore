@@ -1,10 +1,10 @@
 /*-----------------
-    1. Typography — Sports Theme
+    1. Typography — Premium UI Theme
 -----------------------*/
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
-$__body__font__family: 'Inter', sans-serif;
+$__body__font__family: 'Inter', 'Segoe UI', Roboto, Arial, sans-serif;
 $__body__font__size: 16px;
 
 $__extrabold: 800;
@@ -26,74 +26,239 @@ $__font__size__28: 28px;
 $__font__size__30: 30px;
 $__font__size__32: 32px;
 $__font__size__36: 36px;
-$__font__size__62: 62px;
+$__font__size__40: 40px;
+$__font__size__48: 48px;
+$__font__size__56: 56px;
+
+:root {
+  --font-family-base: #{$__body__font__family};
+  --font-family-heading: #{$__body__font__family};
+  --font-size-xs: #{$__font__size__12};
+  --font-size-sm: #{$__font__size__14};
+  --font-size-md: #{$__font__size__15};
+  --font-size-lg: #{$__font__size__16};
+  --font-size-xl: #{$__font__size__18};
+  --font-size-2xl: #{$__font__size__20};
+  --font-size-3xl: #{$__font__size__24};
+  --font-size-4xl: #{$__font__size__28};
+  --font-size-5xl: #{$__font__size__32};
+  --font-size-6xl: #{$__font__size__40};
+  --line-height-tight: 1.2;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.7;
+  --letter-spacing-tight: -0.02em;
+  --letter-spacing-normal: 0;
+  --letter-spacing-wide: 0.01em;
+  --font-weight-regular: #{$__regular};
+  --font-weight-medium: #{$__medium};
+  --font-weight-semibold: #{$__semibold};
+  --font-weight-bold: #{$__bold};
+  --font-weight-extrabold: #{$__extrabold};
+}
+
+html {
+  font-size: 16px;
+}
+
+body {
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-normal);
+  letter-spacing: var(--letter-spacing-normal);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  color: $__darkgray;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+small,
+label,
+button,
+input,
+textarea,
+select,
+.table,
+.nav-link,
+.breadcrumb-item,
+.form-text,
+.invalid-feedback,
+.card-title,
+.section-title,
+.page-title {
+  font-family: var(--font-family-heading);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin-bottom: 0.5rem;
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-tight);
+  color: $__darkgray;
+}
 
 h1 {
-	font-weight: $__bold;
-	font-size: $__font__size__36;
-	letter-spacing: -0.02em;
-	@include respond-below(custom991) {
-		font-size: $__font__size__32;
-	}
+  font-weight: var(--font-weight-extrabold);
+  font-size: clamp(#{$__font__size__28}, 3.2vw, #{$__font__size__40});
+  @include respond-below(custom991) {
+    font-size: clamp(#{$__font__size__24}, 4.6vw, #{$__font__size__32});
+  }
 }
+
 h2 {
-	font-weight: $__bold;
-	font-size: $__font__size__32;
-	letter-spacing: -0.01em;
-	@include respond-below(custom991) {
-		font-size: $__font__size__30;
-	}
-	@include respond-below(custom767) {
-		font-size: $__font__size__28;
-	}
+  font-weight: var(--font-weight-bold);
+  font-size: clamp(#{$__font__size__24}, 2.6vw, #{$__font__size__32});
+  @include respond-below(custom991) {
+    font-size: clamp(#{$__font__size__20}, 3.6vw, #{$__font__size__28});
+  }
 }
+
 h3 {
-	font-weight: $__semibold;
-	font-size: $__font__size__24;
-	letter-spacing: -0.01em;
-	@include respond-below(custom991) {
-		font-size: $__font__size__20;
-	}
-	@include respond-below(custom767) {
-		font-size: $__font__size__18;
-	}
+  font-weight: var(--font-weight-semibold);
+  font-size: clamp(#{$__font__size__20}, 2.2vw, #{$__font__size__24});
 }
+
 h4 {
-	font-weight: $__semibold;
-	font-size: $__font__size__20;
-	@include respond-below(custom991) {
-		font-size: $__font__size__18;
-	}
+  font-weight: var(--font-weight-semibold);
+  font-size: clamp(#{$__font__size__18}, 1.8vw, #{$__font__size__20});
 }
+
 h5 {
-	font-weight: $__semibold;
-	font-size: $__font__size__18;
-	@include respond-below(custom991) {
-		font-size: $__font__size__16;
-	}
+  font-weight: var(--font-weight-medium);
+  font-size: clamp(#{$__font__size__16}, 1.4vw, #{$__font__size__18});
 }
+
 h6 {
-	font-weight: $__medium;
-	font-size: $__font__size__16;
-	@include respond-below(custom991) {
-		font-size: $__font__size__15;
-	}
+  font-weight: var(--font-weight-medium);
+  font-size: var(--font-size-lg);
 }
 
-// Display heading utility for hero sections
-.display-heading {
-	font-weight: $__extrabold;
-	font-size: 56px;
-	letter-spacing: -0.03em;
-	line-height: 1.1;
-	@include respond-below(custom991) {
-		font-size: 42px;
-	}
-	@include respond-below(custom767) {
-		font-size: 34px;
-	}
+p {
+  margin-bottom: 1rem;
+  font-size: var(--font-size-lg);
+  line-height: var(--line-height-relaxed);
+  color: $__lightgray;
 }
 
-h1, h2, h3, h4, h5, h6, .display-heading {
-	font-family: 'Space Grotesk', sans-serif !important;
+small,
+.form-text,
+.helper-text {
+  font-size: var(--font-size-sm);
+  line-height: 1.5;
+  color: $__lightgray;
+}
+
+.page-title,
+.section-title,
+.card-title,
+.hero-title {
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-tight);
+  color: $__darkgray;
+}
+
+.page-title {
+  font-size: clamp(#{$__font__size__24}, 3vw, #{$__font__size__36});
+}
+
+.section-title {
+  font-size: clamp(#{$__font__size__20}, 2.3vw, #{$__font__size__28});
+}
+
+.card-title {
+  font-size: var(--font-size-xl);
+}
+
+.hero-title {
+  font-size: clamp(#{$__font__size__28}, 4vw, #{$__font__size__56});
+}
+
+label,
+.form-label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  line-height: 1.4;
+  color: $__darkgray;
+  letter-spacing: var(--letter-spacing-normal);
+}
+
+input,
+textarea,
+select,
+.form-control,
+.form-select {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-regular);
+  line-height: 1.5;
+}
+
+button,
+.btn,
+.nav-link,
+.breadcrumb-item,
+.table th,
+.table td {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.4;
+  letter-spacing: var(--letter-spacing-normal);
+}
+
+.btn {
+  font-weight: var(--font-weight-semibold);
+}
+
+.table th {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: var(--letter-spacing-wide);
+  text-transform: uppercase;
+}
+
+.table td {
+  font-size: var(--font-size-sm);
+  line-height: 1.6;
+}
+
+.nav-link {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+.breadcrumb-item {
+  font-size: var(--font-size-sm);
+}
+
+.invalid-feedback,
+.error-text {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.5;
+  color: $__red;
+}
+
+@media (max-width: 767px) {
+  body {
+    font-size: 15px;
+  }
+
+  p,
+  .form-control,
+  .form-select,
+  .btn,
+  .table td,
+  .table th {
+    font-size: 14px;
+  }
 }
