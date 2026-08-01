@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
 import ImageWithBasePath from "../../core/data/img/ImageWithBasePath";
 import { all_routes } from "../router/all_routes";
@@ -33,25 +33,55 @@ const getVenueImage = (images: any): string => {
   return `${IMG_URL}${imgStr}`;
 };
 
+const SPORTS_OPTIONS = [
+  { id: "all", label: "All Sports" },
+  { id: "cricket", label: "Cricket" },
+  { id: "badminton", label: "Badminton" },
+  { id: "football", label: "Football" },
+  { id: "swimming", label: "Swimming" },
+  { id: "pickleball", label: "Pickleball" },
+  { id: "tennis", label: "Tennis" },
+  { id: "basketball", label: "Basketball" },
+  { id: "table-tennis", label: "Table Tennis" },
+  { id: "other-sports", label: "Other Sports" },
+];
+
+const SLOT_TIMING_OPTIONS = [
+  { id: "all", label: "All Slots (6:00 AM - 11:00 PM)", range: [6, 23] },
+  { id: "morning", label: "Morning (06:00 AM - 12:00 PM)", range: [6, 12] },
+  { id: "afternoon", label: "Afternoon (12:00 PM - 05:00 PM)", range: [12, 17] },
+  { id: "evening", label: "Evening (05:00 PM - 09:00 PM)", range: [17, 21] },
+  { id: "night", label: "Night (09:00 PM - 11:00 PM)", range: [21, 23] },
+];
+
 export default function VenueByCategory(props: any) {
   const routes = all_routes;
   const [venues, setVenues] = useState<Venues[]>([]);
-  const [locationName, setLocationName] = useState("");
-  const [categoryVenue, setCategoryVenue] = useState<Venues[]>([]);
-  const [locationVenue, setLocationVenue] = useState<Venues[]>([]);
-  const [searchLocation, setSearchLocation] = useState("");
-  const [searchLocationData, setSearchLocationData] = useState<string[]>([]);
   const [favorites, setFavorites] = useState<Record<string, boolean>>({});
 
   const thisCategory = useParams<{ type: string }>();
   const categorySelected = thisCategory?.type || "";
 
-  const categoryTitle = categorySelected
-    ? categorySelected
+  // Filter States
+  const [selectedSport, setSelectedSport] = useState<string>(categorySelected ? categorySelected.toLowerCase() : "all");
+  const [locationName, setLocationName] = useState<string>("");
+  const [selectedSlot, setSelectedSlot] = useState<string>("all");
+  const [searchLocationText, setSearchLocationText] = useState<string>("");
+  const [maxPrice, setMaxPrice] = useState<number>(5000);
+  const [searchKeyword, setSearchKeyword] = useState<string>("");
+
+  useEffect(() => {
+    if (categorySelected) {
+      setSelectedSport(categorySelected.toLowerCase());
+    }
+  }, [categorySelected]);
+
+  const categoryTitle = selectedSport && selectedSport !== "all"
+    ? selectedSport
         .split("-")
         .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
         .join(" ")
-    : "Sports";
+    : "All Sports";
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -104,46 +134,34 @@ export default function VenueByCategory(props: any) {
     });
   };
 
-  const venueLocations = [
-    ...new Set(
-      venues
-        .map((venue) => venue.near_by_location ? String(venue.near_by_location).replace("_", " ") : "")
-        .filter(Boolean)
-    ),
-  ];
+  const venueLocations = useMemo(() => {
+    return [
+      ...new Set(
+        venues
+          .map((venue) => venue.near_by_location ? String(venue.near_by_location).replace("_", " ").trim() : "")
+          .filter(Boolean)
+      ),
+    ];
+  }, [venues]);
 
-  const searchingLocations = (e: any) => {
-    const value = e.target.value;
-    setSearchLocation(value);
-    if (value.trim() === "") {
-      setSearchLocationData([]);
-    } else {
-      setSearchLocationData(
-        venueLocations.filter((item) =>
-          item.toLowerCase().includes(value.toLowerCase())
-        )
-      );
-    }
-  };
+  const filteredLocations = useMemo(() => {
+    if (!searchLocationText.trim()) return venueLocations;
+    return venueLocations.filter((loc) =>
+      loc.toLowerCase().includes(searchLocationText.toLowerCase())
+    );
+  }, [venueLocations, searchLocationText]);
 
-  const handleLocationClick = (loc: string) => {
-    if (locationName === loc) {
-      setLocationName("");
-    } else {
-      setLocationName(loc);
-    }
-  };
+  // Unified Filter Engine
+  const displayList = useMemo(() => {
+    return venues.filter((t: any) => {
+      // 1. Sports Filter
+      if (selectedSport && selectedSport !== "all") {
+        const vt = (t.vendor_type || "").toLowerCase().replace(/_/g, " ").trim();
+        const cat = (t.category || "").toLowerCase().replace(/_/g, " ").trim();
+        const name = (t.name || "").toLowerCase();
+        const desc = (t.description || "").toLowerCase();
 
-  useEffect(() => {
-    if (categorySelected && venues.length > 0) {
-      let filteredData;
-      if (categorySelected.toLowerCase() === "other-sports") {
-        filteredData = venues.filter((t: any) => {
-          const vt = (t.vendor_type || "").toLowerCase().replace(/_/g, " ").trim();
-          const cat = (t.category || "").toLowerCase().replace(/_/g, " ").trim();
-          const name = (t.name || "").toLowerCase();
-          const desc = (t.description || "").toLowerCase();
-
+        if (selectedSport === "other-sports") {
           const isCricket = vt.includes("cricket") || cat.includes("cricket") || name.includes("cricket") || desc.includes("cricket") || vt.includes("turf") || cat.includes("turf");
           const isBadminton = vt.includes("badminton") || cat.includes("badminton") || name.includes("badminton");
           const isSwimming = vt.includes("swim") || cat.includes("swim") || name.includes("swim");
@@ -153,46 +171,67 @@ export default function VenueByCategory(props: any) {
           const isBasketball = vt.includes("basketball") || cat.includes("basketball") || name.includes("basketball");
           const isTableTennis = vt.includes("table tennis") || cat.includes("table tennis") || name.includes("table tennis");
 
-          return !(isCricket || isBadminton || isSwimming || isFootball || isPickleball || isTennis || isBasketball || isTableTennis);
-        });
-      } else {
-        const targetCat = categorySelected.toLowerCase().replace(/-/g, " ").trim();
-        filteredData = venues.filter((t: any) => {
-          const vendorType = (t.vendor_type || "").toLowerCase().replace(/_/g, " ").trim();
-          const category = (t.category || "").toLowerCase().replace(/_/g, " ").trim();
-
-          return (
-            vendorType.includes(targetCat) ||
-            category.includes(targetCat) ||
-            targetCat.includes(vendorType) ||
-            targetCat.includes(category)
-          );
-        });
+          if (isCricket || isBadminton || isSwimming || isFootball || isPickleball || isTennis || isBasketball || isTableTennis) {
+            return false;
+          }
+        } else {
+          const targetCat = selectedSport.replace(/-/g, " ").trim();
+          const matches = vt.includes(targetCat) || cat.includes(targetCat) || targetCat.includes(vt) || targetCat.includes(cat);
+          if (!matches) return false;
+        }
       }
-      setCategoryVenue(filteredData.length > 0 ? filteredData : venues);
-    } else {
-      setCategoryVenue(venues);
-    }
-  }, [venues, categorySelected]);
 
-  useEffect(() => {
-    if (locationName) {
-      const filteredData = categoryVenue.filter((t: any) => {
+      // 2. Location Filter
+      if (locationName) {
         const formattedLocation = (t.near_by_location || "").replace("_", " ").toLowerCase();
-        return formattedLocation.includes(locationName.toLowerCase());
-      });
-      setLocationVenue(filteredData);
-    } else {
-      setLocationVenue([]);
-    }
-  }, [locationName, categoryVenue]);
+        if (!formattedLocation.includes(locationName.toLowerCase())) {
+          return false;
+        }
+      }
+
+      // 3. Search Keyword
+      if (searchKeyword.trim()) {
+        const kw = searchKeyword.toLowerCase();
+        const name = (t.name || "").toLowerCase();
+        const loc = (t.near_by_location || "").toLowerCase();
+        if (!name.includes(kw) && !loc.includes(kw)) {
+          return false;
+        }
+      }
+
+      // 4. Max Price Filter
+      if (t.price_per_hr && Number(t.price_per_hr) > maxPrice) {
+        return false;
+      }
+
+      return true;
+    });
+  }, [venues, selectedSport, locationName, searchKeyword, maxPrice]);
+
+  const activeFiltersCount = useMemo(() => {
+    let count = 0;
+    if (selectedSport && selectedSport !== "all") count++;
+    if (locationName) count++;
+    if (selectedSlot && selectedSlot !== "all") count++;
+    if (searchKeyword.trim()) count++;
+    if (maxPrice < 5000) count++;
+    return count;
+  }, [selectedSport, locationName, selectedSlot, searchKeyword, maxPrice]);
+
+  const handleResetFilters = () => {
+    setSelectedSport("all");
+    setLocationName("");
+    setSelectedSlot("all");
+    setSearchKeyword("");
+    setSearchLocationText("");
+    setMaxPrice(5000);
+  };
 
   const [currentPage, setCurrentPage] = useState(1);
   const venuesPerPage = 9;
   const indexOfLastVenue = currentPage * venuesPerPage;
   const indexOfFirstVenue = indexOfLastVenue - venuesPerPage;
 
-  const displayList = locationName ? locationVenue : categoryVenue;
   const currentVenues = displayList.slice(indexOfFirstVenue, indexOfLastVenue);
   const totalPages = Math.ceil(displayList.length / venuesPerPage);
 
@@ -203,7 +242,7 @@ export default function VenueByCategory(props: any) {
 
   return (
     <div>
-      {/* Hero Header Section with ample top padding to prevent fixed navbar overlap */}
+      {/* Hero Header Section */}
       <div className="hero-booking-section" style={{ background: "linear-gradient(135deg, #F0FDF4 0%, #ECFDF5 100%)", paddingTop: "150px", paddingBottom: "40px", position: "relative", overflow: "hidden", borderBottom: "1px solid #E5E7EB" }}>
         <div className="hero-artwork-blend" style={{ position: "absolute", right: "-60px", top: 0, bottom: 0, width: "55%", backgroundImage: "url('/assets/img/bg/banner-illustration.png')", backgroundSize: "cover", backgroundPosition: "left center", backgroundRepeat: "no-repeat", maskImage: "linear-gradient(to left, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%)", WebkitMaskImage: "linear-gradient(to left, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%)", opacity: 0.9 }}></div>
         
@@ -237,7 +276,7 @@ export default function VenueByCategory(props: any) {
         <div className="container">
           <div className="row">
             
-            {/* Venue Listings (Sleek Compact 3-Column Cards inside 8-col area) */}
+            {/* Venue Listings (Compact Cards inside 8-col area) */}
             <div className="col-sm-12 col-md-8 col-lg-8">
               
               {/* Results Header */}
@@ -246,17 +285,17 @@ export default function VenueByCategory(props: any) {
                   <span style={{ color: "#3CAB4B", marginRight: "6px" }}>{displayList.length}</span> 
                   {categoryTitle} Venues {locationName ? `in ${locationName}` : ""}
                 </h5>
-                {locationName && (
+                {activeFiltersCount > 0 && (
                   <button 
-                    onClick={() => setLocationName("")}
+                    onClick={handleResetFilters}
                     className="btn btn-sm btn-link p-0 text-decoration-none" style={{ fontSize: "11px", color: "#EF4444", fontWeight: "600" }}
                   >
-                    Clear location filter ✕
+                    Clear All ({activeFiltersCount}) ✕
                   </button>
                 )}
               </div>
 
-              {/* Cards Grid (3 cards per row for compact look) */}
+              {/* Cards Grid */}
               <div className="row g-3">
                 {currentVenues.length > 0 ? (
                   currentVenues.map((venue, index) => (
@@ -374,7 +413,7 @@ export default function VenueByCategory(props: any) {
                   <div className="col-12 text-center py-5 bg-white rounded-3 border" style={{ borderColor: "#E2E8E3" }}>
                     <i className="feather-alert-circle text-muted mb-2" style={{ fontSize: "28px" }} />
                     <h6 className="fw-bold text-dark mb-1">No Venues Found</h6>
-                    <p className="text-muted small mb-0">Try clearing location search to view available facilities</p>
+                    <p className="text-muted small mb-0">Try clearing active filters to view available facilities</p>
                   </div>
                 )}
               </div>
@@ -406,83 +445,162 @@ export default function VenueByCategory(props: any) {
 
             </div>
 
-            {/* Location Sidebar on Right with clean search input padding */}
+            {/* Modern Sleek Filter Sidebar */}
             <div className="col-sm-12 col-md-4 col-lg-4 blog-sidebar theiaStickySidebar">
               <div className="stickybar">
                 <div className="ki-card filter-sidebar-card p-3 mb-0" style={{ backgroundColor: "#FFFFFF", borderRadius: "16px", border: "1px solid #E2E8E3", boxShadow: "0 4px 20px rgba(0,0,0,0.02)" }}>
                   
+                  {/* Header */}
                   <div className="d-flex align-items-center justify-content-between pb-2 mb-3" style={{ borderBottom: "1px solid #E2E8E3" }}>
                     <h4 className="m-0 d-flex align-items-center gap-2" style={{ fontSize: "14px", fontWeight: "700", color: "#17222D" }}>
-                      <i className="feather-map-pin text-muted" style={{ fontSize: "15px" }} />
-                      Filter by Location
+                      <i className="feather-sliders text-success" style={{ fontSize: "15px" }} />
+                      Filters {activeFiltersCount > 0 && <span className="badge bg-success rounded-pill">{activeFiltersCount}</span>}
                     </h4>
-                    {locationName && (
+                    {activeFiltersCount > 0 && (
                       <button 
-                        onClick={() => setLocationName("")} 
+                        onClick={handleResetFilters} 
                         className="btn btn-link p-0 text-decoration-none" style={{ fontSize: "11px", color: "#3CAB4B", fontWeight: "600" }}
                       >
-                        Reset
+                        Reset All
                       </button>
                     )}
                   </div>
 
-                  {/* Search Location Input with NO icon overlap */}
-                  <div className="position-relative mb-3">
-                    <i 
-                      className="feather-search" 
-                      style={{ 
-                        left: "14px", 
-                        top: "50%", 
-                        transform: "translateY(-50%)", 
-                        position: "absolute", 
-                        color: "#94A3B8", 
-                        fontSize: "13px",
-                        pointerEvents: "none",
-                        zIndex: 2
-                      }} 
-                    />
-                    <input
-                      type="text"
-                      className="form-control ki-search-input-has-icon"
-                      placeholder="Search area..."
-                      value={searchLocation}
-                      onChange={searchingLocations}
-                      style={{ 
-                        height: "38px", 
-                        fontSize: "12px", 
-                        borderRadius: "10px", 
-                        border: "1px solid #E2E8F0",
-                        backgroundColor: "#FAFAFA"
-                      }}
-                    />
+                  {/* 1. Sports Filter */}
+                  <div className="filter-group mb-3 pb-3" style={{ borderBottom: "1px solid #F1F5F9" }}>
+                    <label className="form-label d-block mb-1.5" style={{ fontSize: "12px", fontWeight: "700", color: "#334155" }}>
+                      <i className="feather-activity me-1 text-success" /> Select Sport
+                    </label>
+                    <select
+                      className="form-select"
+                      value={selectedSport}
+                      onChange={(e) => setSelectedSport(e.target.value)}
+                      style={{ height: "36px", fontSize: "12px", borderRadius: "8px", border: "1px solid #E2E8F0", backgroundColor: "#FAFAFA" }}
+                    >
+                      {SPORTS_OPTIONS.map((sport) => (
+                        <option key={sport.id} value={sport.id}>
+                          {sport.label}
+                        </option>
+                      ))}
+                    </select>
                   </div>
 
-                  {/* Locations List */}
-                  <div style={{ maxHeight: "360px", overflowY: "auto", paddingRight: "4px" }}>
-                    <ul className="list-unstyled mb-0">
-                      {(searchLocationData.length > 0 ? searchLocationData : venueLocations).map((loc, index) => {
-                        const isSelected = locationName === loc;
-                        return (
-                          <li key={index} className="mb-1">
-                            <button
-                              onClick={() => handleLocationClick(loc)}
-                              className="btn w-100 text-start d-flex align-items-center justify-content-between py-1.5 px-3 rounded"
-                              style={{
-                                fontSize: "12px",
-                                fontWeight: isSelected ? "700" : "500",
-                                color: isSelected ? "#15803D" : "#475569",
-                                backgroundColor: isSelected ? "#F0FDF4" : "transparent",
-                                border: isSelected ? "1px solid #BBF7D0" : "1px solid transparent",
-                                transition: "all 0.2s ease"
-                              }}
-                            >
-                              <span>{loc}</span>
-                              {isSelected && <i className="feather-check text-success" style={{ fontSize: "13px" }} />}
-                            </button>
-                          </li>
-                        );
-                      })}
-                    </ul>
+                  {/* 2. Slot Timing Filter (6:00 AM - 11:00 PM) */}
+                  <div className="filter-group mb-3 pb-3" style={{ borderBottom: "1px solid #F1F5F9" }}>
+                    <label className="form-label d-block mb-1.5" style={{ fontSize: "12px", fontWeight: "700", color: "#334155" }}>
+                      <i className="feather-clock me-1 text-success" /> Slot Timing (6 AM - 11 PM)
+                    </label>
+                    <select
+                      className="form-select"
+                      value={selectedSlot}
+                      onChange={(e) => setSelectedSlot(e.target.value)}
+                      style={{ height: "36px", fontSize: "12px", borderRadius: "8px", border: "1px solid #E2E8F0", backgroundColor: "#FAFAFA" }}
+                    >
+                      {SLOT_TIMING_OPTIONS.map((slot) => (
+                        <option key={slot.id} value={slot.id}>
+                          {slot.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* 3. Location Filter */}
+                  <div className="filter-group mb-3 pb-3" style={{ borderBottom: "1px solid #F1F5F9" }}>
+                    <div className="d-flex align-items-center justify-content-between mb-1.5">
+                      <label className="form-label mb-0" style={{ fontSize: "12px", fontWeight: "700", color: "#334155" }}>
+                        <i className="feather-map-pin me-1 text-success" /> Location
+                      </label>
+                      {locationName && (
+                        <button onClick={() => setLocationName("")} className="btn p-0 border-0 text-danger" style={{ fontSize: "10px", fontWeight: "600" }}>
+                          Clear
+                        </button>
+                      )}
+                    </div>
+                    
+                    {/* Search Location Input */}
+                    <div className="position-relative mb-2">
+                      <i 
+                        className="feather-search" 
+                        style={{ 
+                          left: "12px", 
+                          top: "50%", 
+                          transform: "translateY(-50%)", 
+                          position: "absolute", 
+                          color: "#94A3B8", 
+                          fontSize: "12px",
+                          pointerEvents: "none",
+                          zIndex: 2
+                        }} 
+                      />
+                      <input
+                        type="text"
+                        className="form-control ki-search-input-has-icon"
+                        placeholder="Search area..."
+                        value={searchLocationText}
+                        onChange={(e) => setSearchLocationText(e.target.value)}
+                        style={{ 
+                          height: "34px", 
+                          fontSize: "11px", 
+                          borderRadius: "8px", 
+                          border: "1px solid #E2E8F0",
+                          backgroundColor: "#FAFAFA"
+                        }}
+                      />
+                    </div>
+
+                    {/* Locations List */}
+                    <div style={{ maxHeight: "180px", overflowY: "auto", paddingRight: "2px" }}>
+                      <ul className="list-unstyled mb-0">
+                        {filteredLocations.map((loc, index) => {
+                          const isSelected = locationName === loc;
+                          return (
+                            <li key={index} className="mb-1">
+                              <button
+                                onClick={() => setLocationName(isSelected ? "" : loc)}
+                                className="btn w-100 text-start d-flex align-items-center justify-content-between py-1 px-2.5 rounded"
+                                style={{
+                                  fontSize: "11px",
+                                  fontWeight: isSelected ? "700" : "500",
+                                  color: isSelected ? "#15803D" : "#475569",
+                                  backgroundColor: isSelected ? "#F0FDF4" : "transparent",
+                                  border: isSelected ? "1px solid #BBF7D0" : "1px solid transparent",
+                                  transition: "all 0.2s ease"
+                                }}
+                              >
+                                <span>{loc}</span>
+                                {isSelected && <i className="feather-check text-success" style={{ fontSize: "12px" }} />}
+                              </button>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </div>
+                  </div>
+
+                  {/* 4. Price Filter */}
+                  <div className="filter-group mb-2">
+                    <div className="d-flex align-items-center justify-content-between mb-1">
+                      <label className="form-label mb-0" style={{ fontSize: "12px", fontWeight: "700", color: "#334155" }}>
+                        <i className="feather-tag me-1 text-success" /> Max Hourly Price
+                      </label>
+                      <span className="badge bg-light text-dark fw-bold" style={{ fontSize: "11px" }}>
+                        ₹{maxPrice} / hr
+                      </span>
+                    </div>
+                    <input 
+                      type="range" 
+                      className="form-range w-100" 
+                      min={200} 
+                      max={5000} 
+                      step={100}
+                      value={maxPrice}
+                      onChange={(e) => setMaxPrice(Number(e.target.value))}
+                      style={{ accentColor: "#22C55E", cursor: "pointer" }}
+                    />
+                    <div className="d-flex justify-content-between text-muted" style={{ fontSize: "10px" }}>
+                      <span>₹200</span>
+                      <span>₹5000+</span>
+                    </div>
                   </div>
 
                 </div>
