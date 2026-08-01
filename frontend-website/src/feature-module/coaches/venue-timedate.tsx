@@ -307,11 +307,15 @@ const ALL_STANDARD_SLOTS = [
 
     if (selectedSlots.length > 0 && selectedDate) {
       const slotsBooked = selectedSlots.map((s: any) => s.startTime);
+      const activeDateDoc = dateData?.find((d: any) => d._id === selectedDateId);
+      const dbDateStr = activeDateDoc ? activeDateDoc.date : selectedDate;
+
       const dataPayload = {
         user_id: userData?.userID,
         venue_id: venueData?._id,
         slotsBooked,
         total_price: subtotalPrice,
+        date: dbDateStr,
       };
 
       navigate(`/sports-venue/venue-confirm/${id}`, {
@@ -484,6 +488,7 @@ const ALL_STANDARD_SLOTS = [
                         onChange={handleDateChange}
                         inline
                         minDate={minDate}
+                        includeDates={highlightDates}
                       />
                     </div>
                   </div>
