@@ -16,56 +16,42 @@ const Footer = () => {
   return (
     <footer className="footer">
       <div className="container">
-        {/* Footer Join CTA */}
-        <div className="footer-join aos" data-aos="fade-up">
-          <h2>We Welcome Your Passion And Expertise</h2>
-          <p className="sub-title">
-            Join our empowering sports community today and grow with us.
-          </p>
-          {!loginToken && (
-            <Link to={routes.login} className="btn btn-primary">
-              <i className="feather-log-in me-2" /> Login Now
-            </Link>
-          )}
-        </div>
-        {/* /Footer Join CTA */}
-
         {/* Footer Top Links */}
         <div className="footer-top">
-          <div className="row">
+          <div className="row g-3 g-lg-4">
             {/* Column 1: Brand Info & Socials */}
-            <div className="col-lg-3 col-md-6 mb-4 mb-lg-0">
+            <div className="col-lg-3 col-md-6 mb-3 mb-lg-0">
               <div className="footer-widget footer-about">
-                <div className="footer-logo mb-3">
+                <div className="footer-logo mb-2">
                   <ImageWithBasePath
                     src="/assets/img/khelo-Indore-Logo.png"
                     className="img-fluid"
                     alt="Khelo Indore Logo"
-                    style={{ maxHeight: "55px" }}
+                    style={{ maxHeight: "42px" }}
                   />
                 </div>
-                <p className="text-white-50 mb-3" style={{ fontSize: "14px", lineHeight: "1.6" }}>
-                  {"Indore's leading platform for booking premium sports turfs, courts, swimming pools, and hiring professional trainers & coaches."}
+                <p className="footer-desc mb-3">
+                  Indore&apos;s leading platform for booking premium sports turfs, courts, swimming pools, and hiring professional trainers &amp; coaches.
                 </p>
                 <div className="social-icon">
-                  <ul className="d-flex gap-2">
+                  <ul className="d-flex align-items-center gap-2 m-0 p-0">
                     <li>
-                      <Link to="#" className="facebook">
+                      <Link to="#" className="facebook" aria-label="Facebook">
                         <i className="fab fa-facebook-f" />
                       </Link>
                     </li>
                     <li>
-                      <Link to="#" className="twitter">
+                      <Link to="#" className="twitter" aria-label="Twitter">
                         <i className="fab fa-twitter" />
                       </Link>
                     </li>
                     <li>
-                      <Link to="#" className="instagram">
+                      <Link to="#" className="instagram" aria-label="Instagram">
                         <i className="fab fa-instagram" />
                       </Link>
                     </li>
                     <li>
-                      <Link to="#" className="linked-in">
+                      <Link to="#" className="linked-in" aria-label="LinkedIn">
                         <i className="fab fa-linkedin-in" />
                       </Link>
                     </li>
@@ -75,7 +61,7 @@ const Footer = () => {
             </div>
 
             {/* Column 2: Our Services */}
-            <div className="col-lg-2 col-md-6 col-sm-6 mb-4 mb-lg-0">
+            <div className="col-lg-2 col-md-6 col-6">
               <div className="footer-widget footer-menu">
                 <h4 className="footer-title">Our Services</h4>
                 <ul>
@@ -96,7 +82,7 @@ const Footer = () => {
             </div>
 
             {/* Column 3: Sports Categories */}
-            <div className="col-lg-2 col-md-6 col-sm-6 mb-4 mb-lg-0">
+            <div className="col-lg-2 col-md-6 col-6">
               <div className="footer-widget footer-menu">
                 <h4 className="footer-title">Sports</h4>
                 <ul>
@@ -120,7 +106,7 @@ const Footer = () => {
             </div>
 
             {/* Column 4: Top Locations */}
-            <div className="col-lg-2 col-md-6 col-sm-6 mb-4 mb-lg-0">
+            <div className="col-lg-2 col-md-6 col-6">
               <div className="footer-widget footer-menu">
                 <h4 className="footer-title">Locations</h4>
                 <ul>
@@ -144,7 +130,7 @@ const Footer = () => {
             </div>
 
             {/* Column 5: Support & Info */}
-            <div className="col-lg-3 col-md-6 col-sm-6 mb-4 mb-lg-0">
+            <div className="col-lg-3 col-md-6 col-6">
               <div className="footer-widget footer-menu">
                 <h4 className="footer-title">Support & Info</h4>
                 <ul>
