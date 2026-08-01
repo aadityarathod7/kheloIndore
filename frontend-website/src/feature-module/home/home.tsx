@@ -553,7 +553,6 @@ const Home = () => {
                               placeholder="Select"
                               className="select custom-select-list w-100"
                               panelClassName="ki-search-dropdown-panel"
-                              appendTo="self"
                             />
                           </div>
                         </div>
@@ -573,7 +572,6 @@ const Home = () => {
                               placeholder="Select"
                               className="select custom-select-list w-100"
                               panelClassName="ki-search-dropdown-panel"
-                              appendTo="self"
                             />
                           </div>
                         </div>
@@ -593,7 +591,6 @@ const Home = () => {
                               placeholder="Select"
                               className="select custom-select-list w-100"
                               panelClassName="ki-search-dropdown-panel"
-                              appendTo="self"
                             />
                           </div>
                         </div>
