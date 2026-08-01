@@ -4219,4 +4219,63 @@ body .swal2-container {
   }
 }
 
+/* Compact, themed SweetAlert2 popups */
+.ki-swal-popup {
+  border-radius: 16px !important;
+  padding: 24px 20px 20px !important;
+  font-family: 'Space Grotesk', 'Inter', sans-serif !important;
+}
 
+.ki-swal-title {
+  font-size: 20px !important;
+  font-weight: 700 !important;
+  color: #0F172A !important;
+  padding: 0 !important;
+  margin-bottom: 4px !important;
+}
+
+.ki-swal-text {
+  font-size: 14px !important;
+  color: #64748B !important;
+  font-weight: 400 !important;
+  margin: 0 !important;
+  padding: 0 8px !important;
+}
+
+.ki-swal-icon {
+  margin: 0 auto 12px !important;
+  width: 48px !important;
+  height: 48px !important;
+  font-size: 48px !important;
+  border-width: 3px !important;
+  border-color: #16A34A !important;
+  color: #16A34A !important;
+
+  .swal2-icon-content {
+    font-size: 28px !important;
+  }
+}
+
+.ki-swal-confirm {
+  border-radius: 10px !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  padding: 10px 24px !important;
+  font-family: 'Space Grotesk', sans-serif !important;
+  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3) !important;
+  transition: all 0.2s ease !important;
+
+  &:hover {
+    box-shadow: 0 6px 16px rgba(22, 163, 74, 0.4) !important;
+    transform: translateY(-1px) !important;
+  }
+}
+
+.ki-swal-cancel {
+  border-radius: 10px !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  padding: 10px 24px !important;
+  font-family: 'Space Grotesk', sans-serif !important;
+  transition: all 0.2s ease !important;
+}

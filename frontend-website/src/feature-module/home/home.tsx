@@ -430,13 +430,22 @@ const Home = () => {
 
     Swal.fire({
       title: `${count} Results Found!`,
-      text: `We found ${count} matching registered ${selectedTimeframe?.name} profiles. Proceed to view listings?`,
-      icon: "info",
+      text: `We found ${count} matching ${selectedTimeframe?.name} profiles.`,
+      icon: "success",
       showCancelButton: true,
-      confirmButtonText: "Yes, View Listings",
+      confirmButtonText: "View Listings",
       cancelButtonText: "Cancel",
-      confirmButtonColor: "#FF6B2C",
-      cancelButtonColor: "#0D1B2A",
+      confirmButtonColor: "#16A34A",
+      cancelButtonColor: "#64748B",
+      width: "380px",
+      customClass: {
+        popup: "ki-swal-popup",
+        title: "ki-swal-title",
+        htmlContainer: "ki-swal-text",
+        confirmButton: "ki-swal-confirm",
+        cancelButton: "ki-swal-cancel",
+        icon: "ki-swal-icon",
+      },
     }).then((result) => {
       if (result.isConfirmed) {
         if (selectedTimeframe?.name === "Coaches") {
