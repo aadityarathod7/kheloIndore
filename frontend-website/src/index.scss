@@ -4361,5 +4361,62 @@ body .ki-category-card {
   }
 }
 
+/* Auto-sliding Category Track Animation */
+@keyframes kiMarqueeSlide {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.ki-auto-slider-wrapper {
+  overflow: hidden;
+  width: 100%;
+  position: relative;
+  padding: 10px 0;
+  
+  &:hover .ki-auto-slider-track {
+    animation-play-state: paused;
+  }
+}
+
+.ki-auto-slider-track {
+  display: flex;
+  gap: 20px;
+  width: max-content;
+  animation: kiMarqueeSlide 30s linear infinite;
+  will-change: transform;
+}
+
+.ki-category-slider-card {
+  min-width: 200px;
+  max-width: 200px;
+  flex: 0 0 auto;
+  background: #FFFFFF !important;
+  border-radius: 20px !important;
+  border: 1px solid #E2E8E3 !important;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.03) !important;
+  transition: all 0.3s ease !important;
+  cursor: pointer;
+
+  &:hover {
+    transform: translateY(-5px) !important;
+    box-shadow: 0 12px 25px rgba(34, 197, 94, 0.15) !important;
+    border-color: #22C55E !important;
+
+    .ki-category-explore-btn {
+      background-color: #22C55E !important;
+      color: #FFFFFF !important;
+      border-color: #22C55E !important;
+    }
+  }
+
+  .ki-category-explore-btn {
+    transition: all 0.2s ease !important;
+  }
+}
+
 
 

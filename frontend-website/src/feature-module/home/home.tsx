@@ -803,9 +803,9 @@ const Home = () => {
       </section>
 
       {/* Browse by Category */}
-      <section className="section category-section" style={{ background: "transparent", padding: "80px 0" }}>
-        <div className="container">
-          <div className="section-heading text-center aos" data-aos="fade-up">
+      <section className="section category-section" style={{ background: "transparent", padding: "70px 0" }}>
+        <div className="container-fluid px-0">
+          <div className="section-heading text-center mb-4 aos" data-aos="fade-up">
             <h2 style={{ fontFamily: "Space Grotesk, sans-serif", color: "#17222D" }}>
               Browse by <span style={{ color: "var(--ki-primary)" }}>Category</span>
             </h2>
@@ -813,72 +813,68 @@ const Home = () => {
               Select a sport category to view all registered venues, coaches, and academies.
             </p>
           </div>
-          <div 
-            className="d-flex overflow-auto gap-3 pt-3 pb-4 mt-4 flex-nowrap ki-category-scroll" 
-            style={{ 
-              scrollbarWidth: "thin", 
-              scrollbarColor: "var(--ki-primary) rgba(0,0,0,0.05)",
-              WebkitOverflowScrolling: "touch"
-            }}
-          >
-            {[
-              { name: "Cricket", icon: "fas fa-baseball-ball", color: "#F97316" },
-              { name: "Football", icon: "fas fa-futbol", color: "#16A34A" },
-              { name: "Badminton", icon: "fas fa-table-tennis", color: "#F97316" },
-              { name: "Tennis", icon: "fas fa-basketball-ball", color: "#16A34A" },
-              { name: "Swimming", icon: "fas fa-swimmer", color: "#16A34A" },
-              { name: "Basketball", icon: "fas fa-basketball-ball", color: "#F97316" },
-              { name: "Gym & Fitness", icon: "fas fa-dumbbell", color: "#F97316" },
-              { name: "Volleyball", icon: "fas fa-volleyball-ball", color: "#16A34A" }
-            ].map((cat, idx) => (
-              <div 
-                key={idx}
-                className="ki-card ki-card-hover p-4 text-center aos d-flex flex-column align-items-center justify-content-between" 
-                data-aos="fade-up" 
-                data-aos-delay={50 * idx}
-                style={{
-                  cursor: "pointer",
-                  minWidth: "220px",
-                  maxWidth: "220px",
-                  flex: "0 0 auto",
-                  background: "var(--ki-bg-surface)",
-                  borderRadius: "24px",
-                  border: "1px solid #E2E8E3",
-                  transition: "all 0.3s ease"
-                }}
-                onClick={() => navigate("/sports-venue", { state: { selectedSport: { name: cat.name } } })}
-              >
+          
+          <div className="ki-auto-slider-wrapper">
+            <div className="ki-auto-slider-track py-2">
+              {[
+                { name: "Cricket", slug: "cricket", count: "141 Listings", icon: "fas fa-baseball-ball", color: "#16A34A", bg: "#DCFCE7" },
+                { name: "Badminton", slug: "badminton", count: "25 Listings", icon: "fas fa-table-tennis", color: "#2563EB", bg: "#DBEAFE" },
+                { name: "Football", slug: "football", count: "13 Listings", icon: "fas fa-futbol", color: "#059669", bg: "#D1FAE5" },
+                { name: "Swimming", slug: "swimming", count: "12 Listings", icon: "fas fa-swimmer", color: "#0891B2", bg: "#CFFAFE" },
+                { name: "Pickleball", slug: "pickleball", count: "24 Listings", icon: "fas fa-table-tennis", color: "#D97706", bg: "#FEF3C7" },
+                { name: "Tennis", slug: "tennis", count: "8 Listings", icon: "fas fa-basketball-ball", color: "#7C3AED", bg: "#EDE9FE" },
+                { name: "Basketball", slug: "basketball", count: "6 Listings", icon: "fas fa-basketball-ball", color: "#DC2626", bg: "#FEE2E2" },
+                { name: "Table Tennis", slug: "table-tennis", count: "10 Listings", icon: "fas fa-ping-pong-paddle", color: "#DB2777", bg: "#FCE7F3" },
+                { name: "Other Sports", slug: "other-sports", count: "514 Listings", icon: "fas fa-trophy", color: "#4F46E5", bg: "#E0E7FF" },
+
+                // Duplicated for seamless 360 infinite loop
+                { name: "Cricket", slug: "cricket", count: "141 Listings", icon: "fas fa-baseball-ball", color: "#16A34A", bg: "#DCFCE7" },
+                { name: "Badminton", slug: "badminton", count: "25 Listings", icon: "fas fa-table-tennis", color: "#2563EB", bg: "#DBEAFE" },
+                { name: "Football", slug: "football", count: "13 Listings", icon: "fas fa-futbol", color: "#059669", bg: "#D1FAE5" },
+                { name: "Swimming", slug: "swimming", count: "12 Listings", icon: "fas fa-swimmer", color: "#0891B2", bg: "#CFFAFE" },
+                { name: "Pickleball", slug: "pickleball", count: "24 Listings", icon: "fas fa-table-tennis", color: "#D97706", bg: "#FEF3C7" },
+                { name: "Tennis", slug: "tennis", count: "8 Listings", icon: "fas fa-basketball-ball", color: "#7C3AED", bg: "#EDE9FE" },
+                { name: "Basketball", slug: "basketball", count: "6 Listings", icon: "fas fa-basketball-ball", color: "#DC2626", bg: "#FEE2E2" },
+                { name: "Table Tennis", slug: "table-tennis", count: "10 Listings", icon: "fas fa-ping-pong-paddle", color: "#DB2777", bg: "#FCE7F3" },
+                { name: "Other Sports", slug: "other-sports", count: "514 Listings", icon: "fas fa-trophy", color: "#4F46E5", bg: "#E0E7FF" }
+              ].map((cat, idx) => (
                 <div 
-                  className="category-icon-wrap d-flex align-items-center justify-content-center mb-3"
-                  style={{
-                    width: "60px",
-                    height: "60px",
-                    borderRadius: "50%",
-                    background: `rgba(${cat.color === "#F97316" ? "249,115,22" : "22,163,74"}, 0.1)`,
-                    color: cat.color
-                  }}
+                  key={idx}
+                  className="ki-category-slider-card p-3 text-center d-flex flex-column align-items-center justify-content-between" 
+                  onClick={() => navigate(`/sports-venue/${cat.slug}`)}
                 >
-                  <i className={`${cat.icon}`} style={{ fontSize: "24px" }} />
+                  <div 
+                    className="category-icon-wrap d-flex align-items-center justify-content-center mb-2"
+                    style={{
+                      width: "52px",
+                      height: "52px",
+                      borderRadius: "50%",
+                      background: cat.bg,
+                      color: cat.color
+                    }}
+                  >
+                    <i className={`${cat.icon}`} style={{ fontSize: "20px" }} />
+                  </div>
+                  <h4 className="mb-1" style={{ fontSize: "16px", fontWeight: "700", fontFamily: "Space Grotesk, sans-serif", color: "#17222D" }}>{cat.name}</h4>
+                  <p className="mb-3" style={{ fontSize: "12px", color: "#64748B", fontWeight: "500" }}>
+                    {cat.count}
+                  </p>
+                  <button 
+                    className="btn rounded-pill ki-category-explore-btn w-100"
+                    style={{
+                      fontSize: "12px",
+                      border: "1.5px solid #22C55E",
+                      color: "#16A34A",
+                      background: "transparent",
+                      fontWeight: "600",
+                      padding: "4px 12px"
+                    }}
+                  >
+                    Explore
+                  </button>
                 </div>
-                <h4 className="mb-1" style={{ fontSize: "18px", fontWeight: "700", fontFamily: "Space Grotesk, sans-serif", color: "#17222D" }}>{cat.name}</h4>
-                <p className="mb-3" style={{ fontSize: "12px", color: "#606D76" }}>
-                  {cat.name === "Cricket" ? "12 Listings" : cat.name === "Football" ? "8 Listings" : cat.name === "Badminton" ? "6 Listings" : cat.name === "Tennis" ? "4 Listings" : "5 Listings"}
-                </p>
-                <button 
-                  className="btn rounded-pill"
-                  style={{
-                    fontSize: "12px",
-                    border: "1.5px solid #43B649",
-                    color: "#3CAB4B",
-                    background: "transparent",
-                    fontWeight: "600",
-                    padding: "4px 16px"
-                  }}
-                >
-                  Explore
-                </button>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </section>
