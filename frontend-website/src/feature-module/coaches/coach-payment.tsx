@@ -217,7 +217,7 @@ const CoachPayment = () => {
           </div>
         </section>
         {/* Page Content */}
-        <div className="content">
+        <div className="content py-4" style={{ backgroundColor: "#F8FAFC" }}>
           <div className="container">
             <section>
               <div className="text-center mb-40">

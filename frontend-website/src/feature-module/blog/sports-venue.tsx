@@ -202,7 +202,7 @@ const BlogListSidebarLeft = () => {
           </div>
 
           {/* Categories Grid Content */}
-          <div className="content blog-grid" style={{ backgroundColor: "#F8FAFC", padding: "60px 0" }}>
+          <div className="content blog-grid" style={{ backgroundColor: "#F8FAFC", padding: "24px 0 60px 0" }}>
             <div className="container">
               <div className="row g-4">
                 {categories.map((cat) => {

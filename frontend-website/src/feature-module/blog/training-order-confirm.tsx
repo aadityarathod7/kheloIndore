@@ -224,7 +224,7 @@ const TrainingOrderConfirm = (props: any) => {
           </div>
         </section>
         {/* Page Content */}
-        <div className="content">
+        <div className="content py-4" style={{ backgroundColor: "#F8FAFC" }}>
           <div className="container">
             <div className="text-center mb-40">
               <h3 className="mb-1">Order Confirmation</h3>

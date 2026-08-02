@@ -579,7 +579,7 @@ const CoachTimeDate = (props: any) => {
           </div>
         </section>
         {/* Page Content */}
-        <div className="content">
+        <div className="content py-4" style={{ backgroundColor: "#F8FAFC" }}>
           <div className="container">
             <section className="card mb-40">
               <div className="text-center mb-40">

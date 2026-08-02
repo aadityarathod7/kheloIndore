@@ -305,6 +305,9 @@ const VenueDetails = () => {
                 width: 50% !important;
               }
             }
+            .khelo-pro-wrapper {
+              padding-top: 24px !important;
+            }
           `}} />
 
           {/* Hero Section - matches listing pages */}
@@ -520,7 +523,7 @@ const VenueDetails = () => {
                 )}
 
                 {/* C. Active Tab Content Card */}
-                <div className="pro-card">
+                <div className="pro-card" style={{ padding: "16px", marginBottom: "16px" }}>
                   {activeTab === "overview" && (
                     <div>
                       {/* Card 1: About this Venue */}
@@ -529,7 +532,7 @@ const VenueDetails = () => {
                       </div>
                       <h3 className="card-title-head mb-3" style={{ fontSize: "18px", fontWeight: "800", color: "#0F172A" }}>About this Venue</h3>
                       <div
-                        className="about-venue-box p-4 rounded-3 border-start border-4"
+                        className="about-venue-box p-3 rounded-3 border-start border-4"
                         style={{
                           borderLeft: "4px solid #22C55E",
                           backgroundColor: "#F8FAFC",
@@ -545,13 +548,13 @@ const VenueDetails = () => {
                         />
                       </div>
 
-                      <hr className="my-4" style={{ borderColor: "#E5E7EB" }} />
+                       <hr className="my-3" style={{ borderColor: "#E2E8F0" }} />
 
                       {/* Card 2: Venue Specifications */}
                       {venueType && venueType.length > 0 && (
                         <div>
                           <h3 className="card-title-head">Venue Specifications</h3>
-                          <div className="row row-cols-2 row-cols-md-5 g-3 venue-info-row-5">
+                           <div className="row row-cols-2 row-cols-md-5 g-2 venue-info-row-5">
                             {venueType.map((spec: any, index: any) => {
                               const k = spec.key.toLowerCase();
                               let iconClass = "fas fa-th-large";
@@ -636,12 +639,12 @@ const VenueDetails = () => {
                 </div>
 
                 {/* D. Additional Info Card */}
-                <div className="pro-card">
+                <div className="pro-card" style={{ padding: "16px", marginBottom: "16px" }}>
                   <div className="d-flex align-items-center gap-2 mb-3">
                     <span className="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-1 font-weight-bold" style={{ fontSize: "11px", letterSpacing: "0.5px", textTransform: "uppercase" }}>Specifications</span>
                   </div>
                   <h3 className="card-title-head mb-3" style={{ fontSize: "18px", fontWeight: "800", color: "#0F172A" }}>Venue Information</h3>
-                  <div className="row row-cols-2 row-cols-md-4 g-3 venue-info-row">
+                   <div className="row row-cols-2 row-cols-md-4 g-2 venue-info-row">
                     <div className="col">
                       <div className="spec-info-card p-2 py-3 rounded-3 border text-center h-100" 
                            style={{ 
