@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useLocation, useParams } from "react-router-dom";
 import ImageWithBasePath from "../../core/data/img/ImageWithBasePath";
 import axios from "axios";
 import { API_URL, IMG_URL } from "../../ApiUrl";
@@ -652,11 +652,12 @@ export default function VenueByCategory() {
   const [favorites, setFavorites] = useState<Record<string, boolean>>({});
 
   const thisCategory = useParams<{ type: string }>();
+  const routeLocation = useLocation();
   const categorySelected = thisCategory?.type || "";
 
   // Filter States
   const [selectedSport, setSelectedSport] = useState<string>(categorySelected ? categorySelected.toLowerCase() : "all");
-  const [locationName, setLocationName] = useState<string>("");
+  const [locationName, setLocationName] = useState<string>(() => routeLocation.state?.selectedLocationSort?.name || "");
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [selectedSlot, setSelectedSlot] = useState<string>("all");
   const [selectedGrassType, setSelectedGrassType] = useState<string>("any");
@@ -668,6 +669,11 @@ export default function VenueByCategory() {
       setSelectedSport(categorySelected.toLowerCase());
     }
   }, [categorySelected]);
+
+  useEffect(() => {
+    const requestedLocation = routeLocation.state?.selectedLocationSort?.name;
+    if (requestedLocation) setLocationName(requestedLocation);
+  }, [routeLocation.state]);
 
   const categoryTitle = selectedSport && selectedSport !== "all"
     ? selectedSport
@@ -765,7 +771,9 @@ export default function VenueByCategory() {
           }
         } else {
           const targetCat = selectedSport.replace(/-/g, " ").trim();
-          const matches = vt.includes(targetCat) || cat.includes(targetCat) || targetCat.includes(vt) || targetCat.includes(cat);
+          const matches = [vt, cat, name]
+            .filter(Boolean)
+            .some((field) => field.includes(targetCat));
           if (!matches) return false;
         }
       }
@@ -774,7 +782,7 @@ export default function VenueByCategory() {
       if (locationName) {
         const formattedLocation = (t.near_by_location || "").replace(/_/g, " ").toLowerCase();
         const targetLoc = locationName.toLowerCase();
-        if (!formattedLocation.includes(targetLoc) && !targetLoc.includes(formattedLocation)) {
+        if (!formattedLocation || !formattedLocation.includes(targetLoc)) {
           return false;
         }
       }

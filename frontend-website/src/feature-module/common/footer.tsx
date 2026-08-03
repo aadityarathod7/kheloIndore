@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import AOS from "aos";
 import "aos/dist/aos.css";
@@ -9,6 +9,17 @@ const Footer = () => {
   const routes = all_routes;
   const loginToken = localStorage.getItem("token");
   const location = useLocation();
+  const [showAllSports, setShowAllSports] = useState(false);
+  const [showAllLocations, setShowAllLocations] = useState(false);
+
+  const sports = [
+    "Cricket Turfs", "Badminton Courts", "Football Grounds", "Swimming Pools", "Pickleball Courts", "Tennis Courts",
+    "Basketball Courts", "Table Tennis", "Volleyball", "Squash Courts", "Box Cricket", "Kabaddi", "Hockey", "Running", "Cycling", "Gym & Fitness",
+  ];
+  const popularLocations = [
+    "Vijay Nagar", "Palasia", "Bhawarkuan", "Rajendra Nagar", "Navlakha", "LIG Square",
+    "Bengali Square", "Annapurna Road", "Mahalaxmi Nagar", "Rau", "Super Corridor", "Nipania", "Kanadia Road", "Khajrana", "Scheme 54", "Sudama Nagar", "AB Road", "Tilak Nagar", "Sukhliya", "Geeta Bhawan", "Saket Nagar", "Ring Road",
+  ];
 
   useEffect(() => {
     AOS.init({ duration: 1000, once: true });
@@ -89,20 +100,15 @@ const Footer = () => {
               <div className="footer-widget footer-menu">
                 <h4 className="footer-title">Sports</h4>
                 <ul>
+                  {sports.slice(0, showAllSports ? sports.length : 6).map((sport) => (
+                    <li key={sport}>
+                      <Link to={`/sports-venue?search=${encodeURIComponent(sport)}`}>{sport}</Link>
+                    </li>
+                  ))}
                   <li>
-                    <Link to="/sports-venue/cricket">Cricket Turfs</Link>
-                  </li>
-                  <li>
-                    <Link to="/sports-venue/badminton">Badminton Courts</Link>
-                  </li>
-                  <li>
-                    <Link to="/sports-venue/football">Football Grounds</Link>
-                  </li>
-                  <li>
-                    <Link to="/sports-venue/swimming">Swimming Pools</Link>
-                  </li>
-                  <li>
-                    <Link to="/sports-venue/other-sports">View all sports <i className="feather-arrow-up-right" /></Link>
+                    <button type="button" className="footer-load-more" onClick={() => setShowAllSports((current) => !current)} aria-expanded={showAllSports}>
+                      {showAllSports ? "Show less" : `+${sports.length - 6} more`}
+                    </button>
                   </li>
                 </ul>
               </div>
@@ -112,29 +118,15 @@ const Footer = () => {
               <div className="footer-widget footer-menu">
                 <h4 className="footer-title">Popular locations</h4>
                 <ul className="footer-location-list">
+                  {popularLocations.slice(0, showAllLocations ? popularLocations.length : 6).map((area) => (
+                    <li key={area}>
+                      <Link to={`/sports-venue?location=${encodeURIComponent(area)}`}>{area}</Link>
+                    </li>
+                  ))}
                   <li>
-                    <Link to="/sports-venue">Vijay Nagar</Link>
-                  </li>
-                  <li>
-                    <Link to="/sports-venue">Palasia</Link>
-                  </li>
-                  <li>
-                    <Link to="/sports-venue">Bhawarkuan</Link>
-                  </li>
-                  <li>
-                    <Link to="/sports-venue">Rajendra Nagar</Link>
-                  </li>
-                  <li>
-                    <Link to="/sports-venue">Navlakha</Link>
-                  </li>
-                  <li>
-                    <Link to="/sports-venue">LIG Square</Link>
-                  </li>
-                  <li>
-                    <Link to="/sports-venue">Bengali Square</Link>
-                  </li>
-                  <li>
-                    <Link to="/sports-venue">Annapurna Road</Link>
+                    <button type="button" className="footer-load-more" onClick={() => setShowAllLocations((current) => !current)} aria-expanded={showAllLocations}>
+                      {showAllLocations ? "Show less" : `+${popularLocations.length - 6} more`}
+                    </button>
                   </li>
                 </ul>
               </div>

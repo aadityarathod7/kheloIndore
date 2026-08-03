@@ -491,7 +491,10 @@ const Home = () => {
         } else if (selectedTimeframe?.name === "Personal Trainer") {
           navigate("/personal-training", { state: { selectedLocationSort, selectedSport } });
         } else if (selectedTimeframe?.name === "Sports Venue") {
-          navigate("/sports-venue", { state: { selectedLocationSort, selectedSport } });
+          const sportSlug = selectedSport?.name
+            ? selectedSport.name.toLowerCase().replace(/&/g, "and").replace(/\s+/g, "-")
+            : "all";
+          navigate(`/sports-venue/${sportSlug}`, { state: { selectedLocationSort, selectedSport } });
         }
       }
     });
@@ -620,6 +623,10 @@ const Home = () => {
                               onChange={(e) => setSelectedSport(e.value)}
                               options={sportsOptions}
                               optionLabel="name"
+                              filter
+                              filterBy="name"
+                              filterMatchMode="startsWith"
+                              filterPlaceholder="Type a sport..."
                               placeholder="Select"
                               className="select custom-select-list w-100"
                               panelClassName="ki-search-dropdown-panel"
@@ -639,6 +646,10 @@ const Home = () => {
                               onChange={(e) => setSelectedLocationSort(e.value)}
                               options={sortOptions}
                               optionLabel="name"
+                              filter
+                              filterBy="name"
+                              filterMatchMode="startsWith"
+                              filterPlaceholder="Type an area..."
                               placeholder="Select"
                               className="select custom-select-list w-100"
                               panelClassName="ki-search-dropdown-panel"
@@ -782,7 +793,10 @@ const Home = () => {
           </div>
           <div className="row justify-content-center ">
             <div className="col-lg-4 col-md-6 d-flex">
-              <div className="work-grid w-100 aos hover-lift" data-aos="fade-up" data-aos-delay="100">
+              <div className="work-grid work-grid-visual w-100 aos hover-lift" data-aos="fade-up" data-aos-delay="100">
+                <div className="work-visual">
+                  <ImageWithBasePath src="/assets/img/venues/venues-01.jpg" alt="Sports venue" />
+                </div>
                 <div className="work-icon">
                   <div className="work-icon-inner">
                     <ImageWithBasePath
@@ -806,7 +820,10 @@ const Home = () => {
               </div>
             </div>
             <div className="col-lg-4 col-md-6 d-flex">
-              <div className="work-grid w-100 aos hover-lift" data-aos="fade-up" data-aos-delay="200">
+              <div className="work-grid work-grid-visual w-100 aos hover-lift" data-aos="fade-up" data-aos-delay="200">
+                <div className="work-visual">
+                  <ImageWithBasePath src="/assets/img/profiles/avatar-coach-detail.jpg" alt="Sports coach" />
+                </div>
                 <div className="work-icon">
                   <div className="work-icon-inner">
                     <ImageWithBasePath
@@ -830,7 +847,10 @@ const Home = () => {
               </div>
             </div>
             <div className="col-lg-4 col-md-6 d-flex">
-              <div className="work-grid w-100 aos hover-lift" data-aos="fade-up" data-aos-delay="300">
+              <div className="work-grid work-grid-visual w-100 aos hover-lift" data-aos="fade-up" data-aos-delay="300">
+                <div className="work-visual">
+                  <ImageWithBasePath src="/assets/img/profiles/user-01.jpg" alt="Personal trainer" />
+                </div>
                 <div className="work-icon">
                   <div className="work-icon-inner">
                     <ImageWithBasePath
@@ -858,7 +878,7 @@ const Home = () => {
       </section>
 
       {/* Browse by Category */}
-      <section className="section category-section" style={{ background: "transparent", padding: "40px 0" }}>
+      <section className="section category-section" style={{ padding: "40px 0" }}>
         <div className="container-fluid px-0">
           <div className="section-heading text-center mb-4 aos" data-aos="fade-up">
             <h2 style={{ fontFamily: "Space Grotesk, sans-serif", color: "#17222D" }}>
@@ -939,7 +959,7 @@ const Home = () => {
       </section>
 
       {/* Top Rated Providers Header */}
-      <section className="section featured-venues-header" style={{ background: "rgba(229, 236, 227, 0.35)", padding: "30px 0 20px 0", borderBottom: "1px solid #E2E8E3" }}>
+      <section className="section featured-venues-header top-providers-heading" style={{ padding: "30px 0 20px 0", borderBottom: "1px solid #D9E5F5" }}>
         <div className="container">
           <div className="section-heading text-center mb-0 aos" data-aos="fade-up">
             <h2 style={{ fontFamily: "Space Grotesk, sans-serif", color: "#17222D" }}>
@@ -953,7 +973,7 @@ const Home = () => {
       </section>
 
       {/* Top Rated Venues */}
-      <section className="section featured-venues-list py-5" style={{ background: "#FFFFFF" }}>
+      <section className="section featured-venues-list top-providers-section py-5">
         <div className="container">
           <div className="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2 aos" data-aos="fade-up">
             <h3 style={{ fontFamily: "Space Grotesk, sans-serif", color: "#17222D", fontWeight: "700", fontSize: "20px" }}>
@@ -1022,7 +1042,7 @@ const Home = () => {
       </section>
 
       {/* Top Rated Coaches */}
-      <section className="section featured-venues-list py-5" style={{ background: "#F8FAFC", borderTop: "1px solid #E2E8F0", borderBottom: "1px solid #E2E8F0" }}>
+      <section className="section featured-venues-list top-coaches-section py-5" style={{ borderTop: "1px solid #F2DCD4", borderBottom: "1px solid #F2DCD4" }}>
         <div className="container">
           <div className="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2 aos" data-aos="fade-up">
             <h3 style={{ fontFamily: "Space Grotesk, sans-serif", color: "#17222D", fontWeight: "700", fontSize: "20px" }}>
@@ -1031,7 +1051,7 @@ const Home = () => {
             {coaches.length > 6 && (
               <Link
                 to={routes.coachesGrid}
-                className="btn btn-secondary btn-sm d-inline-flex align-items-center px-3 py-1.5"
+                className="btn btn-primary btn-sm d-inline-flex align-items-center px-3 py-1.5"
                 style={{ borderRadius: "10px", fontSize: "13px", background: "linear-gradient(90deg, #49BC4F, #38A941)", border: "none" }}
               >
                 View All Coaches <i className="feather-arrow-right-circle ms-2" />
@@ -1056,8 +1076,8 @@ const Home = () => {
                               style={{ height: "100%", width: "100%", objectFit: "cover" }}
                             />
                           </Link>
-                          <div className="fav-item-venues" style={{ top: "12px", left: "12px" }}>
-                            <span className="tag tag-blue" style={{ background: "var(--ki-accent)", color: "#FFFFFF", fontWeight: "700", borderRadius: "8px", fontSize: "12px", textTransform: "uppercase" }}>
+                          <div className="fav-item-venues" style={{ top: "14px", left: "14px", right: "auto", width: "auto", padding: 0, zIndex: 2 }}>
+                            <span className="tag tag-blue" style={{ display: "inline-flex", alignItems: "center", minHeight: "28px", padding: "7px 10px", background: "var(--ki-accent)", color: "#FFFFFF", fontWeight: "700", borderRadius: "999px", fontSize: "10px", lineHeight: 1, letterSpacing: "0.04em", textTransform: "uppercase", whiteSpace: "nowrap", boxShadow: "0 4px 10px rgba(28, 145, 51, 0.24)" }}>
                               {coach.trainer_type || "Coach"}
                             </span>
                           </div>
@@ -1084,7 +1104,7 @@ const Home = () => {
       </section>
 
       {/* Top Rated Trainers */}
-      <section className="section featured-venues-list py-5" style={{ background: "#FFFFFF" }}>
+      <section className="section featured-venues-list top-trainers-section py-5">
         <div className="container">
           <div className="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2 aos" data-aos="fade-up">
             <h3 style={{ fontFamily: "Space Grotesk, sans-serif", color: "#17222D", fontWeight: "700", fontSize: "20px" }}>
@@ -1118,8 +1138,8 @@ const Home = () => {
                               style={{ height: "100%", width: "100%", objectFit: "cover" }}
                             />
                           </Link>
-                          <div className="fav-item-venues" style={{ top: "12px", left: "12px" }}>
-                            <span className="tag tag-blue" style={{ background: "var(--ki-accent)", color: "#FFFFFF", fontWeight: "700", borderRadius: "8px", fontSize: "12px", textTransform: "uppercase" }}>
+                          <div className="fav-item-venues" style={{ top: "14px", left: "14px", right: "auto", width: "auto", padding: 0, zIndex: 2 }}>
+                            <span className="tag tag-blue" style={{ display: "inline-flex", alignItems: "center", minHeight: "28px", padding: "7px 10px", background: "var(--ki-accent)", color: "#FFFFFF", fontWeight: "700", borderRadius: "999px", fontSize: "10px", lineHeight: 1, letterSpacing: "0.04em", textTransform: "uppercase", whiteSpace: "nowrap", boxShadow: "0 4px 10px rgba(28, 145, 51, 0.24)" }}>
                               {train.trainer_type || "Trainer"}
                             </span>
                           </div>

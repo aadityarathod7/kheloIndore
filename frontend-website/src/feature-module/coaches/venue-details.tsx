@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
+import { createPortal } from "react-dom";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import ImageWithBasePath from "../../core/data/img/ImageWithBasePath";
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -163,7 +164,26 @@ const VenueDetails = () => {
        document.title = `Sports Venue - ${type}/${name}/${id}}`;  
    }, []);
   
-  const handleShare = () => {
+  const handleShare = async () => {
+    const shareData = {
+      title: venueData?.name || "Khelo Indore Sports Venue",
+      text: `Check out ${venueData?.name || "this sports venue"} on Khelo Indore!`,
+      url: window.location.href,
+    };
+
+    // Use the browser/device sharing interface when available. This provides
+    // the familiar social-app picker seen in the reference image.
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+        return;
+      } catch (error) {
+        // Closing the native sheet is expected; retain the in-page sheet as a
+        // fallback only when native sharing cannot be used.
+        if ((error as DOMException)?.name === "AbortError") return;
+      }
+    }
+
     setIsShareOpen(true);
   };
   
@@ -360,7 +380,11 @@ const VenueDetails = () => {
                         <button
                           type="button"
                           className="glass-icon-btn"
-                          onClick={handleShare}
+                          onClick={(event) => {
+                            event.preventDefault();
+                            event.stopPropagation();
+                            handleShare();
+                          }}
                           title="Share Venue"
                         >
                           <i className="fas fa-share-alt" />
@@ -441,7 +465,15 @@ const VenueDetails = () => {
 
                 {/* D. Top Amenities Section (Positioned above map & below details bar) */}
                 <div className="pro-card mb-4">
-                  <h3 className="card-title-head mb-3" style={{ color: "#111827", fontFamily: "Space Grotesk, sans-serif" }}>Amenities</h3>
+                  <div className="d-flex align-items-center justify-content-between gap-3 mb-3">
+                    <div>
+                      <h3 className="card-title-head mb-1" style={{ color: "#111827", fontFamily: "Space Grotesk, sans-serif" }}>Amenities</h3>
+                      <p className="mb-0 text-muted" style={{ fontSize: "13px" }}>Everything you need for a comfortable game.</p>
+                    </div>
+                    <div className="d-flex align-items-center justify-content-center rounded-circle flex-shrink-0" style={{ width: "58px", height: "58px", background: "#EAF8ED", border: "1px solid #CDEFD5" }}>
+                      <ImageWithBasePath src="/assets/img/icons/amenities.svg" alt="Venue amenities" style={{ width: "32px", height: "32px", objectFit: "contain" }} />
+                    </div>
+                  </div>
                   {(() => {
                     const amenityIconMap: Record<string, string> = {
                       parking: "fas fa-parking",
@@ -1040,7 +1072,7 @@ const VenueDetails = () => {
                 </div>
               )}
               {/* Share Modal */}
-              {isShareOpen && (
+              {isShareOpen && typeof document !== "undefined" && createPortal((
                 <div className="modal show d-block" style={{ backgroundColor: "rgba(0,0,0,0.5)", zIndex: 10050 }}>
                   <div className="modal-dialog modal-dialog-centered">
                     <div className="modal-content" style={{ borderRadius: "20px", border: "none", boxShadow: "0 10px 30px rgba(0,0,0,0.2)" }}>
@@ -1053,6 +1085,19 @@ const VenueDetails = () => {
                         
                         {/* Social Grid */}
                         <div className="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+                          <a
+                            href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="d-flex flex-column align-items-center text-decoration-none"
+                            style={{ width: "60px" }}
+                          >
+                            <div className="d-flex align-items-center justify-content-center text-white rounded-circle mb-1" style={{ width: "45px", height: "45px", backgroundColor: "#1877F2" }}>
+                              <i className="fa-brands fa-facebook-f" style={{ fontSize: "18px" }} />
+                            </div>
+                            <span className="text-muted" style={{ fontSize: "11px", fontWeight: "600" }}>Facebook</span>
+                          </a>
+
                           <a 
                             href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(`Check out ${venueData?.name || "this venue"} on Khelo Indore!`)}`} 
                             target="_blank" 
@@ -1143,7 +1188,7 @@ const VenueDetails = () => {
                     </div>
                   </div>
                 </div>
-              )}
+              ), document.body)}
             </div>
           )}
         </>

@@ -54,6 +54,7 @@ const AboutUs = () => {
   };
   const testimonialSlider = {
     dots: false,
+    arrows: false,
     autoplay: false,
     slidesToShow: 3,
     margin: 20,

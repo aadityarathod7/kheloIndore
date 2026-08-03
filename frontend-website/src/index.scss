@@ -986,8 +986,6 @@ textarea,
 .service-section,
 .convenient-section,
 .earn-money {
-  background: transparent !important;
-
   h2,
   h3,
   .section-heading h2,
@@ -1465,6 +1463,81 @@ textarea,
   .footer-about {
     p {
       color: #606D76 !important;
+    }
+  }
+}
+
+// Alternating homepage section colors make the content groups easier to scan.
+.work-section { background: #edf8ef !important; }
+.category-section { background: #fff8ec !important; }
+.top-providers-heading,
+.top-providers-section { background: #eff6ff !important; }
+.top-coaches-section { background: #fff4f0 !important; }
+.top-trainers-section { background: #f5f1ff !important; }
+.earn-money { background: #eefaf6 !important; }
+.our-testimonials { background: #fffbed !important; }
+
+// Image-led How It Works cards: the action remains real HTML instead of being
+// embedded in an image, so it stays readable and clickable on every screen.
+.work-grid.work-grid-visual {
+  overflow: hidden;
+  padding: 0 0 24px !important;
+  text-align: center;
+
+  .work-visual {
+    height: 185px;
+    overflow: hidden;
+    position: relative;
+
+    &::after {
+      background: linear-gradient(180deg, rgba(9, 45, 25, 0.02), rgba(9, 45, 25, 0.2));
+      content: "";
+      inset: 0;
+      position: absolute;
+    }
+
+    img {
+      display: block;
+      height: 100%;
+      object-fit: cover;
+      width: 100%;
+    }
+  }
+
+  .work-icon {
+    align-items: center;
+    background: #fff;
+    border: 4px solid #fbfcfb;
+    border-radius: 50%;
+    display: flex;
+    height: 62px;
+    justify-content: center;
+    margin: -31px auto 12px;
+    position: relative;
+    width: 62px;
+    z-index: 1;
+
+    .work-icon-inner {
+      height: 48px !important;
+      margin: 0 !important;
+      width: 48px !important;
+    }
+  }
+
+  .work-content {
+    padding: 0 24px;
+
+    h5 { margin-bottom: 8px !important; }
+
+    p {
+      margin: 0 auto 18px !important;
+      max-width: 290px;
+    }
+
+    .btn,
+    a.btn {
+      justify-content: center;
+      width: 100%;
     }
   }
 }
@@ -4849,3 +4922,22 @@ body .ki-category-card {
 
 
 
+// Carousel navigation is intentionally hidden across the public site.
+.slick-arrow,
+.owl-nav {
+  display: none !important;
+}
+
+// Homepage sport/location dropdowns: make the selected or keyboard-focused
+// match clearly visible while typing.
+.p-dropdown-panel.ki-search-dropdown-panel .p-dropdown-item.p-highlight,
+.p-dropdown-panel.ki-search-dropdown-panel .p-dropdown-item.p-focus {
+  background: #166534 !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+
+  * {
+    background: transparent !important;
+    color: #ffffff !important;
+  }
+}

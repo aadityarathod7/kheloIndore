@@ -134,6 +134,20 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .footer-load-more {
+    background: transparent;
+    border: 0;
+    color: #8ee55f;
+    cursor: pointer;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 0;
+    text-align: left;
+
+    &:hover { color: #fff; }
+  }
+
   .footer-bottom {
     background: #0b1e14;
     border-top: 1px solid rgba(208, 241, 216, 0.12);
