@@ -461,6 +461,10 @@ const Home = () => {
     });
   };
 
+  const visibleVenues = venues.slice(0, 6);
+  const visibleCoaches = coaches.slice(0, 6);
+  const visibleTrainers = trainer.slice(0, 6);
+
   return (
     <>
       <section className="hero-section" style={{ backgroundImage: "linear-gradient(rgba(229, 236, 227, 0.92), rgba(229, 236, 227, 0.92)), url('/assets/img/bg/banner.jpg')" }}>
@@ -901,19 +905,21 @@ const Home = () => {
             <h3 style={{ fontFamily: "Space Grotesk, sans-serif", color: "#17222D", fontWeight: "700", fontSize: "20px" }}>
               Top Rated <span style={{ color: "var(--ki-primary)" }}>Venues</span>
             </h3>
-            <Link
-              to={routes.blogListSidebarLeft}
-              className="btn btn-primary btn-sm d-inline-flex align-items-center px-3 py-1.5"
-              style={{ borderRadius: "10px", fontSize: "13px", background: "linear-gradient(90deg, #49BC4F, #38A941)", border: "none" }}
-            >
-              View All Venues <i className="feather-arrow-right-circle ms-2" />
-            </Link>
+            {venues.length > 6 && (
+              <Link
+                to={routes.blogListSidebarLeft}
+                className="btn btn-primary btn-sm d-inline-flex align-items-center px-3 py-1.5"
+                style={{ borderRadius: "10px", fontSize: "13px", background: "linear-gradient(90deg, #49BC4F, #38A941)", border: "none" }}
+              >
+                View All Venues <i className="feather-arrow-right-circle ms-2" />
+              </Link>
+            )}
           </div>
           <div className="row">
             <div className="featured-slider-group w-100">
               <div className="owl-carousel featured-venues-slider owl-theme">
                 <Slider {...settings}>
-                  {venues.map((venue, index) => (
+                  {visibleVenues.map((venue, index) => (
                     <div className="featured-venues-item" key={index}>
                       <div className="listing-item home-venue border-white-10" style={{ background: "var(--ki-bg-surface)", border: "1px solid #E2E8E3", borderRadius: "24px", overflow: "hidden", margin: "10px", boxShadow: "var(--ki-shadow-card)" }}>
                         <div className="listing-img" style={{ height: "200px", position: "relative", overflow: "hidden" }}>
@@ -968,19 +974,21 @@ const Home = () => {
             <h3 style={{ fontFamily: "Space Grotesk, sans-serif", color: "#17222D", fontWeight: "700", fontSize: "20px" }}>
               Top Rated <span style={{ color: "var(--ki-accent)" }}>Coaches</span>
             </h3>
-            <Link
-              to={routes.coachesGrid}
-              className="btn btn-secondary btn-sm d-inline-flex align-items-center px-3 py-1.5"
-              style={{ borderRadius: "10px", fontSize: "13px", background: "linear-gradient(90deg, #49BC4F, #38A941)", border: "none" }}
-            >
-              View All Coaches <i className="feather-arrow-right-circle ms-2" />
-            </Link>
+            {coaches.length > 6 && (
+              <Link
+                to={routes.coachesGrid}
+                className="btn btn-secondary btn-sm d-inline-flex align-items-center px-3 py-1.5"
+                style={{ borderRadius: "10px", fontSize: "13px", background: "linear-gradient(90deg, #49BC4F, #38A941)", border: "none" }}
+              >
+                View All Coaches <i className="feather-arrow-right-circle ms-2" />
+              </Link>
+            )}
           </div>
           <div className="row">
             <div className="featured-slider-group w-100">
               <div className="owl-carousel featured-venues-slider owl-theme">
                 <Slider {...options}>
-                  {coaches.map((coach, index) => (
+                  {visibleCoaches.map((coach, index) => (
                     <div className="featured-venues-item" key={index}>
                       <div className="listing-item mb-0" style={{ background: "var(--ki-bg-surface)", border: "1px solid #E2E8E3", borderRadius: "24px", overflow: "hidden", margin: "10px", boxShadow: "var(--ki-shadow-card)" }}>
                         <div className="listing-img" style={{ height: "200px", position: "relative", overflow: "hidden" }}>
@@ -1028,19 +1036,21 @@ const Home = () => {
             <h3 style={{ fontFamily: "Space Grotesk, sans-serif", color: "#17222D", fontWeight: "700", fontSize: "20px" }}>
               Top Rated <span style={{ color: "var(--ki-primary)" }}>Trainers</span>
             </h3>
-            <Link
-              to={routes.blogList}
-              className="btn btn-primary btn-sm d-inline-flex align-items-center px-3 py-1.5"
-              style={{ borderRadius: "10px", fontSize: "13px", background: "linear-gradient(90deg, #49BC4F, #38A941)", border: "none" }}
-            >
-              View All Trainers <i className="feather-arrow-right-circle ms-2" />
-            </Link>
+            {trainer.length > 6 && (
+              <Link
+                to={routes.blogList}
+                className="btn btn-primary btn-sm d-inline-flex align-items-center px-3 py-1.5"
+                style={{ borderRadius: "10px", fontSize: "13px", background: "linear-gradient(90deg, #49BC4F, #38A941)", border: "none" }}
+              >
+                View All Trainers <i className="feather-arrow-right-circle ms-2" />
+              </Link>
+            )}
           </div>
           <div className="row">
             <div className="featured-slider-group w-100">
               <div className="owl-carousel featured-venues-slider owl-theme">
                 <Slider {...options}>
-                  {trainer.map((train, index) => (
+                  {visibleTrainers.map((train, index) => (
                     <div className="featured-venues-item" key={index}>
                       <div className="listing-item mb-0" style={{ background: "var(--ki-bg-surface)", border: "1px solid #E2E8E3", borderRadius: "24px", overflow: "hidden", margin: "10px", boxShadow: "var(--ki-shadow-card)" }}>
                         <div className="listing-img" style={{ height: "200px", position: "relative", overflow: "hidden" }}>
