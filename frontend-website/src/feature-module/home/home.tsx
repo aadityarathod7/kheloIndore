@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import ImageWithBasePath from "../../core/data/img/ImageWithBasePath";
 import AOS from "aos";
 import "aos/dist/aos.css";
@@ -82,6 +82,7 @@ const Home = () => {
   const [activeTopRatedTab, setActiveTopRatedTab] = useState("venues");
   const [selectedLocationSort, setSelectedLocationSort] = useState<{ name: string } | null>(null);
   const [selectedSport, setSelectedSport] = useState<{ name: string } | null>(null);
+  const [showAllCategories, setShowAllCategories] = useState(false);
 
   const navigate = useNavigate();
 
@@ -249,6 +250,49 @@ const Home = () => {
       setSportsOptions(finalSports);
     }
   }, [venues, coaches, trainer]);
+
+  const popularSearches = useMemo(() => {
+    const selectedCategory = selectedTimeframe?.name || "Sports Venue";
+    const entries = selectedCategory === "Coaches"
+      ? coaches
+      : selectedCategory === "Personal Trainer"
+        ? trainer
+        : venues;
+    const popularity = new Map<string, number>();
+
+    entries.forEach((entry) => {
+      const category = String(entry.category || "").trim();
+      if (!category) return;
+
+      category.split(/[,|/]+/).forEach((value) => {
+        const name = value.replace(/[-_]/g, " ").trim();
+        if (!name) return;
+        popularity.set(name, (popularity.get(name) || 0) + 1);
+      });
+    });
+
+    const emojiByCategory: Record<string, string> = {
+      cricket: "🏏", football: "⚽", badminton: "🏸", tennis: "🎾",
+      basketball: "🏀", swimming: "🏊", volleyball: "🏐", yoga: "🧘",
+      fitness: "💪", gym: "🏋️", cycling: "🚴", running: "🏃",
+    };
+    const getEmoji = (name: string) => {
+      const key = Object.keys(emojiByCategory).find((item) => name.toLowerCase().includes(item));
+      return key ? emojiByCategory[key] : "⭐";
+    };
+    const fallback = selectedCategory === "Coaches"
+      ? ["Fitness", "Badminton", "Football", "Cricket", "Swimming"]
+      : selectedCategory === "Personal Trainer"
+        ? ["Fitness", "Weight Loss", "Yoga", "Strength Training", "Swimming"]
+        : ["Cricket", "Football", "Badminton", "Tennis", "Basketball"];
+
+    const ranked = Array.from(popularity.entries())
+      .sort(([, firstCount], [, secondCount]) => secondCount - firstCount)
+      .slice(0, 5)
+      .map(([name]) => name);
+
+    return (ranked.length ? ranked : fallback).map((name) => ({ name, emoji: getEmoji(name) }));
+  }, [selectedTimeframe, venues, coaches, trainer]);
 
   const settings = {
     dots: false,
@@ -621,23 +665,20 @@ const Home = () => {
                   <div className="trending-searches mt-3 d-flex align-items-center gap-2 flex-wrap">
                     <span className="ki-popular-searches me-2">Popular Searches:</span>
                     <div className="d-inline-flex gap-2 flex-wrap">
-                      {[
-                        { name: "Cricket", emoji: "🏏" },
-                        { name: "Football", emoji: "⚽" },
-                        { name: "Badminton", emoji: "🏸" },
-                        { name: "Tennis", emoji: "🎾" },
-                        { name: "Basketball", emoji: "🏀" }
-                      ].map((item) => (
-                        <span 
+                      {popularSearches.map((item) => (
+                        <Link
                           key={item.name}
-                          className="ki-search-tag" 
-                          onClick={() => {
-                            setSelectedTimeframe({ name: "Sports Venue" });
-                            setSelectedSport({ name: item.name });
-                          }}
+                          className="ki-search-tag"
+                          to={selectedTimeframe?.name === "Sports Venue" || !selectedTimeframe
+                            ? `/sports-venue/${item.name.toLowerCase().replace(/\s+/g, "-")}`
+                            : selectedTimeframe.name === "Coaches" ? "/coaches" : "/personal-training"}
+                          state={selectedTimeframe?.name === "Sports Venue" || !selectedTimeframe
+                            ? undefined
+                            : { selectedSport: { name: item.name } }}
+                          aria-label={`Browse ${item.name} ${selectedTimeframe?.name || "Sports Venue"}`}
                         >
                           <span className="me-1">{item.emoji}</span>{item.name}
-                        </span>
+                        </Link>
                       ))}
                     </div>
                   </div>
@@ -840,7 +881,7 @@ const Home = () => {
                 { name: "Basketball", slug: "basketball", count: "6 Listings", icon: "fas fa-basketball-ball", color: "#DC2626", bg: "#FEE2E2" },
                 { name: "Table Tennis", slug: "table-tennis", count: "10 Listings", icon: "fas fa-table-tennis", color: "#DB2777", bg: "#FCE7F3" },
                 { name: "Other Sports", slug: "other-sports", count: "514 Listings", icon: "fas fa-trophy", color: "#4F46E5", bg: "#E0E7FF" },
-              ].map((cat, idx) => (
+              ].slice(0, showAllCategories ? undefined : 6).map((cat, idx) => (
                 <div key={idx} className="col-xl-2 col-lg-3 col-md-4 col-sm-6 col-6 d-flex">
                   <div 
                     className="ki-category-slider-card p-3 text-center d-flex flex-column align-items-center justify-content-between w-100" 
@@ -880,6 +921,19 @@ const Home = () => {
                 </div>
               ))}
             </div>
+
+            {9 > 6 && (
+              <div className="text-center mt-4">
+                <button
+                  type="button"
+                  className="btn btn-success rounded-pill px-4 py-2 shadow-sm"
+                  onClick={() => setShowAllCategories((prev) => !prev)}
+                  style={{ backgroundColor: "#22C55E", borderColor: "#22C55E" }}
+                >
+                  {showAllCategories ? "Show less" : "View all"}
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </section>

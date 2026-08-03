@@ -316,6 +316,79 @@ plans tailored to individual goals.`,
   return trainer;
 }
 
+async function seedAdditionalProfiles() {
+  const password = await bcrypt.hash("Demo@1234", 10);
+  const coachProfiles = [
+    ["Aarav", "Mehta", "Cricket", "Male", "Vijay Nagar", 8, 1400],
+    ["Kabir", "Singh", "Football", "Male", "Palasia", 7, 1300],
+    ["Ananya", "Joshi", "Badminton", "Female", "Bhawarkuan", 6, 1200],
+    ["Rohan", "Patel", "Tennis", "Male", "Rau", 9, 1500],
+    ["Ishita", "Sharma", "Swimming", "Female", "Navlakha", 5, 1100],
+    ["Vivaan", "Kulkarni", "Basketball", "Male", "Vijay Nagar", 7, 1350],
+    ["Meera", "Nair", "Volleyball", "Female", "Bengali Square", 6, 1150],
+    ["Arjun", "Verma", "Table Tennis", "Male", "LIG Square", 8, 1250],
+    ["Kavya", "Gupta", "Fitness", "Female", "Nipania", 5, 1000],
+  ];
+  const trainerProfiles = [
+    ["Riya", "Kapoor", "Weight Loss", "Female", "Palasia", 6, 1100],
+    ["Aditya", "Rao", "Strength Training", "Male", "Vijay Nagar", 8, 1400],
+    ["Nisha", "Jain", "Yoga", "Female", "Bhawarkuan", 7, 1200],
+    ["Siddharth", "Mishra", "HIIT", "Male", "Rau", 5, 1250],
+    ["Pooja", "Saxena", "Zumba", "Female", "Navlakha", 6, 1050],
+    ["Karan", "Malhotra", "Muscle Gain", "Male", "Vijay Nagar", 9, 1500],
+    ["Sneha", "Tiwari", "Pilates", "Female", "Bengali Square", 5, 1150],
+    ["Dev", "Chauhan", "Sports Conditioning", "Male", "LIG Square", 7, 1350],
+    ["Aditi", "Bansal", "Functional Training", "Female", "Nipania", 6, 1200],
+  ];
+
+  const coachOperations = coachProfiles.map(([first_name, last_name, category, gender, near_by_location, experience, price], index) => ({
+    updateOne: {
+      filter: { email: `demo.coach.${index + 1}@kheloindore.in` },
+      update: {
+        $setOnInsert: {
+          first_name, last_name, full_name: `${first_name} ${last_name}`,
+          email: `demo.coach.${index + 1}@kheloindore.in`, mobile: 9000000001 + index,
+          password, demo_password: "Demo@1234", role: "Coach", trainer_type: `${category} Coach`,
+          category, category_type: category, gender, near_by_location, experience, price,
+          city: "Indore", state: "Madhya Pradesh", zipcode: "452001", status: true,
+          verification_status: 1, is_admin_access: 1, isUpdated: true, read_seen: 1,
+          specializations: `${category} coaching, Technique, Performance training`,
+          bio: `${first_name} is a certified ${category.toLowerCase()} coach offering personalised training in Indore.`,
+          availability: "Monday to Saturday, 6:00 AM - 8:00 PM",
+          profile_picture: [{ src: `https://i.pravatar.cc/300?img=${index + 10}` }],
+        },
+      },
+      upsert: true,
+    },
+  }));
+
+  const trainerOperations = trainerProfiles.map(([first_name, last_name, category, gender, near_by_location, experience, price], index) => ({
+    updateOne: {
+      filter: { email: `demo.trainer.${index + 1}@kheloindore.in` },
+      update: {
+        $setOnInsert: {
+          first_name, last_name, email: `demo.trainer.${index + 1}@kheloindore.in`, mobile: 9100000001 + index,
+          password, demo_password: "Demo@1234", role: "Personal Trainer", trainer_type: "Personal Trainer",
+          category, category_type: category, gender, near_by_location, experience, price,
+          city: "Indore", state: "Madhya Pradesh", zipcode: "452001", status: true,
+          is_admin_access: 1, isUpdated: true, read_seen: 1,
+          specializations: [category, "Fitness Assessment", "Personalised Plans"],
+          bio: `${first_name} is a certified personal trainer specialising in ${category.toLowerCase()}.`,
+          availability: "Monday to Saturday, 6:00 AM - 9:00 PM",
+          profile_picture: [{ src: `https://i.pravatar.cc/300?img=${index + 40}` }],
+        },
+      },
+      upsert: true,
+    },
+  }));
+
+  const [coachResult, trainerResult] = await Promise.all([
+    Coach.bulkWrite(coachOperations),
+    Trainer.bulkWrite(trainerOperations),
+  ]);
+  console.log(`Demo profiles ready: ${coachResult.upsertedCount || 0} coaches and ${trainerResult.upsertedCount || 0} trainers added.`);
+}
+
 const CoachSlot = require("../models/CoachSlotsModel");
 const TrainerSlot = require("../models/PersonalTrainerSlotModel");
 
@@ -380,9 +453,18 @@ async function seedTrainerSlots(trainerId) {
 async function main() {
   console.log("\n🌱 Starting Khelo Indore test data seed...\n");
 
+  if (process.argv.includes("--profiles-only")) {
+    await seedCoach();
+    await seedTrainer();
+    await seedAdditionalProfiles();
+    await mongoose.disconnect();
+    return;
+  }
+
   const venue   = await seedVenue();
   const coach   = await seedCoach();
   const trainer = await seedTrainer();
+  await seedAdditionalProfiles();
   
   await seedCoachSlots(coach._id);
   await seedTrainerSlots(trainer._id);

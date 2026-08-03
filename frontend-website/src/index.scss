@@ -43,6 +43,11 @@ textarea,
 }
 // ───────────────────────────────────────────────────────────────────────────── ─────────────────────────────────────────────────────────────────────────────
 
+body {
+  font-size: 16px;
+  line-height: 1.6;
+}
+
 .stickybar {
   top: 0;
   // position: sticky;
@@ -976,28 +981,32 @@ textarea,
 .work-section,
 .category-section,
 .featured-venues,
+.featured-venues-header,
+.featured-venues-list,
 .service-section,
 .convenient-section,
 .earn-money {
   background: transparent !important;
 
-  .section-heading,
-  .section-header {
+  h2,
+  h3,
+  .section-heading h2,
+  .section-heading h3,
+  .section-header h2,
+  .section-header h3 {
+    color: #17222D !important;
+    font-family: 'Space Grotesk', sans-serif !important;
 
-    h2,
-    h3 {
-      color: #17222D !important;
-      font-family: 'Space Grotesk', sans-serif !important;
-
-      span {
-        color: #43B649 !important;
-      }
+    span {
+      color: #43B649 !important;
     }
+  }
 
-    p,
-    .sub-title {
-      color: #606D76 !important;
-    }
+  p,
+  .sub-title,
+  .section-heading p,
+  .section-header p {
+    color: #606D76 !important;
   }
 }
 
@@ -1460,6 +1469,49 @@ textarea,
   }
 }
 
+// Keep footer contrast intact when global styles are loaded after main.scss.
+.footer {
+  background: #10291d !important;
+  border-top-color: transparent !important;
+
+  &::before {
+    background: linear-gradient(90deg, #68cf36, #1fb44a, #9be15b) !important;
+    display: block !important;
+  }
+
+  .footer-title { color: #ffffff !important; }
+
+  .footer-top .footer-about .footer-desc,
+  .footer-about p { color: rgba(232, 242, 234, 0.78) !important; }
+
+  .footer-menu ul li a { color: rgba(232, 242, 234, 0.76) !important; }
+  .footer-menu ul li a:hover { color: #9bea6d !important; }
+
+  .footer-logo {
+    color: #ffffff !important;
+
+    > span span { color: #82d946 !important; }
+  }
+
+  .footer-enquiry { color: #9bea6d !important; }
+
+  .social-icon ul li a {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border-color: rgba(255, 255, 255, 0.16) !important;
+
+    i { color: #e7f1e9 !important; }
+  }
+
+  .footer-bottom {
+    background: #0b1e14 !important;
+    border-top-color: rgba(208, 241, 216, 0.12) !important;
+
+    .copyright-text p { color: rgba(232, 242, 234, 0.62) !important; }
+  }
+
+  .footer-legal-links a { color: rgba(232, 242, 234, 0.72) !important; }
+}
+
 // Hide section SVG dividers globally to ensure clean, consistent section transitions
 .section-divider {
   display: none !important;
@@ -1503,6 +1555,33 @@ textarea,
   min-height: auto !important;
   padding: 16px 20px 20px !important; // Clean, premium padding
 }
+
+// Listing Cards content contrast fixes
+.listing-item {
+  .listing-content,
+  .listing-content.home-venue.news-content,
+  .listing-content.news-content,
+  .listing-content.list-coche-content {
+    h3,
+    h3 a,
+    .listing-title,
+    .listing-title a {
+      color: #17222D !important;
+      font-family: 'Space Grotesk', sans-serif !important;
+      text-decoration: none !important;
+
+      &:hover {
+        color: #43B649 !important;
+      }
+    }
+
+    p,
+    p span {
+      color: #606D76 !important;
+    }
+  }
+}
+
 
 // Card image aspect ratio & cover controls with modern hover zoom
 .listing-item .listing-img {

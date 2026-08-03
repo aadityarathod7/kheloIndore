@@ -17,23 +17,24 @@ const Footer = () => {
   return (
     <footer className="footer">
       <div className="container">
-        {/* Footer Top Links */}
         <div className="footer-top">
-          <div className="row g-3 g-lg-4">
-            {/* Column 1: Brand Info & Socials */}
-            <div className="col-lg-3 col-md-6 mb-3 mb-lg-0">
+          <div className="row g-4 g-xl-5">
+            <div className="col-lg-4 col-md-6">
               <div className="footer-widget footer-about">
-                <div className="footer-logo mb-2">
+                <Link to="/" className="footer-logo" aria-label="Khelo Indore home">
                   <ImageWithBasePath
                     src="/assets/img/khelo-Indore-Logo.png"
                     className="img-fluid"
                     alt="Khelo Indore Logo"
-                    style={{ maxHeight: "42px" }}
                   />
-                </div>
-                <p className="footer-desc mb-3">
-                  Indore&apos;s leading platform for booking premium sports turfs, courts, swimming pools, and hiring professional trainers &amp; coaches.
+                  <span>Khelo<span>Indore</span></span>
+                </Link>
+                <p className="footer-desc">
+                  Your home for booking the best turfs, courts, pools, coaches and trainers across Indore.
                 </p>
+                <Link to={routes.contactUs} className="footer-enquiry">
+                  <i className="feather-mail" /> Plan your next game
+                </Link>
                 <div className="social-icon">
                   <ul className="d-flex align-items-center gap-2 m-0 p-0">
                     <li>
@@ -61,10 +62,9 @@ const Footer = () => {
               </div>
             </div>
 
-            {/* Column 2: Our Services */}
-            <div className="col-lg-2 col-md-6 col-6">
+            <div className="col-lg-2 col-md-3 col-6">
               <div className="footer-widget footer-menu">
-                <h4 className="footer-title">Our Services</h4>
+                <h4 className="footer-title">Explore</h4>
                 <ul>
                   <li>
                     <Link to={routes.blogListSidebarLeft}>Sports Venues</Link>
@@ -78,15 +78,17 @@ const Footer = () => {
                   <li>
                     <Link to={routes.blogGrid}>Blogs & Stories</Link>
                   </li>
+                  <li>
+                    <Link to={routes.contactUs}>Contact Us</Link>
+                  </li>
                 </ul>
               </div>
             </div>
 
-            {/* Column 3: Sports Categories */}
-            <div className="col-lg-2 col-md-6 col-6">
+            <div className="col-lg-2 col-md-3 col-6">
               <div className="footer-widget footer-menu">
                 <h4 className="footer-title">Sports</h4>
-                <ul style={{ maxHeight: "280px", overflowY: "auto" }}>
+                <ul>
                   <li>
                     <Link to="/sports-venue/cricket">Cricket Turfs</Link>
                   </li>
@@ -100,29 +102,16 @@ const Footer = () => {
                     <Link to="/sports-venue/swimming">Swimming Pools</Link>
                   </li>
                   <li>
-                    <Link to="/sports-venue/pickleball">Pickleball Courts</Link>
-                  </li>
-                  <li>
-                    <Link to="/sports-venue/tennis">Tennis Courts</Link>
-                  </li>
-                  <li>
-                    <Link to="/sports-venue/basketball">Basketball Courts</Link>
-                  </li>
-                  <li>
-                    <Link to="/sports-venue/table-tennis">Table Tennis</Link>
-                  </li>
-                  <li>
-                    <Link to="/sports-venue/other-sports">Other Sports</Link>
+                    <Link to="/sports-venue/other-sports">View all sports <i className="feather-arrow-up-right" /></Link>
                   </li>
                 </ul>
               </div>
             </div>
 
-            {/* Column 4: Top Locations */}
-            <div className="col-lg-3 col-md-6 col-6">
+            <div className="col-lg-4 col-md-6">
               <div className="footer-widget footer-menu">
-                <h4 className="footer-title">Locations</h4>
-                <ul style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2px 10px", minWidth: "260px" }}>
+                <h4 className="footer-title">Popular locations</h4>
+                <ul className="footer-location-list">
                   <li>
                     <Link to="/sports-venue">Vijay Nagar</Link>
                   </li>
@@ -147,73 +136,36 @@ const Footer = () => {
                   <li>
                     <Link to="/sports-venue">Annapurna Road</Link>
                   </li>
-                  <li>
-                    <Link to="/sports-venue">Mahalaxmi Nagar</Link>
-                  </li>
-                  <li>
-                    <Link to="/sports-venue">Khajrana</Link>
-                  </li>
-                  <li>
-                    <Link to="/sports-venue">Rau</Link>
-                  </li>
-                  <li>
-                    <Link to="/sports-venue">Nipania</Link>
-                  </li>
-                  <li>
-                    <Link to="/sports-venue">Super Corridor</Link>
-                  </li>
-                  <li>
-                    <Link to="/sports-venue">Kanadia Road</Link>
-                  </li>
-                </ul>
-              </div>
-            </div>
-
-            {/* Column 5: Support & Info */}
-            <div className="col-lg-3 col-md-6 col-6">
-              <div className="footer-widget footer-menu">
-                <h4 className="footer-title">Support & Info</h4>
-                <ul>
-                  <li>
-                    <Link to={routes.contactUs}>Contact Us</Link>
-                  </li>
-                  <li>
-                    <Link to={routes.privacyPolicy}>Privacy Policy</Link>
-                  </li>
-                  <li>
-                    <Link to={routes.termsCondition}>Terms &amp; Conditions</Link>
-                  </li>
-                  <li>
-                    <Link to={routes.refundPolicy}>Refund Policy</Link>
-                  </li>
-                  <li>
-                    <Link to={loginToken ? routes.userProfile : "/login"}>My Account</Link>
-                  </li>
                 </ul>
               </div>
             </div>
           </div>
         </div>
-        {/* /Footer Top Links */}
       </div>
 
-      {/* Footer Bottom copyright */}
       <div className="footer-bottom">
         <div className="container">
           <div className="copyright">
             <div className="row align-items-center">
-              <div className="col-md-12 text-center">
+              <div className="col-lg-5">
                 <div className="copyright-text">
                   <p className="mb-0">
-                    &copy; 2026 All Rights Reserved By <strong>KheloIndore</strong> | Powered by <strong>MANS Sports Entertainment</strong>.
+                    &copy; 2026 KheloIndore. Powered by MANS Sports Entertainment.
                   </p>
                 </div>
+              </div>
+              <div className="col-lg-7">
+                <ul className="footer-legal-links">
+                  <li><Link to={routes.privacyPolicy}>Privacy Policy</Link></li>
+                  <li><Link to={routes.termsCondition}>Terms &amp; Conditions</Link></li>
+                  <li><Link to={routes.refundPolicy}>Refund Policy</Link></li>
+                  <li><Link to={loginToken ? routes.userProfile : "/login"}>My Account</Link></li>
+                </ul>
               </div>
             </div>
           </div>
         </div>
       </div>
-      {/* /Footer Bottom copyright */}
 
       {/* Mobile Bottom Navigation Bar */}
       <div 

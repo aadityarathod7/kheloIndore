@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node index.js",
     "start:dev": "nodemon index.js",
-    "seed:excel": "node seed_excel_all_tabs.js"
+    "seed:excel": "node seed_excel_all_tabs.js",
+    "seed:demo-profiles": "node seeds/seed_test_data.js --profiles-only"
   },
   "keywords": [],
   "author": "",

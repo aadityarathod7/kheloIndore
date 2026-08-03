@@ -121,6 +121,274 @@ const UserDashboard = () => {
   };
 
 
+  const [venueBookingData, setVenueBookingData] = useState<any[]>([]);
+  const [coachBookingData, setCoachBookingData] = useState<any[]>([]);
+  const [trainerBookingData, setTrainerBookingData] = useState<any[]>([]);
+  const [loadingBookings, setLoadingBookings] = useState<boolean>(true);
+
+  const fetchBookings = async () => {
+    try {
+      setLoadingBookings(true);
+      const response = await axios.get(
+        `${API_URL}/get/venue-coach-pt-booking/${user_id}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        }
+      );
+      const booking = response.data;
+      
+      const ptData = booking?.data?.personalTrainer || [];
+      const transformedPt = ptData.map((booking: any) => ({
+        id: booking._id,
+        first_name: booking?.pt_id?.first_name,
+        last_name: booking?.pt_id?.last_name,
+        startDate: booking?.startDate,
+        endDate: booking?.endDate,
+        startTime: booking?.start_time,
+        endTime: booking?.end_time,
+        total_price: booking?.total_price,
+        paymentState: booking?.paymentState,
+        pdfUrl: booking?.pdf_url,
+        cancellation_status: booking?.cancellation_status,
+        createdAt: booking?.createdAt,
+        status: booking?.cancellation_status === 1
+          ? 'Cancelled'
+          : booking?.verification_status === 1
+            ? 'Approved'
+            : booking?.verification_status === 2
+              ? 'Rejected'
+              : booking?.paymentState
+      }));
+      setTrainerBookingData(transformedPt);
+
+      const venueData = booking?.data?.venueAdmin || [];
+      const transformedVenue = venueData.map((booking: any) => ({
+        date: booking?.date,
+        name: booking?.venue_id?.name,
+        vendor_type: booking?.venue_id?.vendor_type,
+        slots: booking?.slot_time,
+        total_price: booking?.total_price,
+        paymentState: booking?.paymentState,
+        verificationStatus: booking?.verification_status,
+        pdfUrl: booking?.pdf_url,
+        id: booking?._id,
+        cancellation_status: booking?.cancellation_status,
+        createdAt: booking?.createdAt,
+        status: booking?.cancellation_status === 1
+          ? 'Cancelled'
+          : booking?.verification_status === 1
+            ? 'Approved'
+            : booking?.verification_status === 2
+              ? 'Rejected'
+              : booking?.paymentState
+      }));
+      setVenueBookingData(transformedVenue);
+
+      const coachData = booking?.data?.coach || [];
+      const transformedCoach = coachData.map((booking: any) => ({
+        startDate: booking?.startDate,
+        endDate: booking?.endDate,
+        first_name: booking?.coachId?.first_name,
+        last_name: booking?.coachId?.last_name,
+        packageType: booking?.packageType,
+        paymentState: booking?.paymentState,
+        total_price: booking?.total_price,
+        startTime: booking?.start_time,
+        endTime: booking?.end_time,
+        pdfUrl: booking?.pdf_url,
+        cancellation_status: booking?.cancellation_status,
+        id: booking?._id,
+        createdAt: booking?.createdAt,
+        status: booking?.cancellation_status === 1
+          ? 'Cancelled'
+          : booking?.verification_status === 1
+            ? 'Approved'
+            : booking?.verification_status === 2
+              ? 'Rejected'
+              : booking?.paymentState
+      }));
+      setCoachBookingData(transformedCoach);
+    } catch (error) {
+      console.error("Error fetching bookings:", error);
+    } finally {
+      setLoadingBookings(false);
+    }
+  };
+
+  useEffect(() => {
+    if (user_id) {
+      fetchBookings();
+    }
+  }, [user_id]);
+
+  const formatDate = (dateString: any) => {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return dateString;
+    const day = date.getDate().toString().padStart(2, "0");
+    const month = (date.getMonth() + 1).toString().padStart(2, "0");
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
+
+  const formatMonthName = (dateString: any) => {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return dateString;
+    return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+  };
+
+  const getUpcomingAppointments = () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const venueUpcoming = venueBookingData.filter(b => b.cancellation_status !== 1 && new Date(b.date) >= today);
+    const coachUpcoming = coachBookingData.filter(b => b.cancellation_status !== 1 && new Date(b.startDate) >= today);
+    const trainerUpcoming = trainerBookingData.filter(b => b.cancellation_status !== 1 && new Date(b.startDate) >= today);
+
+    // Sort ascending by date
+    venueUpcoming.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    coachUpcoming.sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+    trainerUpcoming.sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+
+    return {
+      venues: venueUpcoming,
+      coaches: coachUpcoming,
+      trainers: trainerUpcoming,
+      count: venueUpcoming.length + coachUpcoming.length + trainerUpcoming.length
+    };
+  };
+
+  const totalVenuesBooked = venueBookingData.filter(b => b.cancellation_status !== 1).length;
+  const totalCoachesBooked = coachBookingData.filter(b => b.cancellation_status !== 1).length;
+  const totalLessons = trainerBookingData.filter(b => b.cancellation_status !== 1).length;
+
+  const totalSpent = [...venueBookingData, ...coachBookingData, ...trainerBookingData]
+    .filter(b => b.cancellation_status !== 1)
+    .reduce((sum, b) => sum + (Number(b.total_price) || 0), 0);
+
+  const upcomingAppointments = getUpcomingAppointments();
+
+  const renderUpcomingAppointment = () => {
+    const firstVenue = upcomingAppointments.venues[0];
+    const firstCoach = upcomingAppointments.coaches[0];
+    const firstTrainer = upcomingAppointments.trainers[0];
+
+    if (firstVenue) {
+      return (
+        <ul>
+          <li>
+            <div className="appointment-item">
+              <div className="appointment-img">
+                <img
+                  src="/assets/img/booking/booking-01.jpg"
+                  alt="Appointment"
+                  style={{ width: "45px", height: "45px", borderRadius: "8px", objectFit: "cover" }}
+                />
+              </div>
+              <div className="appointment-content">
+                <h6>{firstVenue.name || 'Venue Booking'}</h6>
+                <p>{firstVenue.vendor_type || 'Sports Venue'}</p>
+              </div>
+            </div>
+          </li>
+          <li>
+            <h6>Appointment Date</h6>
+            <p>{formatDate(firstVenue.date)}</p>
+          </li>
+          <li>
+            <h6>Slots / Time</h6>
+            <p>{firstVenue.slots?.join(', ') || 'N/A'}</p>
+          </li>
+          <li>
+            <h6>Amount Paid</h6>
+            <p>₹{firstVenue.total_price}</p>
+          </li>
+          <li>
+            <h6>Status</h6>
+            <p style={{ color: firstVenue.status === 'Approved' ? '#22C55E' : '#EAB308', fontWeight: 600 }}>{firstVenue.status}</p>
+          </li>
+        </ul>
+      );
+    } else if (firstCoach) {
+      return (
+        <ul>
+          <li>
+            <div className="appointment-item">
+              <div className="appointment-img">
+                <img
+                  src="/assets/img/featured/featured-05.jpg"
+                  alt="Appointment"
+                  style={{ width: "45px", height: "45px", borderRadius: "8px", objectFit: "cover" }}
+                />
+              </div>
+              <div className="appointment-content">
+                <h6>Coach {firstCoach.first_name} {firstCoach.last_name}</h6>
+                <p>{firstCoach.packageType || 'Coaching Session'}</p>
+              </div>
+            </div>
+          </li>
+          <li>
+            <h6>Start Date</h6>
+            <p>{formatDate(firstCoach.startDate)}</p>
+          </li>
+          <li>
+            <h6>Time</h6>
+            <p>{firstCoach.startTime} - {firstCoach.endTime}</p>
+          </li>
+          <li>
+            <h6>Amount</h6>
+            <p>₹{firstCoach.total_price}</p>
+          </li>
+          <li>
+            <h6>Status</h6>
+            <p style={{ color: firstCoach.status === 'Approved' ? '#22C55E' : '#EAB308', fontWeight: 600 }}>{firstCoach.status}</p>
+          </li>
+        </ul>
+      );
+    } else if (firstTrainer) {
+      return (
+        <ul>
+          <li>
+            <div className="appointment-item">
+              <div className="appointment-img">
+                <img
+                  src="/assets/img/featured/featured-07.jpg"
+                  alt="Appointment"
+                  style={{ width: "45px", height: "45px", borderRadius: "8px", objectFit: "cover" }}
+                />
+              </div>
+              <div className="appointment-content">
+                <h6>Trainer {firstTrainer.first_name} {firstTrainer.last_name}</h6>
+                <p>Personal Training</p>
+              </div>
+            </div>
+          </li>
+          <li>
+            <h6>Start Date</h6>
+            <p>{formatDate(firstTrainer.startDate)}</p>
+          </li>
+          <li>
+            <h6>Time</h6>
+            <p>{firstTrainer.startTime} - {firstTrainer.endTime}</p>
+          </li>
+          <li>
+            <h6>Amount</h6>
+            <p>₹{firstTrainer.total_price}</p>
+          </li>
+          <li>
+            <h6>Status</h6>
+            <p style={{ color: firstTrainer.status === 'Approved' ? '#22C55E' : '#EAB308', fontWeight: 600 }}>{firstTrainer.status}</p>
+          </li>
+        </ul>
+      );
+    }
+    return null;
+  };
+
+
   return (
     <>
       {/* Hero Section (Matching My Bookings Header) */}
@@ -263,7 +531,7 @@ const UserDashboard = () => {
                   <div className="col-xl-3 col-lg-6 col-md-6 d-flex">
                     <div className="statistics-grid flex-fill">
                       <div className="statistics-content">
-                        <h3>78</h3>
+                        <h3>{loadingBookings ? '...' : totalVenuesBooked}</h3>
                         <p>Total Court Booked</p>
                       </div>
                       <div className="statistics-icon">
@@ -277,7 +545,7 @@ const UserDashboard = () => {
                   <div className="col-xl-3 col-lg-6 col-md-6 d-flex">
                     <div className="statistics-grid flex-fill">
                       <div className="statistics-content">
-                        <h3>45</h3>
+                        <h3>{loadingBookings ? '...' : totalCoachesBooked}</h3>
                         <p>Total Coaches Booked</p>
                       </div>
                       <div className="statistics-icon">
@@ -291,7 +559,7 @@ const UserDashboard = () => {
                   <div className="col-xl-3 col-lg-6 col-md-6 d-flex">
                     <div className="statistics-grid flex-fill">
                       <div className="statistics-content">
-                        <h3>06</h3>
+                        <h3>{loadingBookings ? '...' : totalLessons}</h3>
                         <p>Total Lessons</p>
                       </div>
                       <div className="statistics-icon">
@@ -305,7 +573,7 @@ const UserDashboard = () => {
                   <div className="col-xl-3 col-lg-6 col-md-6 d-flex">
                     <div className="statistics-grid flex-fill">
                       <div className="statistics-content">
-                        <h3>₹45,056</h3>
+                        <h3>{loadingBookings ? '...' : `₹${totalSpent.toLocaleString('en-IN')}`}</h3>
                         <p>Payments</p>
                       </div>
                       <div className="statistics-icon">
@@ -320,52 +588,28 @@ const UserDashboard = () => {
               </div>
             </div>
           </div>
-          {/* /Statistics Card */}
-          {/* Appointment */}
+          {/* /Statistics Card           {/* Appointment */}
           <div className="row">
             <div className="col-lg-12">
               <div className="card dashboard-card">
                 <div className="card-header">
-                  <h4>Todays Appointment</h4>
-                  <p>Your Personal Badminton Schedule</p>
+                  <h4>Upcoming Appointment</h4>
+                  <p>Your Personal Schedule</p>
                 </div>
                 <div className="appointment-info">
-                  <ul>
-                    <li>
-                      <div className="appointment-item">
-                        <div className="appointment-img">
-                          <ImageWithBasePath
-                            src="/assets/img/booking/booking-01.jpg"
-                            alt="Appointment"
-                          />
-                        </div>
-                        <div className="appointment-content">
-                          <h6>Court Name</h6>
-                          <p>Standard Synthetic Court 1</p>
-                        </div>
-                      </div>
-                    </li>
-                    <li>
-                      <h6>Appointment Date</h6>
-                      <p>Mon, Jul 11</p>
-                    </li>
-                    <li>
-                      <h6>Start Time</h6>
-                      <p>05:25 AM</p>
-                    </li>
-                    <li>
-                      <h6>Appointment End Time</h6>
-                      <p>06:25 AM</p>
-                    </li>
-                    <li>
-                      <h6>Additional Guests</h6>
-                      <p>4</p>
-                    </li>
-                    <li>
-                      <h6>Location</h6>
-                      <p>Sant Marco</p>
-                    </li>
-                  </ul>
+                  {loadingBookings ? (
+                    <div className="text-center py-4 w-100">
+                      <i className="fas fa-spinner fa-spin text-success fa-2x mb-2 d-block" />
+                      <span style={{ fontSize: "13px", color: "#64748B" }}>Checking schedule...</span>
+                    </div>
+                  ) : upcomingAppointments.count > 0 ? (
+                    renderUpcomingAppointment()
+                  )
+                  : (
+                    <div className="text-center py-4 w-100">
+                      <p className="text-muted mb-0" style={{ fontSize: "14px", fontWeight: "400" }}>No upcoming appointments scheduled.</p>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -434,293 +678,57 @@ const UserDashboard = () => {
                     <div className="table-responsive dashboard-table-responsive">
                       <table className="table dashboard-card-table">
                         <tbody>
-                          <tr>
-                            <td>
-                              <div className="academy-info">
-                                <Link
-                                  to={routes.userBookings}
-                                  className="academy-img"
-                                >
-                                  <ImageWithBasePath
-                                    src="/assets/img/booking/booking-02.jpg"
-                                    alt="Booking"
-                                  />
-                                </Link>
-                                <div className="academy-content">
-                                  <h6>
-                                    <Link
-                                      to="#"
-                                      data-bs-toggle="modal"
-                                      data-bs-target="#upcoming-court"
-                                    >
-                                      Leap Sports Academy
+                          {loadingBookings ? (
+                            <tr>
+                              <td colSpan={4} className="text-center py-4">
+                                <i className="fas fa-spinner fa-spin text-success me-2" /> Loading venue bookings...
+                              </td>
+                            </tr>
+                          ) : venueBookingData.length > 0 ? (
+                            venueBookingData.slice(0, 5).map((b, idx) => (
+                              <tr key={b.id || idx}>
+                                <td>
+                                  <div className="academy-info">
+                                    <Link to={routes.userBookings} className="academy-img">
+                                      <img
+                                        src="/assets/img/booking/booking-02.jpg"
+                                        alt="Booking"
+                                        style={{ width: "42px", height: "42px", borderRadius: "8px", objectFit: "cover" }}
+                                      />
                                     </Link>
-                                  </h6>
-                                  <span>Court 1</span>
-                                  <ul>
-                                    <li>Guests : 4</li>
-                                    <li>2 Hrs</li>
-                                  </ul>
-                                </div>
-                              </div>
-                            </td>
-                            <td>
-                              <h6>Date &amp; Time</h6>
-                              <p>Mon, Jul 11</p>
-                              <p>06:00 PM - 08:00 PM</p>
-                            </td>
-                            <td>
-                              <h4>₹400</h4>
-                            </td>
-                            <td>
-                              <div className="dropdown dropdown-action">
-                                <Link
-                                  to="#"
-                                  className="action-icon dropdown-toggle"
-                                  data-bs-toggle="dropdown"
-                                  aria-expanded="false"
-                                >
-                                  <i className="fas fa-ellipsis" />
-                                </Link>
-                                <div className="dropdown-menu dropdown-menu-end">
-                                  <Link
-                                    className="dropdown-item"
-                                    to="#"
-                                  >
-                                    <i className="feather-x-circle" /> Cancel
-                                  </Link>
-                                </div>
-                              </div>
-                            </td>
-                          </tr>
-                          <tr>
-                            <td>
-                              <div className="academy-info">
-                                <Link
-                                  to={routes.userBookings}
-                                  className="academy-img"
-                                >
-                                  <ImageWithBasePath
-                                    src="/assets/img/booking/booking-03.jpg"
-                                    alt="Booking"
-                                  />
-                                </Link>
-                                <div className="academy-content">
-                                  <h6>
-                                    <Link
-                                      data-bs-toggle="modal"
-                                      data-bs-target="#upcoming-court" to={""}                                    >
-                                      Wing Sports Academy
-                                    </Link>
-                                  </h6>
-                                  <span>Court 2</span>
-                                  <ul>
-                                    <li>Guests : 3</li>
-                                    <li>1 Hr</li>
-                                  </ul>
-                                </div>
-                              </div>
-                            </td>
-                            <td>
-                              <h6>Date &amp; Time</h6>
-                              <p>Tue, Jul 12</p>
-                              <p>07:00 PM - 08:00 PM</p>
-                            </td>
-                            <td>
-                              <h4>₹240</h4>
-                            </td>
-                            <td>
-                              <div className="dropdown dropdown-action">
-                                <Link
-                                  to="#"
-                                  className="action-icon dropdown-toggle"
-                                  data-bs-toggle="dropdown"
-                                  aria-expanded="false"
-                                >
-                                  <i className="fas fa-ellipsis" />
-                                </Link>
-                                <div className="dropdown-menu dropdown-menu-end">
-                                  <Link
-                                    className="dropdown-item"
-                                    to="#"
-                                  >
-                                    <i className="feather-x-circle" /> Cancel
-                                  </Link>
-                                </div>
-                              </div>
-                            </td>
-                          </tr>
-                          <tr>
-                            <td>
-                              <div className="academy-info">
-                                <Link
-                                  to={routes.userBookings}
-                                  className="academy-img"
-                                >
-                                  <ImageWithBasePath
-                                    src="/assets/img/booking/booking-04.jpg"
-                                    alt="Booking"
-                                  />
-                                </Link>
-                                <div className="academy-content">
-                                  <h6>
-                                    <Link
-                                      data-bs-toggle="modal"
-                                      data-bs-target="#upcoming-court" to={""}                                    >
-                                      Feather Badminton
-                                    </Link>
-                                  </h6>
-                                  <span>Court 1</span>
-                                  <ul>
-                                    <li>Guests : 1</li>
-                                    <li>4 Hrs</li>
-                                  </ul>
-                                </div>
-                              </div>
-                            </td>
-                            <td>
-                              <h6>Date &amp; Time</h6>
-                              <p>Wen, Jul 13</p>
-                              <p>10:00 PM - 11:00 PM</p>
-                            </td>
-                            <td>
-                              <h4>₹320</h4>
-                            </td>
-                            <td>
-                              <div className="dropdown dropdown-action">
-                                <Link
-                                  to="#"
-                                  className="action-icon dropdown-toggle"
-                                  data-bs-toggle="dropdown"
-                                  aria-expanded="false"
-                                >
-                                  <i className="fas fa-ellipsis" />
-                                </Link>
-                                <div className="dropdown-menu dropdown-menu-end">
-                                  <Link
-                                    className="dropdown-item"
-                                    to="#"
-                                  >
-                                    <i className="feather-x-circle" /> Cancel
-                                  </Link>
-                                </div>
-                              </div>
-                            </td>
-                          </tr>
-                          <tr>
-                            <td>
-                              <div className="academy-info">
-                                <Link
-                                  to={routes.userBookings}
-                                  className="academy-img"
-                                >
-                                  <ImageWithBasePath
-                                    src="/assets/img/booking/booking-05.jpg"
-                                    alt="Booking"
-                                  />
-                                </Link>
-                                <div className="academy-content">
-                                  <h6>
-                                    <Link
-                                      data-bs-toggle="modal"
-                                      data-bs-target="#upcoming-court" to={""}                                    >
-                                      Bwing Sports Academy
-                                    </Link>
-                                  </h6>
-                                  <span>Court 3</span>
-                                  <ul>
-                                    <li>Guests : 5</li>
-                                    <li>6 Hrs</li>
-                                  </ul>
-                                </div>
-                              </div>
-                            </td>
-                            <td>
-                              <h6>Date &amp; Time</h6>
-                              <p>Thu, Jul 14</p>
-                              <p>09:00 AM - 10:00 AM</p>
-                            </td>
-                            <td>
-                              <h4>₹710</h4>
-                            </td>
-                            <td>
-                              <div className="dropdown dropdown-action">
-                                <Link
-                                  to="#"
-                                  className="action-icon dropdown-toggle"
-                                  data-bs-toggle="dropdown"
-                                  aria-expanded="false"
-                                >
-                                  <i className="fas fa-ellipsis" />
-                                </Link>
-                                <div className="dropdown-menu dropdown-menu-end">
-                                  <Link
-                                    className="dropdown-item"
-                                    to="#"
-                                  >
-                                    <i className="feather-x-circle" /> Cancel
-                                  </Link>
-                                </div>
-                              </div>
-                            </td>
-                          </tr>
-                          <tr>
-                            <td>
-                              <div className="academy-info">
-                                <Link
-                                  to={routes.userBookings}
-                                  className="academy-img"
-                                >
-                                  <ImageWithBasePath
-                                    src="/assets/img/booking/booking-06.jpg"
-                                    alt="Booking"
-                                  />
-                                </Link>
-                                <div className="academy-content">
-                                  <h6>
-                                    <Link
-                                      data-bs-toggle="modal"
-                                      data-bs-target="#upcoming-court" to={""}                                    >
-                                      Marsh Academy
-                                    </Link>
-                                  </h6>
-                                  <span>Court 2</span>
-                                  <ul>
-                                    <li>Guests : 3</li>
-                                    <li>2 Hrs</li>
-                                  </ul>
-                                </div>
-                              </div>
-                            </td>
-                            <td>
-                              <h6>Date &amp; Time</h6>
-                              <p>Fri, Jul 15</p>
-                              <p>11:00 AM - 12:00 PM</p>
-                            </td>
-                            <td>
-                              <h4>₹820</h4>
-                            </td>
-                            <td>
-                              <div className="dropdown dropdown-action">
-                                <Link
-                                  to="#"
-                                  className="action-icon dropdown-toggle"
-                                  data-bs-toggle="dropdown"
-                                  aria-expanded="false"
-                                >
-                                  <i className="fas fa-ellipsis" />
-                                </Link>
-                                <div className="dropdown-menu dropdown-menu-end">
-                                  <Link
-                                    className="dropdown-item"
-                                    to="#"
-                                  >
-                                    <i className="feather-x-circle" /> Cancel
-                                  </Link>
-                                </div>
-                              </div>
-                            </td>
-                          </tr>
+                                    <div className="academy-content">
+                                      <h6>
+                                        <Link to={routes.userBookings}>
+                                          {b.name || 'Venue Reservation'}
+                                        </Link>
+                                      </h6>
+                                      <span>{b.vendor_type || 'Sports Venue'}</span>
+                                      <ul>
+                                        <li>Slots: {b.slots?.length || 0}</li>
+                                      </ul>
+                                    </div>
+                                  </div>
+                                </td>
+                                <td>
+                                  <h6>Date &amp; Time</h6>
+                                  <p>{formatDate(b.date)}</p>
+                                  <p style={{ fontSize: "12px", color: "#64748B" }}>{b.slots?.join(', ')}</p>
+                                </td>
+                                <td>
+                                  <h4>₹{b.total_price}</h4>
+                                </td>
+                                <td>
+                                  <span style={{ fontSize: "12px", fontWeight: 600, color: b.status === 'Approved' ? '#22C55E' : b.status === 'Cancelled' ? '#EF4444' : '#EAB308' }}>
+                                    {b.status}
+                                  </span>
+                                </td>
+                              </tr>
+                            ))
+                          ) : (
+                            <tr>
+                              <td colSpan={4} className="text-center py-4 text-muted">No venue bookings found.</td>
+                            </tr>
+                          )}
                         </tbody>
                       </table>
                     </div>
@@ -735,276 +743,62 @@ const UserDashboard = () => {
                     <div className="table-responsive dashboard-table-responsive">
                       <table className="table dashboard-card-table">
                         <tbody>
-                          <tr>
-                            <td>
-                              <div className="academy-info">
-                                <Link
-                                  to={routes.userBookings}
-                                  className="academy-img"
-                                >
-                                  <ImageWithBasePath
-                                    src="/assets/img/featured/featured-05.jpg"
-                                    alt="Booking"
-                                  />
-                                </Link>
-                                <div className="academy-content">
-                                  <h6 className="mb-1">
-                                    <Link
-                                      data-bs-toggle="modal"
-                                      data-bs-target="#upcoming-coach" to={""}                                    >
-                                      Kevin Anderson
-                                    </Link>
-                                  </h6>
-                                  <span className="mb-0">Onetime</span>
-                                </div>
-                              </div>
-                            </td>
-                            <td>
-                              <h6>Date &amp; Time</h6>
-                              <p>Mon, Jul 11</p>
-                              <p>06:00 PM - 08:00 PM</p>
-                            </td>
-                            <td>
-                              <h4>₹400</h4>
-                            </td>
-                            <td>
-                              <div className="dropdown dropdown-action">
-                                <Link
-                                  to="#"
-                                  className="action-icon dropdown-toggle"
-                                  data-bs-toggle="dropdown"
-                                  aria-expanded="false"
-                                >
-                                  <i className="fas fa-ellipsis" />
-                                </Link>
-                                <div className="dropdown-menu dropdown-menu-end">
-                                  <Link
-                                    className="dropdown-item"
-                                    to="#"
-                                  >
-                                    <i className="feather-x-circle" /> Cancel
-                                  </Link>
-                                </div>
-                              </div>
-                            </td>
-                          </tr>
-                          <tr>
-                            <td>
-                              <div className="academy-info">
-                                <Link
-                                  to={routes.userBookings}
-                                  className="academy-img"
-                                >
-                                  <ImageWithBasePath
-                                    src="/assets/img/featured/featured-06.jpg"
-                                    alt="Booking"
-                                  />
-                                </Link>
-                                <div className="academy-content">
-                                  <h6 className="mb-1">
-                                    {" "}
-                                    <Link
-                                      data-bs-toggle="modal"
-                                      data-bs-target="#upcoming-coach" to={""}                                    >
-                                      Angela Roudrigez
-                                    </Link>
-                                  </h6>
-                                  <span className="mb-0">Single Lesson</span>
-                                </div>
-                              </div>
-                            </td>
-                            <td>
-                              <h6>Date &amp; Time</h6>
-                              <p>Tue, Jul 12</p>
-                              <p>07:00 PM - 08:00 PM</p>
-                            </td>
-                            <td>
-                              <h4>₹240</h4>
-                            </td>
-                            <td>
-                              <div className="dropdown dropdown-action">
-                                <Link
-                                  to="#"
-                                  className="action-icon dropdown-toggle"
-                                  data-bs-toggle="dropdown"
-                                  aria-expanded="false"
-                                >
-                                  <i className="fas fa-ellipsis" />
-                                </Link>
-                                <div className="dropdown-menu dropdown-menu-end">
-                                  <Link
-                                    className="dropdown-item"
-                                    to="#"
-                                  >
-                                    <i className="feather-x-circle" /> Cancel
-                                  </Link>
-                                </div>
-                              </div>
-                            </td>
-                          </tr>
-                          <tr>
-                            <td>
-                              <div className="academy-info">
-                                <Link
-                                  to={routes.userBookings}
-                                  className="academy-img"
-                                >
-                                  <ImageWithBasePath
-                                    src="/assets/img/featured/featured-07.jpg"
-                                    alt="Booking"
-                                  />
-                                </Link>
-                                <div className="academy-content">
-                                  <h6 className="mb-1">
-                                    {" "}
-                                    <Link
-                                      data-bs-toggle="modal"
-                                      data-bs-target="#upcoming-coach" to={""}                                    >
-                                      Evon Raddick
-                                    </Link>
-                                  </h6>
-                                  <span className="mb-0">Onetime</span>
-                                </div>
-                              </div>
-                            </td>
-                            <td>
-                              <h6>Date &amp; Time</h6>
-                              <p>Wen, Jul 13</p>
-                              <p>10:00 PM - 11:00 PM</p>
-                            </td>
-                            <td>
-                              <h4>₹320</h4>
-                            </td>
-                            <td>
-                              <div className="dropdown dropdown-action">
-                                <Link
-                                  to="#"
-                                  className="action-icon dropdown-toggle"
-                                  data-bs-toggle="dropdown"
-                                  aria-expanded="false"
-                                >
-                                  <i className="fas fa-ellipsis" />
-                                </Link>
-                                <div className="dropdown-menu dropdown-menu-end">
-                                  <Link
-                                    className="dropdown-item"
-                                    to="#"
-                                  >
-                                    <i className="feather-x-circle" /> Cancel
-                                  </Link>
-                                </div>
-                              </div>
-                            </td>
-                          </tr>
-                          <tr>
-                            <td>
-                              <div className="academy-info">
-                                <Link
-                                  to={routes.userBookings}
-                                  className="academy-img"
-                                >
-                                  <ImageWithBasePath
-                                    src="/assets/img/featured/featured-08.jpg"
-                                    alt="Booking"
-                                  />
-                                </Link>
-                                <div className="academy-content">
-                                  <h6 className="mb-1">
-                                    {" "}
-                                    <Link
-                                      data-bs-toggle="modal"
-                                      data-bs-target="#upcoming-coach" to={""}                                    >
-                                      Harry Richardson
-                                    </Link>
-                                  </h6>
-                                  <span className="mb-0">Onetime</span>
-                                </div>
-                              </div>
-                            </td>
-                            <td>
-                              <h6>Date &amp; Time</h6>
-                              <p>Thu, Jul 14</p>
-                              <p>09:00 AM - 10:00 AM</p>
-                            </td>
-                            <td>
-                              <h4>₹710</h4>
-                            </td>
-                            <td>
-                              <div className="dropdown dropdown-action">
-                                <Link
-                                  to="#"
-                                  className="action-icon dropdown-toggle"
-                                  data-bs-toggle="dropdown"
-                                  aria-expanded="false"
-                                >
-                                  <i className="fas fa-ellipsis" />
-                                </Link>
-                                <div className="dropdown-menu dropdown-menu-end">
-                                  <Link
-                                    className="dropdown-item"
-                                    to="#"
-                                  >
-                                    <i className="feather-x-circle" /> Cancel
-                                  </Link>
-                                </div>
-                              </div>
-                            </td>
-                          </tr>
-                          <tr>
-                            <td>
-                              <div className="academy-info">
-                                <Link
-                                  to={routes.userBookings}
-                                  className="academy-img"
-                                >
-                                  <ImageWithBasePath
-                                    src="/assets/img/featured/featured-09.jpg"
-                                    alt="Booking"
-                                  />
-                                </Link>
-                                <div className="academy-content">
-                                  <h6 className="mb-1">
-                                    {" "}
-                                    <Link
-                                      data-bs-toggle="modal"
-                                      data-bs-target="#upcoming-coach" to={""}                                    >
-                                      Pete Hill
-                                    </Link>
-                                  </h6>
-                                  <span className="mb-0">Onetime</span>
-                                </div>
-                              </div>
-                            </td>
-                            <td>
-                              <h6>Date &amp; Time</h6>
-                              <p>Fri, Jul 15</p>
-                              <p>11:00 AM - 12:00 PM</p>
-                            </td>
-                            <td>
-                              <h4>₹820</h4>
-                            </td>
-                            <td>
-                              <div className="dropdown dropdown-action">
-                                <Link
-                                  to="#"
-                                  className="action-icon dropdown-toggle"
-                                  data-bs-toggle="dropdown"
-                                  aria-expanded="false"
-                                  style={{ color: "#475569" }}
-                                >
-                                  <i className="fas fa-ellipsis-h" style={{ color: "#475569" }} />
-                                </Link>
-                                <div className="dropdown-menu dropdown-menu-end">
-                                  <Link
-                                    className="dropdown-item"
-                                    to="#"
-                                  >
-                                    <i className="feather-x-circle" /> Cancel
-                                  </Link>
-                                </div>
-                              </div>
-                            </td>
-                          </tr>
+                          {loadingBookings ? (
+                            <tr>
+                              <td colSpan={4} className="text-center py-4">
+                                <i className="fas fa-spinner fa-spin text-success me-2" /> Loading bookings...
+                              </td>
+                            </tr>
+                          ) : [...coachBookingData, ...trainerBookingData].length > 0 ? (
+                            [...coachBookingData, ...trainerBookingData].slice(0, 6).map((b, idx) => {
+                              const isPT = !b.packageType;
+                              const name = isPT 
+                                ? `PT ${b.first_name} ${b.last_name}` 
+                                : `Coach ${b.first_name} ${b.last_name}`;
+                              const typeText = isPT ? "Personal Trainer" : (b.packageType || "Coaching Lesson");
+                              const img = isPT ? "/assets/img/featured/featured-07.jpg" : "/assets/img/featured/featured-05.jpg";
+                              return (
+                                <tr key={b.id || idx}>
+                                  <td>
+                                    <div className="academy-info">
+                                      <Link to={routes.userBookings} className="academy-img">
+                                        <img
+                                          src={img}
+                                          alt="Booking"
+                                          style={{ width: "42px", height: "42px", borderRadius: "8px", objectFit: "cover" }}
+                                        />
+                                      </Link>
+                                      <div className="academy-content">
+                                        <h6 className="mb-1">
+                                          <Link to={routes.userBookings}>
+                                            {name}
+                                          </Link>
+                                        </h6>
+                                        <span className="mb-0">{typeText}</span>
+                                      </div>
+                                    </div>
+                                  </td>
+                                  <td>
+                                    <h6>Date &amp; Time</h6>
+                                    <p>{formatDate(b.startDate)} {b.endDate ? `to ${formatDate(b.endDate)}` : ''}</p>
+                                    <p style={{ fontSize: "12px", color: "#64748B" }}>{b.startTime} - {b.endTime}</p>
+                                  </td>
+                                  <td>
+                                    <h4>₹{b.total_price}</h4>
+                                  </td>
+                                  <td>
+                                    <span style={{ fontSize: "12px", fontWeight: 600, color: b.status === 'Approved' ? '#22C55E' : b.status === 'Cancelled' ? '#EF4444' : '#EAB308' }}>
+                                      {b.status}
+                                    </span>
+                                  </td>
+                                </tr>
+                              );
+                            })
+                          ) : (
+                            <tr>
+                              <td colSpan={4} className="text-center py-4 text-muted">No coaching bookings found.</td>
+                            </tr>
+                          )}
                         </tbody>
                       </table>
                     </div>
@@ -1017,7 +811,7 @@ const UserDashboard = () => {
                 <div className="payment-info ">
                   <div className="payment-content">
                     <p>Your Wallet Balance</p>
-                    <h2>₹4,544</h2>
+                    <h2>₹0</h2>
                   </div>
                   <div className="payment-btn">
                     <Link
@@ -1079,57 +873,51 @@ const UserDashboard = () => {
                     <div className="table-responsive dashboard-table-responsive">
                       <table className="table dashboard-card-table">
                         <tbody>
-                          <tr>
-                            <td>
-                              <div className="academy-info academy-info">
-                                <Link
-                                  to={routes.userBookings}
-                                  className="academy-img"
-                                >
-                                  <ImageWithBasePath
-                                    src="/assets/img/booking/booking-02.jpg"
-                                    alt="Booking"
-                                  />
-                                </Link>
-                                <div className="academy-content">
-                                  <h6>
-                                    <Link
-                                      data-bs-toggle="modal"
-                                      data-bs-target="#upcoming-court" to={""}                                    >
-                                      Leap Sports Academy
+                          {loadingBookings ? (
+                            <tr>
+                              <td colSpan={2} className="text-center py-4">
+                                <i className="fas fa-spinner fa-spin text-success me-2" /> Loading upcoming courts...
+                              </td>
+                            </tr>
+                          ) : upcomingAppointments.venues.length > 0 ? (
+                            upcomingAppointments.venues.slice(0, 5).map((b, idx) => (
+                              <tr key={b.id || idx}>
+                                <td>
+                                  <div className="academy-info academy-info">
+                                    <Link to={routes.userBookings} className="academy-img">
+                                      <img
+                                        src="/assets/img/booking/booking-02.jpg"
+                                        alt="Booking"
+                                        style={{ width: "42px", height: "42px", borderRadius: "8px", objectFit: "cover" }}
+                                      />
                                     </Link>
-                                  </h6>
-                                  <ul>
-                                    <li>Court 1</li>
-                                    <li>
-                                      <i className="feather-clock" /> 06:00 PM
-                                      to 08:00 PM
-                                    </li>
-                                  </ul>
-                                </div>
-                              </div>
-                            </td>
-                            <td>
-                              <div className="dropdown dropdown-action">
-                                <Link
-                                  to="#"
-                                  className="action-icon dropdown-toggle"
-                                  data-bs-toggle="dropdown"
-                                  aria-expanded="false"
-                                >
-                                  <i className="fas fa-ellipsis" />
-                                </Link>
-                                <div className="dropdown-menu dropdown-menu-end">
-                                  <Link
-                                    className="dropdown-item"
-                                    to="#"
-                                  >
-                                    <i className="feather-x-circle" /> Cancel
-                                  </Link>
-                                </div>
-                              </div>
-                            </td>
-                          </tr>
+                                    <div className="academy-content">
+                                      <h6>
+                                        <Link to={routes.userBookings}>
+                                          {b.name || 'Venue'}
+                                        </Link>
+                                      </h6>
+                                      <ul>
+                                        <li>{b.vendor_type || 'Court'}</li>
+                                        <li>
+                                          <i className="feather-clock" /> {formatDate(b.date)} | {b.slots?.join(', ')}
+                                        </li>
+                                      </ul>
+                                    </div>
+                                  </div>
+                                </td>
+                                <td>
+                                  <span style={{ fontSize: "11px", fontWeight: 600, color: b.status === 'Approved' ? '#22C55E' : b.status === 'Cancelled' ? '#EF4444' : '#EAB308', backgroundColor: b.status === 'Approved' ? '#DCFCE7' : b.status === 'Cancelled' ? '#FEE2E2' : '#FEF9C3', padding: "4px 8px", borderRadius: "4px" }}>
+                                    {b.status}
+                                  </span>
+                                </td>
+                              </tr>
+                            ))
+                          ) : (
+                            <tr>
+                              <td colSpan={2} className="text-center py-4 text-muted">No upcoming court bookings.</td>
+                            </tr>
+                          )}
                         </tbody>
                       </table>
                     </div>
@@ -1144,58 +932,59 @@ const UserDashboard = () => {
                     <div className="table-responsive dashboard-table-responsive">
                       <table className="table dashboard-card-table">
                         <tbody>
-                          <tr>
-                            <td>
-                              <div className="academy-info academy-info">
-                                <Link
-                                  to={routes.userBookings}
-                                  className="academy-img"
-                                >
-                                  <ImageWithBasePath
-                                    src="/assets/img/featured/featured-05.jpg"
-                                    alt="Booking"
-                                  />
-                                </Link>
-                                <div className="academy-content">
-                                  <h6>
-                                    <Link
-                                      data-bs-toggle="modal"
-                                      data-bs-target="#upcoming-coach" to={""}                                    >
-                                      Kevin Anderson
-                                    </Link>
-                                  </h6>
-                                  <ul>
-                                    <li>Single Lesson</li>
-                                    <li>
-                                      <i className="feather-clock" /> 06:00 PM
-                                      to 08:00 PM
-                                    </li>
-                                  </ul>
-                                </div>
-                              </div>
-                            </td>
-                            <td>
-                              <div className="dropdown dropdown-action">
-                                <Link
-                                  to="#"
-                                  className="action-icon dropdown-toggle"
-                                  data-bs-toggle="dropdown"
-                                  aria-expanded="false"
-                                  style={{ color: "#475569" }}
-                                >
-                                  <i className="fas fa-ellipsis-h" style={{ color: "#475569" }} />
-                                </Link>
-                                <div className="dropdown-menu dropdown-menu-end">
-                                  <Link
-                                    className="dropdown-item"
-                                    to="#"
-                                  >
-                                    <i className="feather-x-circle" /> Cancel
-                                  </Link>
-                                </div>
-                              </div>
-                            </td>
-                          </tr>
+                          {loadingBookings ? (
+                            <tr>
+                              <td colSpan={2} className="text-center py-4">
+                                <i className="fas fa-spinner fa-spin text-success me-2" /> Loading upcoming coaching...
+                              </td>
+                            </tr>
+                          ) : [...upcomingAppointments.coaches, ...upcomingAppointments.trainers].length > 0 ? (
+                            [...upcomingAppointments.coaches, ...upcomingAppointments.trainers].slice(0, 5).map((b, idx) => {
+                              const isPT = !b.packageType;
+                              const name = isPT 
+                                ? `PT ${b.first_name} ${b.last_name}` 
+                                : `Coach ${b.first_name} ${b.last_name}`;
+                              const typeText = isPT ? "Personal Trainer" : (b.packageType || "Coaching Lesson");
+                              const img = isPT ? "/assets/img/featured/featured-07.jpg" : "/assets/img/featured/featured-05.jpg";
+                              return (
+                                <tr key={b.id || idx}>
+                                  <td>
+                                    <div className="academy-info academy-info">
+                                      <Link to={routes.userBookings} className="academy-img">
+                                        <img
+                                          src={img}
+                                          alt="Booking"
+                                          style={{ width: "42px", height: "42px", borderRadius: "8px", objectFit: "cover" }}
+                                        />
+                                      </Link>
+                                      <div className="academy-content">
+                                        <h6>
+                                          <Link to={routes.userBookings}>
+                                            {name}
+                                          </Link>
+                                        </h6>
+                                        <ul>
+                                          <li>{typeText}</li>
+                                          <li>
+                                            <i className="feather-clock" /> {formatDate(b.startDate)} | {b.startTime} - {b.endTime}
+                                          </li>
+                                        </ul>
+                                      </div>
+                                    </div>
+                                  </td>
+                                  <td>
+                                    <span style={{ fontSize: "11px", fontWeight: 600, color: b.status === 'Approved' ? '#22C55E' : b.status === 'Cancelled' ? '#EF4444' : '#EAB308', backgroundColor: b.status === 'Approved' ? '#DCFCE7' : b.status === 'Cancelled' ? '#FEE2E2' : '#FEF9C3', padding: "4px 8px", borderRadius: "4px" }}>
+                                      {b.status}
+                                    </span>
+                                  </td>
+                                </tr>
+                              );
+                            })
+                          ) : (
+                            <tr>
+                              <td colSpan={2} className="text-center py-4 text-muted">No upcoming coaching appointments.</td>
+                            </tr>
+                          )}
                         </tbody>
                       </table>
                     </div>
@@ -1447,339 +1236,75 @@ const UserDashboard = () => {
                             <th>Payment</th>
                             <th>Paid On</th>
                             <th>Status</th>
-                            <th />
+                            <th>Action</th>
                           </tr>
                         </thead>
                         <tbody>
-                          <tr>
-                            <td>
-                              <h2 className="table-avatar">
-                                <Link
-                                  to="#"
-                                  data-bs-toggle="modal"
-                                  data-bs-target="#upcoming-court"
-                                  className="avatar avatar-sm flex-shrink-0"
-                                >
-                                  <ImageWithBasePath
-                                    className="avatar-img"
-                                    src="/assets/img/booking/booking-02.jpg"
-                                    alt="Booking"
-                                  />
-                                </Link>
-                                <span className="table-head-name flex-grow-1">
-                                  <Link
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#upcoming-court" to={""}                                  >
-                                    Leap Sports Academy
-                                  </Link>
-                                  <span>Court 1</span>
-                                </span>
-                              </h2>
-                            </td>
-                            <td>
-                              <p>Mon, Jul 11</p>
-                              <p>06:00 PM - 08:00 PM</p>
-                            </td>
-                            <td>
-                              <h6>₹800</h6>
-                            </td>
-                            <td>Jul 11, 2023</td>
-                            <td className="paid-edit">
-                              <span>
-                                <i className="feather-edit" /> Paid
-                              </span>
-                            </td>
-                            <td>
-                              <div className="dropdown dropdown-action">
-                                <Link
-                                  to="#"
-                                  className="action-icon dropdown-toggle"
-                                  data-bs-toggle="dropdown"
-                                  aria-expanded="false"
-                                >
-                                  <i className="fas fa-ellipsis" />
-                                </Link>
-                                <div className="dropdown-menu dropdown-menu-end">
-                                  <Link
-                                    className="dropdown-item"
-                                    to="#"
-                                  >
-                                    <i className="feather-download" /> Download
-                                  </Link>
-                                  <Link
-                                    className="dropdown-item"
-                                    to="#"
-                                  >
-                                    <i className="feather-trash" /> Delete
-                                  </Link>
-                                </div>
-                              </div>
-                            </td>
-                          </tr>
-                          <tr>
-                            <td>
-                              <h2 className="table-avatar">
-                                <Link
-                                  to="#"
-                                  data-bs-toggle="modal"
-                                  data-bs-target="#upcoming-court"
-                                  className="avatar avatar-sm flex-shrink-0"
-                                >
-                                  <ImageWithBasePath
-                                    className="avatar-img"
-                                    src="/assets/img/booking/booking-03.jpg"
-                                    alt="Booking"
-                                  />
-                                </Link>
-                                <span className="table-head-name flex-grow-1">
-                                  <Link
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#upcoming-court" to={""}                                  >
-                                    Wing Sports Academy
-                                  </Link>
-                                  <span>Court 2</span>
-                                </span>
-                              </h2>
-                            </td>
-                            <td>
-                              <p>Tue, Jul 12</p>
-                              <p>05:00 PM - 06:00 PM</p>
-                            </td>
-                            <td>
-                              <h6>₹120</h6>
-                            </td>
-                            <td>Jul 12, 2023</td>
-                            <td className="paid-edit">
-                              <span>
-                                <i className="feather-edit" /> Paid
-                              </span>
-                            </td>
-                            <td>
-                              <div className="dropdown dropdown-action">
-                                <Link
-                                  to="#"
-                                  className="action-icon dropdown-toggle"
-                                  data-bs-toggle="dropdown"
-                                  aria-expanded="false"
-                                >
-                                  <i className="fas fa-ellipsis" />
-                                </Link>
-                                <div className="dropdown-menu dropdown-menu-end">
-                                  <Link
-                                    className="dropdown-item"
-                                    to="#"
-                                  >
-                                    <i className="feather-download" /> Download
-                                  </Link>
-                                  <Link
-                                    className="dropdown-item"
-                                    to="#"
-                                  >
-                                    <i className="feather-trash" /> Delete
-                                  </Link>
-                                </div>
-                              </div>
-                            </td>
-                          </tr>
-                          <tr>
-                            <td>
-                              <h2 className="table-avatar">
-                                <Link
-                                  to="#"
-                                  data-bs-toggle="modal"
-                                  data-bs-target="#upcoming-court"
-                                  className="avatar avatar-sm flex-shrink-0"
-                                >
-                                  <ImageWithBasePath
-                                    className="avatar-img"
-                                    src="/assets/img/booking/booking-04.jpg"
-                                    alt="Booking"
-                                  />
-                                </Link>
-                                <span className="table-head-name flex-grow-1">
-                                  <Link
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#upcoming-court" to={""}                                  >
-                                    Feather Badminton
-                                  </Link>
-                                  <span>Court 3</span>
-                                </span>
-                              </h2>
-                            </td>
-                            <td>
-                              <p>Wed, Jul 13</p>
-                              <p>10:00 AM - 11:00 AM</p>
-                            </td>
-                            <td>
-                              <h6>₹470</h6>
-                            </td>
-                            <td>Jul 13, 2023</td>
-                            <td className="paid-edit">
-                              <span>
-                                <i className="feather-edit" /> Paid
-                              </span>
-                            </td>
-                            <td>
-                              <div className="dropdown dropdown-action">
-                                <Link
-                                  to="#"
-                                  className="action-icon dropdown-toggle"
-                                  data-bs-toggle="dropdown"
-                                  aria-expanded="false"
-                                >
-                                  <i className="fas fa-ellipsis" />
-                                </Link>
-                                <div className="dropdown-menu dropdown-menu-end">
-                                  <Link
-                                    className="dropdown-item"
-                                    to="#"
-                                  >
-                                    <i className="feather-download" /> Download
-                                  </Link>
-                                  <Link
-                                    className="dropdown-item"
-                                    to="#"
-                                  >
-                                    <i className="feather-trash" /> Delete
-                                  </Link>
-                                </div>
-                              </div>
-                            </td>
-                          </tr>
-                          <tr>
-                            <td>
-                              <h2 className="table-avatar">
-                                <Link
-                                  to="#"
-                                  data-bs-toggle="modal"
-                                  data-bs-target="#upcoming-court"
-                                  className="avatar avatar-sm flex-shrink-0"
-                                >
-                                  <ImageWithBasePath
-                                    className="avatar-img"
-                                    src="/assets/img/booking/booking-05.jpg"
-                                    alt="Booking"
-                                  />
-                                </Link>
-                                <span className="table-head-name flex-grow-1">
-                                  <Link
-                                    to="#"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#upcoming-court"
-                                  >
-                                    Bwing Sports Academy
-                                  </Link>
-                                  <span>Court 4</span>
-                                </span>
-                              </h2>
-                            </td>
-                            <td>
-                              <p>Thu, Jul 14</p>
-                              <p>12:00 PM - 01:00 PM</p>
-                            </td>
-                            <td>
-                              <h6>₹200</h6>
-                            </td>
-                            <td>Jul 14, 2023</td>
-                            <td className="paid-edit">
-                              <span>
-                                <i className="feather-edit" /> Paid
-                              </span>
-                            </td>
-                            <td>
-                              <div className="dropdown dropdown-action">
-                                <Link
-                                  to="#"
-                                  className="action-icon dropdown-toggle"
-                                  data-bs-toggle="dropdown"
-                                  aria-expanded="false"
-                                >
-                                  <i className="fas fa-ellipsis" />
-                                </Link>
-                                <div className="dropdown-menu dropdown-menu-end">
-                                  <Link
-                                    className="dropdown-item"
-                                    to="#"
-                                  >
-                                    <i className="feather-download" /> Download
-                                  </Link>
-                                  <Link
-                                    className="dropdown-item"
-                                    to="#"
-                                  >
-                                    <i className="feather-trash" /> Delete
-                                  </Link>
-                                </div>
-                              </div>
-                            </td>
-                          </tr>
-                          <tr>
-                            <td>
-                              <h2 className="table-avatar">
-                                <Link
-                                  to="#"
-                                  data-bs-toggle="modal"
-                                  data-bs-target="#upcoming-court"
-                                  className="avatar avatar-sm flex-shrink-0"
-                                >
-                                  <ImageWithBasePath
-                                    className="avatar-img"
-                                    src="/assets/img/booking/booking-06.jpg"
-                                    alt="Booking"
-                                  />
-                                </Link>
-                                <span className="table-head-name flex-grow-1">
-                                  <Link
-                                    to="#"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#upcoming-court"
-                                  >
-                                    Marsh Academy
-                                  </Link>
-                                  <span>Court 5</span>
-                                </span>
-                              </h2>
-                            </td>
-                            <td>
-                              <p>Fri, Jul 15</p>
-                              <p>08:00 AM - 09:00 AM</p>
-                            </td>
-                            <td>
-                              <h6>₹150</h6>
-                            </td>
-                            <td>Jul 15, 2023</td>
-                            <td className="paid-edit">
-                              <span>
-                                <i className="feather-edit" /> Paid
-                              </span>
-                            </td>
-                            <td>
-                              <div className="dropdown dropdown-action">
-                                <Link
-                                  to="#"
-                                  className="action-icon dropdown-toggle"
-                                  data-bs-toggle="dropdown"
-                                  aria-expanded="false"
-                                >
-                                  <i className="fas fa-ellipsis" />
-                                </Link>
-                                <div className="dropdown-menu dropdown-menu-end">
-                                  <Link
-                                    className="dropdown-item"
-                                    to="#"
-                                  >
-                                    <i className="feather-download" /> Download
-                                  </Link>
-                                  <Link
-                                    className="dropdown-item"
-                                    to="#"
-                                  >
-                                    <i className="feather-trash" /> Delete
-                                  </Link>
-                                </div>
-                              </div>
-                            </td>
-                          </tr>
+                          {loadingBookings ? (
+                            <tr>
+                              <td colSpan={6} className="text-center py-4">
+                                <i className="fas fa-spinner fa-spin text-success me-2" /> Loading venue invoices...
+                              </td>
+                            </tr>
+                          ) : venueBookingData.length > 0 ? (
+                            venueBookingData.slice(0, 5).map((b, idx) => (
+                              <tr key={b.id || idx}>
+                                <td>
+                                  <h2 className="table-avatar">
+                                    <Link
+                                      to={routes.userBookings}
+                                      className="avatar avatar-sm flex-shrink-0"
+                                    >
+                                      <img
+                                        className="avatar-img"
+                                        src="/assets/img/booking/booking-02.jpg"
+                                        alt="Booking"
+                                        style={{ width: "36px", height: "36px", borderRadius: "8px", objectFit: "cover" }}
+                                      />
+                                    </Link>
+                                    <span className="table-head-name flex-grow-1 ms-2">
+                                      <Link to={routes.userBookings}>
+                                        {b.name || 'Venue Reservation'}
+                                      </Link>
+                                      <span style={{ fontSize: "11px", color: "#64748B" }}>{b.vendor_type || 'Court'}</span>
+                                    </span>
+                                  </h2>
+                                </td>
+                                <td>
+                                  <p>{formatDate(b.date)}</p>
+                                  <p style={{ fontSize: "11px", color: "#64748B" }}>{b.slots?.join(', ')}</p>
+                                </td>
+                                <td>
+                                  <h6>₹{b.total_price}</h6>
+                                </td>
+                                <td>{formatDate(b.createdAt || b.date)}</td>
+                                <td className="paid-edit">
+                                  <span style={{ display: "inline-flex", alignItems: "center", padding: "4px 8px", borderRadius: "4px", fontSize: "11px", fontWeight: 600, backgroundColor: b.status === 'Approved' || b.paymentState === 'Paid' ? '#DCFCE7' : '#FEE2E2', color: b.status === 'Approved' || b.paymentState === 'Paid' ? '#166534' : '#991B1B' }}>
+                                    <i className="feather-check-circle me-1" /> {b.paymentState || b.status}
+                                  </span>
+                                </td>
+                                <td>
+                                  {b.pdfUrl ? (
+                                    <a
+                                      href={`${IMG_URL}${b.pdfUrl}`}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="btn btn-sm btn-outline-success d-inline-flex align-items-center gap-1"
+                                      style={{ padding: "4px 8px", fontSize: "11px" }}
+                                    >
+                                      <i className="feather-download" /> PDF
+                                    </a>
+                                  ) : (
+                                    <span style={{ fontSize: "11px", color: "#64748B" }}>No Invoice</span>
+                                  )}
+                                </td>
+                              </tr>
+                            ))
+                          ) : (
+                            <tr>
+                              <td colSpan={6} className="text-center py-4 text-muted">No venue invoices found.</td>
+                            </tr>
+                          )}
                         </tbody>
                       </table>
                     </div>
@@ -1795,346 +1320,90 @@ const UserDashboard = () => {
                       <table className="table table-borderless dashboard-card-table">
                         <thead className="thead-light">
                           <tr>
-                            <th>Court Name</th>
-                            <th>Invoice</th>
+                            <th>Name</th>
+                            <th>Type</th>
                             <th>Date &amp; Time</th>
                             <th>Payment</th>
                             <th>Paid On</th>
                             <th>Status</th>
-                            <th />
+                            <th>Action</th>
                           </tr>
                         </thead>
                         <tbody>
-                          <tr>
-                            <td>
-                              <h2 className="table-avatar">
-                                <Link
-                                  to="#"
-                                  data-bs-toggle="modal"
-                                  data-bs-target="#upcoming-coach"
-                                  className="avatar avatar-sm flex-shrink-0"
-                                >
-                                  <ImageWithBasePath
-                                    className="avatar-img"
-                                    src="/assets/img/featured/featured-05.jpg"
-                                    alt="Venue"
-                                  />
-                                </Link>
-                                <span className="table-head-name flex-grow-1">
-                                  <Link
-                                    to="#"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#upcoming-coach"
-                                  >
-                                    Kevin Anderson
-                                  </Link>
-                                  <span>Booked on : 25 May 2023</span>
-                                </span>
-                              </h2>
-                            </td>
-                            <td>Onetime</td>
-                            <td>
-                              <p>Mon, Jul 11</p>
-                              <p>06:00 PM - 08:00 PM</p>
-                            </td>
-                            <td>
-                              <h6>₹800</h6>
-                            </td>
-                            <td>Jul 11, 2023</td>
-                            <td className="paid-edit">
-                              <span>
-                                <i className="feather-edit" /> Paid
-                              </span>
-                            </td>
-                            <td>
-                              <div className="dropdown dropdown-action">
-                                <Link
-                                  to="#"
-                                  className="action-icon dropdown-toggle"
-                                  data-bs-toggle="dropdown"
-                                  aria-expanded="false"
-                                >
-                                  <i className="fas fa-ellipsis" />
-                                </Link>
-                                <div className="dropdown-menu dropdown-menu-end">
-                                  <Link
-                                    className="dropdown-item"
-                                    to="#"
-                                  >
-                                    <i className="feather-download" /> Download
-                                  </Link>
-                                  <Link
-                                    className="dropdown-item"
-                                    to="#"
-                                  >
-                                    <i className="feather-trash" /> Delete
-                                  </Link>
-                                </div>
-                              </div>
-                            </td>
-                          </tr>
-                          <tr>
-                            <td>
-                              <h2 className="table-avatar">
-                                <Link
-                                  to="#"
-                                  data-bs-toggle="modal"
-                                  data-bs-target="#upcoming-coach"
-                                  className="avatar avatar-sm flex-shrink-0"
-                                >
-                                  <ImageWithBasePath
-                                    className="avatar-img"
-                                    src="/assets/img/featured/featured-06.jpg"
-                                    alt="Venue"
-                                  />
-                                </Link>
-                                <span className="table-head-name flex-grow-1">
-                                  <Link
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#upcoming-coach" to={""}                                  >
-                                    Angela Roudrigez
-                                  </Link>
-                                  <span>Booked on : 26 May 2023</span>
-                                </span>
-                              </h2>
-                            </td>
-                            <td>Single Lesson</td>
-                            <td>
-                              <p>Tue, Jul 12</p>
-                              <p>05:00 PM - 06:00 PM</p>
-                            </td>
-                            <td>
-                              <h6>₹120</h6>
-                            </td>
-                            <td>Jul 12, 2023</td>
-                            <td className="paid-edit">
-                              <span>
-                                <i className="feather-edit" /> Paid
-                              </span>
-                            </td>
-                            <td>
-                              <div className="dropdown dropdown-action">
-                                <Link
-                                  to="#"
-                                  className="action-icon dropdown-toggle"
-                                  data-bs-toggle="dropdown"
-                                  aria-expanded="false"
-                                >
-                                  <i className="fas fa-ellipsis" />
-                                </Link>
-                                <div className="dropdown-menu dropdown-menu-end">
-                                  <Link
-                                    className="dropdown-item"
-                                    to="#"
-                                  >
-                                    <i className="feather-download" /> Download
-                                  </Link>
-                                  <Link
-                                    className="dropdown-item"
-                                    to="#"
-                                  >
-                                    <i className="feather-trash" /> Delete
-                                  </Link>
-                                </div>
-                              </div>
-                            </td>
-                          </tr>
-                          <tr>
-                            <td>
-                              <h2 className="table-avatar">
-                                <Link
-                                  to="#"
-                                  data-bs-toggle="modal"
-                                  data-bs-target="#upcoming-coach"
-                                  className="avatar avatar-sm flex-shrink-0"
-                                >
-                                  <ImageWithBasePath
-                                    className="avatar-img"
-                                    src="/assets/img/featured/featured-07.jpg"
-                                    alt="Venue"
-                                  />
-                                </Link>
-                                <span className="table-head-name flex-grow-1">
-                                  <Link
-                                    to="#"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#upcoming-coach"
-                                  >
-                                    Evon Raddickz
-                                  </Link>
-                                  <span>Booked on : 27 May 2023</span>
-                                </span>
-                              </h2>
-                            </td>
-                            <td>Onetime</td>
-                            <td>
-                              <p>Wed, Jul 13</p>
-                              <p>10:00 AM - 11:00 AM</p>
-                            </td>
-                            <td>
-                              <h6>₹470</h6>
-                            </td>
-                            <td>Jul 13, 2023</td>
-                            <td className="paid-edit">
-                              <span>
-                                <i className="feather-edit" /> Paid
-                              </span>
-                            </td>
-                            <td>
-                              <div className="dropdown dropdown-action">
-                                <Link
-                                  to="#"
-                                  data-bs-target="#upcoming-coach"
-                                  className="action-icon dropdown-toggle"
-                                  data-bs-toggle="dropdown"
-                                  aria-expanded="false"
-                                >
-                                  <i className="fas fa-ellipsis" />
-                                </Link>
-                                <div className="dropdown-menu dropdown-menu-end">
-                                  <Link
-                                    className="dropdown-item"
-                                    to="#"
-                                  >
-                                    <i className="feather-download" /> Download
-                                  </Link>
-                                  <Link
-                                    className="dropdown-item"
-                                    to="#"
-                                  >
-                                    <i className="feather-trash" /> Delete
-                                  </Link>
-                                </div>
-                              </div>
-                            </td>
-                          </tr>
-                          <tr>
-                            <td>
-                              <h2 className="table-avatar">
-                                <Link
-                                  to="#"
-                                  data-bs-toggle="modal"
-                                  data-bs-target="#upcoming-coach"
-                                  className="avatar avatar-sm flex-shrink-0"
-                                >
-                                  <ImageWithBasePath
-                                    className="avatar-img"
-                                    src="/assets/img/featured/featured-08.jpg"
-                                    alt="Venue"
-                                  />
-                                </Link>
-                                <span className="table-head-name flex-grow-1">
-                                  <Link
-                                    to="#"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#upcoming-coach"
-                                  >
-                                    Harry Richardson
-                                  </Link>
-                                  <span>Booked on : 28 May 2023</span>
-                                </span>
-                              </h2>
-                            </td>
-                            <td>Onetime</td>
-                            <td>
-                              <p>Thu, Jul 14</p>
-                              <p>12:00 PM - 01:00 PM</p>
-                            </td>
-                            <td>
-                              <h6>₹200</h6>
-                            </td>
-                            <td>Jul 14, 2023</td>
-                            <td className="paid-edit">
-                              <span>
-                                <i className="feather-edit" /> Paid
-                              </span>
-                            </td>
-                            <td>
-                              <div className="dropdown dropdown-action">
-                                <Link
-                                  to="#"
-                                  className="action-icon dropdown-toggle"
-                                  data-bs-toggle="dropdown"
-                                  aria-expanded="false"
-                                >
-                                  <i className="fas fa-ellipsis" />
-                                </Link>
-                                <div className="dropdown-menu dropdown-menu-end">
-                                  <Link
-                                    className="dropdown-item"
-                                    to="#"
-                                  >
-                                    <i className="feather-download" /> Download
-                                  </Link>
-                                  <Link
-                                    className="dropdown-item"
-                                    to="#"
-                                  >
-                                    <i className="feather-trash" /> Delete
-                                  </Link>
-                                </div>
-                              </div>
-                            </td>
-                          </tr>
-                          <tr>
-                            <td>
-                              <h2 className="table-avatar">
-                                <Link
-                                  to={routes.userInvoice}
-                                  className="avatar avatar-sm flex-shrink-0"
-                                >
-                                  <ImageWithBasePath
-                                    className="avatar-img"
-                                    src="/assets/img/featured/featured-09.jpg"
-                                    alt="Venue"
-                                  />
-                                </Link>
-                                <span className="table-head-name flex-grow-1">
-                                  <Link to={routes.userInvoice}>Pete Hill</Link>
-                                  <span>Booked on : 29 May 2023</span>
-                                </span>
-                              </h2>
-                            </td>
-                            <td>Onetime</td>
-                            <td>
-                              <p>08:00 AM - 09:00 AM</p>
-                            </td>
-                            <td>
-                              <h6>₹150</h6>
-                            </td>
-                            <td>Jul 15, 2023</td>
-                            <td className="paid-edit">
-                              <span>
-                                <i className="feather-edit" /> Paid
-                              </span>
-                            </td>
-                            <td>
-                              <div className="dropdown dropdown-action">
-                                <Link
-                                  to="#"
-                                  className="action-icon dropdown-toggle"
-                                  data-bs-toggle="dropdown"
-                                  aria-expanded="false"
-                                >
-                                  <i className="fas fa-ellipsis" />
-                                </Link>
-                                <div className="dropdown-menu dropdown-menu-end">
-                                  <Link
-                                    className="dropdown-item"
-                                    to="#"
-                                  >
-                                    <i className="feather-download" /> Download
-                                  </Link>
-                                  <Link
-                                    className="dropdown-item"
-                                    to="#"
-                                  >
-                                    <i className="feather-trash" /> Delete
-                                  </Link>
-                                </div>
-                              </div>
-                            </td>
-                          </tr>
+                          {loadingBookings ? (
+                            <tr>
+                              <td colSpan={7} className="text-center py-4">
+                                <i className="fas fa-spinner fa-spin text-success me-2" /> Loading coaching invoices...
+                              </td>
+                            </tr>
+                          ) : [...coachBookingData, ...trainerBookingData].length > 0 ? (
+                            [...coachBookingData, ...trainerBookingData].slice(0, 5).map((b, idx) => {
+                              const isPT = !b.packageType;
+                              const name = isPT 
+                                ? `PT ${b.first_name} ${b.last_name}` 
+                                : `Coach ${b.first_name} ${b.last_name}`;
+                              const typeText = isPT ? "Personal Trainer" : (b.packageType || "Coaching Lesson");
+                              const img = isPT ? "/assets/img/featured/featured-07.jpg" : "/assets/img/featured/featured-05.jpg";
+                              return (
+                                <tr key={b.id || idx}>
+                                  <td>
+                                    <h2 className="table-avatar">
+                                      <Link
+                                        to={routes.userBookings}
+                                        className="avatar avatar-sm flex-shrink-0"
+                                      >
+                                        <img
+                                          className="avatar-img"
+                                          src={img}
+                                          alt="Booking"
+                                          style={{ width: "36px", height: "36px", borderRadius: "8px", objectFit: "cover" }}
+                                        />
+                                      </Link>
+                                      <span className="table-head-name flex-grow-1 ms-2">
+                                        <Link to={routes.userBookings}>
+                                          {name}
+                                        </Link>
+                                        <span style={{ fontSize: "11px", color: "#64748B" }}>Booked: {formatDate(b.createdAt)}</span>
+                                      </span>
+                                    </h2>
+                                  </td>
+                                  <td>{typeText}</td>
+                                  <td>
+                                    <p>{formatDate(b.startDate)} {b.endDate ? `to ${formatDate(b.endDate)}` : ''}</p>
+                                    <p style={{ fontSize: "11px", color: "#64748B" }}>{b.startTime} - {b.endTime}</p>
+                                  </td>
+                                  <td>
+                                    <h6>₹{b.total_price}</h6>
+                                  </td>
+                                  <td>{formatDate(b.createdAt || b.startDate)}</td>
+                                  <td className="paid-edit">
+                                    <span style={{ display: "inline-flex", alignItems: "center", padding: "4px 8px", borderRadius: "4px", fontSize: "11px", fontWeight: 600, backgroundColor: b.status === 'Approved' || b.paymentState === 'Paid' ? '#DCFCE7' : '#FEE2E2', color: b.status === 'Approved' || b.paymentState === 'Paid' ? '#166534' : '#991B1B' }}>
+                                      <i className="feather-check-circle me-1" /> {b.paymentState || b.status}
+                                    </span>
+                                  </td>
+                                  <td>
+                                    {b.pdfUrl ? (
+                                      <a
+                                        href={`${IMG_URL}${b.pdfUrl}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="btn btn-sm btn-outline-success d-inline-flex align-items-center gap-1"
+                                        style={{ padding: "4px 8px", fontSize: "11px" }}
+                                      >
+                                        <i className="feather-download" /> PDF
+                                      </a>
+                                    ) : (
+                                      <span style={{ fontSize: "11px", color: "#64748B" }}>No Invoice</span>
+                                    )}
+                                  </td>
+                                </tr>
+                              );
+                            })
+                          ) : (
+                            <tr>
+                              <td colSpan={7} className="text-center py-4 text-muted">No coaching invoices found.</td>
+                            </tr>
+                          )}
                         </tbody>
                       </table>
                     </div>
@@ -2960,11 +2229,11 @@ const UserDashboard = () => {
                 </div>
               </div>
             </div>
-              </div>
-            </div>
           </div>
         </div>
       </div>
+    </div>
+  </div>
     </>
   );
 };

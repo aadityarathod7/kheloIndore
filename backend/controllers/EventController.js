@@ -22,91 +22,92 @@ exports.createEvent = async (req, res) => {
       terms_and_conditions,
     } = req.body;
     let user = req.user.userID
-    if(!user){
+    if (!user) {
       return res.json({
-      status:500,
-      success:false,
-       message: "User Id not found" })
-        }
-        if( req.user.role == "Super Admin"){ 
-    if (
-      !event_name ||
-      typeof event_name !== "string" ||
-      event_name.trim() === ""
-    ) {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: "Event name is required and must be a non-empty string",
-        });
+        status: 500,
+        success: false,
+        message: "User Id not found"
+      })
     }
+    if (req.user.role == "Super Admin") {
+      if (
+        !event_name ||
+        typeof event_name !== "string" ||
+        event_name.trim() === ""
+      ) {
+        return res
+          .status(400)
+          .json({
+            success: false,
+            message: "Event name is required and must be a non-empty string",
+          });
+      }
 
-    if (!description) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Description is required" });
+      if (!description) {
+        return res
+          .status(400)
+          .json({ success: false, message: "Description is required" });
+      }
+
+      if (!start_date) {
+        return res
+          .status(400)
+          .json({ success: false, message: "Start date is required" });
+      }
+
+      if (!end_date) {
+        return res
+          .status(400)
+          .json({ success: false, message: "End date is required" });
+      }
+
+      if (!location) {
+        return res
+          .status(400)
+          .json({ success: false, message: "Location is required" });
+      }
+
+      // Check for event name uniqueness
+      const existingEvent = await Event.findOne({
+        event_name: event_name.trim(),
+      });
+      if (existingEvent) {
+        return res
+          .status(400)
+          .json({
+            success: false,
+            message: "An event with this name already exists",
+          });
+      }
+
+      const event = new Event({
+        event_name: event_name.trim(),
+        description,
+        start_date,
+        end_date,
+        location,
+        images: images || [],
+        price: price !== undefined ? price : null,
+        organized_by: organized_by || "",
+        terms_and_conditions: terms_and_conditions || "",
+      });
+
+      await event.save();
+
+      return res.json({
+        status: 200,
+        success: true,
+        message: "Event created successfully",
+        data: event,
+      });
     }
-
-    if (!start_date) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Start date is required" });
+    else {
+      return res.json({
+        status: 400,
+        success: false,
+        message: "You have no access to add events",
+      });
     }
-
-    if (!end_date) {
-      return res
-        .status(400)
-        .json({ success: false, message: "End date is required" });
-    }
-
-    if (!location) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Location is required" });
-    }
-
-    // Check for event name uniqueness
-    const existingEvent = await Event.findOne({
-      event_name: event_name.trim(),
-    });
-    if (existingEvent) {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: "An event with this name already exists",
-        });
-    }
-
-    const event = new Event({
-      event_name: event_name.trim(),
-      description,
-      start_date,
-      end_date,
-      location,
-      images: images || [],
-      price: price !== undefined ? price : null,
-      organized_by: organized_by || "",
-      terms_and_conditions: terms_and_conditions || "",
-    });
-
-    await event.save();
-
-    return res.json({
-      status:200,
-      success: true,
-      message: "Event created successfully",
-      data: event,
-    });
-  }
-  else{
-    return res.json({
-      status:400,
-      success: false,
-      message: "You have no access to add events",
-    });
-  }
   } catch (error) {
     return res.status(500).json({
       success: false,
@@ -119,17 +120,17 @@ exports.createEvent = async (req, res) => {
 exports.getEvent = async (req, res) => {
   try {
     const event = await Event.findById(req.params.id);
-    if (!event ) {
+    if (!event) {
       return res.status(400).send();
     }
     res.status(200).json({
-      success:true,
-      data:event
+      success: true,
+      data: event
     })
   } catch (error) {
     res.status(500).json({
-      success:false,
-      message:error.message
+      success: false,
+      message: error.message
     });
   }
 };
@@ -137,14 +138,14 @@ exports.getEvent = async (req, res) => {
 
 exports.updateEvent = async (req, res) => {
   try {
-    const { event_name} = req.body;
+    const { event_name } = req.body;
     const event = await Event.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
     });
     if (!event) {
       return res.status(400).json({
-        success:false,
-        message:"Data is not found"
+        success: false,
+        message: "Data is not found"
       });
     }
 
@@ -153,13 +154,13 @@ exports.updateEvent = async (req, res) => {
     }
 
     res.status(200).json({
-      success:true,
-      data:event
+      success: true,
+      data: event
     });
   } catch (error) {
     res.status(500).json({
-      success:false,
-      error:error.message
+      success: false,
+      error: error.message
     });
   }
 };
@@ -183,7 +184,7 @@ exports.deactivateEvent = async (req, res) => {
 exports.getAllEvents = async (req, res) => {
   try {
     const { search } = req.query;
-    let queryConditions = {};
+    let queryConditions = { status: true };
 
     // Add column-specific search conditions dynamically
     const searchFields = ["event_name", "location", "status"];
@@ -211,6 +212,7 @@ exports.getAllEvents = async (req, res) => {
 
     return res.status(200).json({
       success: true,
+      message: events.length > 0 ? "Events fetched successfully" : "No events found",
       data: events,
     });
   } catch (error) {
