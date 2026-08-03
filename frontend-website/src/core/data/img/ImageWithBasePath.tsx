@@ -11,8 +11,20 @@ interface Image {
 }
 
 const ImageWithBasePath = (props: Image) => {
-  // Combine the base path and the provided src to create the full image source URL
-  const fullSrc = `${base_path}${props.src}`;
+  const src = props.src?.trim?.() ?? "";
+
+  // Profile photos from the dummy seed data are full URLs. Several existing
+  // screens also prepend IMG_URL before calling this component, so recover the
+  // actual URL instead of producing `https://api-hosthttps://photo-host/...`.
+  const lastHttpIndex = Math.max(src.lastIndexOf("https://"), src.lastIndexOf("http://"));
+  const fullSrc =
+    src.startsWith("data:") || src.startsWith("blob:")
+      ? src
+      : lastHttpIndex > 0
+        ? src.slice(lastHttpIndex)
+        : src.startsWith("http://") || src.startsWith("https://")
+          ? src
+          : `${base_path}${src}`;
   return (
     <img
       className={props.className}
