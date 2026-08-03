@@ -100,7 +100,7 @@ const UserWallet = () => {
                   <div className="wallet-img">
                     <div className="wallet-amt">
                       <h5>Your Wallet Balance</h5>
-                      <h2>$4,544</h2>
+                      <h2>₹4,544</h2>
                     </div>
                   </div>
                   <div className="payment-btn">
@@ -117,15 +117,15 @@ const UserWallet = () => {
                 <ul>
                   <li>
                     <h6>Total Credit</h6>
-                    <h3>$350.40</h3>
+                    <h3>₹350.40</h3>
                   </li>
                   <li>
                     <h6>Total Debit</h6>
-                    <h3>$50.40</h3>
+                    <h3>₹50.40</h3>
                   </li>
                   <li>
                     <h6>Total transaction</h6>
-                    <h3>$480.40</h3>
+                    <h3>₹480.40</h3>
                   </li>
                 </ul>
               </div>
@@ -280,7 +280,7 @@ const UserWallet = () => {
                               </h4>
                             </td>
                             <td>
-                              <span className="pay-dark fs-16">$150</span>
+                              <span className="pay-dark fs-16">₹150</span>
                             </td>
                             <td>
                               <span className="badge bg-success">
@@ -339,7 +339,7 @@ const UserWallet = () => {
                               </h4>
                             </td>
                             <td>
-                              <span className="pay-dark fs-16">$200</span>
+                              <span className="pay-dark fs-16">₹200</span>
                             </td>
                             <td>
                               <span className="badge bg-info">
@@ -398,7 +398,7 @@ const UserWallet = () => {
                               </h4>
                             </td>
                             <td>
-                              <span className="pay-dark fs-16">$150</span>
+                              <span className="pay-dark fs-16">₹150</span>
                             </td>
                             <td>
                               <span className="badge bg-danger">
@@ -457,7 +457,7 @@ const UserWallet = () => {
                               </h4>
                             </td>
                             <td>
-                              <span className="pay-dark fs-16">$90</span>
+                              <span className="pay-dark fs-16">₹90</span>
                             </td>
                             <td>
                               <span className="badge bg-success">
@@ -516,7 +516,7 @@ const UserWallet = () => {
                               </h4>
                             </td>
                             <td>
-                              <span className="pay-dark fs-16">$180</span>
+                              <span className="pay-dark fs-16">₹180</span>
                             </td>
                             <td>
                               <span className="badge bg-success">

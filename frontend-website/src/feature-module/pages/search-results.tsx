@@ -63,9 +63,8 @@ const SearchResults: React.FC = () => {
       const name = (v.name || "").toLowerCase();
       const category = (v.category || "").toLowerCase();
       const vendorType = (v.vendor_type || "").toLowerCase();
-      const description = (v.description || "").toLowerCase();
       const location = (v.near_by_location || "").toLowerCase();
-      return name.includes(q) || category.includes(q) || vendorType.includes(q) || description.includes(q) || location.includes(q);
+      return name.includes(q) || category.includes(q) || vendorType.includes(q) || location.includes(q);
     });
   }, [venues, q]);
 

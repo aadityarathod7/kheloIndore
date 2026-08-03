@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import ImageWithBasePath from "../../core/data/img/ImageWithBasePath";
@@ -8,6 +8,7 @@ import { all_routes } from "../router/all_routes";
 const Footer = () => {
   const routes = all_routes;
   const loginToken = localStorage.getItem("token");
+  const location = useLocation();
 
   useEffect(() => {
     AOS.init({ duration: 1000, once: true });
@@ -72,7 +73,7 @@ const Footer = () => {
                     <Link to={routes.coachesGrid}>Coaches & Academies</Link>
                   </li>
                   <li>
-                    <Link to="/personal-training">Personal Trainers</Link>
+                    <Link to="/personal-training">Trainers</Link>
                   </li>
                   <li>
                     <Link to={routes.blogGrid}>Blogs & Stories</Link>
@@ -85,31 +86,43 @@ const Footer = () => {
             <div className="col-lg-2 col-md-6 col-6">
               <div className="footer-widget footer-menu">
                 <h4 className="footer-title">Sports</h4>
-                <ul>
+                <ul style={{ maxHeight: "280px", overflowY: "auto" }}>
                   <li>
-                    <Link to="/sports-venue">Cricket Turfs</Link>
+                    <Link to="/sports-venue/cricket">Cricket Turfs</Link>
                   </li>
                   <li>
-                    <Link to="/sports-venue">Badminton Courts</Link>
+                    <Link to="/sports-venue/badminton">Badminton Courts</Link>
                   </li>
                   <li>
-                    <Link to="/sports-venue">Football Grounds</Link>
+                    <Link to="/sports-venue/football">Football Grounds</Link>
                   </li>
                   <li>
-                    <Link to="/sports-venue">Swimming Pools</Link>
+                    <Link to="/sports-venue/swimming">Swimming Pools</Link>
                   </li>
                   <li>
-                    <Link to="/sports-venue">Tennis Courts</Link>
+                    <Link to="/sports-venue/pickleball">Pickleball Courts</Link>
+                  </li>
+                  <li>
+                    <Link to="/sports-venue/tennis">Tennis Courts</Link>
+                  </li>
+                  <li>
+                    <Link to="/sports-venue/basketball">Basketball Courts</Link>
+                  </li>
+                  <li>
+                    <Link to="/sports-venue/table-tennis">Table Tennis</Link>
+                  </li>
+                  <li>
+                    <Link to="/sports-venue/other-sports">Other Sports</Link>
                   </li>
                 </ul>
               </div>
             </div>
 
             {/* Column 4: Top Locations */}
-            <div className="col-lg-2 col-md-6 col-6">
+            <div className="col-lg-3 col-md-6 col-6">
               <div className="footer-widget footer-menu">
                 <h4 className="footer-title">Locations</h4>
-                <ul>
+                <ul style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2px 10px", minWidth: "260px" }}>
                   <li>
                     <Link to="/sports-venue">Vijay Nagar</Link>
                   </li>
@@ -124,6 +137,33 @@ const Footer = () => {
                   </li>
                   <li>
                     <Link to="/sports-venue">Navlakha</Link>
+                  </li>
+                  <li>
+                    <Link to="/sports-venue">LIG Square</Link>
+                  </li>
+                  <li>
+                    <Link to="/sports-venue">Bengali Square</Link>
+                  </li>
+                  <li>
+                    <Link to="/sports-venue">Annapurna Road</Link>
+                  </li>
+                  <li>
+                    <Link to="/sports-venue">Mahalaxmi Nagar</Link>
+                  </li>
+                  <li>
+                    <Link to="/sports-venue">Khajrana</Link>
+                  </li>
+                  <li>
+                    <Link to="/sports-venue">Rau</Link>
+                  </li>
+                  <li>
+                    <Link to="/sports-venue">Nipania</Link>
+                  </li>
+                  <li>
+                    <Link to="/sports-venue">Super Corridor</Link>
+                  </li>
+                  <li>
+                    <Link to="/sports-venue">Kanadia Road</Link>
                   </li>
                 </ul>
               </div>
@@ -174,6 +214,55 @@ const Footer = () => {
         </div>
       </div>
       {/* /Footer Bottom copyright */}
+
+      {/* Mobile Bottom Navigation Bar */}
+      <div 
+        className="mobile-bottom-nav d-md-none position-fixed bottom-0 start-0 end-0 bg-white border-top shadow-lg d-flex align-items-center justify-content-around py-2" 
+        style={{ zIndex: 1050, height: "60px" }}
+      >
+        <Link 
+          to="/" 
+          className={`d-flex flex-column align-items-center justify-content-center text-decoration-none ${location.pathname === "/" ? "text-success" : "text-secondary"}`}
+          style={{ fontSize: "11px", fontWeight: "600" }}
+        >
+          <i className="feather-home" style={{ fontSize: "20px", marginBottom: "3px" }} />
+          <span>Home</span>
+        </Link>
+        
+        <Link 
+          to={routes.userBookings} 
+          className={`d-flex flex-column align-items-center justify-content-center text-decoration-none ${location.pathname.startsWith("/user/user-bookings") || location.pathname.includes("bookings") ? "text-success" : "text-secondary"}`}
+          style={{ fontSize: "11px", fontWeight: "600" }}
+        >
+          <i className="feather-calendar" style={{ fontSize: "20px", marginBottom: "3px" }} />
+          <span>Bookings</span>
+        </Link>
+        
+        <Link 
+          to={routes.userChat} 
+          className={`d-flex flex-column align-items-center justify-content-center text-decoration-none ${location.pathname.startsWith("/user/user-chat") || location.pathname.includes("chat") ? "text-success" : "text-secondary"}`}
+          style={{ fontSize: "11px", fontWeight: "600" }}
+        >
+          <i className="feather-message-square" style={{ fontSize: "20px", marginBottom: "3px" }} />
+          <span>Messages</span>
+        </Link>
+        
+        <Link 
+          to={routes.userProfile} 
+          className={`d-flex flex-column align-items-center justify-content-center text-decoration-none ${location.pathname.startsWith("/user/user-profile") || location.pathname.includes("profile") ? "text-success" : "text-secondary"}`}
+          style={{ fontSize: "11px", fontWeight: "600" }}
+        >
+          <i className="feather-user" style={{ fontSize: "20px", marginBottom: "3px" }} />
+          <span>Profile</span>
+        </Link>
+        <style>{`
+          @media (max-width: 767.98px) {
+            body {
+              padding-bottom: 60px !important;
+            }
+          }
+        `}</style>
+      </div>
     </footer>
   );
 };

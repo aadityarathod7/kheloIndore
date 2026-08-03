@@ -305,7 +305,7 @@ const UserDashboard = () => {
                   <div className="col-xl-3 col-lg-6 col-md-6 d-flex">
                     <div className="statistics-grid flex-fill">
                       <div className="statistics-content">
-                        <h3>$45,056</h3>
+                        <h3>₹45,056</h3>
                         <p>Payments</p>
                       </div>
                       <div className="statistics-icon">
@@ -470,7 +470,7 @@ const UserDashboard = () => {
                               <p>06:00 PM - 08:00 PM</p>
                             </td>
                             <td>
-                              <h4>$400</h4>
+                              <h4>₹400</h4>
                             </td>
                             <td>
                               <div className="dropdown dropdown-action">
@@ -527,7 +527,7 @@ const UserDashboard = () => {
                               <p>07:00 PM - 08:00 PM</p>
                             </td>
                             <td>
-                              <h4>$240</h4>
+                              <h4>₹240</h4>
                             </td>
                             <td>
                               <div className="dropdown dropdown-action">
@@ -584,7 +584,7 @@ const UserDashboard = () => {
                               <p>10:00 PM - 11:00 PM</p>
                             </td>
                             <td>
-                              <h4>$320</h4>
+                              <h4>₹320</h4>
                             </td>
                             <td>
                               <div className="dropdown dropdown-action">
@@ -641,7 +641,7 @@ const UserDashboard = () => {
                               <p>09:00 AM - 10:00 AM</p>
                             </td>
                             <td>
-                              <h4>$710</h4>
+                              <h4>₹710</h4>
                             </td>
                             <td>
                               <div className="dropdown dropdown-action">
@@ -698,7 +698,7 @@ const UserDashboard = () => {
                               <p>11:00 AM - 12:00 PM</p>
                             </td>
                             <td>
-                              <h4>$820</h4>
+                              <h4>₹820</h4>
                             </td>
                             <td>
                               <div className="dropdown dropdown-action">
@@ -765,7 +765,7 @@ const UserDashboard = () => {
                               <p>06:00 PM - 08:00 PM</p>
                             </td>
                             <td>
-                              <h4>$400</h4>
+                              <h4>₹400</h4>
                             </td>
                             <td>
                               <div className="dropdown dropdown-action">
@@ -819,7 +819,7 @@ const UserDashboard = () => {
                               <p>07:00 PM - 08:00 PM</p>
                             </td>
                             <td>
-                              <h4>$240</h4>
+                              <h4>₹240</h4>
                             </td>
                             <td>
                               <div className="dropdown dropdown-action">
@@ -873,7 +873,7 @@ const UserDashboard = () => {
                               <p>10:00 PM - 11:00 PM</p>
                             </td>
                             <td>
-                              <h4>$320</h4>
+                              <h4>₹320</h4>
                             </td>
                             <td>
                               <div className="dropdown dropdown-action">
@@ -927,7 +927,7 @@ const UserDashboard = () => {
                               <p>09:00 AM - 10:00 AM</p>
                             </td>
                             <td>
-                              <h4>$710</h4>
+                              <h4>₹710</h4>
                             </td>
                             <td>
                               <div className="dropdown dropdown-action">
@@ -981,7 +981,7 @@ const UserDashboard = () => {
                               <p>11:00 AM - 12:00 PM</p>
                             </td>
                             <td>
-                              <h4>$820</h4>
+                              <h4>₹820</h4>
                             </td>
                             <td>
                               <div className="dropdown dropdown-action">
@@ -1017,7 +1017,7 @@ const UserDashboard = () => {
                 <div className="payment-info ">
                   <div className="payment-content">
                     <p>Your Wallet Balance</p>
-                    <h2>$4,544</h2>
+                    <h2>₹4,544</h2>
                   </div>
                   <div className="payment-btn">
                     <Link
@@ -1481,7 +1481,7 @@ const UserDashboard = () => {
                               <p>06:00 PM - 08:00 PM</p>
                             </td>
                             <td>
-                              <h6>$800</h6>
+                              <h6>₹800</h6>
                             </td>
                             <td>Jul 11, 2023</td>
                             <td className="paid-edit">
@@ -1546,7 +1546,7 @@ const UserDashboard = () => {
                               <p>05:00 PM - 06:00 PM</p>
                             </td>
                             <td>
-                              <h6>$120</h6>
+                              <h6>₹120</h6>
                             </td>
                             <td>Jul 12, 2023</td>
                             <td className="paid-edit">
@@ -1611,7 +1611,7 @@ const UserDashboard = () => {
                               <p>10:00 AM - 11:00 AM</p>
                             </td>
                             <td>
-                              <h6>$470</h6>
+                              <h6>₹470</h6>
                             </td>
                             <td>Jul 13, 2023</td>
                             <td className="paid-edit">
@@ -1678,7 +1678,7 @@ const UserDashboard = () => {
                               <p>12:00 PM - 01:00 PM</p>
                             </td>
                             <td>
-                              <h6>$200</h6>
+                              <h6>₹200</h6>
                             </td>
                             <td>Jul 14, 2023</td>
                             <td className="paid-edit">
@@ -1745,7 +1745,7 @@ const UserDashboard = () => {
                               <p>08:00 AM - 09:00 AM</p>
                             </td>
                             <td>
-                              <h6>$150</h6>
+                              <h6>₹150</h6>
                             </td>
                             <td>Jul 15, 2023</td>
                             <td className="paid-edit">
@@ -1838,7 +1838,7 @@ const UserDashboard = () => {
                               <p>06:00 PM - 08:00 PM</p>
                             </td>
                             <td>
-                              <h6>$800</h6>
+                              <h6>₹800</h6>
                             </td>
                             <td>Jul 11, 2023</td>
                             <td className="paid-edit">
@@ -1904,7 +1904,7 @@ const UserDashboard = () => {
                               <p>05:00 PM - 06:00 PM</p>
                             </td>
                             <td>
-                              <h6>$120</h6>
+                              <h6>₹120</h6>
                             </td>
                             <td>Jul 12, 2023</td>
                             <td className="paid-edit">
@@ -1972,7 +1972,7 @@ const UserDashboard = () => {
                               <p>10:00 AM - 11:00 AM</p>
                             </td>
                             <td>
-                              <h6>$470</h6>
+                              <h6>₹470</h6>
                             </td>
                             <td>Jul 13, 2023</td>
                             <td className="paid-edit">
@@ -2041,7 +2041,7 @@ const UserDashboard = () => {
                               <p>12:00 PM - 01:00 PM</p>
                             </td>
                             <td>
-                              <h6>$200</h6>
+                              <h6>₹200</h6>
                             </td>
                             <td>Jul 14, 2023</td>
                             <td className="paid-edit">
@@ -2100,7 +2100,7 @@ const UserDashboard = () => {
                               <p>08:00 AM - 09:00 AM</p>
                             </td>
                             <td>
-                              <h6>$150</h6>
+                              <h6>₹150</h6>
                             </td>
                             <td>Jul 15, 2023</td>
                             <td className="paid-edit">
@@ -2207,7 +2207,7 @@ const UserDashboard = () => {
                         </li>
                         <li>
                           <h6>Price Per Hour</h6>
-                          <p>$200.00 / hr</p>
+                          <p>₹200.00 / hr</p>
                         </li>
                         <li>
                           <h6>Rank</h6>
@@ -2252,7 +2252,7 @@ const UserDashboard = () => {
                       <ul className="appointmentset">
                         <li>
                           <h6>Coaching Booking Amount</h6>
-                          <p>$200</p>
+                          <p>₹200</p>
                         </li>
                         <li>
                           <h6>Number of Hours</h6>
@@ -2260,7 +2260,7 @@ const UserDashboard = () => {
                         </li>
                         <li>
                           <h6>Service Charge</h6>
-                          <p>$20</p>
+                          <p>₹20</p>
                         </li>
                       </ul>
                     </div>
@@ -2268,7 +2268,7 @@ const UserDashboard = () => {
                       <ul className="appointmentset">
                         <li>
                           <h6>Total Amount Paid</h6>
-                          <p className="color-green">$180</p>
+                          <p className="color-green">₹180</p>
                         </li>
                         <li>
                           <h6>Paid On</h6>
@@ -2351,11 +2351,11 @@ const UserDashboard = () => {
                         </li>
                         <li>
                           <h6>Booked On</h6>
-                          <p>$150 Upto 2 guests</p>
+                          <p>₹150 Upto 2 guests</p>
                         </li>
                         <li>
                           <h6>Price Per Guest</h6>
-                          <p>$15</p>
+                          <p>₹15</p>
                         </li>
                         <li>
                           <h6>Maximum Number of Guests</h6>
@@ -2372,11 +2372,11 @@ const UserDashboard = () => {
                       <ul className="appointmentset">
                         <li>
                           <h6>Booked On</h6>
-                          <p>$150 Upto 2 guests</p>
+                          <p>₹150 Upto 2 guests</p>
                         </li>
                         <li>
                           <h6>Price Per Guest</h6>
-                          <p>$15</p>
+                          <p>₹15</p>
                         </li>
                         <li>
                           <h6>Maximum Number of Guests</h6>
@@ -2393,7 +2393,7 @@ const UserDashboard = () => {
                       <ul className="appointmentset">
                         <li>
                           <h6>Court Booking Amount</h6>
-                          <p>$150</p>
+                          <p>₹150</p>
                         </li>
                         <li>
                           <h6>Additional Guests</h6>
@@ -2401,11 +2401,11 @@ const UserDashboard = () => {
                         </li>
                         <li>
                           <h6>Amount Additional Guests</h6>
-                          <p>$30</p>
+                          <p>₹30</p>
                         </li>
                         <li>
                           <h6>Service Charge</h6>
-                          <p>$20</p>
+                          <p>₹20</p>
                         </li>
                       </ul>
                     </div>
@@ -2413,7 +2413,7 @@ const UserDashboard = () => {
                       <ul className="appointmentsetview">
                         <li>
                           <h6>Total Amount Paid</h6>
-                          <p className="color-green">$180</p>
+                          <p className="color-green">₹180</p>
                         </li>
                         <li>
                           <h6>Paid On</h6>
@@ -2471,7 +2471,7 @@ const UserDashboard = () => {
               <div className="wallet-wrap wallet-modal">
                 <div className="wallet-amt">
                   <h5>Your Wallet Balance</h5>
-                  <h2>$4,544</h2>
+                  <h2>₹4,544</h2>
                 </div>
               </div>
               <form>
@@ -2499,7 +2499,7 @@ const UserDashboard = () => {
                         <label htmlFor="value">Add Value 1</label>
                       </div>
                       <div className="add-wallet-price">
-                        <span>+ $80</span>
+                        <span>+ ₹80</span>
                       </div>
                     </li>
                     <li>
@@ -2512,7 +2512,7 @@ const UserDashboard = () => {
                         <label htmlFor="value1">Add Value 2</label>
                       </div>
                       <div className="add-wallet-price">
-                        <span>+ $60</span>
+                        <span>+ ₹60</span>
                       </div>
                     </li>
                     <li>
@@ -2525,7 +2525,7 @@ const UserDashboard = () => {
                         <label htmlFor="value2">Add Value 3</label>
                       </div>
                       <div className="add-wallet-price">
-                        <span>+ $120</span>
+                        <span>+ ₹120</span>
                       </div>
                     </li>
                     <li>
@@ -2538,7 +2538,7 @@ const UserDashboard = () => {
                         <label htmlFor="value3">Add Value 4</label>
                       </div>
                       <div className="add-wallet-price">
-                        <span>+ $120</span>
+                        <span>+ ₹120</span>
                       </div>
                     </li>
                   </ul>
@@ -2655,7 +2655,7 @@ const UserDashboard = () => {
                           </li>
                           <li>
                             <h6>Price Per Hour</h6>
-                            <p>$200.00 / hr</p>
+                            <p>₹200.00 / hr</p>
                           </li>
                           <li>
                             <h6>Rank</h6>
@@ -2698,7 +2698,7 @@ const UserDashboard = () => {
                         <ul className="appointmentset">
                           <li>
                             <h6>Coaching Booking Amount</h6>
-                            <p>$200</p>
+                            <p>₹200</p>
                           </li>
                           <li>
                             <h6>Number of Hours</h6>
@@ -2706,7 +2706,7 @@ const UserDashboard = () => {
                           </li>
                           <li>
                             <h6>Service Charge</h6>
-                            <p>$20</p>
+                            <p>₹20</p>
                           </li>
                         </ul>
                       </div>
@@ -2714,7 +2714,7 @@ const UserDashboard = () => {
                         <ul className="appointmentset">
                           <li>
                             <h6>Total Amount Paid</h6>
-                            <p className="color-green">$180</p>
+                            <p className="color-green">₹180</p>
                           </li>
                           <li>
                             <h6>Paid On</h6>
@@ -2779,11 +2779,11 @@ const UserDashboard = () => {
                           </li>
                           <li>
                             <h6>Booked On</h6>
-                            <p>$150 Upto 2 guests</p>
+                            <p>₹150 Upto 2 guests</p>
                           </li>
                           <li>
                             <h6>Price Per Guest</h6>
-                            <p>$15</p>
+                            <p>₹15</p>
                           </li>
                           <li>
                             <h6>Maximum Number of Guests</h6>
@@ -2800,11 +2800,11 @@ const UserDashboard = () => {
                         <ul className="appointmentset">
                           <li>
                             <h6>Booked On</h6>
-                            <p>$150 Upto 2 guests</p>
+                            <p>₹150 Upto 2 guests</p>
                           </li>
                           <li>
                             <h6>Price Per Guest</h6>
-                            <p>$15</p>
+                            <p>₹15</p>
                           </li>
                           <li>
                             <h6>Maximum Number of Guests</h6>
@@ -2821,7 +2821,7 @@ const UserDashboard = () => {
                         <ul className="appointmentset">
                           <li>
                             <h6>Court Booking Amount</h6>
-                            <p>$150</p>
+                            <p>₹150</p>
                           </li>
                           <li>
                             <h6>Additional Guests</h6>
@@ -2829,11 +2829,11 @@ const UserDashboard = () => {
                           </li>
                           <li>
                             <h6>Amount Additional Guests</h6>
-                            <p>$30</p>
+                            <p>₹30</p>
                           </li>
                           <li>
                             <h6>Service Charge</h6>
-                            <p>$20</p>
+                            <p>₹20</p>
                           </li>
                         </ul>
                       </div>
@@ -2841,7 +2841,7 @@ const UserDashboard = () => {
                         <ul className="appointmentsetview">
                           <li>
                             <h6>Total Amount Paid</h6>
-                            <p className="color-green">$180</p>
+                            <p className="color-green">₹180</p>
                           </li>
                           <li>
                             <h6>Paid On</h6>
@@ -2887,7 +2887,7 @@ const UserDashboard = () => {
                 <div className="wallet-wrap wallet-modal">
                   <div className="wallet-amt">
                     <h5>Your Wallet Balance</h5>
-                    <h2>$4,544</h2>
+                    <h2>₹4,544</h2>
                   </div>
                 </div>
                 <form>
@@ -2906,7 +2906,7 @@ const UserDashboard = () => {
                           <label htmlFor="value">Add Value 1</label>
                         </div>
                         <div className="add-wallet-price">
-                          <span>+ $80</span>
+                          <span>+ ₹80</span>
                         </div>
                       </li>
                       <li>
@@ -2915,7 +2915,7 @@ const UserDashboard = () => {
                           <label htmlFor="value1">Add Value 2</label>
                         </div>
                         <div className="add-wallet-price">
-                          <span>+ $60</span>
+                          <span>+ ₹60</span>
                         </div>
                       </li>
                       <li>
@@ -2924,7 +2924,7 @@ const UserDashboard = () => {
                           <label htmlFor="value2">Add Value 3</label>
                         </div>
                         <div className="add-wallet-price">
-                          <span>+ $120</span>
+                          <span>+ ₹120</span>
                         </div>
                       </li>
                       <li>
@@ -2933,7 +2933,7 @@ const UserDashboard = () => {
                           <label htmlFor="value3">Add Value 4</label>
                         </div>
                         <div className="add-wallet-price">
-                          <span>+ $120</span>
+                          <span>+ ₹120</span>
                         </div>
                       </li>
                     </ul>

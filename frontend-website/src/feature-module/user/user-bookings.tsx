@@ -843,11 +843,11 @@ const UserBookings = () => {
                         </li>
                         <li>
                           <h6>Booked On</h6>
-                          <p>$150 Upto 2 guests</p>
+                          <p>₹150 Upto 2 guests</p>
                         </li>
                         <li>
                           <h6>Price Per Guest</h6>
-                          <p>$15</p>
+                          <p>₹15</p>
                         </li>
                         <li>
                           <h6>Maximum Number of Guests</h6>
@@ -886,7 +886,7 @@ const UserBookings = () => {
                       <ul className="appointmentset">
                         <li>
                           <h6>Court Booking Amount</h6>
-                          <p>$150</p>
+                          <p>₹150</p>
                         </li>
                         <li>
                           <h6>Additional Guests</h6>
@@ -894,11 +894,11 @@ const UserBookings = () => {
                         </li>
                         <li>
                           <h6>Amount Additional Guests</h6>
-                          <p>$30</p>
+                          <p>₹30</p>
                         </li>
                         <li>
                           <h6>Service Charge</h6>
-                          <p>$20</p>
+                          <p>₹20</p>
                         </li>
                       </ul>
                     </div>
@@ -906,7 +906,7 @@ const UserBookings = () => {
                       <ul className="appointmentsetview">
                         <li>
                           <h6>Total Amount Paid</h6>
-                          <p className="color-green">$180</p>
+                          <p className="color-green">₹180</p>
                         </li>
                         <li>
                           <h6>Paid On</h6>
@@ -1008,7 +1008,7 @@ const UserBookings = () => {
                         </li>
                         <li>
                           <h6>Price Per Hour</h6>
-                          <p>$200.00 / hr</p>
+                          <p>₹200.00 / hr</p>
                         </li>
                         <li>
                           <h6>Rank</h6>
@@ -1053,7 +1053,7 @@ const UserBookings = () => {
                       <ul className="appointmentset">
                         <li>
                           <h6>Coaching Booking Amount</h6>
-                          <p>$200</p>
+                          <p>₹200</p>
                         </li>
                         <li>
                           <h6>Number of Hours</h6>
@@ -1061,7 +1061,7 @@ const UserBookings = () => {
                         </li>
                         <li>
                           <h6>Service Charge</h6>
-                          <p>$20</p>
+                          <p>₹20</p>
                         </li>
                       </ul>
                     </div>
@@ -1069,7 +1069,7 @@ const UserBookings = () => {
                       <ul className="appointmentset">
                         <li>
                           <h6>Total Amount Paid</h6>
-                          <p className="color-green">$180</p>
+                          <p className="color-green">₹180</p>
                         </li>
                         <li>
                           <h6>Paid On</h6>

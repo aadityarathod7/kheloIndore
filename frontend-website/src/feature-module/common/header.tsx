@@ -119,7 +119,7 @@ const Header = () => {
         results.push({
           type: "trainer",
           label: `${t.first_name || ""} ${t.last_name || ""}`.trim(),
-          subtitle: t.trainer_type || "Personal Trainer",
+          subtitle: t.trainer_type || "Trainer",
           icon: "feather-award",
           link: `/personal-training/trainer/${(t.first_name || "").replace(/\s+/g, "-").toLowerCase()}/${t._id}`,
           badge: t.trainer_type || "Trainer",
@@ -339,9 +339,14 @@ const Header = () => {
       routes: routes.coachesGrid,
     },
     {
-      tittle: "Personal Trainers",
+      tittle: "Trainers",
       separateRoute: true,
       routes: routes.blogList,
+    },
+    {
+      tittle: "Events",
+      separateRoute: true,
+      routes: routes.events,
     },
     {
       tittle: "Blogs",
@@ -792,7 +797,12 @@ const Header = () => {
           </li>
           <li className="border-bottom py-2">
             <Link to={routes.blogList} onClick={hideOffcanvas} className="d-flex align-items-center py-2 text-dark font-weight-bold text-decoration-none" style={{ fontSize: "15px" }}>
-              <i className="fas fa-dumbbell me-3 text-success" style={{ width: "20px", textAlign: "center" }} /> Personal Trainer
+              <i className="fas fa-dumbbell me-3 text-success" style={{ width: "20px", textAlign: "center" }} /> Trainers
+            </Link>
+          </li>
+          <li className="border-bottom py-2">
+            <Link to={routes.events} onClick={hideOffcanvas} className="d-flex align-items-center py-2 text-dark font-weight-bold text-decoration-none" style={{ fontSize: "15px" }}>
+              <i className="fas fa-calendar-alt me-3 text-success" style={{ width: "20px", textAlign: "center" }} /> Events
             </Link>
           </li>
           <li className="border-bottom py-2">

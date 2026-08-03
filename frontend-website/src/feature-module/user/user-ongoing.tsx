@@ -539,11 +539,11 @@ const UserOngoing = () => {
                           </li>
                           <li>
                             <h6>Booked On</h6>
-                            <p>$150 Upto 2 guests</p>
+                            <p>₹150 Upto 2 guests</p>
                           </li>
                           <li>
                             <h6>Price Per Guest</h6>
-                            <p>$15</p>
+                            <p>₹15</p>
                           </li>
                           <li>
                             <h6>Maximum Number of Guests</h6>
@@ -586,7 +586,7 @@ const UserOngoing = () => {
                         <ul className="appointmentset">
                           <li>
                             <h6>Court Booking Amount</h6>
-                            <p>$150</p>
+                            <p>₹150</p>
                           </li>
                           <li>
                             <h6>Additional Guests</h6>
@@ -594,11 +594,11 @@ const UserOngoing = () => {
                           </li>
                           <li>
                             <h6>Amount Additional Guests</h6>
-                            <p>$30</p>
+                            <p>₹30</p>
                           </li>
                           <li>
                             <h6>Service Charge</h6>
-                            <p>$20</p>
+                            <p>₹20</p>
                           </li>
                         </ul>
                       </div>
@@ -606,7 +606,7 @@ const UserOngoing = () => {
                         <ul className="appointmentsetview">
                           <li>
                             <h6>Total Amount Paid</h6>
-                            <p className="color-green">$180</p>
+                            <p className="color-green">₹180</p>
                           </li>
                           <li>
                             <h6>Paid On</h6>
@@ -745,7 +745,7 @@ const UserOngoing = () => {
                           </li>
                           <li>
                             <h6>Price Per Hour</h6>
-                            <p>$200.00 / hr</p>
+                            <p>₹200.00 / hr</p>
                           </li>
                           <li>
                             <h6>Rank</h6>
@@ -819,7 +819,7 @@ const UserOngoing = () => {
                         <ul className="appointmentset">
                           <li>
                             <h6>Coaching Booking Amount</h6>
-                            <p>$200</p>
+                            <p>₹200</p>
                           </li>
                           <li>
                             <h6>Number of Hours</h6>
@@ -827,7 +827,7 @@ const UserOngoing = () => {
                           </li>
                           <li>
                             <h6>Service Charge</h6>
-                            <p>$20</p>
+                            <p>₹20</p>
                           </li>
                         </ul>
                       </div>
@@ -835,7 +835,7 @@ const UserOngoing = () => {
                         <ul className="appointmentset">
                           <li>
                             <h6>Total Amount Paid</h6>
-                            <p className="color-green">$180</p>
+                            <p className="color-green">₹180</p>
                           </li>
                           <li>
                             <h6>Paid On</h6>
@@ -992,7 +992,7 @@ const UserOngoing = () => {
                         <div className="price-set-price">
                           <h6>Start’s From</h6>
                           <h5>
-                            $250<span>/hr</span>
+                            ₹250<span>/hr</span>
                           </h5>
                         </div>
                       </div>
@@ -1629,7 +1629,7 @@ const UserOngoing = () => {
                                 <span>06:00 PM - 08:00 PM</span>
                               </li>
                               <li>
-                                <h6>$400</h6>
+                                <h6>₹400</h6>
                               </li>
                             </ul>
                           </div>
@@ -1663,7 +1663,7 @@ const UserOngoing = () => {
                                 <span>06:00 PM - 08:00 PM</span>
                               </li>
                               <li>
-                                <h6>$300</h6>
+                                <h6>₹300</h6>
                               </li>
                             </ul>
                           </div>
@@ -1776,7 +1776,7 @@ const UserOngoing = () => {
                         <div className="col-12 col-sm-12 col-md-12 col-lg-4">
                           <ul className="d-sm-flex align-items-center justify-content-evenly">
                             <li>
-                              <h3 className="d-inline-block">$150</h3>
+                              <h3 className="d-inline-block">₹150</h3>
                               <span>/hr</span>
                               <p>up to 1 guests</p>
                             </li>
@@ -1786,7 +1786,7 @@ const UserOngoing = () => {
                               </span>
                             </li>
                             <li className="text-center">
-                              <h3 className="d-inline-block">$5</h3>
+                              <h3 className="d-inline-block">₹5</h3>
                               <span>/hr</span>
                               <p>
                                 each additional guest <br />
@@ -2328,7 +2328,7 @@ const UserOngoing = () => {
                                 <span>06:00 PM - 08:00 PM</span>
                               </li>
                               <li>
-                                <h6>$400</h6>
+                                <h6>₹400</h6>
                               </li>
                             </ul>
                           </div>
@@ -2354,7 +2354,7 @@ const UserOngoing = () => {
                                 <span>06:00 PM - 08:00 PM</span>
                               </li>
                               <li>
-                                <h6>$300</h6>
+                                <h6>₹300</h6>
                               </li>
                             </ul>
                           </div>

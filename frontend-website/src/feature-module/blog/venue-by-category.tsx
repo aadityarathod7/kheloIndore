@@ -749,10 +749,9 @@ export default function VenueByCategory() {
         const vt = (t.vendor_type || "").toLowerCase().replace(/_/g, " ").trim();
         const cat = (t.category || "").toLowerCase().replace(/_/g, " ").trim();
         const name = (t.name || "").toLowerCase();
-        const desc = (t.description || "").toLowerCase();
 
         if (selectedSport === "other-sports") {
-          const isCricket = vt.includes("cricket") || cat.includes("cricket") || name.includes("cricket") || desc.includes("cricket") || vt.includes("turf") || cat.includes("turf");
+          const isCricket = vt.includes("cricket") || cat.includes("cricket") || name.includes("cricket") || vt.includes("turf") || cat.includes("turf");
           const isBadminton = vt.includes("badminton") || cat.includes("badminton") || name.includes("badminton");
           const isSwimming = vt.includes("swim") || cat.includes("swim") || name.includes("swim");
           const isFootball = vt.includes("football") || cat.includes("football") || name.includes("football");
@@ -782,7 +781,7 @@ export default function VenueByCategory() {
 
       // 3. Amenities Multi-Select Filter
       if (selectedAmenities.length > 0) {
-        const venueText = `${t.description || ""} ${t.activities || ""} ${t.name || ""}`.toLowerCase();
+        const venueText = `${t.activities || ""} ${t.name || ""}`.toLowerCase();
         const hasMatchingAmenity = selectedAmenities.some((amenity) => {
           const keyword = amenity.replace(/-/g, " ").toLowerCase();
           return venueText.includes(keyword);
@@ -863,12 +862,12 @@ export default function VenueByCategory() {
       </div>
       {/* /Hero Header Section */}
 
-      {/* Main Page Container */}
+      {/* Main Page Container - Left Sidebar Layout */}
       <div className="content blog-grid" style={{ backgroundColor: "#F8FAFC", padding: "28px 0 60px 0" }}>
         <div className="container-fluid px-lg-5 px-md-4 px-3">
-          
+
           {/* Title & Count Row */}
-          <div className="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-3">
+          <div className="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
             <div>
               <h2 className="fw-extrabold text-dark mb-1 d-flex align-items-center gap-2" style={{ fontSize: "24px", fontWeight: "800", color: "#17222D" }}>
                 <span style={{ color: "#22C55E" }}>{displayList.length}</span> {categoryTitle} Venues
@@ -878,8 +877,8 @@ export default function VenueByCategory() {
               </p>
             </div>
 
-            {/* Custom Sort Dropdown */}
-            <div className="d-flex align-items-center gap-2" style={{ minWidth: "180px" }}>
+            {/* Sort Dropdown - top right */}
+            <div className="d-flex align-items-center gap-2" style={{ minWidth: "200px" }}>
               <span className="text-muted flex-shrink-0" style={{ fontSize: "12px", fontWeight: "600" }}>Sort by:</span>
               <CustomDropdown
                 options={SORT_OPTIONS}
@@ -891,322 +890,371 @@ export default function VenueByCategory() {
             </div>
           </div>
 
-          {/* Horizontal Top Filter Bar (Full Width Card) */}
-          <div className="bg-white rounded-4 p-3 mb-4 shadow-sm border" style={{ borderColor: "#E2E8E3" }}>
-            <div className="row g-2 align-items-end">
-              
-              {/* 1. Location */}
-              <div className="col-xl-2 col-lg-3 col-md-4 col-sm-6">
-                <label className="form-label mb-1 fw-bold text-dark d-flex align-items-center gap-1" style={{ fontSize: "11px", color: "#1E293B" }}>
-                  Location
-                </label>
-                <CustomDropdown
-                  options={locationOptions}
-                  value={locationName}
-                  onChange={setLocationName}
-                  placeholder="Select Location"
-                  icon="feather-map-pin"
-                />
-              </div>
+          {/* Two-Column Layout: Left Filters | Right Cards */}
+          <div className="row g-4 align-items-start">
 
-              {/* 2. Date */}
-              <div className="col-xl-2 col-lg-3 col-md-4 col-sm-6">
-                <label className="form-label mb-1 fw-bold text-dark d-flex align-items-center gap-1" style={{ fontSize: "11px", color: "#1E293B" }}>
-                  Date
-                </label>
-                <MiniCalendarDropdown
-                  value={selectedDate}
-                  onChange={setSelectedDate}
-                />
-              </div>
+            {/* LEFT COLUMN â€” Sticky Filter Sidebar */}
+            <div className="col-lg-3 col-md-4 d-none d-md-block">
+              <div className="bg-white rounded-4 p-4 shadow-sm border" style={{ borderColor: "#E2E8E3", position: "sticky", top: "100px" }}>
+                {/* Filter Header */}
+                <div className="d-flex align-items-center justify-content-between mb-3">
+                  <h5 className="fw-bold mb-0" style={{ fontSize: "16px", color: "#0F172A", fontFamily: "Space Grotesk, sans-serif" }}>
+                    <i className="feather-filter text-success me-2" />Filters
+                  </h5>
+                  <button
+                    type="button"
+                    className="btn btn-link text-decoration-none p-0"
+                    style={{ fontSize: "11px", fontWeight: "600", color: "#22C55E" }}
+                    onClick={handleResetFilters}
+                  >
+                    Reset All
+                  </button>
+                </div>
 
-              {/* 3. Time */}
-              <div className="col-xl-2 col-lg-3 col-md-4 col-sm-6">
-                <label className="form-label mb-1 fw-bold text-dark d-flex align-items-center gap-1" style={{ fontSize: "11px", color: "#1E293B" }}>
-                  Time
-                </label>
-                <CustomDropdown
-                  options={SLOT_OPTIONS}
-                  value={selectedSlot}
-                  onChange={setSelectedSlot}
-                  placeholder="Select Time"
-                  icon="feather-clock"
-                />
-              </div>
+                <hr style={{ borderColor: "#F1F5F9", margin: "0 0 16px 0" }} />
 
-              {/* 4. Grass Type */}
-              <div className="col-xl-2 col-lg-3 col-md-4 col-sm-6">
-                <label className="form-label mb-1 fw-bold text-dark d-flex align-items-center gap-1" style={{ fontSize: "11px", color: "#1E293B" }}>
-                  Grass Type
-                </label>
-                <CustomDropdown
-                  options={GRASS_OPTIONS}
-                  value={selectedGrassType}
-                  onChange={setSelectedGrassType}
-                  placeholder="Any Grass"
-                  icon="feather-layers"
-                />
-              </div>
+                {/* Filter 1: Location */}
+                <div className="mb-4">
+                  <label className="form-label fw-bold text-dark d-flex align-items-center gap-1 mb-2" style={{ fontSize: "12px", color: "#1E293B", textTransform: "uppercase", letterSpacing: "0.6px" }}>
+                    <i className="feather-map-pin text-success" style={{ fontSize: "13px" }} /> Location
+                  </label>
+                  <CustomDropdown
+                    options={locationOptions}
+                    value={locationName}
+                    onChange={setLocationName}
+                    placeholder="Select Location"
+                    icon="feather-map-pin"
+                  />
+                </div>
 
-              {/* 5. Amenities */}
-              <div className="col-xl-2 col-lg-3 col-md-4 col-sm-6">
-                <label className="form-label mb-1 fw-bold text-dark d-flex align-items-center gap-1" style={{ fontSize: "11px", color: "#1E293B" }}>
-                  Amenities
-                </label>
-                <MultiSelectDropdown
-                  options={AMENITY_OPTIONS}
-                  selectedValues={selectedAmenities}
-                  onChange={setSelectedAmenities}
-                  placeholder="Any Amenities"
-                  icon="feather-grid"
-                />
-              </div>
+                {/* Filter 2: Date */}
+                <div className="mb-4">
+                  <label className="form-label fw-bold text-dark d-flex align-items-center gap-1 mb-2" style={{ fontSize: "12px", color: "#1E293B", textTransform: "uppercase", letterSpacing: "0.6px" }}>
+                    <i className="feather-calendar text-success" style={{ fontSize: "13px" }} /> Date
+                  </label>
+                  <MiniCalendarDropdown
+                    value={selectedDate}
+                    onChange={setSelectedDate}
+                  />
+                </div>
 
-              {/* 6. Filter Reset Button */}
-              <div className="col-xl-2 col-lg-3 col-md-4 col-sm-12">
-                <label className="form-label mb-1 opacity-0 d-none d-sm-block" style={{ fontSize: "11px" }}>
-                  Actions
-                </label>
-                <button
-                  type="button"
-                  className="btn btn-outline-secondary btn-sm w-100 d-flex align-items-center justify-content-center gap-2"
-                  style={{ height: "42px", fontSize: "12px", fontWeight: "600", borderColor: "#CBD5E1", borderRadius: "12px" }}
-                  onClick={handleResetFilters}
-                >
-                  <i className="feather-refresh-cw me-2" style={{ fontSize: "13px" }} /> Reset Filters
+                {/* Filter 3: Time */}
+                <div className="mb-4">
+                  <label className="form-label fw-bold text-dark d-flex align-items-center gap-1 mb-2" style={{ fontSize: "12px", color: "#1E293B", textTransform: "uppercase", letterSpacing: "0.6px" }}>
+                    <i className="feather-clock text-success" style={{ fontSize: "13px" }} /> Time
+                  </label>
+                  <CustomDropdown
+                    options={SLOT_OPTIONS}
+                    value={selectedSlot}
+                    onChange={setSelectedSlot}
+                    placeholder="Select Time"
+                    icon="feather-clock"
+                  />
+                </div>
+
+                {/* Filter 4: Grass Type */}
+                <div className="mb-4">
+                  <label className="form-label fw-bold text-dark d-flex align-items-center gap-1 mb-2" style={{ fontSize: "12px", color: "#1E293B", textTransform: "uppercase", letterSpacing: "0.6px" }}>
+                    <i className="feather-layers text-success" style={{ fontSize: "13px" }} /> Grass Type
+                  </label>
+                  <CustomDropdown
+                    options={GRASS_OPTIONS}
+                    value={selectedGrassType}
+                    onChange={setSelectedGrassType}
+                    placeholder="Any Grass"
+                    icon="feather-layers"
+                  />
+                </div>
+
+                {/* Filter 5: Amenities */}
+                <div className="mb-2">
+                  <label className="form-label fw-bold text-dark d-flex align-items-center gap-1 mb-2" style={{ fontSize: "12px", color: "#1E293B", textTransform: "uppercase", letterSpacing: "0.6px" }}>
+                    <i className="feather-grid text-success" style={{ fontSize: "13px" }} /> Amenities
+                  </label>
+                  <MultiSelectDropdown
+                    options={AMENITY_OPTIONS}
+                    selectedValues={selectedAmenities}
+                    onChange={setSelectedAmenities}
+                    placeholder="Any Amenities"
+                    icon="feather-grid"
+                  />
+                </div>
+
+                {/* Active Filters Summary */}
+                {(locationName || selectedDate || selectedSlot !== "all" || selectedGrassType !== "any" || selectedAmenities.length > 0) && (
+                  <div className="mt-4 pt-3 border-top" style={{ borderColor: "#F1F5F9" }}>
+                    <p className="text-muted mb-2" style={{ fontSize: "11px", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.6px" }}>Active Filters</p>
+                    <div className="d-flex flex-wrap gap-1">
+                      {locationName && (
+                        <span className="badge rounded-pill" style={{ backgroundColor: "#F0FDF4", color: "#15803D", border: "1px solid #BBF7D0", fontSize: "11px", fontWeight: "600", padding: "4px 8px" }}>
+                          ðŸ“ {locationName}
+                          <button type="button" className="btn-close btn-close-sm ms-1" style={{ fontSize: "8px" }} onClick={() => setLocationName("")} aria-label="Remove" />
+                        </span>
+                      )}
+                      {selectedDate && (
+                        <span className="badge rounded-pill" style={{ backgroundColor: "#F0FDF4", color: "#15803D", border: "1px solid #BBF7D0", fontSize: "11px", fontWeight: "600", padding: "4px 8px" }}>
+                          ðŸ“… {selectedDate}
+                          <button type="button" className="btn-close btn-close-sm ms-1" style={{ fontSize: "8px" }} onClick={() => setSelectedDate("")} aria-label="Remove" />
+                        </span>
+                      )}
+                      {selectedAmenities.map((a) => (
+                        <span key={a} className="badge rounded-pill" style={{ backgroundColor: "#F0FDF4", color: "#15803D", border: "1px solid #BBF7D0", fontSize: "11px", fontWeight: "600", padding: "4px 8px" }}>
+                          âœ… {a}
+                          <button type="button" className="btn-close btn-close-sm ms-1" style={{ fontSize: "8px" }} onClick={() => setSelectedAmenities(selectedAmenities.filter((x) => x !== a))} aria-label="Remove" />
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* RIGHT COLUMN â€” Venue Cards Grid */}
+            <div className="col-lg-9 col-md-8">
+
+              {/* Mobile Filter Row (visible only on small screens) */}
+              <div className="d-flex d-md-none flex-wrap gap-2 mb-3">
+                <CustomDropdown options={locationOptions} value={locationName} onChange={setLocationName} placeholder="Location" icon="feather-map-pin" />
+                <MiniCalendarDropdown value={selectedDate} onChange={setSelectedDate} />
+                <CustomDropdown options={SLOT_OPTIONS} value={selectedSlot} onChange={setSelectedSlot} placeholder="Time" icon="feather-clock" />
+                <button type="button" className="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1" style={{ fontSize: "12px", borderRadius: "10px" }} onClick={handleResetFilters}>
+                  <i className="feather-refresh-cw" style={{ fontSize: "12px" }} /> Reset
                 </button>
               </div>
 
-            </div>
-          </div>
-
-          {/* Cards Grid (Exact 5 Cards Per Row Desktop Layout matching user reference image) */}
-          {currentVenues.length > 0 ? (
-            <div className="ki-5-col-grid">
-              {currentVenues.map((venue, index) => (
-                <div key={index} className="listing-item venue-page ki-card-hover w-100 d-flex flex-column justify-content-between" style={{ margin: 0, overflow: "hidden", backgroundColor: "#FFFFFF", borderRadius: "16px", border: "1px solid #E2E8E3", boxShadow: "0 4px 15px rgba(0,0,0,0.02)", transition: "all 0.3s ease" }}>
-                  
-                  {/* Card Image Cover Header */}
-                  <div className="listing-img" style={{ height: "105px", position: "relative" }}>
-                    <Link
-                      to={`/sports-venue/${venue.vendor_type ? venue.vendor_type.replace(/\s+/g, "-").toLowerCase() : "venue"}/${venue.name.replace(/\s+/g, "-").toLowerCase()}/${venue._id}`}
-                      style={{ position: "absolute", inset: 0, display: "block" }}
-                    >
-                      {getVenueImage(venue?.images).startsWith("http") ? (
-                        <img
-                          src={getVenueImage(venue?.images)}
-                          className="img-fluid"
-                          alt={venue.name}
-                          style={{ height: "100%", width: "100%", objectFit: "cover" }}
-                        />
-                      ) : (
-                        <ImageWithBasePath
-                          src={getVenueImage(venue?.images)}
-                          className="img-fluid"
-                          alt={venue.name}
-                          style={{ height: "100%", width: "100%", objectFit: "cover" }}
-                        />
-                      )}
-                    </Link>
-                    
-                    {/* Category Badge on Top-Left */}
-                    <div style={{ position: "absolute", top: "6px", left: "6px", zIndex: 2 }}>
-                      <span className="badge" style={{ backgroundColor: "#22C55E", color: "#FFFFFF", fontWeight: "700", fontSize: "9px", padding: "3px 6px", borderRadius: "5px", textTransform: "uppercase", letterSpacing: "0.5px" }}>
-                        {venue?.vendor_type ? venue.vendor_type.replace("_", " ") : "Venue"}
-                      </span>
-                    </div>
-
-                    {/* Favorite Heart Button on Top-Right */}
-                    <div style={{ position: "absolute", top: "6px", right: "6px", zIndex: 2 }}>
-                      <button 
-                        onClick={(e) => {
-                          e.preventDefault();
-                          toggleFavorite(venue._id);
-                        }}
-                        className="btn btn-white rounded-circle d-flex align-items-center justify-content-center shadow-sm" 
-                        style={{ width: "25px", height: "25px", padding: 0, backgroundColor: "#FFFFFF", border: "none" }}
-                      >
-                        <i 
-                          className={favorites[venue._id] ? "fas fa-heart text-danger" : "feather-heart text-muted"} 
-                          style={{ fontSize: "11px" }} 
-                        />
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Card Content Body */}
-                  <div className="listing-content news-content p-2.5" style={{ background: "#FFFFFF", padding: "10px" }}>
-                    
-                    {/* Rating & Standard badge */}
-                    <div className="d-flex align-items-center justify-content-between mb-1" style={{ fontSize: "10px" }}>
-                      <div className="rating-wrap d-flex align-items-center gap-1">
-                        <i className="fas fa-star text-warning" style={{ fontSize: "9px" }} />
-                        <span style={{ fontSize: "10px", fontWeight: "700", color: "#17222D" }}>4.8</span>
-                      </div>
-                      <span style={{ fontSize: "9px", color: "#606D76", fontWeight: "600" }}>
-                        <i className="feather-grid me-1" style={{ color: "#3CAB4B", fontSize: "9px" }} />
-                        Standard
-                      </span>
-                    </div>
-
-                    {/* Venue Title */}
-                    <h3 className="listing-title mb-1" style={{ fontSize: "13px", fontWeight: "700", lineHeight: "1.2" }}>
-                      <Link
-                        to={`/sports-venue/${venue.vendor_type ? venue.vendor_type.replace(/\s+/g, "-").toLowerCase() : "venue"}/${venue.name.replace(/\s+/g, "-").toLowerCase()}/${venue._id}`}
-                        className="text-truncate d-block" style={{ color: "#17222D" }}
-                        title={venue.name}
-                      >
-                        {venue.name}
-                      </Link>
-                    </h3>
-
-                    {/* Location Pin & Map Link */}
-                    <div className="d-flex align-items-center justify-content-between mb-1.5" style={{ fontSize: "11px" }}>
-                      <p className="mb-0 text-truncate" style={{ fontSize: "11px", color: "#606D76" }}>
-                        <i className="feather-map-pin me-1" style={{ color: "#3CAB4B" }} />
-                        {venue.near_by_location || "Indore"}, Indore
-                      </p>
-                      {venue.google_location && (
-                        <a
-                          href={venue.google_location.startsWith("http") ? venue.google_location : `https://${venue.google_location}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          title="Open Google Maps"
-                          className="text-success ms-1 flex-shrink-0"
-                          style={{ fontSize: "10px", fontWeight: "600" }}
+              {/* Cards Grid */}
+              {currentVenues.length > 0 ? (
+                <div className="ki-4-col-grid">
+                  {currentVenues.map((venue, index) => (
+                    <div key={index} className="listing-item venue-page ki-card-hover w-100 d-flex flex-column justify-content-between" style={{ margin: 0, overflow: "hidden", backgroundColor: "#FFFFFF", borderRadius: "16px", border: "1px solid #E2E8E3", boxShadow: "0 4px 15px rgba(0,0,0,0.02)", transition: "all 0.3s ease" }}>
+                      
+                      {/* Card Image Cover Header */}
+                      <div className="listing-img" style={{ height: "115px", position: "relative" }}>
+                        <Link
+                          to={`/sports-venue/${venue.vendor_type ? venue.vendor_type.replace(/\s+/g, "-").toLowerCase() : "venue"}/${venue.name.replace(/\s+/g, "-").toLowerCase()}/${venue._id}`}
+                          style={{ position: "absolute", inset: 0, display: "block" }}
                         >
-                          Map 🗺️
-                        </a>
-                      )}
+                          {getVenueImage(venue?.images).startsWith("http") ? (
+                            <img
+                              src={getVenueImage(venue?.images)}
+                              className="img-fluid"
+                              alt={venue.name}
+                              style={{ height: "100%", width: "100%", objectFit: "cover" }}
+                            />
+                          ) : (
+                            <ImageWithBasePath
+                              src={getVenueImage(venue?.images)}
+                              className="img-fluid"
+                              alt={venue.name}
+                              style={{ height: "100%", width: "100%", objectFit: "cover" }}
+                            />
+                          )}
+                        </Link>
+                        
+                        {/* Category Badge on Top-Left */}
+                        <div style={{ position: "absolute", top: "6px", left: "6px", zIndex: 2 }}>
+                          <span className="badge" style={{ backgroundColor: "#22C55E", color: "#FFFFFF", fontWeight: "700", fontSize: "9px", padding: "3px 6px", borderRadius: "5px", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                            {venue?.vendor_type ? venue.vendor_type.replace("_", " ") : "Venue"}
+                          </span>
+                        </div>
+
+                        {/* Favorite Heart Button on Top-Right */}
+                        <div style={{ position: "absolute", top: "6px", right: "6px", zIndex: 2 }}>
+                          <button 
+                            onClick={(e) => {
+                              e.preventDefault();
+                              toggleFavorite(venue._id);
+                            }}
+                            className="btn btn-white rounded-circle d-flex align-items-center justify-content-center shadow-sm" 
+                            style={{ width: "25px", height: "25px", padding: 0, backgroundColor: "#FFFFFF", border: "none" }}
+                          >
+                            <i 
+                              className={favorites[venue._id] ? "fas fa-heart text-danger" : "feather-heart text-muted"} 
+                              style={{ fontSize: "11px" }} 
+                            />
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Card Content Body */}
+                      <div className="listing-content news-content p-2.5" style={{ background: "#FFFFFF", padding: "10px" }}>
+                        
+                        {/* Rating & Standard badge */}
+                        <div className="d-flex align-items-center justify-content-between mb-1" style={{ fontSize: "10px" }}>
+                          <div className="rating-wrap d-flex align-items-center gap-1">
+                            <i className="fas fa-star text-warning" style={{ fontSize: "9px" }} />
+                            <span style={{ fontSize: "10px", fontWeight: "700", color: "#17222D" }}>4.8</span>
+                          </div>
+                          <span style={{ fontSize: "9px", color: "#606D76", fontWeight: "600" }}>
+                            <i className="feather-grid me-1" style={{ color: "#3CAB4B", fontSize: "9px" }} />
+                            Standard
+                          </span>
+                        </div>
+
+                        {/* Venue Title */}
+                        <h3 className="listing-title mb-1" style={{ fontSize: "13px", fontWeight: "700", lineHeight: "1.2" }}>
+                          <Link
+                            to={`/sports-venue/${venue.vendor_type ? venue.vendor_type.replace(/\s+/g, "-").toLowerCase() : "venue"}/${venue.name.replace(/\s+/g, "-").toLowerCase()}/${venue._id}`}
+                            className="text-truncate d-block" style={{ color: "#17222D" }}
+                            title={venue.name}
+                          >
+                            {venue.name}
+                          </Link>
+                        </h3>
+
+                        {/* Location Pin & Map Link */}
+                        <div className="d-flex align-items-center justify-content-between mb-1.5" style={{ fontSize: "11px" }}>
+                          <p className="mb-0 text-truncate" style={{ fontSize: "11px", color: "#606D76" }}>
+                            <i className="feather-map-pin me-1" style={{ color: "#3CAB4B" }} />
+                            {venue.near_by_location || "Indore"}, Indore
+                          </p>
+                          {venue.google_location && (
+                            <a
+                              href={venue.google_location.startsWith("http") ? venue.google_location : `https://${venue.google_location}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              title="Open Google Maps"
+                              className="text-success ms-1 flex-shrink-0"
+                              style={{ fontSize: "10px", fontWeight: "600" }}
+                            >
+                              Map ðŸ—ºï¸
+                            </a>
+                          )}
+                        </div>
+
+                        {/* Price & Book Button */}
+                        <div className="d-flex align-items-center justify-content-between pt-1.5" style={{ borderTop: "1px solid #F1F5F9" }}>
+                          <span style={{ fontSize: "13px", fontWeight: "800", color: "#17222D" }}>
+                            â‚¹{venue.price_per_hr || "750"} <span style={{ fontSize: "9px", fontWeight: "normal", color: "#606D76" }}>/hr</span>
+                          </span>
+                          <Link 
+                            to={`/sports-venue/${venue.vendor_type ? venue.vendor_type.replace(/\s+/g, "-").toLowerCase() : "venue"}/${venue.name.replace(/\s+/g, "-").toLowerCase()}/${venue._id}`}
+                            className="btn btn-primary btn-sm rounded-pill px-2.5 py-0.5"
+                            style={{ fontSize: "10px", fontWeight: "600", backgroundColor: "#22C55E", borderColor: "#22C55E" }}
+                          >
+                            Book Slot
+                          </Link>
+                        </div>
+
+                      </div>
+
                     </div>
-
-                    {/* Price & Book Button */}
-                    <div className="d-flex align-items-center justify-content-between pt-1.5" style={{ borderTop: "1px solid #F1F5F9" }}>
-                      <span style={{ fontSize: "13px", fontWeight: "800", color: "#17222D" }}>
-                        ₹{venue.price_per_hr || "750"} <span style={{ fontSize: "9px", fontWeight: "normal", color: "#606D76" }}>/hr</span>
-                      </span>
-                      <Link 
-                        to={`/sports-venue/${venue.vendor_type ? venue.vendor_type.replace(/\s+/g, "-").toLowerCase() : "venue"}/${venue.name.replace(/\s+/g, "-").toLowerCase()}/${venue._id}`}
-                        className="btn btn-primary btn-sm rounded-pill px-2.5 py-0.5"
-                        style={{ fontSize: "10px", fontWeight: "600", backgroundColor: "#22C55E", borderColor: "#22C55E" }}
-                      >
-                        Book Slot
-                      </Link>
-                    </div>
-
-                  </div>
-
+                  ))}
                 </div>
-              ))}
+              ) : (
+                <div className="col-12 text-center py-5 bg-white rounded-4 border" style={{ borderColor: "#E2E8E3" }}>
+                  <i className="feather-alert-circle text-muted mb-2" style={{ fontSize: "32px" }} />
+                  <h5 className="fw-bold text-dark">No Venues Found</h5>
+                  <p className="text-muted fs-6 mb-0">Try clearing your search filters to view available facilities</p>
+                </div>
+              )}
+
+              {/* Bottom Pagination & Status Subtitle */}
+              <div className="d-flex flex-column align-items-center justify-content-center mt-5 mb-4">
+                <div className="d-flex align-items-center gap-2 mb-2 flex-wrap justify-content-center">
+                  {/* Previous Button */}
+                  <button
+                    type="button"
+                    className="btn d-flex align-items-center justify-content-center shadow-sm"
+                    onClick={() => currentPage > 1 && handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    style={{
+                      width: "42px",
+                      height: "42px",
+                      borderRadius: "10px",
+                      backgroundColor: "#FFFFFF",
+                      border: "1px solid #E2E8F0",
+                      color: currentPage === 1 ? "#CBD5E1" : "#334155",
+                      cursor: currentPage === 1 ? "not-allowed" : "pointer",
+                      fontSize: "14px",
+                      transition: "all 0.2s ease"
+                    }}
+                  >
+                    <i className="feather-chevron-left" />
+                  </button>
+
+                  {/* Page Number Buttons */}
+                  {(() => {
+                    const items: (number | string)[] = [];
+                    if (totalPages <= 7) {
+                      for (let i = 1; i <= totalPages; i++) items.push(i);
+                    } else {
+                      if (currentPage <= 4) {
+                        items.push(1, 2, 3, 4, 5, "...", totalPages);
+                      } else if (currentPage >= totalPages - 3) {
+                        items.push(1, "...", totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+                      } else {
+                        items.push(1, "...", currentPage - 1, currentPage, currentPage + 1, "...", totalPages);
+                      }
+                    }
+
+                    return items.map((item, idx) => {
+                      if (item === "...") {
+                        return (
+                          <span key={`dots-${idx}`} className="px-2 text-muted fw-bold" style={{ fontSize: "14px" }}>
+                            ...
+                          </span>
+                        );
+                      }
+                      const pageNum = Number(item);
+                      const isActive = pageNum === currentPage;
+                      return (
+                        <button
+                          key={pageNum}
+                          type="button"
+                          onClick={() => handlePageChange(pageNum)}
+                          className="btn d-flex align-items-center justify-content-center shadow-sm"
+                          style={{
+                            width: "42px",
+                            height: "42px",
+                            borderRadius: "10px",
+                            backgroundColor: isActive ? "#00B050" : "#FFFFFF",
+                            border: isActive ? "none" : "1px solid #E2E8F0",
+                            color: isActive ? "#FFFFFF" : "#334155",
+                            fontWeight: "700",
+                            fontSize: "14px",
+                            transition: "all 0.2s ease"
+                          }}
+                        >
+                          {pageNum}
+                        </button>
+                      );
+                    });
+                  })()}
+
+                  {/* Next Button */}
+                  <button
+                    type="button"
+                    className="btn d-flex align-items-center justify-content-center shadow-sm"
+                    onClick={() => currentPage < totalPages && handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    style={{
+                      width: "42px",
+                      height: "42px",
+                      borderRadius: "10px",
+                      backgroundColor: "#FFFFFF",
+                      border: "1px solid #E2E8F0",
+                      color: currentPage === totalPages ? "#CBD5E1" : "#334155",
+                      cursor: currentPage === totalPages ? "not-allowed" : "pointer",
+                      fontSize: "14px",
+                      transition: "all 0.2s ease"
+                    }}
+                  >
+                    <i className="feather-chevron-right" />
+                  </button>
+                </div>
+
+                {/* Subtitle text */}
+                <p className="mb-0" style={{ fontSize: "14px", color: "#64748B", fontWeight: "500", marginTop: "8px" }}>
+                  Showing <span style={{ color: "#1E293B", fontWeight: "700" }}>{displayList.length > 0 ? indexOfFirstVenue + 1 : 0}</span> to <span style={{ color: "#1E293B", fontWeight: "700" }}>{Math.min(indexOfLastVenue, displayList.length)}</span> of <span style={{ color: "#1E293B", fontWeight: "700" }}>{displayList.length}</span> venues
+                </p>
+              </div>
+
             </div>
-          ) : (
-            <div className="col-12 text-center py-5 bg-white rounded-4 border" style={{ borderColor: "#E2E8E3" }}>
-              <i className="feather-alert-circle text-muted mb-2" style={{ fontSize: "32px" }} />
-              <h5 className="fw-bold text-dark">No Venues Found</h5>
-              <p className="text-muted fs-6 mb-0">Try clearing your search filters to view available facilities</p>
-            </div>
-          )}
+            {/* /RIGHT COLUMN */}
 
-          {/* Bottom Pagination & Status Subtitle */}
-          <div className="d-flex flex-column align-items-center justify-content-center mt-5 mb-4">
-            <div className="d-flex align-items-center gap-2 mb-2 flex-wrap justify-content-center">
-              {/* Previous Button */}
-              <button
-                type="button"
-                className="btn d-flex align-items-center justify-content-center shadow-sm"
-                onClick={() => currentPage > 1 && handlePageChange(currentPage - 1)}
-                disabled={currentPage === 1}
-                style={{
-                  width: "42px",
-                  height: "42px",
-                  borderRadius: "10px",
-                  backgroundColor: "#FFFFFF",
-                  border: "1px solid #E2E8F0",
-                  color: currentPage === 1 ? "#CBD5E1" : "#334155",
-                  cursor: currentPage === 1 ? "not-allowed" : "pointer",
-                  fontSize: "14px",
-                  transition: "all 0.2s ease"
-                }}
-              >
-                <i className="feather-chevron-left" />
-              </button>
-
-              {/* Page Number Buttons */}
-              {(() => {
-                const items: (number | string)[] = [];
-                if (totalPages <= 7) {
-                  for (let i = 1; i <= totalPages; i++) items.push(i);
-                } else {
-                  if (currentPage <= 4) {
-                    items.push(1, 2, 3, 4, 5, "...", totalPages);
-                  } else if (currentPage >= totalPages - 3) {
-                    items.push(1, "...", totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
-                  } else {
-                    items.push(1, "...", currentPage - 1, currentPage, currentPage + 1, "...", totalPages);
-                  }
-                }
-
-                return items.map((item, idx) => {
-                  if (item === "...") {
-                    return (
-                      <span key={`dots-${idx}`} className="px-2 text-muted fw-bold" style={{ fontSize: "14px" }}>
-                        ...
-                      </span>
-                    );
-                  }
-                  const pageNum = Number(item);
-                  const isActive = pageNum === currentPage;
-                  return (
-                    <button
-                      key={pageNum}
-                      type="button"
-                      onClick={() => handlePageChange(pageNum)}
-                      className="btn d-flex align-items-center justify-content-center shadow-sm"
-                      style={{
-                        width: "42px",
-                        height: "42px",
-                        borderRadius: "10px",
-                        backgroundColor: isActive ? "#00B050" : "#FFFFFF",
-                        border: isActive ? "none" : "1px solid #E2E8F0",
-                        color: isActive ? "#FFFFFF" : "#334155",
-                        fontWeight: "700",
-                        fontSize: "14px",
-                        transition: "all 0.2s ease"
-                      }}
-                    >
-                      {pageNum}
-                    </button>
-                  );
-                });
-              })()}
-
-              {/* Next Button */}
-              <button
-                type="button"
-                className="btn d-flex align-items-center justify-content-center shadow-sm"
-                onClick={() => currentPage < totalPages && handlePageChange(currentPage + 1)}
-                disabled={currentPage === totalPages}
-                style={{
-                  width: "42px",
-                  height: "42px",
-                  borderRadius: "10px",
-                  backgroundColor: "#FFFFFF",
-                  border: "1px solid #E2E8F0",
-                  color: currentPage === totalPages ? "#CBD5E1" : "#334155",
-                  cursor: currentPage === totalPages ? "not-allowed" : "pointer",
-                  fontSize: "14px",
-                  transition: "all 0.2s ease"
-                }}
-              >
-                <i className="feather-chevron-right" />
-              </button>
-            </div>
-
-            {/* Subtitle text */}
-            <p className="mb-0" style={{ fontSize: "14px", color: "#64748B", fontWeight: "500", marginTop: "8px" }}>
-              Showing <span style={{ color: "#1E293B", fontWeight: "700" }}>{displayList.length > 0 ? indexOfFirstVenue + 1 : 0}</span> to <span style={{ color: "#1E293B", fontWeight: "700" }}>{Math.min(indexOfLastVenue, displayList.length)}</span> of <span style={{ color: "#1E293B", fontWeight: "700" }}>{displayList.length}</span> venues
-            </p>
           </div>
+          {/* /Two-Column Layout */}
 
         </div>
       </div>

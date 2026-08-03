@@ -399,7 +399,7 @@ const UserCancelled = () => {
                                   </h4>
                                 </td>
                                 <td>
-                                  <span className="pay-dark fs-16">$150</span>
+                                  <span className="pay-dark fs-16">₹150</span>
                                 </td>
                                 <td>
                                   <span className="badge bg-danger">

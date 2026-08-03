@@ -72,7 +72,7 @@ const VenueTimeDate = () => {
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
   const [selectedDateId, setSelectedDateId] = useState<any>();
   const [slots, setSlots] = useState<Slots[]>([]);
-  const [timeFormat, setTimeFormat] = useState<"12" | "24">("12");
+  const timeFormat: "12" | "24" = "12";
 
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
@@ -187,26 +187,22 @@ const VenueTimeDate = () => {
     }
   };
 
-const ALL_STANDARD_SLOTS = [
-  { startTime: "06:00 AM", endTime: "07:00 AM" },
-  { startTime: "07:00 AM", endTime: "08:00 AM" },
-  { startTime: "08:00 AM", endTime: "09:00 AM" },
-  { startTime: "09:00 AM", endTime: "10:00 AM" },
-  { startTime: "10:00 AM", endTime: "11:00 AM" },
-  { startTime: "11:00 AM", endTime: "12:00 PM" },
-  { startTime: "12:00 PM", endTime: "01:00 PM" },
-  { startTime: "01:00 PM", endTime: "02:00 PM" },
-  { startTime: "02:00 PM", endTime: "03:00 PM" },
-  { startTime: "03:00 PM", endTime: "04:00 PM" },
-  { startTime: "04:00 PM", endTime: "05:00 PM" },
-  { startTime: "05:00 PM", endTime: "06:00 PM" },
-  { startTime: "06:00 PM", endTime: "07:00 PM" },
-  { startTime: "07:00 PM", endTime: "08:00 PM" },
-  { startTime: "08:00 PM", endTime: "09:00 PM" },
-  { startTime: "09:00 PM", endTime: "10:00 PM" },
-  { startTime: "10:00 PM", endTime: "11:00 PM" },
-  { startTime: "11:00 PM", endTime: "12:00 AM" },
-];
+const ALL_STANDARD_SLOTS = (() => {
+  const slots: { startTime: string; endTime: string }[] = [];
+  // Generate 30-minute intervals from 06:00 AM to 11:30 PM
+  for (let totalMins = 6 * 60; totalMins < 23 * 60 + 30; totalMins += 30) {
+    const endMins = totalMins + 30;
+    const fmt = (m: number) => {
+      const h = Math.floor(m / 60);
+      const min = m % 60;
+      const ampm = h < 12 ? "AM" : "PM";
+      const displayH = h === 0 ? 12 : h > 12 ? h - 12 : h;
+      return `${String(displayH).padStart(2, "0")}:${String(min).padStart(2, "0")} ${ampm}`;
+    };
+    slots.push({ startTime: fmt(totalMins), endTime: fmt(endMins) });
+  }
+  return slots;
+})();
 
   const [selectedSlotTimes, setSelectedSlotTimes] = useState<string[]>([]);
 
@@ -385,11 +381,15 @@ const ALL_STANDARD_SLOTS = [
           background-color: #F0FDF4 !important;
           color: #166534 !important;
         }
-        .react-datepicker__day--selected,
-        .react-datepicker__day--keyboard-selected {
+        .react-datepicker__day--selected {
           background-color: #22C55E !important;
           color: #FFFFFF !important;
           font-weight: 700 !important;
+        }
+        .react-datepicker__day--keyboard-selected:not(.react-datepicker__day--selected) {
+          background-color: transparent !important;
+          color: #334155 !important;
+          font-weight: 500 !important;
         }
         .react-datepicker__day--disabled {
           color: #CBD5E1 !important;
@@ -544,7 +544,7 @@ const ALL_STANDARD_SLOTS = [
 
                 <hr style={{ borderColor: "#F1F5F9", margin: "24px 0" }} />
 
-                {/* 2. Available Time Slots Header & Toggle */}
+                {/* 2. Available Time Slots Header */}
                 <div className="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
                   <div>
                     <h3 className="fw-bold text-dark mb-0 d-flex align-items-center gap-2" style={{ fontSize: "18px", color: "#0F172A" }}>
@@ -553,40 +553,6 @@ const ALL_STANDARD_SLOTS = [
                     <p className="text-muted mb-0" style={{ fontSize: "12px", color: "#64748B", fontWeight: "500", marginTop: "2px" }}>
                       Showing slots for <span style={{ color: "#1E293B", fontWeight: "700" }}>{formatDateDisplay(selectedDate)}</span>
                     </p>
-                  </div>
-
-                  {/* 12 Hrs / 24 Hrs Toggle Pill */}
-                  <div className="d-inline-flex bg-light p-1 rounded-pill border" style={{ borderColor: "#E2E8F0" }}>
-                    <button
-                      type="button"
-                      className="btn btn-sm rounded-pill px-3 py-1 fw-bold"
-                      onClick={() => setTimeFormat("12")}
-                      style={{
-                        fontSize: "11px",
-                        border: "none",
-                        backgroundColor: timeFormat === "12" ? "#22C55E" : "transparent",
-                        color: timeFormat === "12" ? "#FFFFFF" : "#64748B",
-                        boxShadow: timeFormat === "12" ? "0 2px 6px rgba(34, 197, 94, 0.3)" : "none",
-                        transition: "all 0.15s ease"
-                      }}
-                    >
-                      12 Hrs
-                    </button>
-                    <button
-                      type="button"
-                      className="btn btn-sm rounded-pill px-3 py-1 fw-bold"
-                      onClick={() => setTimeFormat("24")}
-                      style={{
-                        fontSize: "11px",
-                        border: "none",
-                        backgroundColor: timeFormat === "24" ? "#22C55E" : "transparent",
-                        color: timeFormat === "24" ? "#FFFFFF" : "#64748B",
-                        boxShadow: timeFormat === "24" ? "0 2px 6px rgba(34, 197, 94, 0.3)" : "none",
-                        transition: "all 0.15s ease"
-                      }}
-                    >
-                      24 Hrs
-                    </button>
                   </div>
                 </div>
 
@@ -602,10 +568,10 @@ const ALL_STANDARD_SLOTS = [
                           type="button"
                           disabled={isBooked}
                           onClick={() => handleSlotClick(slot.startTime)}
-                          className="btn w-100 py-2.5 px-2 text-center transition-all"
+                          className="btn w-100 py-2 px-1 text-center transition-all"
                           style={{
-                            height: "40px",
-                            fontSize: "12px",
+                            height: "38px",
+                            fontSize: "11px",
                             fontWeight: "600",
                             borderRadius: "10px",
                             backgroundColor: isChecked ? "#22C55E" : isBooked ? "#F1F5F9" : "#FFFFFF",
@@ -625,7 +591,7 @@ const ALL_STANDARD_SLOTS = [
                 {/* Info Footer Banner */}
                 <div className="d-flex align-items-center gap-2 p-3 rounded-3" style={{ backgroundColor: "#F0FDF4", border: "1px solid #DCFCE7", color: "#166534", fontSize: "12px", fontWeight: "500" }}>
                   <i className="feather-info text-success" style={{ fontSize: "15px", flexShrink: 0 }} />
-                  <span>All slots are of 1 hour duration</span>
+                  <span>Slots are in 30-minute intervals (06:00 AM – 11:30 PM)</span>
                 </div>
 
               </div>
@@ -658,7 +624,7 @@ const ALL_STANDARD_SLOTS = [
                     <span className="fw-bold text-dark text-truncate ms-2" style={{ fontSize: "13px", color: "#1E293B", maxWidth: "160px" }}>
                       {selectedSlots.length > 0
                         ? selectedSlots.map((s) => `${s.startTime} - ${s.endTime}`).join(", ")
-                        : "03:00 PM - 04:00 PM"}
+                        : <span className="text-muted fw-normal">No slot selected</span>}
                     </span>
                   </div>
 
@@ -667,7 +633,7 @@ const ALL_STANDARD_SLOTS = [
                       <i className="feather-clock" /> Total Hours
                     </span>
                     <span className="fw-bold text-dark" style={{ fontSize: "13px", color: "#1E293B" }}>
-                      {selectedSlots.length > 0 ? `${selectedSlots.length} Hour${selectedSlots.length > 1 ? "s" : ""}` : "1 Hour"}
+                      {selectedSlots.length > 0 ? `${selectedSlots.length * 0.5} Hour${selectedSlots.length * 0.5 !== 1 ? "s" : ""}` : <span className="text-muted fw-normal">—</span>}
                     </span>
                   </div>
 

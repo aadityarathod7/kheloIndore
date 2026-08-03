@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useLocation, Link, useParams, useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import ImageWithBasePath from "../../core/data/img/ImageWithBasePath";
@@ -139,10 +139,14 @@ const VenueOrderConfirm = () => {
     // });
   };
 
+  const bookingId = useMemo(() => {
+    return `KI-${Math.floor(100000 + Math.random() * 900000)}`;
+  }, []);
+
   const [copied, setCopied] = useState(false);
 
   const handleCopyId = () => {
-    navigator.clipboard.writeText("BKID126783");
+    navigator.clipboard.writeText(bookingId);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -352,7 +356,7 @@ const VenueOrderConfirm = () => {
                         </span>
                         <div>
                           <span className="text-muted d-block" style={{ fontSize: "9px", textTransform: "uppercase", fontWeight: "600" }}>Booking ID</span>
-                          <span className="fw-bold text-dark d-block" style={{ fontSize: "12px" }}>BKID126783</span>
+                          <span className="fw-bold text-dark d-block" style={{ fontSize: "12px" }}>{bookingId}</span>
                         </div>
                       </div>
                       <button

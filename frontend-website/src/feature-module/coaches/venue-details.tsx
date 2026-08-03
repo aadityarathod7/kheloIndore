@@ -101,6 +101,9 @@ const VenueDetails = () => {
     return localStorage.getItem(`fav_venue_${id}`) === "true";
   });
 
+  const [isShareOpen, setIsShareOpen] = useState(false);
+  const [shareCopied, setShareCopied] = useState(false);
+
   const handleToggleFavourite = () => {
     const nextStatus = !isFavourite;
     setIsFavourite(nextStatus);
@@ -161,26 +164,7 @@ const VenueDetails = () => {
    }, []);
   
   const handleShare = () => {
-    const shareUrl = window.location.href;
-    if (navigator.share) {
-      navigator.share({
-        title: venueData?.name || "Khelo Indore Venue",
-        text: `Check out ${venueData?.name} on Khelo Indore!`,
-        url: shareUrl,
-      }).catch((err) => console.log(err));
-    } else {
-      navigator.clipboard.writeText(shareUrl);
-      Swal.fire({
-        icon: "success",
-        title: "Link Copied!",
-        text: "Venue profile link has been copied to your clipboard.",
-        timer: 2000,
-        showConfirmButton: false,
-        background: "#0d1b2a",
-        color: "#fff",
-        confirmButtonColor: "#00E676"
-      });
-    }
+    setIsShareOpen(true);
   };
   
   const handleImageClick = (index: number) => {
@@ -390,34 +374,7 @@ const VenueDetails = () => {
                           <i className={isFavourite ? "fas fa-heart text-danger" : "far fa-heart text-white"} />
                         </button>
                       </div>
-                      {/* Bottom Overlay Container */}
-                      <div
-                        className="position-absolute bottom-0 start-0 end-0 text-white"
-                        style={{ background: "linear-gradient(to top, rgba(15, 23, 42, 0.92) 0%, rgba(15, 23, 42, 0) 85%)", padding: "20px", zIndex: 10 }}
-                      >
-                        <h1 className="venue-hero-title mb-2 text-capitalize">
-                          {venueData?.name || (name ? name.replaceAll('-', ' ') : "Sports Venue")}
-                        </h1>
-                        <div className="d-flex flex-wrap align-items-center gap-2">
-                          <span className="glass-pill">
-                            📍 {venueData?.address ? `${venueData.address}, ${venueData.city || ''}` : "Indore, Madhya Pradesh"}
-                          </span>
-                          {venueData?.google_location && (
-                            <a
-                              href={venueData.google_location.startsWith("http") ? venueData.google_location : `https://${venueData.google_location}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="glass-pill text-decoration-none"
-                              style={{ color: "#FFFFFF", backgroundColor: "rgba(34, 197, 94, 0.4)", borderColor: "rgba(34, 197, 94, 0.8)", fontWeight: 700 }}
-                            >
-                              🗺️ View on Google Maps <i className="fas fa-external-link-alt ms-1" style={{ fontSize: "10px" }} />
-                            </a>
-                          )}
-                          <span className="glass-pill">
-                            ⭐ 4.8 (128 Reviews)
-                          </span>
-                        </div>
-                      </div>
+                      {/* Bottom Overlay Removed */}
                     </div>
                   </div>
 
@@ -453,6 +410,100 @@ const VenueDetails = () => {
                     </div>
                   )}
                 </div>
+
+                {/* Details Bar directly below the Hero Gallery */}
+                <div className="bg-white rounded-4 p-3 mb-4 shadow-sm border d-flex flex-wrap align-items-center justify-content-between gap-3" style={{ borderColor: "#E2E8E3" }}>
+                  <div>
+                    <h1 className="fw-bold mb-1 text-dark text-capitalize" style={{ fontSize: "22px", fontFamily: "Space Grotesk, sans-serif" }}>
+                      {venueData?.name || (name ? name.replaceAll('-', ' ') : "Sports Venue")}
+                    </h1>
+                    <div className="d-flex flex-wrap align-items-center gap-3 text-muted" style={{ fontSize: "13px" }}>
+                      <span>
+                        <i className="fas fa-star text-warning me-1" />4.8 (128 Reviews)
+                      </span>
+                      <span>
+                        <i className="fas fa-map-marker-alt text-success me-1" /> {venueData?.city || "Indore"}, Madhya Pradesh
+                      </span>
+                    </div>
+                  </div>
+                  {venueData?.google_location && (
+                    <a
+                      href={venueData.google_location.startsWith("http") ? venueData.google_location : `https://${venueData.google_location}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn btn-success d-inline-flex align-items-center gap-2 px-3 py-2 rounded-pill font-weight-bold"
+                      style={{ fontSize: "13px", backgroundColor: "#22C55E", borderColor: "#22C55E" }}
+                    >
+                      <i className="feather-navigation" /> Directions (Google Maps)
+                    </a>
+                  )}
+                </div>
+
+                {/* D. Top Amenities Section (Positioned above map & below details bar) */}
+                <div className="pro-card mb-4">
+                  <h3 className="card-title-head mb-3" style={{ color: "#111827", fontFamily: "Space Grotesk, sans-serif" }}>Amenities</h3>
+                  {(() => {
+                    const amenityIconMap: Record<string, string> = {
+                      parking: "fas fa-parking",
+                      "drinking water": "fas fa-tint",
+                      water: "fas fa-tint",
+                      floodlight: "fas fa-lightbulb",
+                      floodlights: "fas fa-lightbulb",
+                      "flood lights": "fas fa-lightbulb",
+                      washroom: "fas fa-shower",
+                      washrooms: "fas fa-shower",
+                      restroom: "fas fa-restroom",
+                      "changing room": "fas fa-tshirt",
+                      "changing rooms": "fas fa-tshirt",
+                      locker: "fas fa-lock",
+                      lockers: "fas fa-lock",
+                      "first aid": "fas fa-briefcase-medical",
+                      "first-aid": "fas fa-briefcase-medical",
+                      scoreboard: "fas fa-list-ol",
+                      "seating area": "fas fa-chair",
+                      seating: "fas fa-chair",
+                      wifi: "fas fa-wifi",
+                      "wi-fi": "fas fa-wifi",
+                      cafeteria: "fas fa-coffee",
+                      canteen: "fas fa-utensils",
+                      "air conditioning": "fas fa-snowflake",
+                      ac: "fas fa-snowflake",
+                      cctv: "fas fa-video",
+                      security: "fas fa-shield-alt",
+                      "equipment rental": "fas fa-baseball-ball",
+                      equipment: "fas fa-baseball-ball",
+                      coaching: "fas fa-graduation-cap",
+                      "pro shop": "fas fa-shopping-bag",
+                    };
+                    const getIcon = (name: string) => {
+                      const key = name.toLowerCase().trim();
+                      return amenityIconMap[key] || "fas fa-check-circle";
+                    };
+                    const amenityList: string[] = Array.isArray(venueData?.amenities)
+                      ? venueData.amenities
+                      : [];
+                    if (amenityList.length === 0) {
+                      return (
+                        <p className="text-muted small">No amenities listed for this venue.</p>
+                      );
+                    }
+                    return (
+                      <div className="row row-cols-md-3 row-cols-2 g-3">
+                        {amenityList.map((amenity: string, idx: number) => (
+                          <div className="col" key={idx}>
+                            <div className="pro-amenity-card d-flex align-items-center gap-2.5 p-2 rounded-3 border" style={{ borderColor: "#E2E8F0", backgroundColor: "#F8FAFC", height: "100%" }}>
+                              <div className="d-flex align-items-center justify-content-center bg-success bg-opacity-10 text-success rounded-circle" style={{ width: "32px", height: "32px", flexShrink: 0 }}>
+                                <i className={getIcon(amenity)} style={{ fontSize: "14px" }} />
+                              </div>
+                              <span className="fw-semibold text-dark text-capitalize text-truncate" style={{ fontSize: "13px" }} title={amenity}>{amenity}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })()}
+                </div>
+
                 {/* B. NAVIGATION TABS (Immediately follows Hero Gallery!) */}
                 {(venueData?.gameType || (venueData?.facilities && venueData.facilities.length > 0) || venueData?.policiesAndRules || venueData?.additionalNotes) && (
                   <div className="tabs-container-card">
@@ -733,41 +784,7 @@ const VenueDetails = () => {
                   </div>
                 </div>
 
-                {/* E. Location & Google Maps Card with Minimap */}
-                <div className="pro-card">
-                  <div className="mb-3">
-                    <h3 className="card-title-head mb-0" style={{ color: "#111827" }}>Location & Map</h3>
-                  </div>
-
-                  <div className="p-3 rounded-3 bg-light border d-flex align-items-center gap-3 mb-3" style={{ borderColor: "#E5E7EB" }}>
-                    <div className="d-inline-flex align-items-center justify-content-center bg-success bg-opacity-10 rounded-circle flex-shrink-0" style={{ width: "44px", height: "44px" }}>
-                      <i className="fas fa-map-marker-alt text-success" style={{ fontSize: "20px" }} />
-                    </div>
-                    <div>
-                      <h6 className="fw-bold mb-1" style={{ color: "#111827", fontSize: "14px" }}>
-                        {venueData?.name || "Venue Address"}
-                      </h6>
-                      <p className="mb-0 text-muted" style={{ fontSize: "13px", color: "#4B5563" }}>
-                        {venueData?.address ? `${venueData.address}, ${venueData.city || 'Indore'}, ${venueData.state || 'Madhya Pradesh'}` : "Indore, Madhya Pradesh"}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Embedded Google Minimap */}
-                  <div className="rounded-3 overflow-hidden border" style={{ height: "240px", borderColor: "#E2E8F0" }}>
-                    <iframe
-                      title="Venue Location Minimap"
-                      width="100%"
-                      height="100%"
-                      style={{ border: 0 }}
-                      loading="lazy"
-                      allowFullScreen
-                      src={`https://maps.google.com/maps?q=${encodeURIComponent(
-                        (venueData?.name || '') + " " + (venueData?.address || '') + " Indore Madhya Pradesh"
-                      )}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
-                    ></iframe>
-                  </div>
-                </div>
+                {/* Location & Map Card moved to sidebar */}
               </div>
 
               {/* RIGHT COLUMN (30% / 4 Cols): Sticky Sidebar */}
@@ -823,87 +840,40 @@ const VenueDetails = () => {
                         className="pro-btn-primary"
                         onClick={handleBookNow}
                       >
-                        <i className="fas fa-calendar-check" /> Check Availability
-                      </button>
-                      <button
-                        type="button"
-                        className="pro-btn-secondary"
-                        onClick={() => {
-                          Swal.fire({
-                            title: "Enquiry Now",
-                            text: `For booking enquiries regarding ${venueData?.name || 'this venue'}, please call +91 9977737801 or write to info@kheloindore.com`,
-                            icon: "info",
-                            confirmButtonColor: "#22C55E"
-                          });
-                        }}
-                      >
-                        <i className="fas fa-comment-dots" /> Enquiry Now
+                        <i className="fas fa-calendar-check" /> Book Now
                       </button>
                     </div>
                   </div>
 
-                  {/* Card 2: Top Amenities */}
-                  <div className="pro-card mb-0">
-                    <h3 className="card-title-head mb-3">Top Amenities</h3>
-                    {(() => {
-                      const amenityEmojiMap: Record<string, string> = {
-                        parking: "🅿️",
-                        "drinking water": "💧",
-                        water: "💧",
-                        floodlight: "💡",
-                        floodlights: "💡",
-                        "flood lights": "💡",
-                        washroom: "🚿",
-                        washrooms: "🚿",
-                        restroom: "🚿",
-                        "changing room": "🎽",
-                        "changing rooms": "🎽",
-                        locker: "🔒",
-                        lockers: "🔒",
-                        "first aid": "🩹",
-                        "first-aid": "🩹",
-                        scoreboard: "📊",
-                        "seating area": "🪑",
-                        seating: "🪑",
-                        wifi: "📶",
-                        "wi-fi": "📶",
-                        cafeteria: "☕",
-                        canteen: "🍽️",
-                        "air conditioning": "❄️",
-                        ac: "❄️",
-                        cctv: "📷",
-                        security: "🔐",
-                        "equipment rental": "🏏",
-                        equipment: "🏏",
-                        coaching: "🧑‍🏫",
-                        "pro shop": "🛍️",
-                      };
-                      const getEmoji = (name: string) => {
-                        const key = name.toLowerCase().trim();
-                        return amenityEmojiMap[key] || "✅";
-                      };
-                      const amenityList: string[] = Array.isArray(venueData?.amenities)
-                        ? venueData!.amenities
-                        : [];
-                      const topAmenities = amenityList.slice(0, 6);
-                      if (topAmenities.length === 0) {
-                        return (
-                          <p className="text-muted small">No amenities listed for this venue.</p>
-                        );
-                      }
-                      return (
-                        <div className="row row-cols-2 g-2 mb-3">
-                          {topAmenities.map((amenity: string, idx: number) => (
-                            <div className="col" key={idx}>
-                              <div className="pro-amenity-card">
-                                <span>{getEmoji(amenity)}</span>
-                                <span style={{ color: "#111827" }}>{amenity}</span>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      );
-                    })()}
+                  {/* Moved Compact Location & Map Card (Positioned directly below Book Slot) */}
+                  <div className="pro-card mt-4">
+                    <h3 className="card-title-head mb-3" style={{ color: "#111827", fontSize: "16px" }}>Location & Map</h3>
+                    {/* Embedded Google Minimap */}
+                    <div className="rounded-3 overflow-hidden border mb-3" style={{ height: "180px", borderColor: "#E2E8F0" }}>
+                      <iframe
+                        title="Venue Location Minimap"
+                        width="100%"
+                        height="100%"
+                        style={{ border: 0 }}
+                        loading="lazy"
+                        allowFullScreen
+                        src={`https://maps.google.com/maps?q=${encodeURIComponent(
+                          (venueData?.name || '') + " " + (venueData?.address || '') + " Indore Madhya Pradesh"
+                        )}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
+                      ></iframe>
+                    </div>
+                    {/* Address Detail displayed only once (below minimap) */}
+                    <div className="d-flex gap-2">
+                      <i className="fas fa-map-marker-alt text-success mt-1" style={{ fontSize: "14px", flexShrink: 0 }} />
+                      <div>
+                        <h6 className="fw-bold mb-0.5" style={{ color: "#111827", fontSize: "13px" }}>
+                          {venueData?.name || "Venue Address"}
+                        </h6>
+                        <p className="mb-0 text-muted" style={{ fontSize: "12px", lineHeight: "1.4" }}>
+                          {venueData?.address ? `${venueData.address}, ${venueData.city || 'Indore'}, ${venueData.state || 'Madhya Pradesh'}` : "Indore, Madhya Pradesh"}
+                        </p>
+                      </div>
+                    </div>
                   </div>
 
                 </div>
@@ -1067,6 +1037,111 @@ const VenueDetails = () => {
                       />
                     </button>
                   ))}
+                </div>
+              )}
+              {/* Share Modal */}
+              {isShareOpen && (
+                <div className="modal show d-block" style={{ backgroundColor: "rgba(0,0,0,0.5)", zIndex: 10050 }}>
+                  <div className="modal-dialog modal-dialog-centered">
+                    <div className="modal-content" style={{ borderRadius: "20px", border: "none", boxShadow: "0 10px 30px rgba(0,0,0,0.2)" }}>
+                      <div className="modal-header border-0 pb-0 justify-content-between align-items-center px-4 pt-4">
+                        <h5 className="modal-title fw-bold" style={{ fontFamily: "Space Grotesk, sans-serif", fontSize: "20px" }}>Share Venue</h5>
+                        <button type="button" className="btn-close opacity-50" onClick={() => setIsShareOpen(false)} aria-label="Close" style={{ fontSize: "14px" }}></button>
+                      </div>
+                      <div className="modal-body px-4 py-3">
+                        <p className="text-muted mb-3" style={{ fontSize: "13px" }}>Share this venue with your friends and sports groups!</p>
+                        
+                        {/* Social Grid */}
+                        <div className="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+                          <a 
+                            href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(`Check out ${venueData?.name || "this venue"} on Khelo Indore!`)}`} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="d-flex flex-column align-items-center text-decoration-none"
+                            style={{ width: "60px" }}
+                          >
+                            <div className="d-flex align-items-center justify-content-center bg-dark text-white rounded-circle mb-1" style={{ width: "45px", height: "45px" }}>
+                              <i className="fa-brands fa-x-twitter" style={{ fontSize: "18px" }} />
+                            </div>
+                            <span className="text-muted" style={{ fontSize: "11px", fontWeight: "600" }}>X / Twitter</span>
+                          </a>
+                          
+                          <a 
+                            href={`mailto:?subject=${encodeURIComponent(`Check out this sports venue: ${venueData?.name || "Khelo Indore"}`)}&body=${encodeURIComponent(`Hey, check out this sports venue on Khelo Indore: ${window.location.href}`)}`}
+                            className="d-flex flex-column align-items-center text-decoration-none"
+                            style={{ width: "60px" }}
+                          >
+                            <div className="d-flex align-items-center justify-content-center bg-danger text-white rounded-circle mb-1" style={{ width: "45px", height: "45px" }}>
+                              <i className="fa-regular fa-envelope" style={{ fontSize: "18px" }} />
+                            </div>
+                            <span className="text-muted" style={{ fontSize: "11px", fontWeight: "600" }}>Email</span>
+                          </a>
+                          
+                          <a 
+                            href={`https://www.reddit.com/submit?url=${encodeURIComponent(window.location.href)}&title=${encodeURIComponent(`Check out ${venueData?.name || "this venue"} on Khelo Indore!`)}`}
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="d-flex flex-column align-items-center text-decoration-none"
+                            style={{ width: "60px" }}
+                          >
+                            <div className="d-flex align-items-center justify-content-center text-white rounded-circle mb-1" style={{ width: "45px", height: "45px", backgroundColor: "#FF4500" }}>
+                              <i className="fa-brands fa-reddit-alien" style={{ fontSize: "18px" }} />
+                            </div>
+                            <span className="text-muted" style={{ fontSize: "11px", fontWeight: "600" }}>Reddit</span>
+                          </a>
+                          
+                          <a 
+                            href={`https://pinterest.com/pin/create/button/?url=${encodeURIComponent(window.location.href)}&description=${encodeURIComponent(`Check out ${venueData?.name || "this venue"} on Khelo Indore!`)}`}
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="d-flex flex-column align-items-center text-decoration-none"
+                            style={{ width: "60px" }}
+                          >
+                            <div className="d-flex align-items-center justify-content-center text-white rounded-circle mb-1" style={{ width: "45px", height: "45px", backgroundColor: "#BD081C" }}>
+                              <i className="fa-brands fa-pinterest" style={{ fontSize: "18px" }} />
+                            </div>
+                            <span className="text-muted" style={{ fontSize: "11px", fontWeight: "600" }}>Pinterest</span>
+                          </a>
+                          
+                          <a 
+                            href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.href)}`}
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="d-flex flex-column align-items-center text-decoration-none"
+                            style={{ width: "60px" }}
+                          >
+                            <div className="d-flex align-items-center justify-content-center text-white rounded-circle mb-1" style={{ width: "45px", height: "45px", backgroundColor: "#0077B5" }}>
+                              <i className="fa-brands fa-linkedin-in" style={{ fontSize: "18px" }} />
+                            </div>
+                            <span className="text-muted" style={{ fontSize: "11px", fontWeight: "600" }}>LinkedIn</span>
+                          </a>
+                        </div>
+                        
+                        {/* Copy Link Input */}
+                        <div className="input-group mb-2">
+                          <input 
+                            type="text" 
+                            className="form-control bg-light border-0" 
+                            value={window.location.href} 
+                            readOnly 
+                            style={{ fontSize: "12px", borderRadius: "10px 0 0 10px", height: "40px" }} 
+                          />
+                          <button 
+                            className="btn btn-success" 
+                            type="button" 
+                            onClick={() => {
+                              navigator.clipboard.writeText(window.location.href);
+                              setShareCopied(true);
+                              setTimeout(() => setShareCopied(false), 2000);
+                            }}
+                            style={{ borderRadius: "0 10px 10px 0", fontSize: "12px", fontWeight: "600", width: "80px" }}
+                          >
+                            {shareCopied ? "Copied!" : "Copy"}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>

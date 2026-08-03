@@ -549,8 +549,8 @@ div.p-datepicker table td.p-datepicker-today>span:focus {
 // Popular Searches Styling
 .ki-popular-searches {
   color: #606D76 !important;
-  font-size: 13px !important;
-  font-weight: 500 !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
 }
 
 .ki-search-tag {
@@ -558,9 +558,9 @@ div.p-datepicker table td.p-datepicker-today>span:focus {
   color: #3CAB4B !important;
   border: 1px solid rgba(60, 171, 75, 0.15) !important;
   border-radius: 50px !important;
-  padding: 5px 12px !important;
-  font-size: 11px !important;
-  font-weight: 500 !important;
+  padding: 6px 15px !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
   cursor: pointer !important;
   transition: all 0.2s ease !important;
   display: inline-flex !important;
@@ -4657,9 +4657,7 @@ body .ki-category-card {
 }
 
 .ki-category-slider-card {
-  min-width: 200px;
-  max-width: 200px;
-  flex: 0 0 auto;
+  width: 100% !important;
   background: #FFFFFF !important;
   border-radius: 20px !important;
   border: 1px solid #E2E8E3 !important;
@@ -4750,6 +4748,22 @@ body .ki-category-card {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   @media (max-width: 480px) {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
+}
+
+.ki-4-col-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+
+  @media (max-width: 1200px) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  @media (max-width: 992px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  @media (max-width: 576px) {
     grid-template-columns: repeat(1, minmax(0, 1fr));
   }
 }
