@@ -29,6 +29,10 @@ interface DropdownOption {
   shortLabel?: string;
 }
 
+interface VenueSearchNavigationState {
+  selectedLocationSort?: { name?: string };
+}
+
 const getVenueImage = (images: any): string => {
   if (!images || !Array.isArray(images) || images.length === 0) return "assets/img/venues/venue-01.jpg";
   const first = images[0];
@@ -99,9 +103,8 @@ const CustomDropdown = ({
 
   const filteredOptions = useMemo(() => {
     if (!searchTerm.trim()) return options;
-    return options.filter((opt) =>
-      opt.label.toLowerCase().includes(searchTerm.toLowerCase().trim())
-    );
+    const query = searchTerm.toLowerCase().trim();
+    return options.filter((opt) => opt.label.toLowerCase().startsWith(query));
   }, [options, searchTerm]);
 
   return (
@@ -192,8 +195,8 @@ const CustomDropdown = ({
                     style={{
                       fontSize: "12px",
                       fontWeight: isSelected ? "700" : "500",
-                      color: isSelected ? "#15803D" : "#334155",
-                      backgroundColor: isSelected ? "#F0FDF4" : "transparent",
+                      color: isSelected ? "#FFFFFF" : "#334155",
+                      backgroundColor: isSelected ? "#166534" : "transparent",
                       transition: "background-color 0.15s ease"
                     }}
                     onMouseEnter={(e) => {
@@ -653,11 +656,12 @@ export default function VenueByCategory() {
 
   const thisCategory = useParams<{ type: string }>();
   const routeLocation = useLocation();
+  const routeState = routeLocation.state as VenueSearchNavigationState | null;
   const categorySelected = thisCategory?.type || "";
 
   // Filter States
   const [selectedSport, setSelectedSport] = useState<string>(categorySelected ? categorySelected.toLowerCase() : "all");
-  const [locationName, setLocationName] = useState<string>(() => routeLocation.state?.selectedLocationSort?.name || "");
+  const [locationName, setLocationName] = useState<string>(() => routeState?.selectedLocationSort?.name || "");
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [selectedSlot, setSelectedSlot] = useState<string>("all");
   const [selectedGrassType, setSelectedGrassType] = useState<string>("any");
@@ -671,9 +675,9 @@ export default function VenueByCategory() {
   }, [categorySelected]);
 
   useEffect(() => {
-    const requestedLocation = routeLocation.state?.selectedLocationSort?.name;
+    const requestedLocation = routeState?.selectedLocationSort?.name;
     if (requestedLocation) setLocationName(requestedLocation);
-  }, [routeLocation.state]);
+  }, [routeState]);
 
   const categoryTitle = selectedSport && selectedSport !== "all"
     ? selectedSport
@@ -771,9 +775,11 @@ export default function VenueByCategory() {
           }
         } else {
           const targetCat = selectedSport.replace(/-/g, " ").trim();
+          const normalizedTarget = targetCat.replace(/&/g, "and");
           const matches = [vt, cat, name]
             .filter(Boolean)
-            .some((field) => field.includes(targetCat));
+            .map((field) => field.replace(/&/g, "and").replace(/-/g, " "))
+            .some((field) => field.includes(normalizedTarget));
           if (!matches) return false;
         }
       }
