@@ -38,6 +38,7 @@ exports.mail = async (req, res) => {
       message: resData.message,
 
       ...(resData.token && { token: resData.token }),
+      ...(resData.deliveryChannels && { deliveryChannels: resData.deliveryChannels }),
     });
   } catch (err) {
     console.error("General Mailer Error:", err);

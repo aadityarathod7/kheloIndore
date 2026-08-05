@@ -546,14 +546,8 @@ const Header = () => {
                     onFocus={() => { if (suggestions.length > 0 && globalSearchQuery.trim().length >= 2) setShowSuggestions(true); }}
                     className="form-control nav-search-input"
                     autoComplete="off"
+                    placeholder="Search venues, coaches, trainers..."
                   />
-                  {!globalSearchQuery && (
-                    <div className="placeholder-marquee-container">
-                      <div className="placeholder-marquee-text">
-                        Search venues, coaches, trainers...
-                      </div>
-                    </div>
-                  )}
                   <button type="submit" className="nav-search-btn">
                     <i className="fas fa-search" />
                   </button>

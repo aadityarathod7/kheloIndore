@@ -536,7 +536,7 @@ const Home = () => {
         <div className="container">
           <div className="home-banner py-5" style={{ paddingTop: "80px" }}>
             <div className="row align-items-center w-100" style={{ marginTop: "90px" }}>
-              <div className="col-lg-7 col-md-12 mx-auto">
+              <div className="col-lg-8 col-md-12 mx-auto">
                 <div className="section-search aos" data-aos="fade-up">
                   {/* Badge */}
                   <div className="d-flex align-items-center gap-2 mb-2">
@@ -552,39 +552,39 @@ const Home = () => {
                   </h1>
 
                   {/* Description */}
-                  <p className="sub-info mb-3" style={{ color: "#0F172A", fontSize: "14.5px", fontWeight: "600", lineHeight: "1.7", maxWidth: "620px" }}>
+                  <p className="sub-info mb-3" style={{ color: "#0F172A", lineHeight: "1.7", maxWidth: "640px" }}>
                     Book venues, connect with expert coaches, join training programs, and discover exciting sports activities near you.
                   </p>
 
                   {/* Features Row */}
-                  <div className="d-flex align-items-center gap-4 mb-3 flex-wrap">
-                    <div className="d-flex align-items-center gap-2">
-                      <div className="d-flex align-items-center justify-content-center rounded-circle flex-shrink-0" style={{ width: "32px", height: "32px", background: "#EAF5EB", color: "#3CAB4B" }}>
-                        <i className="feather-user" style={{ fontSize: "13px" }} />
+                  <div className="d-flex align-items-center ki-feature-row gap-3 mb-3">
+                    <div className="ki-feature-item d-flex align-items-center gap-2">
+                      <div className="d-flex align-items-center justify-content-center rounded-circle flex-shrink-0" style={{ width: "36px", height: "36px", background: "#EAF5EB", color: "#3CAB4B" }}>
+                        <i className="feather-user" style={{ fontSize: "15px" }} />
                       </div>
                       <div>
-                        <div style={{ color: "#0F172A", fontWeight: "700", fontSize: "13px" }}>Expert Coaches</div>
-                        <div style={{ color: "#334155", fontSize: "11.5px", fontWeight: "600" }}>Certified &amp; Experienced</div>
+                        <div style={{ color: "#0F172A", fontWeight: "700", fontSize: "15px" }}>Expert Coaches</div>
+                        <div style={{ color: "#334155", fontSize: "13px", fontWeight: "600" }}>Certified &amp; Experienced</div>
                       </div>
                     </div>
                     
-                    <div className="d-flex align-items-center gap-2">
-                      <div className="d-flex align-items-center justify-content-center rounded-circle flex-shrink-0" style={{ width: "32px", height: "32px", background: "#EAF5EB", color: "#3CAB4B" }}>
-                        <i className="feather-grid" style={{ fontSize: "13px" }} />
+                    <div className="ki-feature-item d-flex align-items-center gap-2">
+                      <div className="d-flex align-items-center justify-content-center rounded-circle flex-shrink-0" style={{ width: "36px", height: "36px", background: "#EAF5EB", color: "#3CAB4B" }}>
+                        <i className="feather-grid" style={{ fontSize: "15px" }} />
                       </div>
                       <div>
-                        <div style={{ color: "#0F172A", fontWeight: "700", fontSize: "13px" }}>Premium Facilities</div>
-                        <div style={{ color: "#334155", fontSize: "11.5px", fontWeight: "600" }}>Best-in-class Venues</div>
+                        <div style={{ color: "#0F172A", fontWeight: "700", fontSize: "15px" }}>Premium Facilities</div>
+                        <div style={{ color: "#334155", fontSize: "13px", fontWeight: "600" }}>Best-in-class Venues</div>
                       </div>
                     </div>
 
-                    <div className="d-flex align-items-center gap-2">
-                      <div className="d-flex align-items-center justify-content-center rounded-circle flex-shrink-0" style={{ width: "32px", height: "32px", background: "#EAF5EB", color: "#3CAB4B" }}>
-                        <i className="feather-trending-up" style={{ fontSize: "13px" }} />
+                    <div className="ki-feature-item d-flex align-items-center gap-2">
+                      <div className="d-flex align-items-center justify-content-center rounded-circle flex-shrink-0" style={{ width: "36px", height: "36px", background: "#EAF5EB", color: "#3CAB4B" }}>
+                        <i className="feather-trending-up" style={{ fontSize: "15px" }} />
                       </div>
                       <div>
-                        <div style={{ color: "#0F172A", fontWeight: "700", fontSize: "13px" }}>Personalized Training</div>
-                        <div style={{ color: "#334155", fontSize: "11.5px", fontWeight: "600" }}>Tailored for You</div>
+                        <div style={{ color: "#0F172A", fontWeight: "700", fontSize: "15px" }}>Personalized Training</div>
+                        <div style={{ color: "#334155", fontSize: "13px", fontWeight: "600" }}>Tailored for You</div>
                       </div>
                     </div>
                   </div>
@@ -673,9 +673,9 @@ const Home = () => {
                   </div>
 
                   {/* Popular Searches */}
-                  <div className="trending-searches mt-3 d-flex align-items-center gap-2 flex-wrap">
+                  <div className="trending-searches mt-3 d-flex align-items-center gap-2">
                     <span className="ki-popular-searches me-2">Popular Searches:</span>
-                    <div className="d-inline-flex gap-2 flex-wrap">
+                    <div className="d-inline-flex gap-2">
                       {popularSearches.map((item) => (
                         <Link
                           key={item.name}
@@ -695,7 +695,7 @@ const Home = () => {
                   </div>
                 </div>
               </div>
-              <div className="col-lg-5 col-md-12 mt-4 mt-lg-0">
+              <div className="col-lg-4 col-md-12 mt-4 mt-lg-0">
                 <div className="banner-imgs text-center aos" data-aos="fade-up">
                   <div className="glowing-hero-circle">
                     <img

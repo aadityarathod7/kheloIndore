@@ -1,6 +1,7 @@
 const User = require("../models/UserModel");
 const bcrypt = require("bcrypt");
 const otpGenerator = require("otp-generator");
+const { sendOtp } = require("../helper/bhashMessaging");
 const jwt = require("jsonwebtoken");
 const message = require("../config/message");
 const Admin = require("../models/AdminModel");
@@ -343,13 +344,23 @@ exports.signup = async (req, res, next) => {
 
 `,
       resData: {
-        message: "Your OTP has been sent successfully. Please check your email inbox for the verification code.",
+        message: "Your OTP has been sent successfully.",
         token,
-        otp,
       },
     };
 
-    // Call the next middleware for OTP email sending
+    try {
+      const delivery = await sendOtp({ mobile, otp });
+      req.body.mail.resData.deliveryChannels = delivery.delivered;
+    } catch (deliveryError) {
+      console.error("BhashSMS OTP delivery failed:", deliveryError.message);
+      return res.status(502).json({
+        success: false,
+        message: "Unable to send OTP right now. Please try again.",
+      });
+    }
+
+    // Retain the existing email notification after BhashSMS delivery.
     next();
   } catch (err) {
     console.error("Error in signup verification:", err.message);
@@ -655,7 +666,6 @@ exports.loginUserWithMobile = async (req, res) => {
       });
     }
 
-    console.log("MOBILE LOGIN OTP GENERATED FOR", mobile, ":", otp);
     if (checkCoach) {
       await Coach.findOneAndUpdate(
         { mobile },
@@ -682,11 +692,22 @@ exports.loginUserWithMobile = async (req, res) => {
     };
     const token = jwt.sign(payload, process.env.JWT_AUTH, { expiresIn: "5m" });
 
+    let delivery;
+    try {
+      delivery = await sendOtp({ mobile, otp });
+    } catch (deliveryError) {
+      console.error("BhashSMS OTP delivery failed:", deliveryError.message);
+      return res.status(502).json({
+        success: false,
+        message: "Unable to send OTP right now. Please try again.",
+      });
+    }
+
     return res.status(200).json({
       success: true,
       message: "OTP sent successfully",
       token,
-      otp: otp,
+      deliveryChannels: delivery.delivered,
     });
   } catch (err) {
     console.log(err.message);
@@ -1998,6 +2019,4 @@ exports.resetPassword = async (req, res) => {
     res.status(500).json({success: false, message: "Internal server error. Please try again later." });
   }
 };
-
-
 

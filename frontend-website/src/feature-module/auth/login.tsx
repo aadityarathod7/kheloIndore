@@ -76,7 +76,7 @@ const Login = () => {
           });
           Toast.fire({
             icon: "success",
-            title: `Testing OTP: ${response.data.otp}`,
+            title: "OTP sent to your mobile number.",
           });
         } else {
           Swal.fire({
