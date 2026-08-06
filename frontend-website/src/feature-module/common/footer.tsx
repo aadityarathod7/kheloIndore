@@ -11,6 +11,9 @@ const Footer = () => {
   const location = useLocation();
   const [showAllSports, setShowAllSports] = useState(false);
   const [showAllLocations, setShowAllLocations] = useState(false);
+  // Re-evaluated on every route change so the bottom nav reflects login/logout
+  // without requiring a full page reload.
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(Boolean(localStorage.getItem("token")));
 
   const sports = [
     "Cricket Turfs", "Badminton Courts", "Football Grounds", "Swimming Pools", "Pickleball Courts", "Tennis Courts",
@@ -24,6 +27,10 @@ const Footer = () => {
   useEffect(() => {
     AOS.init({ duration: 1000, once: true });
   }, []);
+
+  useEffect(() => {
+    setIsLoggedIn(Boolean(localStorage.getItem("token")));
+  }, [location.pathname]);
 
   return (
     <footer className="footer">
@@ -159,50 +166,109 @@ const Footer = () => {
         </div>
       </div>
 
-      {/* Mobile Bottom Navigation Bar */}
-      <div 
-        className="mobile-bottom-nav d-md-none position-fixed bottom-0 start-0 end-0 bg-white border-top shadow-lg d-flex align-items-center justify-content-around py-2" 
-        style={{ zIndex: 1050, height: "60px" }}
+      {/* Mobile Bottom Navigation Bar — dynamic 4-tab app bar (Home | Bookings | Messages | Profile/Login) */}
+      <div
+        className="mobile-bottom-nav d-md-none position-fixed bottom-0 start-0 end-0 d-flex align-items-stretch justify-content-around"
+        style={{
+          zIndex: 1050,
+          height: "68px",
+          background: "rgba(255, 255, 255, 0.97)",
+          backdropFilter: "blur(14px)",
+          WebkitBackdropFilter: "blur(14px)",
+          borderTop: "1px solid #E5EDE6",
+          boxShadow: "0 -6px 24px rgba(23, 34, 45, 0.08)",
+        }}
       >
-        <Link 
-          to="/" 
-          className={`d-flex flex-column align-items-center justify-content-center text-decoration-none ${location.pathname === "/" ? "text-success" : "text-secondary"}`}
-          style={{ fontSize: "11px", fontWeight: "600" }}
+        <Link
+          to="/"
+          className={`tab-item d-flex flex-column align-items-center justify-content-center text-decoration-none ${location.pathname === "/" ? "active" : ""}`}
         >
-          <i className="feather-home" style={{ fontSize: "20px", marginBottom: "3px" }} />
-          <span>Home</span>
+          <span className="tab-icon"><i className="feather-home" /></span>
+          <span className="tab-label">Home</span>
         </Link>
-        
-        <Link 
-          to={routes.userBookings} 
-          className={`d-flex flex-column align-items-center justify-content-center text-decoration-none ${location.pathname.startsWith("/user/user-bookings") || location.pathname.includes("bookings") ? "text-success" : "text-secondary"}`}
-          style={{ fontSize: "11px", fontWeight: "600" }}
+
+        <Link
+          to={routes.userBookings}
+          className={`tab-item d-flex flex-column align-items-center justify-content-center text-decoration-none ${location.pathname.startsWith("/user/user-bookings") || location.pathname.includes("bookings") ? "active" : ""}`}
         >
-          <i className="feather-calendar" style={{ fontSize: "20px", marginBottom: "3px" }} />
-          <span>Bookings</span>
+          <span className="tab-icon"><i className="feather-calendar" /></span>
+          <span className="tab-label">Bookings</span>
         </Link>
-        
-        <Link 
-          to={routes.userChat} 
-          className={`d-flex flex-column align-items-center justify-content-center text-decoration-none ${location.pathname.startsWith("/user/user-chat") || location.pathname.includes("chat") ? "text-success" : "text-secondary"}`}
-          style={{ fontSize: "11px", fontWeight: "600" }}
+
+        <Link
+          to={routes.userChat}
+          className={`tab-item d-flex flex-column align-items-center justify-content-center text-decoration-none ${location.pathname.startsWith("/user/user-chat") || location.pathname.includes("chat") ? "active" : ""}`}
         >
-          <i className="feather-message-square" style={{ fontSize: "20px", marginBottom: "3px" }} />
-          <span>Messages</span>
+          <span className="tab-icon">
+            <i className="feather-bell" />
+            {isLoggedIn && <span className="notif-dot" />}
+          </span>
+          <span className="tab-label">Messages</span>
         </Link>
-        
-        <Link 
-          to={routes.userProfile} 
-          className={`d-flex flex-column align-items-center justify-content-center text-decoration-none ${location.pathname.startsWith("/user/user-profile") || location.pathname.includes("profile") ? "text-success" : "text-secondary"}`}
-          style={{ fontSize: "11px", fontWeight: "600" }}
+
+        <Link
+          to={isLoggedIn ? routes.userProfile : routes.login}
+          className={`tab-item d-flex flex-column align-items-center justify-content-center text-decoration-none ${location.pathname.startsWith("/user/user-profile") || location.pathname.includes("profile") || location.pathname === "/login" ? "active" : ""}`}
         >
-          <i className="feather-user" style={{ fontSize: "20px", marginBottom: "3px" }} />
-          <span>Profile</span>
+          <span className="tab-icon"><i className="feather-user" /></span>
+          <span className="tab-label">{isLoggedIn ? "Profile" : "Login"}</span>
         </Link>
+
         <style>{`
+          .mobile-bottom-nav .tab-item {
+            flex: 1;
+            min-width: 0;
+            color: #64748B !important;
+            transition: color 0.2s ease;
+          }
+          .mobile-bottom-nav .tab-item.active {
+            color: #16A34A !important;
+          }
+          .mobile-bottom-nav .tab-icon {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 46px;
+            height: 30px;
+            border-radius: 999px;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            color: inherit !important;
+          }
+          .mobile-bottom-nav .tab-icon i {
+            font-size: 19px;
+            color: inherit !important;
+          }
+          .mobile-bottom-nav .tab-item.active .tab-icon {
+            background: #EAF5EB;
+          }
+          .mobile-bottom-nav .tab-label {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            color: inherit !important;
+          }
+          .mobile-bottom-nav .notif-dot {
+            position: absolute;
+            top: 2px;
+            right: 5px;
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: #EF4444;
+            border: 2px solid #FFFFFF;
+            animation: notifPulse 2s ease-in-out infinite;
+          }
+          @keyframes notifPulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.45; transform: scale(0.85); }
+          }
           @media (max-width: 767.98px) {
             body {
-              padding-bottom: 60px !important;
+              padding-bottom: 76px !important;
+            }
+            .enquiry-btn {
+              bottom: 92px !important;
             }
           }
         `}</style>
