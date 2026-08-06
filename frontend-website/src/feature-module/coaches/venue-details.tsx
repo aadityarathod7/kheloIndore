@@ -765,10 +765,10 @@ const VenueDetails = () => {
                                backgroundColor: "#DCFCE7", 
                                color: "#16A34A"
                              }}>
-                          <i className="fas fa-users" style={{ fontSize: "16px" }} />
+                          <i className="fas fa-rupee-sign" style={{ fontSize: "16px" }} />
                         </div>
-                        <span className="spec-label">Players</span>
-                        <span className="spec-value text-truncate">22 Players</span>
+                        <span className="spec-label">Price</span>
+                        <span className="spec-value text-truncate">₹{venueData?.price_per_hr || 1000} / hr</span>
                       </div>
                     </div>
 
@@ -789,7 +789,7 @@ const VenueDetails = () => {
                           <i className="fas fa-clock" style={{ fontSize: "16px" }} />
                         </div>
                         <span className="spec-label">Timing</span>
-                        <span className="spec-value text-truncate">6:00 AM – 11:00 PM</span>
+                        <span className="spec-value text-truncate">24 Hours</span>
                       </div>
                     </div>
 

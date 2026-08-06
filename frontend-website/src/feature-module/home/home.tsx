@@ -795,7 +795,7 @@ const Home = () => {
             <div className="col-lg-4 col-md-6 d-flex">
               <div className="work-grid work-grid-visual w-100 aos hover-lift" data-aos="fade-up" data-aos-delay="100">
                 <div className="work-visual">
-                  <ImageWithBasePath src="/assets/img/venues/venues-01.jpg" alt="Sports venue" />
+                  <ImageWithBasePath src="/assets/venue.jpg" alt="Sports venue" />
                 </div>
                 <div className="work-icon">
                   <div className="work-icon-inner">
@@ -822,7 +822,7 @@ const Home = () => {
             <div className="col-lg-4 col-md-6 d-flex">
               <div className="work-grid work-grid-visual w-100 aos hover-lift" data-aos="fade-up" data-aos-delay="200">
                 <div className="work-visual">
-                  <ImageWithBasePath src="/assets/img/profiles/avatar-coach-detail.jpg" alt="Sports coach" />
+                  <ImageWithBasePath src="/assets/coach.png" alt="Sports coach" />
                 </div>
                 <div className="work-icon">
                   <div className="work-icon-inner">
@@ -849,7 +849,7 @@ const Home = () => {
             <div className="col-lg-4 col-md-6 d-flex">
               <div className="work-grid work-grid-visual w-100 aos hover-lift" data-aos="fade-up" data-aos-delay="300">
                 <div className="work-visual">
-                  <ImageWithBasePath src="/assets/img/profiles/user-01.jpg" alt="Personal trainer" />
+                  <ImageWithBasePath src="/assets/trainer.png" alt="Personal trainer" />
                 </div>
                 <div className="work-icon">
                   <div className="work-icon-inner">
@@ -959,7 +959,7 @@ const Home = () => {
       </section>
 
       {/* Top Rated Providers Header */}
-      <section className="section featured-venues-header top-providers-heading" style={{ padding: "30px 0 20px 0", borderBottom: "1px solid #D9E5F5" }}>
+      <section className="section featured-venues-header top-providers-heading" style={{ padding: "30px 0 20px 0" }}>
         <div className="container">
           <div className="section-heading text-center mb-0 aos" data-aos="fade-up">
             <h2 style={{ fontFamily: "Space Grotesk, sans-serif", color: "#17222D" }}>
@@ -1042,7 +1042,7 @@ const Home = () => {
       </section>
 
       {/* Top Rated Coaches */}
-      <section className="section featured-venues-list top-coaches-section py-5" style={{ borderTop: "1px solid #F2DCD4", borderBottom: "1px solid #F2DCD4" }}>
+      <section className="section featured-venues-list top-coaches-section py-5">
         <div className="container">
           <div className="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2 aos" data-aos="fade-up">
             <h3 style={{ fontFamily: "Space Grotesk, sans-serif", color: "#17222D", fontWeight: "700", fontSize: "20px" }}>

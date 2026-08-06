@@ -1511,15 +1511,19 @@ textarea,
   }
 }
 
-// Alternating homepage section colors make the content groups easier to scan.
-.work-section { background: #edf8ef !important; }
-.category-section { background: #fff8ec !important; }
+// Homepage sections share one clean light background; separation is drawn
+// with subtle hairline dividers instead of a rainbow of pastel section colors.
+.work-section,
+.category-section,
 .top-providers-heading,
-.top-providers-section { background: #eff6ff !important; }
-.top-coaches-section { background: #fff4f0 !important; }
-.top-trainers-section { background: #f5f1ff !important; }
-.earn-money { background: #eefaf6 !important; }
-.our-testimonials { background: #fffbed !important; }
+.top-providers-section,
+.top-coaches-section,
+.top-trainers-section,
+.earn-money,
+.our-testimonials {
+  background: transparent !important;
+  border-top: 1px solid rgba(23, 34, 45, 0.07) !important;
+}
 
 // Image-led How It Works cards: the action remains real HTML instead of being
 // embedded in an image, so it stays readable and clickable on every screen.
@@ -1544,6 +1548,7 @@ textarea,
       display: block;
       height: 100%;
       object-fit: cover;
+      object-position: center top;
       width: 100%;
     }
   }
