@@ -696,7 +696,7 @@ const Home = () => {
                 </div>
               </div>
               <div className="col-lg-4 col-md-12 mt-4 mt-lg-0">
-                <div className="banner-imgs text-center aos" data-aos="fade-up">
+                <div className="banner-imgs text-center aos" data-aos="fade-up" data-aos-delay="250">
                   <div className="glowing-hero-circle">
                     <img
                       className="img-fluid"
@@ -793,11 +793,11 @@ const Home = () => {
           </div>
           <div className="row justify-content-center ">
             <div className="col-lg-4 col-md-6 d-flex">
-              <div className="work-grid work-grid-visual w-100 aos hover-lift" data-aos="fade-up" data-aos-delay="100">
-                <div className="work-visual">
+              <div className="work-grid work-grid-visual w-100 hover-lift">
+                <div className="work-visual aos" data-aos="fade-up" data-aos-delay="250">
                   <ImageWithBasePath src="/assets/venue.jpg" alt="Sports venue" />
                 </div>
-                <div className="work-icon">
+                <div className="work-icon aos" data-aos="fade-up" data-aos-delay="180">
                   <div className="work-icon-inner">
                     <ImageWithBasePath
                       src="assets/img/icons/work-icon3.svg"
@@ -805,7 +805,7 @@ const Home = () => {
                     />
                   </div>
                 </div>
-                <div className="work-content">
+                <div className="work-content aos" data-aos="fade-up" data-aos-delay="100">
                   <h5>
                     <Link to={routes.blogListSidebarLeft}>Select Venues</Link>
                   </h5>
@@ -820,11 +820,11 @@ const Home = () => {
               </div>
             </div>
             <div className="col-lg-4 col-md-6 d-flex">
-              <div className="work-grid work-grid-visual w-100 aos hover-lift" data-aos="fade-up" data-aos-delay="200">
-                <div className="work-visual">
+              <div className="work-grid work-grid-visual w-100 hover-lift">
+                <div className="work-visual aos" data-aos="fade-up" data-aos-delay="350">
                   <ImageWithBasePath src="/assets/coach.png" alt="Sports coach" />
                 </div>
-                <div className="work-icon">
+                <div className="work-icon aos" data-aos="fade-up" data-aos-delay="280">
                   <div className="work-icon-inner">
                     <ImageWithBasePath
                       src="assets/img/icons/work-icon2.svg"
@@ -832,7 +832,7 @@ const Home = () => {
                     />
                   </div>
                 </div>
-                <div className="work-content">
+                <div className="work-content aos" data-aos="fade-up" data-aos-delay="200">
                   <h5>
                     <Link to={routes.coachesGrid}>Select Coaches</Link>
                   </h5>
@@ -847,11 +847,11 @@ const Home = () => {
               </div>
             </div>
             <div className="col-lg-4 col-md-6 d-flex">
-              <div className="work-grid work-grid-visual w-100 aos hover-lift" data-aos="fade-up" data-aos-delay="300">
-                <div className="work-visual">
+              <div className="work-grid work-grid-visual w-100 hover-lift">
+                <div className="work-visual aos" data-aos="fade-up" data-aos-delay="450">
                   <ImageWithBasePath src="/assets/trainer.png" alt="Personal trainer" />
                 </div>
-                <div className="work-icon">
+                <div className="work-icon aos" data-aos="fade-up" data-aos-delay="380">
                   <div className="work-icon-inner">
                     <ImageWithBasePath
                       src="assets/img/icons/work-icon1.svg"
@@ -859,7 +859,7 @@ const Home = () => {
                     />
                   </div>
                 </div>
-                <div className="work-content">
+                <div className="work-content aos" data-aos="fade-up" data-aos-delay="300">
                   <h5>
                     <Link to="/personal-training">Select Trainer</Link>
                   </h5>
@@ -990,7 +990,7 @@ const Home = () => {
             )}
           </div>
           <div className="row">
-            <div className="featured-slider-group w-100">
+            <div className="featured-slider-group w-100 aos" data-aos="fade-up" data-aos-delay="120">
               <div className="owl-carousel featured-venues-slider owl-theme">
                 <Slider {...settings}>
                   {visibleVenues.map((venue, index) => (
@@ -1059,7 +1059,7 @@ const Home = () => {
             )}
           </div>
           <div className="row">
-            <div className="featured-slider-group w-100">
+            <div className="featured-slider-group w-100 aos" data-aos="fade-up" data-aos-delay="120">
               <div className="owl-carousel featured-venues-slider owl-theme">
                 <Slider {...options}>
                   {visibleCoaches.map((coach, index) => (
@@ -1121,7 +1121,7 @@ const Home = () => {
             )}
           </div>
           <div className="row">
-            <div className="featured-slider-group w-100">
+            <div className="featured-slider-group w-100 aos" data-aos="fade-up" data-aos-delay="120">
               <div className="owl-carousel featured-venues-slider owl-theme">
                 <Slider {...options}>
                   {visibleTrainers.map((train, index) => (

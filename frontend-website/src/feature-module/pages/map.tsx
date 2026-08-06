@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import GoogleMapReact from "google-map-react";
 import { Link } from "react-router-dom";
+import { GOOGLE_MAPS_KEY } from "../../ApiUrl";
 const data = [
   {
     id: 1,
@@ -136,7 +137,7 @@ const ShowMap = () => {
   return (
     <div style={{ height: "100vh", width: "100%" }}>
       <GoogleMapReact
-        bootstrapURLKeys={{ key: "AIzaSyCj51aGIAt-Yue3rjWoYz1FZYq8wB6jCIY" }}
+        bootstrapURLKeys={{ key: GOOGLE_MAPS_KEY }}
         defaultCenter={{ lat: 53.470692, lng: -2.220328 }}
         defaultZoom={11}
       >

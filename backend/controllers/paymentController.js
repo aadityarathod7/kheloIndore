@@ -67,8 +67,6 @@ const venuePayment = async (req, res) => {
   try {
     const { user_id, venue_id, date, slotsBooked, total_price } = req.body;
     const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
-    // Log the incoming payload
-    console.log(req.body, "Incoming Request Payload");
 
     // Validate required fields
     if (!user_id || !isValidObjectId(user_id)) {
@@ -165,12 +163,7 @@ const venuePayment = async (req, res) => {
       data: { request: payloadMain },
     };
 
-    console.log(options, "Payment API Request Options");
-
     const result = await axios(options);
-
-    // Log payment API response
-    console.log(result.data, "Payment API Response");
 
     // Update user booking details
     await UserDetailsAtPayments.deleteOne({ user_id: user_id });

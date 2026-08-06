@@ -3,6 +3,12 @@ const route = express.Router();
 const mail = require('../controllers/NodeMailerController')
 
 const imageUpload= require('../middlewares/multer')
+const { rateLimit } = require('../middlewares/security')
+
+// Tight limits for authentication endpoints (brute-force / OTP abuse protection)
+// Generous enough not to false-positive on shared office/college NAT IPs
+const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 30 });
+const otpLimiter = rateLimit({ windowMs: 60 * 1000, max: 10 });
 const {
   createActivity,
   fetchActivity,
@@ -125,10 +131,10 @@ const {
 } = require("../controllers/ContactUsController");
 
 // for user
-route.post("/user/signup", signup, mail.mail);
-route.post("/user/forgot-password",forgotPassword);
-route.post("/user/verfy-otp", verifyOtp);
-route.post("/user/reset-password", resetPassword);
+route.post("/user/signup", authLimiter, signup, mail.mail);
+route.post("/user/forgot-password", otpLimiter, forgotPassword);
+route.post("/user/verfy-otp", otpLimiter, verifyOtp);
+route.post("/user/reset-password", otpLimiter, resetPassword);
 
 
 route.post("/admin/signup",signup);
@@ -146,10 +152,10 @@ route.get("/super-admin/all-list",auth,fetchAllUsers)
 route.post("/codeAndCocktailsEmail", codeAndCocktailsEmail);
 
 //Users
-route.post("/user/registration/otp", signupVerifyOTP, mail.mail);
-route.post("/user/login", loginWithPassword);
-route.post("/user/login/mobile", loginUserWithMobile);
-route.post("/user/login/mobile/otp", loginCheckOTP);
+route.post("/user/registration/otp", otpLimiter, signupVerifyOTP, mail.mail);
+route.post("/user/login", authLimiter, loginWithPassword);
+route.post("/user/login/mobile", otpLimiter, loginUserWithMobile);
+route.post("/user/login/mobile/otp", otpLimiter, loginCheckOTP);
 route.get("/user/getallUser",auth, getAllUsers);
 route.delete("/user/delete/:id", deleteUser);
 route.put("/user/updateUser", UpdateUser);

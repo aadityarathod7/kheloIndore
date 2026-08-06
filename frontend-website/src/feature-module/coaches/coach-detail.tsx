@@ -8,6 +8,7 @@ import Lightbox from "yet-another-react-lightbox";
 import "yet-another-react-lightbox/styles.css";
 import axios from "axios";
 import { API_URL, IMG_URL } from "../../ApiUrl";
+import { sanitizeHtml } from "../../utils/sanitize";
 
 interface CoachData {
   first_name: any;
@@ -595,7 +596,7 @@ const CoachDetail = (props: any) => {
                       {/* <p>
                       {removeHtmlTags(coachData?.bio)}
                       </p> */}
-                      <div className="overflow-auto" dangerouslySetInnerHTML={{ __html: coachData?.bio }} />
+                      <div className="overflow-auto" dangerouslySetInnerHTML={{ __html: sanitizeHtml(coachData?.bio) }} />
                       {/* <div className="mb-4" dangerouslySetInnerHTML={{ __html: coachData?.bio }} /> */}
                     </div>
                   </div>
@@ -683,7 +684,7 @@ const CoachDetail = (props: any) => {
                     <div className="accordion-body">
                       <div className="text show-more-height">
                         {/* <p className="mb-4">{removeHtmlTags(coachData?.policiesAndRules)}</p> */}
-                        <div className="mb-4 overflow-auto" dangerouslySetInnerHTML={{ __html: coachData?.policiesAndRules }} />
+                        <div className="mb-4 overflow-auto" dangerouslySetInnerHTML={{ __html: sanitizeHtml(coachData?.policiesAndRules) }} />
                       </div>
                     </div>
                   </div>

@@ -7,8 +7,7 @@ const Venue = require('../models/VenueModel')
 exports.auth = async (req, res, next) => {
   try {
     const token = req.get("Authorization")?.split(" ")[1];
-    console.log(token,"token");
-    
+
     if (!token) {
       return res.status(400).json({
         success: false,
@@ -17,17 +16,14 @@ exports.auth = async (req, res, next) => {
     }
     try {
       const decode = jwt.verify(token, process.env.JWT_AUTH);
-      console.log(decode,"decodedecode");
 
       req.user = decode;
 
       next();
     } catch (err) {
-      console.log(err,"errerr");
-      
       return res.status(400).json({
         success: false,
-        message: err,
+        message: "Invalid or expired token",
       });
     }
   } catch (err) {
@@ -91,9 +87,22 @@ exports.updateAuth = async (req, res, next) => {
   try {
     const id = req.params.id;
     const venue = await Venue.findById(id);
-    const token = req.header("Authorization").replace("Bearer ", "");
+    if (!venue) {
+      return res.status(404).json({
+        success: false,
+        message: "Venue not found",
+      });
+    }
+    const authHeader = req.header("Authorization") || "";
+    const token = authHeader.replace("Bearer ", "");
+    if (!token) {
+      return res.status(401).json({
+        success: false,
+        message: "Authentication required",
+      });
+    }
     const decoded = jwt.verify(token, process.env.JWT_AUTH);
-    
+
     if (decoded.userID != venue.ownerID) {
       return res.status(400).json({
         success: false,
@@ -104,7 +113,7 @@ exports.updateAuth = async (req, res, next) => {
   } catch (err) {
     return res.status(500).json({
       success: false,
-      message: `This is Update Auth middleware ${err.message}`,
+      message: "This is Update Auth middleware error",
     });
   }
 };

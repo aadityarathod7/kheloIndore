@@ -12,3 +12,7 @@
 export const IMG_URL = "https://qa.kheloindore.in";
 export const API_URL = "https://qa.kheloindore.in/api";
 
+// Google Maps browser key (client-side key, restricted by HTTP referrer in
+// the Google Cloud console). Kept in one place so it can be rotated easily.
+export const GOOGLE_MAPS_KEY = "AIzaSyCj51aGIAt-Yue3rjWoYz1FZYq8wB6jCIY";
+

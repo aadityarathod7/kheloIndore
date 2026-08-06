@@ -140,9 +140,6 @@ exports.signup = async (req, res, next) => {
   try {
     const { first_name, last_name, role, mobile, email, password, confirm_password } = req.body;
 
-    // Debugging password value
-    console.log("Password provided:", password);
-
     // Validate required fields
     if (!password || password.trim() === "") {
       return res.status(400).json({
@@ -168,7 +165,6 @@ exports.signup = async (req, res, next) => {
     
     // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
-    console.log("Hashed password:", hashedPassword);
 
     // Generate OTP
     const otp = otpGenerator.generate(6, {
@@ -176,7 +172,6 @@ exports.signup = async (req, res, next) => {
       lowerCaseAlphabets: false,
       specialChars: false,
     });
-    console.log("Generated OTP:", otp);
 
     // Prepare user data
     const userData = {
@@ -375,13 +370,18 @@ exports.signup = async (req, res, next) => {
 exports.signupVerifyOTP = async (req, res, next) => {
   try {
     const { otp, password } = req.body;
-    const token = req.header("Authorization").replace("Bearer ", "");
+    const authHeader = req.header("Authorization") || "";
+    const token = authHeader.replace("Bearer ", "");
+    if (!token) {
+      return res.status(400).json({
+        success: false,
+        message: "Authentication token is required",
+      });
+    }
 
     // Verify and decode the JWT token
     const decoded = jwt.verify(token, process.env.JWT_AUTH);
     const { mobile } = decoded;
-
-    console.log("Decoded JWT:", decoded);
 
     // Find the user in the `signupVerifyOTP` collection
     const user = await signupVerifyOTP.findOne({ mobile });
@@ -434,8 +434,6 @@ exports.signupVerifyOTP = async (req, res, next) => {
         email: user.email,
       });
     }
-
-    console.log("New user created:", newUser);
 
     // Delete the OTP verification entry from the database
     await signupVerifyOTP.findByIdAndDelete(user._id);
@@ -647,7 +645,6 @@ exports.loginUserWithMobile = async (req, res) => {
         status: true,
         otp: otp,
       });
-      console.log("AUTO CREATED NEW USER FOR MOBILE:", mobile);
     }
 
     if (checkUser && checkUser.status === false) {
@@ -852,7 +849,6 @@ exports.getAllUsers = async (req, res) => {
         });
       }
       const userData = [checkCoach || checkUser];
-      console.log(userData,'userDatauserData');
       return res.status(200).json({
         success: true,
         data: userData,
@@ -1345,13 +1341,9 @@ if (!Array.isArray(req.files.uploadFile) || req.files.uploadFile.length === 0) {
       req.files.uploadFile.length > 0
     ) {
       uploadedFiles = req.files.uploadFile.map((file) => {
-        console.log(file,"filefilefilefile");
-        
         const modifiedSrc = `/uploads/${req.query.types}/${path.basename(
           file.path
         )}`;
-        console.log(modifiedSrc,"modifiedSrcmodifiedSrc");
-        
         return {
           src: modifiedSrc.replace(/\\/g, "/"),
           fileName: file.mimetype,
@@ -1427,7 +1419,7 @@ exports.codeAndCocktailsEmail = async (req, res) => {
     });
   }
   try {
-    const AUTH_TOKEN = "Swapac_Infotech_PVT_LTD";
+    const AUTH_TOKEN = process.env.CODE_COCKTAILS_AUTH_TOKEN || "Swapac_Infotech_PVT_LTD";
     const token = req.headers.authorization;
     if (!token || token !== AUTH_TOKEN) {
       return res.status(403).json({
@@ -1601,8 +1593,6 @@ exports.updateAdminStatus = async (req, res) => {
     } else {
       return res.status(400).json({ success: false, message: "Invalid role provided." });
     }
-
-    console.log("User to send credentials:", userToSendCredentials);
 
     // Email content for admin access approval or denial
     const subject =
@@ -1909,11 +1899,10 @@ exports.forgotPassword = async (req, res) => {
       lowerCaseAlphabets: false,
       specialChars: false,
     });
-    console.log(otp,"otp")
     user.otp = otp; // Store OTP in the user document
     await user.save(); 
-    // Generate JWT token with OTP and email
-    const token = jwt.sign({ otp, email }, JWT_SECRET, { expiresIn: "10m" });
+    // Generate JWT token with email only (OTP stays server-side in the DB)
+    const token = jwt.sign({ email }, JWT_SECRET, { expiresIn: "10m" });
 
     // Generate email content
     const html = mailContent.generateResetPasswordMailContent(
@@ -1952,8 +1941,7 @@ exports.verifyOtp = async (req, res) => {
     // Verify and decode the JWT token
     const decoded = jwt.verify(token, JWT_SECRET);
 
-    // Check if the OTP and email match the decoded values
-    const { email, otp: generatedOtp } = decoded; // Extract OTP and email from the decoded token
+    const { email } = decoded; // Extract email from the decoded token
 
     // Find the user by email
     const user = await User.findOne({ email });
@@ -1961,8 +1949,8 @@ exports.verifyOtp = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Check if the OTP provided by the user matches the generated OTP
-    if (otp !== generatedOtp) {
+    // Check if the OTP provided by the user matches the stored OTP
+    if (!user.otp || otp !== user.otp) {
       return res.status(400).json({ message: "Invalid OTP" });
     }
 

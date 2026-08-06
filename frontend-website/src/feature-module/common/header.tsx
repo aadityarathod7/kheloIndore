@@ -404,14 +404,39 @@ const Header = () => {
                   style={{ maxHeight: "40px" }}
                 />
               </Link>
-              <button
-                className="navbar-toggler mobile-menu-btn d-flex align-items-center justify-content-center p-2 border-0 bg-transparent"
-                onClick={toggleOffcanvas}
-                type="button"
-                aria-label="Toggle navigation"
-              >
-                <i className="fas fa-bars text-dark" style={{ fontSize: "20px" }} />
-              </button>
+              <div className="d-flex align-items-center gap-2">
+                {/* Quick search */}
+                <Link
+                  to="/search"
+                  className="mobile-action-btn d-flex align-items-center justify-content-center text-decoration-none"
+                  aria-label="Search venues, coaches and trainers"
+                >
+                  <i className="fas fa-search text-dark" style={{ fontSize: "16px" }} />
+                </Link>
+                {/* Account: avatar when logged in, else Login pill */}
+                {loginToken ? (
+                  <Link
+                    to={routes.userProfile}
+                    className="mobile-avatar d-flex align-items-center justify-content-center text-decoration-none"
+                    aria-label="My Profile"
+                  >
+                    {(fullUserData?.first_name || userData?.first_name || "U")[0].toUpperCase()}
+                  </Link>
+                ) : (
+                  <Link to="/login" className="mobile-login-btn text-decoration-none">
+                    Login
+                  </Link>
+                )}
+                {/* Menu */}
+                <button
+                  className="navbar-toggler mobile-menu-btn d-flex align-items-center justify-content-center p-2 border-0 bg-transparent"
+                  onClick={toggleOffcanvas}
+                  type="button"
+                  aria-label="Toggle navigation"
+                >
+                  <i className="fas fa-bars text-dark" style={{ fontSize: "20px" }} />
+                </button>
+              </div>
             </div>
             {/* <nav className="navbar navbar-light bg-light">
               <div className="container-fluid">

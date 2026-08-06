@@ -7,6 +7,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { all_routes } from "../router/all_routes";
 import Lightbox from "yet-another-react-lightbox";
 import { API_URL, IMG_URL } from "../../ApiUrl";
+import { sanitizeHtml } from "../../utils/sanitize";
 
 interface TrainerData {
   first_name: any;
@@ -575,7 +576,7 @@ const PersonalTrainingDetails = (props: any) => {
                   >
                     <div className="accordion-body">
                       {/* <p>{removeHtmlTags(trainerData?.bio)}</p> */}
-                      <div dangerouslySetInnerHTML={{ __html: trainerData?.bio }} />
+                      <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(trainerData?.bio) }} />
                     </div>
                   </div>
                 </div>
@@ -676,7 +677,7 @@ const PersonalTrainingDetails = (props: any) => {
                     <div className="accordion-body">
                       <div className="text show-more-height">
                         {/* <p className="mb-4">{removeHtmlTags(trainerData?.policiesAndRules)}</p> */}
-                        <div className="mb-4" dangerouslySetInnerHTML={{ __html: trainerData?.policiesAndRules }} />
+                        <div className="mb-4" dangerouslySetInnerHTML={{ __html: sanitizeHtml(trainerData?.policiesAndRules) }} />
 
                       </div>
                     </div>

@@ -9,6 +9,7 @@ import "swiper/css/pagination";
 import { Navigation, Pagination, Autoplay } from "swiper/modules";
 import axios from "axios";
 import { API_URL, IMG_URL } from "../../ApiUrl";
+import { sanitizeHtml } from "../../utils/sanitize";
 import Swal from "sweetalert2";
 import Loader from "../loader/loader";
 import "../../style/css/venue_details.css";
@@ -625,7 +626,7 @@ const VenueDetails = () => {
                         }}
                       >
                         <div
-                          dangerouslySetInnerHTML={{ __html: venueData?.description || "No description available." }}
+                          dangerouslySetInnerHTML={{ __html: sanitizeHtml(venueData?.description) || "No description available." }}
                           className="body-text text-secondary mb-0"
                           style={{ fontSize: "14px", lineHeight: "1.7", color: "#475569" }}
                         />
@@ -706,7 +707,7 @@ const VenueDetails = () => {
                     <div>
                       <h2 className="section-title">Rules & Policies</h2>
                       <div className="p-4 rounded-3 bg-light border body-text" style={{ borderColor: "#E5E7EB" }}>
-                        <div dangerouslySetInnerHTML={{ __html: venueData?.policiesAndRules || "Standard sports venue rules apply." }} />
+                        <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(venueData?.policiesAndRules) || "Standard sports venue rules apply." }} />
                       </div>
                     </div>
                   )}

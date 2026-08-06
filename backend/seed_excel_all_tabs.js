@@ -18,6 +18,7 @@ const Booking = require('./models/BookingModel');
 const Category = require('./models/CategoryModel');
 const Transaction = require('./models/TransactionModel');
 const Refund = require('./models/RefundModel');
+const NearbyLocation = require('./models/NearByLocationModel');
 
 const categoryImages = {
   'turf': 'https://images.unsplash.com/photo-1529900748604-07564a03e7a6?w=800&auto=format&fit=crop&q=80',
@@ -99,6 +100,7 @@ async function seedExcelAllTabs() {
   const ownerLogins = [];
   let totalImported = 0;
   const createdCategories = new Set();
+  const uniqueLocations = new Set();
 
   for (let sheetName of workbook.SheetNames) {
     const worksheet = workbook.Sheets[sheetName];
@@ -127,6 +129,9 @@ async function seedExcelAllTabs() {
       if (!venueName) continue;
 
       const servingArea = row['Serving Area'] || row['Area'] || cleanCategoryName;
+      if (servingArea && String(servingArea).trim()) {
+        uniqueLocations.add(String(servingArea).trim());
+      }
       const venueAddress = row['Venue Address'] || row['Address'] || 'Indore, Madhya Pradesh';
       let contactNumber = String(row['Contact Number'] || row['Owner Contact Number'] || row['Phone'] || '');
       contactNumber = contactNumber.replace(/[^0-9]/g, '');
@@ -211,6 +216,14 @@ async function seedExcelAllTabs() {
         password: defaultPassword
       });
     }
+  }
+
+  console.log(`\n3. Seeding ${uniqueLocations.size} unique locations...`);
+  for (let locName of uniqueLocations) {
+    await NearbyLocation.create({
+      area_name: locName,
+      status: true
+    }).catch(err => {});
   }
 
   fs.writeFileSync(

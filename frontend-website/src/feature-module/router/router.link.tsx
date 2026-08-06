@@ -421,16 +421,19 @@ const publicRoutes = [
     path: routes.userDashboardProfiles,
     element: <UserDashboardProfiles />,
     route: Route,
+    isProtected: true,
   },
   {
     path: routes.userDashboard,
     element: <UserDashboard />,
     route: Route,
+    isProtected: true,
   },
   {
     path: routes.userInvoice,
     element: <UserInvoice />,
     route: Route,
+    isProtected: true,
   },
   {
     path: routes.coachDashboard,
@@ -506,6 +509,7 @@ const publicRoutes = [
     path: routes.userBookings,
     element: <UserBookings />,
     route: Route,
+    isProtected: true,
   },
   {
     path: routes.coachBooking,
@@ -552,36 +556,43 @@ const publicRoutes = [
     path: routes.userChat,
     element: <UserChat />,
     route: Route,
+    isProtected: true,
   },
   {
     path: routes.userCoaches,
     element: <UserCoaches />,
     route: Route,
+    isProtected: true,
   },
   {
     path: routes.userProfile,
     element: <UserProfile />,
     route: Route,
+    isProtected: true,
   },
   {
     path: routes.userSettingPassword,
     element: <UserSettingPassword />,
     route: Route,
+    isProtected: true,
   },
   {
     path: routes.userProfileOtherSetting,
     element: <UserProfileOtherSetting />,
     route: Route,
+    isProtected: true,
   },
   {
     path: routes.userCancelled,
     element: <UserCancelled />,
     route: Route,
+    isProtected: true,
   },
   {
     path: routes.userWallet,
     element: <UserWallet />,
     route: Route,
+    isProtected: true,
   },
   {
     path: routes.venueDetails,
@@ -592,6 +603,7 @@ const publicRoutes = [
     path: routes.userOngoing,
     element: <UserOngoing />,
     route: Route,
+    isProtected: true,
   },
   {
     path: routes.changePassword,

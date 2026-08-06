@@ -67,6 +67,16 @@ const UpdateVenue = () => {
     { name: "Sound system" },
     { name: "Equipment storage" },
     { name: "Air conditon" },
+    { name: "Drinking Water" },
+    { name: "First Aid" },
+    { name: "Shower" },
+    { name: "Waiting Lounge" },
+    { name: "Wi-Fi" },
+    { name: "CCTV" },
+    { name: "Refreshments" },
+    { name: "Changing Room" },
+    { name: "Power Backup" },
+    { name: "Open 24x7" },
   ];
 
   const facilitiesOptions = [
@@ -388,76 +398,39 @@ const UpdateVenue = () => {
                   <Form.Label className="heading">
                     Category Type <span style={{ color: "red" }}>*</span>
                   </Form.Label>
-                  <Select
+                  <Form.Control
+                    type="text"
                     name="vendor_type"
                     value={formData.vendor_type}
-                    options={vendors.map((vendor) => ({
-                      label: vendor.vendor_type,
-                      value: vendor.vendor_type,
-                    }))}
-                    onChange={handleVendorChange}
-                    isDisabled={true}
-                    placeholder={`${formData.vendor_type || "Select Category Type"
-                      }`}
-                    styles={{
-                      control: (base) => ({
-                        ...base,
-                        borderColor: errors.vendor_type
-                          ? "red"
-                          : base.borderColor,
-                        "&:hover": {
-                          borderColor: errors.vendor_type
-                            ? "red"
-                            : base["&:hover"].borderColor,
-                        },
-                      }),
-                    }}
+                    onChange={handleChange}
+                    placeholder="Enter Category Type"
+                    isInvalid={!!errors.vendor_type}
                   />
-                  {errors.vendor_type && (
-                    <div
-                      style={{
-                        color: "red",
-                        fontSize: "0.875em",
-                        marginTop: "0.25rem",
-                      }}
-                    >
-                      {errors.vendor_type}
-                    </div>
-                  )}
+                  <Form.Control.Feedback type="invalid">
+                    {errors.vendor_type}
+                  </Form.Control.Feedback>
                 </Form.Group>
               </Col>
             </Row>
             <Row>
               <Col md={4}>
-                {adminRole === "Venue Admin" ? (
-                  ""
-                ) : (
-                  <Form.Group controlId="formName" className="mb-2">
-                    <Form.Label className="heading">
-                      Venue Owner
-                      <span style={{ color: "red" }}>*</span>
-                    </Form.Label>
-                    <Select
-                      placeholder={formData.venue_owner_name}
-                      name="vendor_id"
-                      value={formData.venue_owner_name}
-                      onChange={handleChange}
-                      isDisabled={true}
-                    />
-                    {errors.vendor_id && (
-                      <div
-                        style={{
-                          color: "red",
-                          fontSize: "0.875em",
-                          marginTop: "0.25rem",
-                          fontWeight: "400",
-                        }}
-                      >
-                        {errors.vendor_id}
-                      </div>
-                    )}
-                  </Form.Group>
-                )}
+                <Form.Group controlId="formName" className="mb-2">
+                  <Form.Label className="heading">
+                    Venue Owner
+                    <span style={{ color: "red" }}>*</span>
+                  </Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="vendor_id"
+                    value={formData.vendor_id}
+                    onChange={handleChange}
+                    placeholder="Enter venue owner ID"
+                    isInvalid={!!errors.vendor_id}
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    {errors.vendor_id}
+                  </Form.Control.Feedback>
+                </Form.Group>
               </Col>
               <Col md={8}>
                 <Form.Group controlId="formAddress">

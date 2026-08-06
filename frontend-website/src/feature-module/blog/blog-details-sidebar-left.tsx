@@ -5,6 +5,7 @@ import { Link, useParams } from "react-router-dom";
 import { all_routes } from "../router/all_routes";
 import axios from "axios";
 import { API_URL, IMG_URL } from "../../ApiUrl";
+import { sanitizeHtml } from "../../utils/sanitize";
 
 const BlogDetailsSidebarLeft = () => {
   const routes = all_routes;
@@ -169,9 +170,11 @@ const BlogDetailsSidebarLeft = () => {
                     className="blog-rich-content"
                     style={{ color: "#334155", fontSize: "16px", lineHeight: "1.8", fontWeight: "400" }}
                     dangerouslySetInnerHTML={{
-                      __html: blogDetails?.blog_description
-                        ? blogDetails?.blog_description.replace(/&lt;/g, '<').replace(/&gt;/g, '>')
-                        : '',
+                      __html: sanitizeHtml(
+                        blogDetails?.blog_description
+                          ? blogDetails?.blog_description.replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+                          : ''
+                      ),
                     }}
                   />
                 </div>
