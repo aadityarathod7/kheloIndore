@@ -1,7 +1,9 @@
 {
   "files": {
-    "main.css": "/static/css/main.a136d4c4.css",
-    "main.js": "/static/js/main.7277e46a.js",
+    "main.css": "/static/css/main.884bb023.css",
+    "main.js": "/static/js/main.54f84fef.js",
+    "static/media/stadium-turf.png": "/static/media/stadium-turf.4267a41f4bcea862b03d.png",
+    "static/media/stadium.png": "/static/media/stadium.4267a41f4bcea862b03d.png",
     "static/media/fa-solid-900.ttf": "/static/media/fa-solid-900.bacd5de623fb563b961a.ttf",
     "static/media/primeicons.svg": "/static/media/primeicons.e1441b135b3ca9ad643c.svg",
     "static/media/Inter-italic.var.woff2?v=3.19": "/static/media/Inter-italic.var.30807be7abc48ba8c73c.woff2",
@@ -32,11 +34,11 @@
     "static/media/down-arrow.svg": "/static/media/down-arrow.c287b4401a92e35d1590.svg",
     "static/media/bg-01.svg": "/static/media/bg-01.9d6fef1969fff93121c7.svg",
     "static/media/cock-icon-02.svg": "/static/media/cock-icon-02.c4f6a4775e582c2cb248.svg",
-    "main.a136d4c4.css.map": "/static/css/main.a136d4c4.css.map",
-    "main.7277e46a.js.map": "/static/js/main.7277e46a.js.map"
+    "main.884bb023.css.map": "/static/css/main.884bb023.css.map",
+    "main.54f84fef.js.map": "/static/js/main.54f84fef.js.map"
   },
   "entrypoints": [
-    "static/css/main.a136d4c4.css",
-    "static/js/main.7277e46a.js"
+    "static/css/main.884bb023.css",
+    "static/js/main.54f84fef.js"
   ]
 }

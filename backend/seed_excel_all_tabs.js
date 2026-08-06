@@ -52,6 +52,316 @@ function getCategoryImage(catName, sportName) {
   return categoryImages['default'];
 }
 
+const timeToday = (h, m = 0) => {
+  const d = new Date();
+  d.setHours(h, m, 0, 0);
+  return d;
+};
+
+async function seedCoach() {
+  const existing = await Coach.findOne({ email: "rahul.sharma.coach@kheloindore.in" });
+  if (existing) {
+    existing.is_admin_access = 1;
+    await existing.save();
+    console.log("⏭  Coach updated & seeded — ID:", existing._id.toString());
+    return existing;
+  }
+
+  const hashedPassword = await bcrypt.hash("Coach@1234", 10);
+
+  const coach = await Coach.create({
+    first_name:   "Rahul",
+    last_name:    "Sharma",
+    full_name:    "Rahul Sharma",
+    email:        "rahul.sharma.coach@kheloindore.in",
+    mobile:       9876543210,
+    password:     hashedPassword,
+    demo_password: "Coach@1234",
+
+    venue_name:  "Khelo Indore Premier Turf",
+    trainer_type: "Cricket Coach",
+    role:         "Coach",
+    status:       true,
+    verification_status: 1,
+    is_admin_access: 1,
+    read_seen:    1,
+    isUpdated:    true,
+
+    age:           34,
+    date_of_birth: "1990-05-15",
+    gender:        "Male",
+    experience:    10,
+    price:         1500,
+
+    address:   "23, Sports Colony, Vijay Nagar",
+    city:      "Indore",
+    state:     "Madhya Pradesh",
+    zipcode:   "452010",
+
+    location: {
+      google_location: "https://maps.google.com/?q=22.7533,75.8937",
+      address:         "23, Sports Colony, Vijay Nagar",
+      city:            "Indore",
+      state:           "Madhya Pradesh",
+      zipcode:         "452010",
+    },
+    near_by_location: "Vijay Nagar",
+
+    category:        "Cricket",
+    category_type:   "Cricket",
+    specializations: "Batting, Bowling, Fielding, Fitness",
+    skills:          "Fast Bowling, Spin Bowling, Power Hitting, Wicket Keeping",
+    languages:       "Hindi, English",
+
+    qualifications: `• NCA Level 2 Certified Coach (BCCI)\n\n• B.P.Ed from Devi Ahilya University, Indore\n\n• Former Madhya Pradesh Ranji Trophy Player (2011–2019)\n\n• Under-19 State Team Captain (2008)`,
+
+    bio: `Coach Rahul Sharma is a BCCI-certified Level 2 cricket coach with over 10 years of professional coaching experience. A former Ranji Trophy player, he has trained over 200 cricketers across all age groups. His coaching style emphasises technique, mental toughness, and match-specific skills. He currently coaches at Khelo Indore Premier Turf and offers individual, group, and advanced performance sessions.`,
+
+    availability: "Monday to Saturday, 6:00 AM – 8:00 PM",
+
+    policiesAndRules: `1. Session must be booked and paid for in advance.\n\n2. Cancellation 12 hours before session — 50% refund.\n\n3. No show / late cancellation — no refund.\n\n4. Bring your own kit (bat, pads, gloves).\n\n5. Sportswear mandatory during all sessions.\n\n6. Video analysis sessions available on request.`,
+
+    package: {
+      monthly:   8000,
+      quarterly: 22000,
+      yearly:    80000,
+    },
+
+    startTime: timeToday(6, 0),
+    endTime:   timeToday(20, 0),
+
+    profile_picture: [{ src: "/assets/img/profiles/avatar-coach-01.jpg" }],
+  });
+
+  console.log("✅ Coach seeded — ID:", coach._id.toString());
+  return coach;
+}
+
+async function seedTrainer() {
+  const existing = await PT.findOne({ email: "priya.fitness@kheloindore.in" });
+  if (existing) {
+    existing.is_admin_access = 1;
+    await existing.save();
+    console.log("⏭  Trainer updated & seeded — ID:", existing._id.toString());
+    return existing;
+  }
+
+  const hashedPassword = await bcrypt.hash("Trainer@1234", 10);
+
+  const trainer = await PT.create({
+    first_name:    "Priya",
+    last_name:     "Verma",
+    email:         "priya.fitness@kheloindore.in",
+    mobile:        9812345678,
+    password:      hashedPassword,
+    demo_password: "Trainer@1234",
+
+    venue_name:   "FitZone Studio, Indore",
+    trainer_type: "Personal Trainer",
+    role:         "Personal Trainer",
+    status:       true,
+    is_admin_access: 1,
+    read_seen:    1,
+    isUpdated:    true,
+
+    age:           28,
+    date_of_birth: "1996-09-22",
+    gender:        "Female",
+    experience:    6,
+    price:         1200,
+
+    address:   "15, AB Road, Scheme 71",
+    city:      "Indore",
+    state:     "Madhya Pradesh",
+    zipcode:   "452001",
+
+    location: {
+      google_location: "https://maps.google.com/?q=22.7196,75.8577",
+      address:         "15, AB Road, Scheme 71",
+      city:            "Indore",
+      state:           "Madhya Pradesh",
+      zipcode:         "452001",
+    },
+    near_by_location: "AB Road",
+
+    category:        "Fitness & Wellness",
+    category_type:   "Fitness",
+    specializations: ["Weight Training", "HIIT", "Yoga", "Nutrition Coaching", "Zumba"],
+    skills:          "Strength Training, Cardio, Flexibility, Weight Loss, Muscle Gain",
+    languages:       "Hindi, English",
+
+    qualifications: `• ACE Certified Personal Trainer\n\n• Diploma in Sports Nutrition — Indore Sports Academy\n\n• Certified Yoga Instructor (RYT-200)\n\n• HIIT & Functional Training Specialist\n\n• B.Sc. Physical Education — DAVV, Indore`,
+
+    bio: `Priya Verma is a passionate fitness coach with 6+ years of experience helping clients achieve their health goals. She specialises in weight loss, muscle toning, HIIT workouts, and yoga-based flexibility training. Priya has helped 150+ clients transform their fitness journey with personalised plans and consistent motivation. She conducts both in-person and online sessions and creates customised diet + workout plans tailored to individual goals.`,
+
+    availability: "Monday to Sunday, 5:30 AM – 9:00 PM",
+
+    policiesAndRules: `1. All sessions must be pre-booked and paid.\n\n2. Cancellations 6 hours before — 50% refund.\n\n3. Rescheduling allowed once per booking.\n\n4. Bring your own water bottle and yoga mat.\n\n5. Wear comfortable workout clothes.\n\n6. Medical conditions must be disclosed before first session.`,
+
+    package: {
+      monthly:   7000,
+      quarterly: 19000,
+      yearly:    70000,
+    },
+
+    startTime: timeToday(5, 30),
+    endTime:   timeToday(21, 0),
+
+    profile_picture: [{ src: "/assets/img/profiles/avatar-trainer-01.jpg" }],
+    gallery:         [
+      { src: "/assets/img/venues/venue-01.jpg" },
+      { src: "/assets/img/venues/venue-02.jpg" },
+    ],
+  });
+
+  console.log("✅ Trainer seeded — ID:", trainer._id.toString());
+  return trainer;
+}
+
+async function seedAdditionalProfiles() {
+  const password = await bcrypt.hash("Demo@1234", 10);
+  const coachProfiles = [
+    ["Aarav", "Mehta", "Cricket", "Male", "Vijay Nagar", 8, 1400],
+    ["Kabir", "Singh", "Football", "Male", "Palasia", 7, 1300],
+    ["Ananya", "Joshi", "Badminton", "Female", "Bhawarkuan", 6, 1200],
+    ["Rohan", "Patel", "Tennis", "Male", "Rau", 9, 1500],
+    ["Ishita", "Sharma", "Swimming", "Female", "Navlakha", 5, 1100],
+    ["Vivaan", "Kulkarni", "Basketball", "Male", "Vijay Nagar", 7, 1350],
+    ["Meera", "Nair", "Volleyball", "Female", "Bengali Square", 6, 1150],
+    ["Arjun", "Verma", "Table Tennis", "Male", "LIG Square", 8, 1250],
+    ["Kavya", "Gupta", "Fitness", "Female", "Nipania", 5, 1000],
+  ];
+  const trainerProfiles = [
+    ["Riya", "Kapoor", "Weight Loss", "Female", "Palasia", 6, 1100],
+    ["Aditya", "Rao", "Strength Training", "Male", "Vijay Nagar", 8, 1400],
+    ["Nisha", "Jain", "Yoga", "Female", "Bhawarkuan", 7, 1200],
+    ["Siddharth", "Mishra", "HIIT", "Male", "Rau", 5, 1250],
+    ["Pooja", "Saxena", "Zumba", "Female", "Navlakha", 6, 1050],
+    ["Karan", "Malhotra", "Muscle Gain", "Male", "Vijay Nagar", 9, 1500],
+    ["Sneha", "Tiwari", "Pilates", "Female", "Bengali Square", 5, 1150],
+    ["Dev", "Chauhan", "Sports Conditioning", "Male", "LIG Square", 7, 1350],
+    ["Aditi", "Bansal", "Functional Training", "Female", "Nipania", 6, 1200],
+  ];
+
+  const coachOperations = coachProfiles.map(([first_name, last_name, category, gender, near_by_location, experience, price], index) => ({
+    updateOne: {
+      filter: { email: `demo.coach.${index + 1}@kheloindore.in` },
+      update: {
+        $setOnInsert: {
+          first_name, last_name, full_name: `${first_name} ${last_name}`,
+          email: `demo.coach.${index + 1}@kheloindore.in`, mobile: 9000000001 + index,
+          password, demo_password: "Demo@1234", role: "Coach", trainer_type: `${category} Coach`,
+          category, category_type: category, gender, near_by_location, experience, price,
+          city: "Indore", state: "Madhya Pradesh", zipcode: "452001", status: true,
+          verification_status: 1, is_admin_access: 1, isUpdated: true, read_seen: 1,
+          specializations: `${category} coaching, Technique, Performance training`,
+          bio: `${first_name} is a certified ${category.toLowerCase()} coach offering personalised training in Indore.`,
+          availability: "Monday to Saturday, 6:00 AM - 8:00 PM",
+          profile_picture: [{ src: `https://i.pravatar.cc/300?img=${index + 10}` }],
+        },
+      },
+      upsert: true,
+    },
+  }));
+
+  const trainerOperations = trainerProfiles.map(([first_name, last_name, category, gender, near_by_location, experience, price], index) => ({
+    updateOne: {
+      filter: { email: `demo.trainer.${index + 1}@kheloindore.in` },
+      update: {
+        $setOnInsert: {
+          first_name, last_name, email: `demo.trainer.${index + 1}@kheloindore.in`, mobile: 9100000001 + index,
+          password, demo_password: "Demo@1234", role: "Personal Trainer", trainer_type: "Personal Trainer",
+          category, category_type: category, gender, near_by_location, experience, price,
+          city: "Indore", state: "Madhya Pradesh", zipcode: "452001", status: true,
+          is_admin_access: 1, isUpdated: true, read_seen: 1,
+          specializations: [category, "Fitness Assessment", "Personalised Plans"],
+          bio: `${first_name} is a certified personal trainer specialising in ${category.toLowerCase()}.`,
+          availability: "Monday to Saturday, 6:00 AM - 9:00 PM",
+          profile_picture: [{ src: `https://i.pravatar.cc/300?img=${index + 40}` }],
+        },
+      },
+      upsert: true,
+    },
+  }));
+
+  const [coachResult, trainerResult] = await Promise.all([
+    Coach.bulkWrite(coachOperations),
+    PT.bulkWrite(trainerOperations),
+  ]);
+  console.log(`Demo profiles ready: ${coachResult.upsertedCount || 0} coaches and ${trainerResult.upsertedCount || 0} trainers added.`);
+}
+
+async function seedAllSlots() {
+  console.log("Seeding slots for all coaches and personal trainers...");
+  const coaches = await Coach.find({});
+  const trainers = await PT.find({});
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  // 1. Seed Coach Slots
+  const coachSlotDocs = [];
+  for (const coach of coaches) {
+    const coachId = coach._id;
+    for (let i = 0; i < 90; i++) {
+      const d = new Date(today);
+      d.setDate(today.getDate() + i);
+      const dateString = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}T00:00:00.000Z`;
+
+      const end = new Date(dateString);
+      end.setMonth(d.getMonth() + 1);
+
+      coachSlotDocs.push({
+        coachId,
+        start_date: new Date(dateString),
+        end_date: end,
+        slots: [
+          { start_time: "06:00 AM", end_time: "07:00 AM", price: coach.price || 1500, isBooked: false },
+          { start_time: "07:00 AM", end_time: "08:00 AM", price: coach.price || 1500, isBooked: false },
+          { start_time: "05:00 PM", end_time: "06:00 PM", price: coach.price || 1500, isBooked: false }
+        ],
+        status: true
+      });
+    }
+  }
+
+  if (coachSlotDocs.length > 0) {
+    await CoachSlot.insertMany(coachSlotDocs);
+    console.log(`✅ Seeded ${coachSlotDocs.length} Coach Slots across ${coaches.length} Coaches`);
+  }
+
+  // 2. Seed Personal Trainer Slots
+  const trainerSlotDocs = [];
+  for (const trainer of trainers) {
+    const trainerId = trainer._id;
+    for (let i = 0; i < 90; i++) {
+      const d = new Date(today);
+      d.setDate(today.getDate() + i);
+      const dateString = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}T00:00:00.000Z`;
+
+      const end = new Date(dateString);
+      end.setMonth(d.getMonth() + 1);
+
+      trainerSlotDocs.push({
+        trainerId,
+        start_date: new Date(dateString),
+        end_date: end,
+        slots: [
+          { start_time: "06:00 AM", end_time: "07:00 AM", price: trainer.price || 1200, isBooked: false },
+          { start_time: "07:00 AM", end_time: "08:00 AM", price: trainer.price || 1200, isBooked: false },
+          { start_time: "06:00 PM", end_time: "07:00 PM", price: trainer.price || 1200, isBooked: false }
+        ],
+        status: true
+      });
+    }
+  }
+
+  if (trainerSlotDocs.length > 0) {
+    await PTSlot.insertMany(trainerSlotDocs);
+    console.log(`✅ Seeded ${trainerSlotDocs.length} Personal Trainer Slots across ${trainers.length} Trainers`);
+  }
+}
+
 async function seedExcelAllTabs() {
   console.log('Connecting to database...');
   await mongoose.connect(process.env.DATABASE_URL);
@@ -230,6 +540,12 @@ async function seedExcelAllTabs() {
     path.join(__dirname, 'venue_logins_summary.json'),
     JSON.stringify(ownerLogins, null, 2)
   );
+
+  console.log('\n4. Seeding Coaches and Personal Trainers...');
+  await seedCoach();
+  await seedTrainer();
+  await seedAdditionalProfiles();
+  await seedAllSlots();
 
   console.log('\n======================================================');
   console.log('COMPLETE WIPE & SEED SUCCESSFUL!');
