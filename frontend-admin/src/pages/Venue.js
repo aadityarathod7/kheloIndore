@@ -945,22 +945,57 @@ const AddVenue = () => {
             </Row>
             <Row>
               <Col md={4}>
-                <Form.Group controlId="formName" className="mb-2">
+                <Form.Group controlId="formVenueOwner" className="mb-2">
                   <Form.Label className="heading">
                     Venue Owner
                     <span style={{ color: "red" }}>*</span>
                   </Form.Label>
-                  <Form.Control
-                    type="text"
+                  <Select
                     name="vendor_id"
-                    value={formData.vendor_id}
-                    onChange={handleChange}
-                    placeholder="Enter venue owner ID"
-                    isInvalid={!!errors.vendor_id}
+                    value={
+                      venueOwnerData
+                        .map((owner) => ({
+                          label: `${owner.first_name || ""} ${owner.last_name || ""} (${owner.mobile || ""})`,
+                          value: owner._id,
+                        }))
+                        .find((opt) => opt.value === formData.vendor_id) || null
+                    }
+                    options={venueOwnerData.map((owner) => ({
+                      label: `${owner.first_name || ""} ${owner.last_name || ""} (${owner.mobile || ""})`,
+                      value: owner._id,
+                    }))}
+                    onChange={(selectedOption) => {
+                      setFormData({
+                        ...formData,
+                        vendor_id: selectedOption ? selectedOption.value : "",
+                      });
+                      setErrors((prevErrors) => ({
+                        ...prevErrors,
+                        vendor_id: "",
+                      }));
+                    }}
+                    placeholder="Select Venue Owner"
+                    styles={{
+                      control: (base) => ({
+                        ...base,
+                        borderColor: errors.vendor_id ? "red" : base.borderColor,
+                        "&:hover": {
+                          borderColor: errors.vendor_id ? "red" : base["&:hover"].borderColor,
+                        },
+                      }),
+                    }}
                   />
-                  <Form.Control.Feedback type="invalid">
-                    {errors.vendor_id}
-                  </Form.Control.Feedback>
+                  {errors.vendor_id && (
+                    <div
+                      style={{
+                        color: "red",
+                        fontSize: "0.875em",
+                        marginTop: "0.25rem",
+                      }}
+                    >
+                      {errors.vendor_id}
+                    </div>
+                  )}
                 </Form.Group>
               </Col>
               <Col md={8}>
