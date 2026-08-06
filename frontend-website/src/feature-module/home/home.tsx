@@ -1551,7 +1551,7 @@ const Home = () => {
                     <div className="listing-venue-owner">
                       <Link className="navigation" to={""}>
                         <ImageWithBasePath
-                          src="assets/img/profiles/avatar-01.jpg"
+                          src="/assets/img/profiles/avatar-01.jpg"
                           alt="User"
                         />
                       </Link>
@@ -1583,7 +1583,7 @@ const Home = () => {
                     <div className="listing-venue-owner">
                       <Link className="navigation" to={""}>
                         <ImageWithBasePath
-                          src="assets/img/profiles/avatar-04.jpg"
+                          src="/assets/img/profiles/avatar-04.jpg"
                           alt="User"
                         />
                       </Link>
@@ -1615,7 +1615,7 @@ const Home = () => {
                     <div className="listing-venue-owner">
                       <Link className="navigation" to={""}>
                         <ImageWithBasePath
-                          src="assets/img/profiles/avatar-03.jpg"
+                          src="/assets/img/profiles/avatar-03.jpg"
                           alt="User"
                         />
                       </Link>
@@ -1647,7 +1647,7 @@ const Home = () => {
                     <div className="listing-venue-owner">
                       <Link className="navigation" to={""}>
                         <ImageWithBasePath
-                          src="assets/img/profiles/avatar-04.jpg"
+                          src="/assets/img/profiles/avatar-04.jpg"
                           alt="User"
                         />
                       </Link>

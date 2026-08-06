@@ -1,7 +1,7 @@
 {
   "files": {
     "main.css": "/static/css/main.884bb023.css",
-    "main.js": "/static/js/main.54f84fef.js",
+    "main.js": "/static/js/main.abbbf2a3.js",
     "static/media/stadium-turf.png": "/static/media/stadium-turf.4267a41f4bcea862b03d.png",
     "static/media/stadium.png": "/static/media/stadium.4267a41f4bcea862b03d.png",
     "static/media/fa-solid-900.ttf": "/static/media/fa-solid-900.bacd5de623fb563b961a.ttf",
@@ -35,10 +35,10 @@
     "static/media/bg-01.svg": "/static/media/bg-01.9d6fef1969fff93121c7.svg",
     "static/media/cock-icon-02.svg": "/static/media/cock-icon-02.c4f6a4775e582c2cb248.svg",
     "main.884bb023.css.map": "/static/css/main.884bb023.css.map",
-    "main.54f84fef.js.map": "/static/js/main.54f84fef.js.map"
+    "main.abbbf2a3.js.map": "/static/js/main.abbbf2a3.js.map"
   },
   "entrypoints": [
     "static/css/main.884bb023.css",
-    "static/js/main.54f84fef.js"
+    "static/js/main.abbbf2a3.js"
   ]
 }
