@@ -77,7 +77,10 @@ const formatPrice = (value?: any) => {
 // (including array elements that themselves contain comma separated text).
 const getSpecializations = (value: any): string[] => {
   if (!value) return [];
-  return String(Array.isArray(value) ? value : String(value))
+  // String() comma-joins arrays, so this handles arrays, comma separated
+  // strings, newline/semicolon separated text, and array elements that
+  // themselves contain comma separated values.
+  return String(value)
     .split(/[,;\n|•]+/)
     .map((item: string) => item.trim())
     .filter(Boolean);
@@ -711,7 +714,7 @@ const CoachDetail = (props: any) => {
                     aria-labelledby="panelsStayOpen-coach-details"
                   >
                     <div className="accordion-body">
-                      {hasCoachDetails ? (
+                      {coachData && hasCoachDetails ? (
                         <div className="coach-details-grid">
                           {coachName ? (
                             <div className="cdg-item">
@@ -768,10 +771,12 @@ const CoachDetail = (props: any) => {
                             </div>
                           ) : null}
                         </div>
-                      ) : (
+                      ) : coachData ? (
                         <p className="mb-0">
                           Coach details are being updated by the admin. Please check back soon.
                         </p>
+                      ) : (
+                        <p className="mb-0">Loading coach details...</p>
                       )}
                     </div>
                   </div>

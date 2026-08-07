@@ -52,7 +52,10 @@ const formatPrice = (value?: any) => {
 // single array element containing comma separated text - handle all of them.
 const getSpecializations = (value: any): string[] => {
   if (!value) return [];
-  return String(Array.isArray(value) ? value : String(value))
+  // String() comma-joins arrays, so this handles arrays, comma separated
+  // strings, newline/semicolon separated text, and array elements that
+  // themselves contain comma separated values.
+  return String(value)
     .split(/[,;\n|•]+/)
     .map((item: string) => item.trim())
     .filter(Boolean);
@@ -225,7 +228,7 @@ const PersonalTrainingDetails = (props: any) => {
                 <span style={{ color: "#22C55E", marginRight: "12px" }}>Trainer</span> Details
               </h1>
               <p style={{ color: "#64748B", fontSize: "18px", marginBottom: "24px", fontWeight: "500", maxWidth: "480px" }}>
-                {trainerData?.first_name ? `${trainerData.first_name} ${trainerData.last_name || ""}` : "View trainer profile and book your session"}
+                {trainerName || "View trainer profile and book your session"}
               </p>
               
               {/* Breadcrumb pill */}
@@ -472,7 +475,7 @@ const PersonalTrainingDetails = (props: any) => {
                 <div className="info w-100">
                   <div className="d-sm-flex justify-content-between align-items-start">
                     <h3 className="d-flex align-items-center justify-content-start mb-0">
-                      {trainerData?.first_name} &nbsp;{trainerData?.last_name}
+                      {trainerName}
                       <span className="d-flex justify-content-center align-items-center">
                         <i className="fas fa-check-double" />
                       </span>
@@ -628,7 +631,7 @@ const PersonalTrainingDetails = (props: any) => {
                     aria-labelledby="panelsStayOpen-short-bio"
                   >
                     <div className="accordion-body">
-                      {hasTrainerDetails ? (
+                      {trainerData && hasTrainerDetails ? (
                         <div className="coach-details-grid">
                           {trainerName ? (
                             <div className="cdg-item">
@@ -685,10 +688,12 @@ const PersonalTrainingDetails = (props: any) => {
                             </div>
                           ) : null}
                         </div>
-                      ) : (
+                      ) : trainerData ? (
                         <p className="mb-0">
                           Trainer details are being updated by the admin. Please check back soon.
                         </p>
+                      ) : (
+                        <p className="mb-0">Loading trainer details...</p>
                       )}
                     </div>
                   </div>

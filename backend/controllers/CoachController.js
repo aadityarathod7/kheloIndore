@@ -146,7 +146,6 @@ exports.updateCoachSuperAdmin = async (req, res) => {
       "city",
       "state",
       "zipcode",
-      "google_location",
       "status",
     ];
     scalarFields.forEach((field) => {
@@ -156,18 +155,31 @@ exports.updateCoachSuperAdmin = async (req, res) => {
       }
     });
 
-    // Only overwrite the location sub-document when a real, non-empty object is
-    // provided - the admin form sends an empty location object by default,
-    // which would otherwise wipe the coach's saved address.
+    // google_location lives inside the location sub-document.
+    if (
+      detail.google_location !== undefined &&
+      detail.google_location !== null &&
+      detail.google_location !== ""
+    ) {
+      updatePayload["location.google_location"] = detail.google_location;
+    }
+
+    // Merge location sub-document fields instead of replacing the whole
+    // object, so partial payloads (or the admin form's default empty object)
+    // never wipe the coach's saved address.
     if (
       detail.location &&
       typeof detail.location === "object" &&
-      !Array.isArray(detail.location) &&
-      Object.values(detail.location).some(
-        (v) => v !== undefined && v !== null && v !== ""
-      )
+      !Array.isArray(detail.location)
     ) {
-      updatePayload.location = detail.location;
+      const mergedLocation = { ...coachData.location, ...detail.location };
+      if (
+        Object.values(mergedLocation).some(
+          (v) => v !== undefined && v !== null && v !== ""
+        )
+      ) {
+        updatePayload.location = mergedLocation;
+      }
     }
 
     const updatedCoach = await Coach.findByIdAndUpdate(id, updatePayload, {
