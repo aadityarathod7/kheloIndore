@@ -703,6 +703,9 @@ const UpdatepersonalTrainer  = () => {
                   onChange={handleInputChange}
                   isInvalid={!!errors.specializations}
                 />
+                <Form.Text className="text-muted">
+                  Separate each specialization with a comma - they are shown as tags on the website.
+                </Form.Text>
                 {errors.specializations && (
                   <div
                     style={{

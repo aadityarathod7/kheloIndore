@@ -113,37 +113,66 @@ exports.updateCoachSuperAdmin = async (req, res) => {
     }
     const id = req.params.id;
 
-    const {
-      first_name,
-      last_name,
-      experience,
-      availability,
-      location,
-      specializations,
-      bio,
-      email,
-      status
-    } = detail;
-
     const coachData = await Coach.findById(id);
-    const updatedCoach = await Coach.findByIdAndUpdate(
-      id,
-      {
-        first_name: first_name ? first_name : coachData.first_name,
-        last_name: last_name ? last_name : coachData.last_name,
-        email: email ? email : coachData.email,
-        experience: experience ? experience : coachData.experience,
-        availability: availability ? availability : coachData.availability,
-        specializations: specializations
-          ? specializations
-          : coachData.specializations,
-        location: location ? location : coachData.location,
-        bio: bio ? bio : coachData.bio,
-        status:status,
-        isUpdated:true
-      },
-      { new: true }
-    );
+    if (!coachData) {
+      return res.status(404).json({ success: false, message: "Coach not found" });
+    }
+
+    const updatePayload = { isUpdated: true };
+
+    // Scalar fields the admin form can send. Empty values are skipped so we
+    // never accidentally wipe existing data.
+    const scalarFields = [
+      "first_name",
+      "last_name",
+      "email",
+      "mobile",
+      "gender",
+      "age",
+      "price",
+      "category",
+      "near_by_location",
+      "experience",
+      "availability",
+      "specializations",
+      "bio",
+      "qualifications",
+      "skills",
+      "trainer_type",
+      "venue_name",
+      "policiesAndRules",
+      "languages",
+      "address",
+      "city",
+      "state",
+      "zipcode",
+      "google_location",
+      "status",
+    ];
+    scalarFields.forEach((field) => {
+      const value = detail[field];
+      if (value !== undefined && value !== null && value !== "") {
+        updatePayload[field] = value;
+      }
+    });
+
+    // Only overwrite the location sub-document when a real, non-empty object is
+    // provided - the admin form sends an empty location object by default,
+    // which would otherwise wipe the coach's saved address.
+    if (
+      detail.location &&
+      typeof detail.location === "object" &&
+      !Array.isArray(detail.location) &&
+      Object.values(detail.location).some(
+        (v) => v !== undefined && v !== null && v !== ""
+      )
+    ) {
+      updatePayload.location = detail.location;
+    }
+
+    const updatedCoach = await Coach.findByIdAndUpdate(id, updatePayload, {
+      new: true,
+    });
 
     if (!updatedCoach) {
       return res

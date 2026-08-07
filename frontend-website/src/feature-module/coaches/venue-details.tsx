@@ -442,12 +442,12 @@ const VenueDetails = () => {
                     <h1 className="fw-bold mb-1 text-dark text-capitalize" style={{ fontSize: "22px", fontFamily: "Space Grotesk, sans-serif" }}>
                       {venueData?.name || (name ? name.replaceAll('-', ' ') : "Sports Venue")}
                     </h1>
-                    <div className="d-flex flex-wrap align-items-center gap-3 text-muted" style={{ fontSize: "13px" }}>
-                      <span>
-                        <i className="fas fa-star text-warning me-1" />4.8 (128 Reviews)
+                    <div className="d-flex flex-wrap align-items-center gap-3" style={{ fontSize: "13px" }}>
+                      <span className="d-inline-flex align-items-center" style={{ color: "#475569", fontWeight: "500" }}>
+                        <i className="fas fa-star text-warning me-1.5" /> 4.8 (128 Reviews)
                       </span>
-                      <span>
-                        <i className="fas fa-map-marker-alt text-success me-1" /> {venueData?.city || "Indore"}, Madhya Pradesh
+                      <span className="d-inline-flex align-items-center" style={{ color: "#475569", fontWeight: "500" }}>
+                        <i className="fas fa-map-marker-alt text-success me-1.5" /> {venueData?.address || (venueData?.city ? `${venueData.city}, Madhya Pradesh` : "Indore, Madhya Pradesh")}
                       </span>
                     </div>
                   </div>
@@ -891,7 +891,10 @@ const VenueDetails = () => {
                         loading="lazy"
                         allowFullScreen
                         src={`https://maps.google.com/maps?q=${encodeURIComponent(
-                          (venueData?.name || '') + " " + (venueData?.address || '') + " Indore Madhya Pradesh"
+                          venueData?.google_location ||
+                          ((venueData?.address ? `${venueData.address}, ` : "") +
+                          (venueData?.city || "Indore") + ", " +
+                          (venueData?.state || "Madhya Pradesh"))
                         )}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
                       ></iframe>
                     </div>

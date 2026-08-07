@@ -12,6 +12,7 @@ import { sanitizeHtml } from "../../utils/sanitize";
 interface TrainerData {
   first_name: any;
   last_name: any;
+  full_name: string;
   duration: string;
   focus_area: any;
   price: number;
@@ -34,7 +35,40 @@ interface TrainerData {
   skills: string;
   qualifications: string;
 }
-// Other properties...
+// ---------- Display helpers (aligned with how admins enter the data) ----------
+// Gender / trainer type are saved lowercase by the admin form.
+const capitalize = (value?: string | null) =>
+  value ? value.charAt(0).toUpperCase() + value.slice(1) : "";
+
+// Price is a raw number (e.g. 11000) -> ₹11,000
+const formatPrice = (value?: any) => {
+  if (value === undefined || value === null || value === "") return "";
+  const num = Number(value);
+  if (Number.isNaN(num)) return "";
+  return `₹${num.toLocaleString("en-IN")}`;
+};
+
+// Specializations may be stored as an array, a comma separated string, or a
+// single array element containing comma separated text - handle all of them.
+const getSpecializations = (value: any): string[] => {
+  if (!value) return [];
+  return String(Array.isArray(value) ? value : String(value))
+    .split(/[,;\n|•]+/)
+    .map((item: string) => item.trim())
+    .filter(Boolean);
+};
+
+// Location may be stored flat (address/city/state/zipcode) or nested
+// (location.address / location.city / ...). Prefer the flat one.
+const getTrainerLocation = (trainer: TrainerData | undefined) =>
+  [
+    trainer?.address || trainer?.location?.address,
+    trainer?.city || trainer?.location?.city,
+    trainer?.state || trainer?.location?.state,
+    trainer?.zipcode || trainer?.location?.zipcode,
+  ]
+    .filter(Boolean)
+    .join(", ");
 
 const PersonalTrainingDetails = (props: any) => {
   const routes = all_routes;
@@ -53,6 +87,7 @@ const PersonalTrainingDetails = (props: any) => {
 
   const [open, setOpen] = React.useState(false);
   const [trainerData, setTrainerData] = useState<TrainerData>();
+  const [activeSection, setActiveSection] = useState<string>("short-bio");
   const idData = useParams();
   const id = idData.id;
   const name = idData.name;
@@ -60,7 +95,28 @@ const PersonalTrainingDetails = (props: any) => {
 
   const navigate = useNavigate();
 
+  // Derived display values (robust to however admins entered the data)
+  const trainerName = trainerData?.full_name
+    ? trainerData.full_name
+    : `${trainerData?.first_name || ""} ${trainerData?.last_name || ""}`.trim();
+  const trainerLocation = getTrainerLocation(trainerData);
+  const specializationsList = getSpecializations(trainerData?.specializations);
+  const formattedPrice = formatPrice(trainerData?.price);
+  const hasTrainerDetails = Boolean(
+    trainerName ||
+      trainerData?.gender ||
+      trainerData?.trainer_type ||
+      trainerLocation ||
+      trainerData?.venue ||
+      trainerData?.qualifications ||
+      trainerData?.skills ||
+      formattedPrice
+  );
 
+  const openSection = (id: string) => {
+    setActiveSection(id);
+    scrollContent(id);
+  };
 
   const [selectedCity, setSelectedCity] = useState();
   const cityOptions = [
@@ -88,8 +144,10 @@ const PersonalTrainingDetails = (props: any) => {
     fetchTrainerId();
   }, []);
   useEffect(() => {
-    document.title = `personal-training - ${type}/${name}/${id}}`;
-  }, []);
+    document.title = trainerName
+      ? `${trainerName} - Khelo Indore`
+      : "Trainer - Khelo Indore";
+  }, [trainerName]);
 
   const featuredVenuesSlider = {
     dots: false,
@@ -304,6 +362,89 @@ const PersonalTrainingDetails = (props: any) => {
           background: transparent !important;
           border: none !important;
           box-shadow: none !important;
+        }
+        /* Trainer profile quick meta chips */
+        .coach-quick-meta p {
+          color: #334155 !important;
+          font-size: 14px !important;
+        }
+        .coach-quick-meta p i {
+          color: #16A34A !important;
+        }
+        .meta-chip {
+          display: inline-flex !important;
+          align-items: center !important;
+          gap: 6px !important;
+          background: #F0FDF4 !important;
+          border: 1px solid #DCFCE7 !important;
+          color: #166534 !important;
+          border-radius: 999px !important;
+          padding: 6px 14px !important;
+          font-size: 13px !important;
+          font-weight: 600 !important;
+        }
+        .meta-chip i {
+          color: #16A34A !important;
+        }
+        /* Trainer Details definition grid */
+        .coach-details-grid .cdg-item {
+          display: flex !important;
+          align-items: flex-start !important;
+          padding: 10px 0 !important;
+          border-bottom: 1px dashed #E2E8F0 !important;
+        }
+        .coach-details-grid .cdg-item:last-child {
+          border-bottom: none !important;
+        }
+        .cdg-label {
+          width: 130px !important;
+          min-width: 130px !important;
+          color: #64748B !important;
+          font-weight: 600 !important;
+          font-size: 14px !important;
+        }
+        .cdg-value {
+          color: #0F172A !important;
+          font-weight: 700 !important;
+          font-size: 14px !important;
+          flex: 1 !important;
+        }
+        /* Specialization chips */
+        .spec-chip {
+          display: inline-flex !important;
+          align-items: center !important;
+          gap: 6px !important;
+          background: #F0FDF4 !important;
+          border: 1px solid #DCFCE7 !important;
+          color: #166534 !important;
+          border-radius: 999px !important;
+          padding: 8px 16px !important;
+          font-size: 13px !important;
+          font-weight: 600 !important;
+          margin: 0 8px 8px 0 !important;
+        }
+        .spec-chip i {
+          color: #16A34A !important;
+        }
+        /* Booking card availability badge */
+        .availability-badge {
+          display: inline-flex !important;
+          align-items: center !important;
+          gap: 4px !important;
+          background: #DCFCE7 !important;
+          color: #15803D !important;
+          border-radius: 999px !important;
+          padding: 3px 10px !important;
+          font-size: 12px !important;
+          font-weight: 600 !important;
+        }
+        .availability-badge i {
+          color: #16A34A !important;
+        }
+        .experience-years {
+          color: #16A34A !important;
+          font-size: 16px !important;
+        }
       `}} />
       {/* Page Content */}
       <div className="content">
@@ -380,6 +521,31 @@ const PersonalTrainingDetails = (props: any) => {
                   {/* </li>
                   </ul> */}
                   <hr />
+                  <div className="coach-quick-meta">
+                    {trainerLocation && (
+                      <p className="d-flex align-items-center mb-2">
+                        <i className="feather-map-pin me-2" />
+                        <span>{trainerLocation}</span>
+                      </p>
+                    )}
+                    <div className="d-flex flex-wrap gap-2">
+                      {trainerData?.trainer_type ? (
+                        <span className="meta-chip">
+                          <i className="feather-award" /> {capitalize(trainerData.trainer_type)}
+                        </span>
+                      ) : null}
+                      {trainerData?.experience ? (
+                        <span className="meta-chip">
+                          <i className="feather-clock" /> {trainerData.experience}+ Years Exp.
+                        </span>
+                      ) : null}
+                      {trainerData?.gender ? (
+                        <span className="meta-chip">
+                          <i className="feather-user" /> {capitalize(trainerData.gender)}
+                        </span>
+                      ) : null}
+                    </div>
+                  </div>
                   {/* <ul className="d-xl-flex">
                     <li className="d-flex align-items-center">
                       <ImageWithBasePath
@@ -407,107 +573,123 @@ const PersonalTrainingDetails = (props: any) => {
               </div>
               <div className="venue-options white-bg mb-4">
                 <ul className="clearfix">
-                  <li className="active">
-                    <Link onClick={() => scrollContent("short-bio")} to={""}>
+                  <li className={activeSection === "short-bio" ? "active" : ""}>
+                    <Link onClick={() => openSection("short-bio")} to={""}>
                       Trainer Details
                     </Link>
                   </li>
-                  {/* <li>
-                    <Link onClick={() => scrollContent("basic-info")} to={""}>
-                      Lesson With Me
-                    </Link>
-                  </li> */}
-                  <li>
-                    <Link onClick={() => scrollContent("bio")} to={""}>
+                  <li className={activeSection === "bio" ? "active" : ""}>
+                    <Link onClick={() => openSection("bio")} to={""}>
                       Bio
                     </Link>
                   </li>
-                  <li>
-                    <Link onClick={() => scrollContent("experience")} to={""}>
+                  <li className={activeSection === "experience" ? "active" : ""}>
+                    <Link onClick={() => openSection("experience")} to={""}>
                       Experience
                     </Link>
                   </li>
-
-                  <li>
-                    <Link
-                      onClick={() => scrollContent("specialization")}
-                      to={""}
-                    >
-                      Specialization
+                  <li className={activeSection === "specialization" ? "active" : ""}>
+                    <Link onClick={() => openSection("specialization")} to={""}>
+                      Specializations
                     </Link>
                   </li>
-                  <li>
-                    <Link onClick={() => scrollContent("rules")} to={""}>
+                  <li className={activeSection === "rules" ? "active" : ""}>
+                    <Link onClick={() => openSection("rules")} to={""}>
                       Policies & Rules
                     </Link>
                   </li>
-                  {/* <li>
-                    <Link onClick={() => scrollContent("training")} to={""}>
-                      Gallery
-                    </Link>
-                  </li> */}
-                  {/* <li>
-                    <Link onClick={() => scrollContent("reviews")} to={""}>
-                      Reviews
-                    </Link>
-                  </li> */}
-                  {/* <li>
-                    <Link onClick={() => scrollContent("location")} to={""}>
-                      Location
-                    </Link>
-                  </li> */}
                 </ul>
               </div>
               {/* Accordian Contents */}
               <div className="accordion" id="accordionPanel">
                 <div className="accordion-item mb-4" id="short-bio">
-                  <h4
-                    className="accordion-header"
-                    id="panelsStayOpen-short-bio"
-                  >
+                  <h4 className="accordion-header" id="panelsStayOpen-short-bio">
                     <button
-                      className="accordion-button"
+                      className={`accordion-button ${
+                        activeSection === "short-bio" ? "" : "collapsed"
+                      }`}
                       type="button"
-                      data-bs-toggle="collapse"
-                      data-bs-target="#panelsStayOpen-collapseOne"
-                      aria-expanded="true"
+                      aria-expanded={activeSection === "short-bio"}
                       aria-controls="panelsStayOpen-collapseOne"
+                      onClick={() =>
+                        setActiveSection(
+                          activeSection === "short-bio" ? "" : "short-bio"
+                        )
+                      }
                     >
                       Trainer Details
                     </button>
                   </h4>
                   <div
                     id="panelsStayOpen-collapseOne"
-                    className="accordion-collapse collapse show"
+                    className={`accordion-collapse collapse ${
+                      activeSection === "short-bio" ? "show" : ""
+                    }`}
                     aria-labelledby="panelsStayOpen-short-bio"
                   >
                     <div className="accordion-body">
-                      <div className="text show-more-height">
-                        <p className="mb-4">
-                          Name: {trainerData?.first_name}{" "}
-                          {trainerData?.last_name}
+                      {hasTrainerDetails ? (
+                        <div className="coach-details-grid">
+                          {trainerName ? (
+                            <div className="cdg-item">
+                              <span className="cdg-label">Name</span>
+                              <strong className="cdg-value">{trainerName}</strong>
+                            </div>
+                          ) : null}
+                          {trainerData?.gender ? (
+                            <div className="cdg-item">
+                              <span className="cdg-label">Gender</span>
+                              <strong className="cdg-value">
+                                {capitalize(trainerData.gender)}
+                              </strong>
+                            </div>
+                          ) : null}
+                          {trainerData?.trainer_type ? (
+                            <div className="cdg-item">
+                              <span className="cdg-label">Trainer Type</span>
+                              <strong className="cdg-value">
+                                {capitalize(trainerData.trainer_type)}
+                              </strong>
+                            </div>
+                          ) : null}
+                          {trainerLocation ? (
+                            <div className="cdg-item">
+                              <span className="cdg-label">Location</span>
+                              <strong className="cdg-value">{trainerLocation}</strong>
+                            </div>
+                          ) : null}
+                          {trainerData?.venue ? (
+                            <div className="cdg-item">
+                              <span className="cdg-label">Venue</span>
+                              <strong className="cdg-value">{trainerData.venue}</strong>
+                            </div>
+                          ) : null}
+                          {trainerData?.qualifications ? (
+                            <div className="cdg-item">
+                              <span className="cdg-label">Qualifications</span>
+                              <strong className="cdg-value">
+                                {trainerData.qualifications}
+                              </strong>
+                            </div>
+                          ) : null}
+                          {trainerData?.skills ? (
+                            <div className="cdg-item">
+                              <span className="cdg-label">Skills</span>
+                              <strong className="cdg-value">{trainerData.skills}</strong>
+                            </div>
+                          ) : null}
+                          {formattedPrice ? (
+                            <div className="cdg-item">
+                              <span className="cdg-label">Price</span>
+                              <strong className="cdg-value">{formattedPrice}/hr</strong>
+                            </div>
+                          ) : null}
+                        </div>
+                      ) : (
+                        <p className="mb-0">
+                          Trainer details are being updated by the admin. Please check back soon.
                         </p>
-                        <p className="mb-4">Gender: {trainerData?.gender}</p>
-
-                        <p className="mb-4">
-                          Trainer Type: {trainerData?.trainer_type}
-                        </p>
-
-                        <p className="mb-4">
-                          Location: {trainerData?.address}, {trainerData?.city},{" "}
-                          {trainerData?.state}, {trainerData?.zipcode}
-                        </p>
-                        {trainerData?.venue ? <p className="mb-4">Venue: {trainerData?.venue}</p> : ""}
-                        <p className="mb-4">
-                          Qualifications: {trainerData?.qualifications}
-                        </p>
-                        {trainerData?.skills ? <p className="mb-4">Skills: {trainerData?.skills}</p> : ""}
-                        <p className="mb-4">Price: {trainerData?.price}</p>
-                      </div>
-                      {/* <div className="show-more d align-items-center primary-text">
-                        <i className="feather-plus-circle" />
-                        Show More
-                      </div> */}
+                      )}
                     </div>
                   </div>
                 </div>
@@ -559,127 +741,160 @@ const PersonalTrainingDetails = (props: any) => {
                 <div className="accordion-item mb-4" id="bio">
                   <h4 className="accordion-header" id="panelsStayOpen-bio">
                     <button
-                      className="accordion-button"
+                      className={`accordion-button ${
+                        activeSection === "bio" ? "" : "collapsed"
+                      }`}
                       type="button"
-                      data-bs-toggle="collapse"
-                      data-bs-target="#panelsStayOpen-collapseTwo"
-                      aria-expanded="false"
+                      aria-expanded={activeSection === "bio"}
                       aria-controls="panelsStayOpen-collapseTwo"
+                      onClick={() =>
+                        setActiveSection(activeSection === "bio" ? "" : "bio")
+                      }
                     >
                       Bio
                     </button>
                   </h4>
                   <div
                     id="panelsStayOpen-collapseTwo"
-                    className="accordion-collapse collapse show"
-                    aria-labelledby="panelsStayOpen-coaching"
+                    className={`accordion-collapse collapse ${
+                      activeSection === "bio" ? "show" : ""
+                    }`}
+                    aria-labelledby="panelsStayOpen-bio"
                   >
                     <div className="accordion-body">
-                      {/* <p>{removeHtmlTags(trainerData?.bio)}</p> */}
-                      <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(trainerData?.bio) }} />
+                      {trainerData?.bio ? (
+                        <div
+                          dangerouslySetInnerHTML={{
+                            __html: sanitizeHtml(trainerData.bio),
+                          }}
+                        />
+                      ) : (
+                        <p className="mb-0">No bio provided yet.</p>
+                      )}
                     </div>
                   </div>
                 </div>
 
                 <div className="accordion-item mb-4" id="experience">
-                  <h4
-                    className="accordion-header"
-                    id="panelsStayOpen-experience"
-                  >
+                  <h4 className="accordion-header" id="panelsStayOpen-experience">
                     <button
-                      className="accordion-button"
+                      className={`accordion-button ${
+                        activeSection === "experience" ? "" : "collapsed"
+                      }`}
                       type="button"
-                      data-bs-toggle="collapse"
-                      data-bs-target="#panelsStayOpen-collapseThree"
-                      aria-expanded="true"
+                      aria-expanded={activeSection === "experience"}
                       aria-controls="panelsStayOpen-collapseThree"
+                      onClick={() =>
+                        setActiveSection(
+                          activeSection === "experience" ? "" : "experience"
+                        )
+                      }
                     >
                       Experience
                     </button>
                   </h4>
                   <div
                     id="panelsStayOpen-collapseThree"
-                    className="accordion-collapse collapse show"
+                    className={`accordion-collapse collapse ${
+                      activeSection === "experience" ? "show" : ""
+                    }`}
                     aria-labelledby="panelsStayOpen-experience"
                   >
                     <div className="accordion-body">
-                      <div className="text show-more-height">
-                        <p className="mb-4">
-                          {trainerData?.experience} years of experience coaching
-                          at various skill levels.
-                        </p>
-                      </div>
-                      {/* <div className="show-more d align-items-center primary-text">
-                        <i className="feather-plus-circle" />
-                        Show More
-                      </div> */}
+                      {trainerData?.experience ? (
+                        <div className="text show-more-height">
+                          <p className="mb-1">
+                            <strong className="experience-years">
+                              {trainerData.experience}+ Years
+                            </strong>{" "}
+                            of Experience
+                          </p>
+                          <p className="mb-0">
+                            Coaching players at various skill levels.
+                          </p>
+                        </div>
+                      ) : (
+                        <p className="mb-0">Experience details not provided yet.</p>
+                      )}
                     </div>
                   </div>
                 </div>
 
                 <div className="accordion-item mb-4" id="specialization">
-                  <h4
-                    className="accordion-header"
-                    id="panelsStayOpen-specialization"
-                  >
+                  <h4 className="accordion-header" id="panelsStayOpen-specialization">
                     <button
-                      className="accordion-button"
+                      className={`accordion-button ${
+                        activeSection === "specialization" ? "" : "collapsed"
+                      }`}
                       type="button"
-                      data-bs-toggle="collapse"
-                      data-bs-target="#panelsStayOpen-collapseFour"
-                      aria-expanded="true"
+                      aria-expanded={activeSection === "specialization"}
                       aria-controls="panelsStayOpen-collapseFour"
+                      onClick={() =>
+                        setActiveSection(
+                          activeSection === "specialization" ? "" : "specialization"
+                        )
+                      }
                     >
                       Specializations
                     </button>
                   </h4>
                   <div
                     id="panelsStayOpen-collapseFour"
-                    className="accordion-collapse collapse show"
+                    className={`accordion-collapse collapse ${
+                      activeSection === "specialization" ? "show" : ""
+                    }`}
                     aria-labelledby="panelsStayOpen-specialization"
                   >
                     <div className="accordion-body">
-                      <div className="text show-more-height">
-                        <p className="mb-0">
-                          {trainerData?.specializations &&
-                            trainerData?.specializations
-                              .map((area: any, index: number) =>
-                                index > 0 ? `, ${area}` : area
-                              )
-                              .join("")}
-                        </p>
-                      </div>
-                      {/* <div className="show-more d align-items-center primary-text">
-                        <i className="feather-plus-circle" />
-                        Show More
-                      </div> */}
+                      {specializationsList.length > 0 ? (
+                        <div className="d-flex flex-wrap">
+                          {specializationsList.map((spec, index) => (
+                            <span className="spec-chip" key={index}>
+                              <i className="feather-check-circle" />
+                              {spec}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="mb-0">No specializations listed yet.</p>
+                      )}
                     </div>
                   </div>
                 </div>
                 <div className="accordion-item mb-4" id="rules">
                   <h4 className="accordion-header" id="panelsStayOpen-rules">
                     <button
-                      className="accordion-button"
+                      className={`accordion-button ${
+                        activeSection === "rules" ? "" : "collapsed"
+                      }`}
                       type="button"
-                      data-bs-toggle="collapse"
-                      data-bs-target="#panelsStayOpen-collapseFive"
-                      aria-expanded="true"
+                      aria-expanded={activeSection === "rules"}
                       aria-controls="panelsStayOpen-collapseFive"
+                      onClick={() =>
+                        setActiveSection(activeSection === "rules" ? "" : "rules")
+                      }
                     >
                       Policies & Rules
                     </button>
                   </h4>
                   <div
                     id="panelsStayOpen-collapseFive"
-                    className="accordion-collapse collapse show"
+                    className={`accordion-collapse collapse ${
+                      activeSection === "rules" ? "show" : ""
+                    }`}
                     aria-labelledby="panelsStayOpen-rules"
                   >
                     <div className="accordion-body">
-                      <div className="text show-more-height">
-                        {/* <p className="mb-4">{removeHtmlTags(trainerData?.policiesAndRules)}</p> */}
-                        <div className="mb-4" dangerouslySetInnerHTML={{ __html: sanitizeHtml(trainerData?.policiesAndRules) }} />
-
-                      </div>
+                      {trainerData?.policiesAndRules ? (
+                        <div
+                          className="mb-4"
+                          dangerouslySetInnerHTML={{
+                            __html: sanitizeHtml(trainerData.policiesAndRules),
+                          }}
+                        />
+                      ) : (
+                        <p className="mb-0">No policies &amp; rules provided yet.</p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1109,15 +1324,26 @@ const PersonalTrainingDetails = (props: any) => {
               <div className="stickybar">
                 <div className="white-bg book-coach">
                   <h4 className="border-bottom">Book A Trainer</h4>
-                  <p>
-                    <strong>{trainerData?.first_name}</strong> Available Now{" "}
+                  <p className="d-flex align-items-center flex-wrap">
+                    <strong>{trainerName || "This Trainer"}</strong>
+                    <span className="availability-badge ms-2">
+                      <i className="feather-check" /> Available Now
+                    </span>
                   </p>
                   <div className="dull-bg text-center">
-                    <p className="mb-1">Start’s From</p>
-                    <h4 className="d-inline-block primary-text mb-0">
-                      ₹{trainerData?.price}
-                    </h4>
-                    <span>/hr</span>
+                    <p className="mb-1">Starts From</p>
+                    {formattedPrice ? (
+                      <>
+                        <h4 className="d-inline-block primary-text mb-0">
+                          {formattedPrice}
+                        </h4>
+                        <span>/hr</span>
+                      </>
+                    ) : (
+                      <h4 className="d-inline-block primary-text mb-0">
+                        Contact for Pricing
+                      </h4>
+                    )}
                   </div>
                   <div className="d-grid mt-3">
                     <button

@@ -85,7 +85,9 @@ const UpdateCoach = () => {
           category: coach.category,
           package: coach.package,
           price: coach.price,
-          specializations: coach.specializations.join(", "),
+          specializations: Array.isArray(coach.specializations)
+            ? coach.specializations.join(", ")
+            : coach.specializations || "",
           bio: coach.bio,
           profile_picture: coach.profile_picture,
           status: coach.status,
@@ -170,7 +172,7 @@ const UpdateCoach = () => {
   };
 
   const handlelocationChange = (selectedOption) => {
-    setInput({ ...input, location: selectedOption.value });
+    setInput({ ...input, near_by_location: selectedOption.value });
   };
 
   const fetchCategories = async () => {
@@ -357,16 +359,20 @@ const UpdateCoach = () => {
                 />
               </Form.Group>
             </Col>
-            <Col sm={3}>
+            <Col sm={6}>
               <Form.Group controlId="formSpecializations">
                 <Form.Label>Specializations</Form.Label>
                 <Form.Control
-                  type="text"
-                  placeholder="Enter specializations"
+                  as="textarea"
+                  rows={2}
+                  placeholder="e.g. Batting Technique, Fast Bowling, Fielding"
                   name="specializations"
                   value={input.specializations}
                   onChange={handleChange}
                 />
+                <Form.Text className="text-muted">
+                  Separate each specialization with a comma - they are shown as tags on the website.
+                </Form.Text>
               </Form.Group>
               <br></br>
             </Col>
