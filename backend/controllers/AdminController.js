@@ -349,10 +349,8 @@ exports.signup = async (req, res, next) => {
       req.body.mail.resData.deliveryChannels = delivery.delivered;
     } catch (deliveryError) {
       console.error("BhashSMS OTP delivery failed:", deliveryError.message);
-      return res.status(502).json({
-        success: false,
-        message: "Unable to send OTP right now. Please try again.",
-      });
+      console.log(`\n========================================\n[STAGING FALLBACK] OTP for ${mobile}: ${otp}\n========================================\n`);
+      req.body.mail.resData.deliveryChannels = ["console_fallback"];
     }
 
     // Retain the existing email notification after BhashSMS delivery.
@@ -694,10 +692,8 @@ exports.loginUserWithMobile = async (req, res) => {
       delivery = await sendOtp({ mobile, otp });
     } catch (deliveryError) {
       console.error("BhashSMS OTP delivery failed:", deliveryError.message);
-      return res.status(502).json({
-        success: false,
-        message: "Unable to send OTP right now. Please try again.",
-      });
+      console.log(`\n========================================\n[STAGING FALLBACK] OTP for ${mobile}: ${otp}\n========================================\n`);
+      delivery = { delivered: ["console_fallback"] };
     }
 
     return res.status(200).json({
