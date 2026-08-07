@@ -5,13 +5,13 @@ import axios from "axios"; // Import axios for API calls
 import { EditOutlined, DeleteOutlined, ReloadOutlined, LinkOutlined } from "@ant-design/icons";
 import { Tooltip } from "react-bootstrap";
 import Swal from "sweetalert2";
+import { API_URL, Image_URL } from "../utils/ApiUrl";
 
 export default function Blog() {
   const [blogs, setBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [blogsPerPage] = useState(10); // Number of blogs per page
-  const API_URL = "http://127.0.0.1:3037/api";
 
   // Fetch blogs from the API
   const fetchBlogs = async () => {
@@ -174,7 +174,7 @@ export default function Blog() {
                     <div>
                       {blog.status === "active" ? (
                         <a
-                          href={`http://127.0.0.1:3037/blog/${blog.slug_url}`}
+                          href={`${Image_URL}/blog/${blog.slug_url}`}
                           target="_blank"
                           style={{ color: '#ff5f15', textDecoration: 'none' }}
                         >

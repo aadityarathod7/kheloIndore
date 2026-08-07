@@ -6,7 +6,7 @@ import Swal from "sweetalert2";
 import React, { useState, useEffect, useRef } from "react";
 import Select from "react-select";
 import Multiselect from "multiselect-react-dropdown";
-import { API_URL } from "../utils/ApiUrl";
+import { API_URL, Image_URL } from "../utils/ApiUrl";
 import { useParams, useNavigate } from "react-router-dom";
 import { FiUpload, FiX } from "react-icons/fi";
 import ReactQuill from "react-quill";
@@ -1013,7 +1013,7 @@ const UpdateVenue = () => {
                         <img
                           src={
                             photo.src
-                              ? `http://127.0.0.1:3037${photo.src}`
+                              ? `${Image_URL}${photo.src}`
                               : photo instanceof File
                                 ? URL.createObjectURL(photo)
                                 : photo

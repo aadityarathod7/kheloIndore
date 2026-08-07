@@ -7,8 +7,9 @@ import { useNavigate } from "react-router-dom";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import slugify from "slugify"; // Import slugify
+import { API_URL } from "../utils/ApiUrl";
 
-const API_URL = "http://127.0.0.1:3037/api";
+
 
 export default function Createblog() {
   // State to store blog data (form payload)

@@ -6,9 +6,7 @@ import axios from "axios";
 import Swal from "sweetalert2";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
-import { Image_URL } from "../utils/ApiUrl";
-
-const API_URL = "http://127.0.0.1:3037/api";
+import { API_URL, Image_URL } from "../utils/ApiUrl";
 
 export default function EditBlog() {
   const [editBlogDetails, setEditBlogDetails] = useState({});
