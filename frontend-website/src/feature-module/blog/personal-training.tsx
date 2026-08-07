@@ -107,7 +107,6 @@ const fuzzyMatch = (text: string, query: string): boolean => {
 };
 
 const BlogList = () => {
-  const navigate = useNavigate();
   const routes = all_routes;
   const [selectedItems, setSelectedItems] = useState(Array(9).fill(false));
   const [trainer, setTrainer] = useState<Trainer[]>([]);
