@@ -401,6 +401,22 @@ route.get('/get/venue-coach-pt-booking/:userId',getVenueCoachPTBookingByUserId)
 route.get('/web/fetch-all-coaches', fetchAllCoaches);
 route.get("/web/venue/getVenue", getVenue)
 route.get("/web/PersonalTraining/fetchAll", fetchAllPersonalTrainersForWeb);
+//Chat (real-time messaging between users, coaches, trainers & venue owners)
+const {
+  startConversation,
+  getConversations,
+  getMessages,
+  sendMessage,
+  markRead,
+  getUnreadCount,
+} = require('../controllers/ChatController');
+route.post("/chat/start", auth, startConversation);
+route.get("/chat/conversations", auth, getConversations);
+route.get("/chat/conversation/:id/messages", auth, getMessages);
+route.post("/chat/conversation/:id/message", auth, sendMessage);
+route.post("/chat/conversation/:id/read", auth, markRead);
+route.get("/chat/unread-count", auth, getUnreadCount);
+
 //  booking verify by admin and super admin
 route.put("/verify/booking/status/:bookingId/:verifyStatus",auth,bookingVerifyStatusById)
 // route.put("/verify/booking/status",auth,bookingVerifyStatusById)

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
-import { Link, useLocation, useParams } from "react-router-dom";
+import { Link, useLocation, useParams, useNavigate } from "react-router-dom";
 import ImageWithBasePath from "../../core/data/img/ImageWithBasePath";
 import axios from "axios";
 import { API_URL, IMG_URL } from "../../ApiUrl";
@@ -651,6 +651,7 @@ const SORT_OPTIONS: DropdownOption[] = [
 ];
 
 export default function VenueByCategory() {
+  const navigate = useNavigate();
   const [venues, setVenues] = useState<Venues[]>([]);
   const [favorites, setFavorites] = useState<Record<string, boolean>>({});
 
@@ -721,6 +722,25 @@ export default function VenueByCategory() {
   }, []);
 
   const toggleFavorite = (venueId: string) => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      Swal.fire({
+        icon: "warning",
+        title: "Please Login First",
+        text: "You need to log in to add venues to your favourites.",
+        showCancelButton: true,
+        confirmButtonColor: "#22C55E",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Login Now",
+        cancelButtonText: "Cancel"
+      }).then((result) => {
+        if (result.isConfirmed) {
+          navigate("/login");
+        }
+      });
+      return;
+    }
+
     const nextStatus = !favorites[venueId];
     localStorage.setItem(`fav_venue_${venueId}`, String(nextStatus));
     setFavorites((prev) => ({

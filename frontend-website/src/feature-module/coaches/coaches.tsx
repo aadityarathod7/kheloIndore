@@ -218,6 +218,25 @@ const CoachesGrid = (_props: { id?: string }) => {
   }, [coaches]);
 
   const toggleFavorite = (coachId: string | number) => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      Swal.fire({
+        icon: "warning",
+        title: "Please Login First",
+        text: "You need to log in to add coaches to your favourites.",
+        showCancelButton: true,
+        confirmButtonColor: "#22C55E",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Login Now",
+        cancelButtonText: "Cancel"
+      }).then((result) => {
+        if (result.isConfirmed) {
+          navigate("/login");
+        }
+      });
+      return;
+    }
+
     const nextStatus = !favorites[coachId];
     localStorage.setItem(`fav_coach_${coachId}`, String(nextStatus));
     setFavorites((prev) => ({

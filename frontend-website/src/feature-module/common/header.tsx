@@ -15,6 +15,7 @@ import { CButton, CCloseButton } from "@coreui/react";
 import { API_URL, IMG_URL } from "../../ApiUrl";
 import Swal from "sweetalert2";
 import axios from "axios";
+import { fetchUnreadCount } from "../../utils/chat";
 
 interface tokenvalue {
   userID: string;
@@ -191,6 +192,7 @@ const Header = () => {
 
   interface JwtPayload {
     first_name: string;
+    role?: string;
     userID?: number;
     id?: number;
   }
@@ -360,12 +362,49 @@ const Header = () => {
     },
   ];
 
+  const mobileNavLinks = [
+    { label: "Home", icon: "fas fa-home", route: routes.home },
+    { label: "Sports Venues", icon: "fas fa-map-marker-alt", route: routes.blogListSidebarLeft },
+    { label: "Coaches", icon: "fas fa-user-ninja", route: routes.coachesGrid },
+    { label: "Trainers", icon: "fas fa-dumbbell", route: routes.blogList },
+    { label: "Events", icon: "fas fa-calendar-alt", route: routes.events },
+    { label: "Blogs", icon: "fas fa-newspaper", route: routes.blogGrid },
+    { label: "Contact Us", icon: "fas fa-envelope", route: routes.contactUs },
+  ];
+
   const profileStyle = {
     display: loginToken ? "block" : "none",
   };
 
   const [offcanvasOpen, setOffcanvasOpen] = useState(false);
+  const [mobileSearchQuery, setMobileSearchQuery] = useState("");
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [unreadChatCount, setUnreadChatCount] = useState(0);
+
+  // Live unread message badge on the header bell
+  useEffect(() => {
+    if (!loginToken) {
+      setUnreadChatCount(0);
+      return;
+    }
+    let cancelled = false;
+    const tick = () => {
+      fetchUnreadCount().then((n) => {
+        if (!cancelled) setUnreadChatCount(n);
+      });
+    };
+    tick();
+    const onUnread = (e: Event) => {
+      if (!cancelled) setUnreadChatCount((e as CustomEvent).detail || 0);
+    };
+    window.addEventListener("ki-chat-unread", onUnread);
+    const timer = window.setInterval(tick, 20000);
+    return () => {
+      cancelled = true;
+      window.removeEventListener("ki-chat-unread", onUnread);
+      window.clearInterval(timer);
+    };
+  }, [loginToken]);
 
   useEffect(() => {
     const handleDocumentClick = () => {
@@ -383,7 +422,37 @@ const Header = () => {
 
   const hideOffcanvas = () => {
     setOffcanvasOpen(false);
+    setMobileSearchQuery("");
   };
+
+  const handleMobileSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!mobileSearchQuery.trim()) return;
+    const q = mobileSearchQuery.trim();
+    setMobileSearchQuery("");
+    hideOffcanvas();
+    navigate(`/search?q=${encodeURIComponent(q)}`);
+  };
+
+  // Close the mobile drawer whenever the route changes
+  useEffect(() => {
+    setOffcanvasOpen(false);
+  }, [location.pathname]);
+
+  // Lock body scroll + close on Escape while the drawer is open
+  useEffect(() => {
+    if (!offcanvasOpen) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOffcanvasOpen(false);
+    };
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [offcanvasOpen]);
 
   return (
     <>
@@ -429,12 +498,16 @@ const Header = () => {
                 )}
                 {/* Menu */}
                 <button
-                  className="navbar-toggler mobile-menu-btn d-flex align-items-center justify-content-center p-2 border-0 bg-transparent"
+                  className={`navbar-toggler mobile-menu-btn d-flex align-items-center justify-content-center p-0 border-0 bg-transparent ${offcanvasOpen ? "open" : ""}`}
                   onClick={toggleOffcanvas}
                   type="button"
                   aria-label="Toggle navigation"
+                  aria-expanded={offcanvasOpen}
+                  aria-controls="mobileOffcanvas"
                 >
-                  <i className="fas fa-bars text-dark" style={{ fontSize: "20px" }} />
+                  <span className="hamburger-bar" />
+                  <span className="hamburger-bar" />
+                  <span className="hamburger-bar" />
                 </button>
               </div>
             </div>
@@ -688,6 +761,21 @@ const Header = () => {
               </Link> */}
             </li>
 
+            {loginToken && (
+              <li className="nav-item d-none d-lg-flex align-items-center me-1">
+                <Link
+                  to={routes.userChat}
+                  className="ki-header-bell d-inline-flex align-items-center justify-content-center position-relative"
+                  aria-label="Messages"
+                >
+                  <i className="feather-bell" />
+                  {unreadChatCount > 0 && (
+                    <span className="ki-header-bell-badge">{unreadChatCount > 9 ? "9+" : unreadChatCount}</span>
+                  )}
+                </Link>
+              </li>
+            )}
+
             <li className="nav-item">
               {loginToken ? (
                 <div className="user-profile-nav">
@@ -760,108 +848,132 @@ const Header = () => {
         </nav>
       </div>
     </header>
-    {/* Standalone Full-Height Mobile Offcanvas Drawer */}
+    {/* Modern Full-Height Mobile Offcanvas Drawer */}
     <div
-      className={`offcanvas offcanvas-start ${offcanvasOpen ? "show" : ""}`}
+      className={`ki-mob-drawer offcanvas offcanvas-start ${offcanvasOpen ? "show" : ""}`}
       tabIndex={-1}
-      id="offcanvasWithBothOptions"
+      id="mobileOffcanvas"
       style={{
         position: "fixed",
         top: 0,
         left: 0,
         bottom: 0,
-        width: "290px",
         height: "100vh",
-        backgroundColor: "#FFFFFF",
         zIndex: 1060,
         visibility: offcanvasOpen ? "visible" : "hidden",
         transform: offcanvasOpen ? "translateX(0)" : "translateX(-100%)",
-        transition: "transform 0.3s ease-in-out, visibility 0.3s ease-in-out",
-        boxShadow: "4px 0 24px rgba(0, 0, 0, 0.15)"
+        transition: "transform 0.32s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.32s ease",
+        boxShadow: "8px 0 32px rgba(15, 23, 42, 0.16)"
       }}
     >
-      <div className="offcanvas-header d-flex align-items-center justify-content-between p-3 border-bottom bg-white">
-        <div className="d-flex align-items-center gap-2">
-          <img src="/logo.png" alt="Logo" style={{ maxHeight: "36px" }} />
-          <span style={{ fontWeight: "700", color: "#0F172A", fontSize: "17px" }}>Khelo Indore</span>
+      {/* Brand header */}
+      <div className="ki-mob-drawer-header">
+        <div className="ki-mob-drawer-brand-row">
+          <img src="/logo.png" alt="Khelo Indore" className="ki-mob-drawer-logo" />
+          <div className="ki-mob-drawer-brand-text">
+            <span className="ki-mob-drawer-brand">Khelo Indore</span>
+            <span className="ki-mob-drawer-tagline">Play - Train - Compete</span>
+          </div>
         </div>
-        {loginToken && userData?.first_name && (
-          <span className="badge bg-success-light text-success px-2 py-1" style={{ fontSize: "12px" }}>
-            Hi, {userData.first_name}
-          </span>
-        )}
-        <button 
-          type="button" 
-          className="btn-close text-reset" 
-          onClick={hideOffcanvas}
-          aria-label="Close"
-        ></button>
+        <button type="button" className="ki-mob-drawer-close" onClick={hideOffcanvas} aria-label="Close menu">
+          <i className="fas fa-times" />
+        </button>
       </div>
-      <div className="offcanvas-body p-3 bg-white">
-        <ul className="list-unstyled m-0 p-0">
-          <li className="border-bottom py-2">
-            <Link to={routes.home} onClick={hideOffcanvas} className="d-flex align-items-center py-2 text-dark font-weight-bold text-decoration-none" style={{ fontSize: "15px" }}>
-              <i className="fas fa-home me-3 text-success" style={{ width: "20px", textAlign: "center" }} /> Home
-            </Link>
-          </li>
-          <li className="border-bottom py-2">
-            <Link to={routes.blogListSidebarLeft} onClick={hideOffcanvas} className="d-flex align-items-center py-2 text-dark font-weight-bold text-decoration-none" style={{ fontSize: "15px" }}>
-              <i className="fas fa-map-marker-alt me-3 text-success" style={{ width: "20px", textAlign: "center" }} /> Sports Venue
-            </Link>
-          </li>
-          <li className="border-bottom py-2">
-            <Link to={routes.coachesGrid} onClick={hideOffcanvas} className="d-flex align-items-center py-2 text-dark font-weight-bold text-decoration-none" style={{ fontSize: "15px" }}>
-              <i className="fas fa-user-ninja me-3 text-success" style={{ width: "20px", textAlign: "center" }} /> Coaches
-            </Link>
-          </li>
-          <li className="border-bottom py-2">
-            <Link to={routes.blogList} onClick={hideOffcanvas} className="d-flex align-items-center py-2 text-dark font-weight-bold text-decoration-none" style={{ fontSize: "15px" }}>
-              <i className="fas fa-dumbbell me-3 text-success" style={{ width: "20px", textAlign: "center" }} /> Trainers
-            </Link>
-          </li>
-          <li className="border-bottom py-2">
-            <Link to={routes.events} onClick={hideOffcanvas} className="d-flex align-items-center py-2 text-dark font-weight-bold text-decoration-none" style={{ fontSize: "15px" }}>
-              <i className="fas fa-calendar-alt me-3 text-success" style={{ width: "20px", textAlign: "center" }} /> Events
-            </Link>
-          </li>
-          <li className="border-bottom py-2">
-            <Link to={routes.contactUs} onClick={hideOffcanvas} className="d-flex align-items-center py-2 text-dark font-weight-bold text-decoration-none" style={{ fontSize: "15px" }}>
-              <i className="fas fa-envelope me-3 text-success" style={{ width: "20px", textAlign: "center" }} /> Contact Us
-            </Link>
-          </li>
-          <li className="border-bottom py-2">
-            <Link to={routes.blogGrid} onClick={hideOffcanvas} className="d-flex align-items-center py-2 text-dark font-weight-bold text-decoration-none" style={{ fontSize: "15px" }}>
-              <i className="fas fa-newspaper me-3 text-success" style={{ width: "20px", textAlign: "center" }} /> Blogs
-            </Link>
-          </li>
-        </ul>
 
-        <div className="mt-4 pt-3">
-          {!loginToken ? (
-            <div className="d-flex flex-column gap-2">
-              <Link to="/login" className="navbar-register-btn text-center py-2 px-3 w-100" onClick={hideOffcanvas}>
-                Login
+      <div className="ki-mob-drawer-body">
+        {/* Search */}
+        <form onSubmit={handleMobileSearch} className="ki-mob-search" role="search">
+          <i className="fas fa-search" />
+          <input
+            type="text"
+            value={mobileSearchQuery}
+            onChange={(e) => setMobileSearchQuery(e.target.value)}
+            placeholder="Search venues, coaches, trainers..."
+            aria-label="Search"
+          />
+        </form>
+
+        {/* Menu */}
+        <div className="ki-mob-section-label">Menu</div>
+        <nav className="ki-mob-nav" aria-label="Mobile menu">
+          {mobileNavLinks.map((item, idx) => {
+            const isActive =
+              item.route === "/"
+                ? location.pathname === "/"
+                : location.pathname.startsWith(item.route);
+            return (
+              <Link
+                key={idx}
+                to={item.route}
+                onClick={hideOffcanvas}
+                className={`ki-mob-nav-item ${isActive ? "active" : ""}`}
+              >
+                <span className="ki-mob-nav-icon">
+                  <i className={item.icon} />
+                </span>
+                <span className="ki-mob-nav-label">{item.label}</span>
+                <i className="fas fa-chevron-right ki-mob-nav-arrow" />
               </Link>
+            );
+          })}
+        </nav>
+
+        {/* Account */}
+        <div className="ki-mob-section-label">Account</div>
+        {loginToken ? (
+          <>
+            <div className="ki-mob-user">
+              <span className="ki-mob-avatar">
+                {(fullUserData?.first_name || userData?.first_name || "U")[0].toUpperCase()}
+              </span>
+              <div className="ki-mob-user-text">
+                <span className="ki-mob-user-name">
+                  {fullUserData?.first_name || userData?.first_name || "User"}
+                </span>
+                <span className="ki-mob-user-role">
+                  {userData?.role
+                    ? userData.role.charAt(0).toUpperCase() + userData.role.slice(1)
+                    : "Member"}
+                </span>
+              </div>
             </div>
-          ) : (
-            <div className="d-flex flex-column gap-2">
-              <Link to={routes.userBookings} className="btn btn-outline-success w-100 py-2 text-start px-3" onClick={hideOffcanvas}>
-                <i className="fas fa-calendar-alt me-2" /> My Bookings
-              </Link>
-              <Link to={routes.userProfile} className="btn btn-outline-primary w-100 py-2 text-start px-3" onClick={hideOffcanvas}>
-                <i className="fas fa-user-edit me-2" /> Edit Profile
-              </Link>
-              <button className="btn btn-outline-danger w-100 py-2 mt-1 text-start px-3" onClick={() => { removeToken(); hideOffcanvas(); }}>
-                <i className="fas fa-sign-out-alt me-2" /> Logout
-              </button>
-            </div>
-          )}
+            <Link to={routes.userBookings} onClick={hideOffcanvas} className="ki-mob-account-item">
+              <i className="fas fa-calendar-alt" /> My Bookings
+            </Link>
+            <Link to={routes.userProfile} onClick={hideOffcanvas} className="ki-mob-account-item">
+              <i className="fas fa-user-edit" /> Edit Profile
+            </Link>
+            <button
+              type="button"
+              className="ki-mob-account-item ki-mob-logout"
+              onClick={() => {
+                removeToken();
+                hideOffcanvas();
+                navigate(routes.home);
+              }}
+            >
+              <i className="fas fa-sign-out-alt" /> Logout
+            </button>
+          </>
+        ) : (
+          <div className="ki-mob-auth">
+            <Link to="/login" onClick={hideOffcanvas} className="ki-mob-btn-primary">
+              <i className="fas fa-sign-in-alt" /> Login
+            </Link>
+            <Link to={routes.register} onClick={hideOffcanvas} className="ki-mob-btn-outline">
+              <i className="fas fa-user-plus" /> Create Account
+            </Link>
+          </div>
+        )}
+
+        <div className="ki-mob-drawer-footer">
+          <i className="fas fa-map-marker-alt" /> Indore, Madhya Pradesh
         </div>
       </div>
     </div>
     {offcanvasOpen && (
       <div 
-        className="offcanvas-backdrop fade show"
+        className="offcanvas-backdrop ki-mob-backdrop fade show"
         onClick={hideOffcanvas}
         style={{ zIndex: 1050 }}
       />

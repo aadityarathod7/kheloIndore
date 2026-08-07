@@ -107,6 +107,7 @@ const fuzzyMatch = (text: string, query: string): boolean => {
 };
 
 const BlogList = () => {
+  const navigate = useNavigate();
   const routes = all_routes;
   const [selectedItems, setSelectedItems] = useState(Array(9).fill(false));
   const [trainer, setTrainer] = useState<Trainer[]>([]);
@@ -133,6 +134,25 @@ const BlogList = () => {
   }, [trainer]);
 
   const toggleFavorite = (trainerId: string | number) => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      Swal.fire({
+        icon: "warning",
+        title: "Please Login First",
+        text: "You need to log in to add trainers to your favourites.",
+        showCancelButton: true,
+        confirmButtonColor: "#22C55E",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Login Now",
+        cancelButtonText: "Cancel"
+      }).then((result) => {
+        if (result.isConfirmed) {
+          navigate("/login");
+        }
+      });
+      return;
+    }
+
     const nextStatus = !favorites[trainerId];
     localStorage.setItem(`fav_trainer_${trainerId}`, String(nextStatus));
     setFavorites((prev) => ({

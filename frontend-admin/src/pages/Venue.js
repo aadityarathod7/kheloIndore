@@ -1344,13 +1344,16 @@ const AddVenue = () => {
                   </Form.Label>
                   <Form.Control
                     type="text"
-                    placeholder="Enter Google Location"
+                    placeholder="e.g. https://maps.google.com/?q=22.7533,75.8937"
                     name="google_location"
                     isInvalid={!!errors.google_location}
                     value={formData.google_location}
                     onChange={handleChange}
                     className="add-venue-form-custom-class"
                   />
+                  <Form.Text className="text-muted" style={{ fontSize: "11px" }}>
+                    Paste full Google Maps URL (not share.google links). Open Maps → Right-click pin → Copy URL from browser address bar.
+                  </Form.Text>
                   <Form.Control.Feedback type="invalid">
                     {errors.google_location}
                   </Form.Control.Feedback>

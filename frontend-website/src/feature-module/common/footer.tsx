@@ -4,6 +4,7 @@ import AOS from "aos";
 import "aos/dist/aos.css";
 import ImageWithBasePath from "../../core/data/img/ImageWithBasePath";
 import { all_routes } from "../router/all_routes";
+import { fetchUnreadCount } from "../../utils/chat";
 
 const Footer = () => {
   const routes = all_routes;
@@ -14,6 +15,32 @@ const Footer = () => {
   // Re-evaluated on every route change so the bottom nav reflects login/logout
   // without requiring a full page reload.
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(Boolean(localStorage.getItem("token")));
+  const [unreadChatCount, setUnreadChatCount] = useState(0);
+
+  // Live unread message badge: initial fetch + poll + cross-tab event sync
+  useEffect(() => {
+    if (!isLoggedIn) {
+      setUnreadChatCount(0);
+      return;
+    }
+    let cancelled = false;
+    const tick = () => {
+      fetchUnreadCount().then((n) => {
+        if (!cancelled) setUnreadChatCount(n);
+      });
+    };
+    tick();
+    const onUnread = (e: Event) => {
+      if (!cancelled) setUnreadChatCount((e as CustomEvent).detail || 0);
+    };
+    window.addEventListener("ki-chat-unread", onUnread);
+    const timer = window.setInterval(tick, 15000);
+    return () => {
+      cancelled = true;
+      window.removeEventListener("ki-chat-unread", onUnread);
+      window.clearInterval(timer);
+    };
+  }, [isLoggedIn]);
 
   const sports = [
     "Cricket Turfs", "Badminton Courts", "Football Grounds", "Swimming Pools", "Pickleball Courts", "Tennis Courts",
@@ -201,7 +228,9 @@ const Footer = () => {
         >
           <span className="tab-icon">
             <i className="feather-bell" />
-            {isLoggedIn && <span className="notif-dot" />}
+            {isLoggedIn && unreadChatCount > 0 && (
+              <span className="notif-dot chat-unread-badge">{unreadChatCount > 9 ? "9+" : unreadChatCount}</span>
+            )}
           </span>
           <span className="tab-label">Messages</span>
         </Link>
@@ -257,6 +286,22 @@ const Footer = () => {
             border-radius: 50%;
             background: #EF4444;
             border: 2px solid #FFFFFF;
+            animation: notifPulse 2s ease-in-out infinite;
+          }
+          .mobile-bottom-nav .notif-dot.chat-unread-badge {
+            top: -4px;
+            right: -6px;
+            width: auto;
+            min-width: 18px;
+            height: 18px;
+            padding: 0 4px;
+            border-radius: 999px;
+            background: #EF4444;
+            color: #FFFFFF !important;
+            font-size: 10px;
+            font-weight: 700;
+            line-height: 18px;
+            text-align: center;
             animation: notifPulse 2s ease-in-out infinite;
           }
           @keyframes notifPulse {

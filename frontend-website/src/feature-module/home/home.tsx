@@ -1,10 +1,11 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import ImageWithBasePath from "../../core/data/img/ImageWithBasePath";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import Slider from "react-slick";
+import CountUp from "react-countup";
 import { all_routes } from "../router/all_routes";
 import { Dropdown } from "primereact/dropdown";
 import "../../../node_modules/bootstrap/dist/css/bootstrap.min.css";
@@ -512,6 +513,33 @@ const Home = () => {
   const visibleCoaches = coaches.slice(0, 6);
   const visibleTrainers = trainer.slice(0, 6);
 
+  // ─── Stats count-up trigger ───
+  // countup.js's built-in scroll-spy measures element positions against the
+  // initial layout, which breaks once hero images finish loading and shift the
+  // page (numbers stayed at 0+ until a second scroll). An IntersectionObserver
+  // tracks the live position, so the count-up fires reliably on first view.
+  const statsRef = useRef<HTMLDivElement>(null);
+  const [statsInView, setStatsInView] = useState(false);
+
+  useEffect(() => {
+    const el = statsRef.current;
+    if (!el || typeof IntersectionObserver === "undefined") {
+      setStatsInView(true);
+      return;
+    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          setStatsInView(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.3 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <>
       <section className="hero-section" style={{ backgroundImage: "linear-gradient(rgba(229, 236, 227, 0.92), rgba(229, 236, 227, 0.92)), url('/assets/img/bg/banner.jpg')" }}>
@@ -715,52 +743,60 @@ const Home = () => {
           </div>
 
           {/* Bottom Statistics counter bar */}
-          <div className="stats-counter-bar mt-5 p-4 mb-4">
-            <div className="row align-items-center text-center text-md-start">
-              <div className="col-lg-3 col-md-6 mb-3 mb-lg-0">
-                <div className="d-flex align-items-center gap-3 justify-content-center justify-content-md-start">
-                  <div className="d-flex align-items-center justify-content-center rounded-circle flex-shrink-0" style={{ width: "48px", height: "48px", background: "#EAF5EB", color: "#3CAB4B" }}>
-                    <i className="feather-users" style={{ fontSize: "20px" }} />
+          <div className="stats-counter-bar mt-5 p-3 p-md-4 mb-4" ref={statsRef}>
+            <div className="row align-items-center g-0">
+              <div className="col-6 col-lg-3 ki-stat-col">
+                <div className="ki-stat">
+                  <div className="ki-stat-icon">
+                    <i className="feather-users" />
                   </div>
-                  <div>
-                    <h3 className="mb-0">500+</h3>
-                    <p className="mb-0">Expert Coaches <span className="d-block">Qualified &amp; Verified</span></p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="col-lg-3 col-md-6 mb-3 mb-lg-0">
-                <div className="d-flex align-items-center gap-3 justify-content-center justify-content-md-start ms-md-4">
-                  <div className="d-flex align-items-center justify-content-center rounded-circle flex-shrink-0" style={{ width: "48px", height: "48px", background: "#EAF5EB", color: "#3CAB4B" }}>
-                    <i className="feather-map-pin" style={{ fontSize: "20px" }} />
-                  </div>
-                  <div>
-                    <h3 className="mb-0">50+</h3>
-                    <p className="mb-0">Premium Venues <span className="d-block">Across Indore</span></p>
+                  <div className="ki-stat-info">
+                    <h3 className="mb-0 ki-stat-num">
+                      {statsInView ? <CountUp end={500} suffix="+" duration={2.2} /> : "500+"}
+                    </h3>
+                    <p className="mb-0">Expert Coaches <span>Qualified &amp; Verified</span></p>
                   </div>
                 </div>
               </div>
 
-              <div className="col-lg-3 col-md-6 mb-3 mb-md-0">
-                <div className="d-flex align-items-center gap-3 justify-content-center justify-content-md-start ms-md-4">
-                  <div className="d-flex align-items-center justify-content-center rounded-circle flex-shrink-0" style={{ width: "48px", height: "48px", background: "#EAF5EB", color: "#3CAB4B" }}>
-                    <i className="feather-user-check" style={{ fontSize: "20px" }} />
+              <div className="col-6 col-lg-3 ki-stat-col">
+                <div className="ki-stat">
+                  <div className="ki-stat-icon">
+                    <i className="feather-map-pin" />
                   </div>
-                  <div>
-                    <h3 className="mb-0">10K+</h3>
-                    <p className="mb-0">Happy Athletes <span className="d-block">Training With Us</span></p>
+                  <div className="ki-stat-info">
+                    <h3 className="mb-0 ki-stat-num">
+                      {statsInView ? <CountUp end={50} suffix="+" duration={2.2} /> : "50+"}
+                    </h3>
+                    <p className="mb-0">Premium Venues <span>Across Indore</span></p>
                   </div>
                 </div>
               </div>
 
-              <div className="col-lg-3 col-md-6">
-                <div className="d-flex align-items-center gap-3 justify-content-center justify-content-md-start ms-md-4">
-                  <div className="d-flex align-items-center justify-content-center rounded-circle flex-shrink-0" style={{ width: "48px", height: "48px", background: "#EAF5EB", color: "#3CAB4B" }}>
-                    <i className="feather-star" style={{ fontSize: "20px" }} />
+              <div className="col-6 col-lg-3 ki-stat-col">
+                <div className="ki-stat">
+                  <div className="ki-stat-icon">
+                    <i className="feather-user-check" />
                   </div>
-                  <div>
-                    <h3 className="mb-0">4.8/5</h3>
-                    <p className="mb-0">User Rating <span className="d-block">Top Rated Platform</span></p>
+                  <div className="ki-stat-info">
+                    <h3 className="mb-0 ki-stat-num">
+                      {statsInView ? <CountUp end={10} suffix="K+" duration={2.2} /> : "10K+"}
+                    </h3>
+                    <p className="mb-0">Happy Athletes <span>Training With Us</span></p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="col-6 col-lg-3 ki-stat-col">
+                <div className="ki-stat">
+                  <div className="ki-stat-icon">
+                    <i className="feather-star" />
+                  </div>
+                  <div className="ki-stat-info">
+                    <h3 className="mb-0 ki-stat-num">
+                      {statsInView ? <CountUp end={4.8} decimals={1} suffix="/5" duration={2.2} /> : "4.8/5"}
+                    </h3>
+                    <p className="mb-0">User Rating <span>Top Rated Platform</span></p>
                   </div>
                 </div>
               </div>

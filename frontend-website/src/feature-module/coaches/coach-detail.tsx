@@ -312,6 +312,16 @@ const CoachDetail = (props: any) => {
     }
   }
 
+  // Opens (or starts) a real chat with the coach
+  const handleChat = (Id: any) => {
+    const token = localStorage.getItem('token')
+    if (token) {
+      navigate(`/user/user-chat?peerType=Coach&peerId=${Id}`);
+    } else {
+      navigate("/login", { state: { URL: location.pathname } })
+    }
+  }
+
   return (
     <div className="venue-coach-details coach-detail top-margin" style={{ backgroundColor: "#F8FAFC" }}>
       {/* Hero Section */}
@@ -1412,13 +1422,21 @@ const CoachDetail = (props: any) => {
                       </h4>
                     )}
                   </div>
-                  <div className="d-grid mt-3">
+                  <div className="d-grid mt-3 gap-2">
                     <button
                       onClick={() => checkToken(id)}
                       className="btn btn-secondary d-inline-flex justify-content-center align-items-center"
                     >
                       <i className="feather-calendar" />
                       Book Now
+                    </button>
+                    <button
+                      onClick={() => handleChat(id)}
+                      className="btn d-inline-flex justify-content-center align-items-center"
+                      style={{ background: "linear-gradient(135deg, #22C55E 0%, #16A34A 100%)", color: "#FFFFFF", fontWeight: "600", border: "none", borderRadius: "8px" }}
+                    >
+                      <i className="feather-message-circle" />
+                      Message Coach
                     </button>
                   </div>
                 </div>

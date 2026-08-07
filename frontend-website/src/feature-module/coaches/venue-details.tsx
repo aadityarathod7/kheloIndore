@@ -146,6 +146,25 @@ const VenueDetails = () => {
   const [shareCopied, setShareCopied] = useState(false);
 
   const handleToggleFavourite = () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      Swal.fire({
+        icon: "warning",
+        title: "Please Login First",
+        text: "You need to log in to add venues to your favourites.",
+        showCancelButton: true,
+        confirmButtonColor: "#22C55E",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Login Now",
+        cancelButtonText: "Cancel"
+      }).then((result) => {
+        if (result.isConfirmed) {
+          navigate("/login");
+        }
+      });
+      return;
+    }
+
     const nextStatus = !isFavourite;
     setIsFavourite(nextStatus);
     if (id) {
