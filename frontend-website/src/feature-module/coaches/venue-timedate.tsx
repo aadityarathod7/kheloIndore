@@ -162,6 +162,9 @@ const VenueTimeDate = () => {
       );
       if (selectedData) {
         setSelectedDateId(selectedData.id);
+      } else {
+        setSelectedDateId(null);
+        setSlots([]);
       }
     }
   };
@@ -187,23 +190,6 @@ const VenueTimeDate = () => {
     }
   };
 
-const ALL_STANDARD_SLOTS = (() => {
-  const slots: { startTime: string; endTime: string }[] = [];
-  // Generate 30-minute intervals from 06:00 AM to 11:30 PM
-  for (let totalMins = 6 * 60; totalMins < 23 * 60 + 30; totalMins += 30) {
-    const endMins = totalMins + 30;
-    const fmt = (m: number) => {
-      const h = Math.floor(m / 60);
-      const min = m % 60;
-      const ampm = h < 12 ? "AM" : "PM";
-      const displayH = h === 0 ? 12 : h > 12 ? h - 12 : h;
-      return `${String(displayH).padStart(2, "0")}:${String(min).padStart(2, "0")} ${ampm}`;
-    };
-    slots.push({ startTime: fmt(totalMins), endTime: fmt(endMins) });
-  }
-  return slots;
-})();
-
   const [selectedSlotTimes, setSelectedSlotTimes] = useState<string[]>([]);
 
   const handleSlotClick = (startTime: string) => {
@@ -215,23 +201,18 @@ const ALL_STANDARD_SLOTS = (() => {
   };
 
   const displaySlots = useMemo(() => {
-    return ALL_STANDARD_SLOTS.map((stdSlot) => {
-      const foundApiSlot = slots?.find((s: any) => {
-        const apiTime = (s.startTime || s.time || "").toLowerCase().trim();
-        const stdTime = stdSlot.startTime.toLowerCase().trim();
-        return apiTime === stdTime || apiTime.replace(/^0/, "") === stdTime.replace(/^0/, "");
-      });
-
-      const isChecked = selectedSlotTimes.includes(stdSlot.startTime);
-      const isBooked = foundApiSlot ? Boolean(foundApiSlot.isBooked) : false;
-      const price = foundApiSlot?.price || venueData?.price_per_hr || 750;
+    return (slots || []).map((apiSlot: any) => {
+      const isChecked = selectedSlotTimes.includes(apiSlot.startTime);
+      const isBooked = Boolean(apiSlot.isBooked);
+      const price = apiSlot.price || venueData?.price_per_hr || 750;
 
       return {
-        ...stdSlot,
+        startTime: apiSlot.startTime,
+        endTime: apiSlot.endTime,
         price,
         isBooked,
         isChecked,
-        slot_id: foundApiSlot?.slot_id || foundApiSlot?._id,
+        slot_id: apiSlot.slot_id || apiSlot._id,
       };
     });
   }, [slots, selectedSlotTimes, venueData]);
@@ -558,34 +539,40 @@ const ALL_STANDARD_SLOTS = (() => {
 
                 {/* Time Slots Grid (6 columns on desktop) */}
                 <div className="row g-2 mb-3">
-                  {displaySlots.map((slot, idx) => {
-                    const isChecked = slot.isChecked;
-                    const isBooked = slot.isBooked;
+                  {displaySlots.length > 0 ? (
+                    displaySlots.map((slot, idx) => {
+                      const isChecked = slot.isChecked;
+                      const isBooked = slot.isBooked;
 
-                    return (
-                      <div key={idx} className="col-xl-2 col-lg-3 col-md-4 col-6">
-                        <button
-                          type="button"
-                          disabled={isBooked}
-                          onClick={() => handleSlotClick(slot.startTime)}
-                          className="btn w-100 py-2 px-1 text-center transition-all"
-                          style={{
-                            height: "38px",
-                            fontSize: "11px",
-                            fontWeight: "600",
-                            borderRadius: "10px",
-                            backgroundColor: isChecked ? "#22C55E" : isBooked ? "#F1F5F9" : "#FFFFFF",
-                            color: isChecked ? "#FFFFFF" : isBooked ? "#CBD5E1" : "#15803D",
-                            border: isChecked ? "none" : isBooked ? "1px solid #E2E8F0" : "1px solid #BBF7D0",
-                            cursor: isBooked ? "not-allowed" : "pointer",
-                            boxShadow: isChecked ? "0 4px 12px rgba(34,197,94,0.3)" : "none"
-                          }}
-                        >
-                          {formatTimeDisplay(slot.startTime, timeFormat)}
-                        </button>
-                      </div>
-                    );
-                  })}
+                      return (
+                        <div key={idx} className="col-xl-2 col-lg-3 col-md-4 col-6">
+                          <button
+                            type="button"
+                            disabled={isBooked}
+                            onClick={() => handleSlotClick(slot.startTime)}
+                            className="btn w-100 py-2 px-1 text-center transition-all"
+                            style={{
+                              height: "38px",
+                              fontSize: "11px",
+                              fontWeight: "600",
+                              borderRadius: "10px",
+                              backgroundColor: isChecked ? "#22C55E" : isBooked ? "#F1F5F9" : "#FFFFFF",
+                              color: isChecked ? "#FFFFFF" : isBooked ? "#CBD5E1" : "#15803D",
+                              border: isChecked ? "none" : isBooked ? "1px solid #E2E8F0" : "1px solid #BBF7D0",
+                              cursor: isBooked ? "not-allowed" : "pointer",
+                              boxShadow: isChecked ? "0 4px 12px rgba(34,197,94,0.3)" : "none"
+                            }}
+                          >
+                            {formatTimeDisplay(slot.startTime, timeFormat)}
+                          </button>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <div className="col-12 text-center py-4 text-muted" style={{ fontWeight: "500" }}>
+                      <i className="feather-calendar me-1"></i> No slots available for this date.
+                    </div>
+                  )}
                 </div>
 
                 {/* Info Footer Banner */}
