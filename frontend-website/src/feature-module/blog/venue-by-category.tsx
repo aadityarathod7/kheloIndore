@@ -907,7 +907,7 @@ export default function VenueByCategory() {
           {/* Two-Column Layout: Left Filters | Right Cards */}
           <div className="row g-4 align-items-start">
 
-            {/* LEFT COLUMN â€” Sticky Filter Sidebar */}
+            {/* LEFT COLUMN - Sticky Filter Sidebar */}
             <div className="col-lg-3 col-md-4 d-none d-md-block">
               <div className="bg-white rounded-4 p-4 shadow-sm border" style={{ borderColor: "#E2E8E3", position: "sticky", top: "100px" }}>
                 {/* Filter Header */}
@@ -1000,20 +1000,20 @@ export default function VenueByCategory() {
                     <p className="text-muted mb-2" style={{ fontSize: "11px", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.6px" }}>Active Filters</p>
                     <div className="d-flex flex-wrap gap-1">
                       {locationName && (
-                        <span className="badge rounded-pill" style={{ backgroundColor: "#F0FDF4", color: "#15803D", border: "1px solid #BBF7D0", fontSize: "11px", fontWeight: "600", padding: "4px 8px" }}>
-                          ðŸ“ {locationName}
+                        <span className="badge rounded-pill d-inline-flex align-items-center" style={{ backgroundColor: "#F0FDF4", color: "#15803D", border: "1px solid #BBF7D0", fontSize: "11px", fontWeight: "600", padding: "4px 8px" }}>
+                          <i className="feather-map-pin me-1" /> {locationName}
                           <button type="button" className="btn-close btn-close-sm ms-1" style={{ fontSize: "8px" }} onClick={() => setLocationName("")} aria-label="Remove" />
                         </span>
                       )}
                       {selectedDate && (
-                        <span className="badge rounded-pill" style={{ backgroundColor: "#F0FDF4", color: "#15803D", border: "1px solid #BBF7D0", fontSize: "11px", fontWeight: "600", padding: "4px 8px" }}>
-                          ðŸ“… {selectedDate}
+                        <span className="badge rounded-pill d-inline-flex align-items-center" style={{ backgroundColor: "#F0FDF4", color: "#15803D", border: "1px solid #BBF7D0", fontSize: "11px", fontWeight: "600", padding: "4px 8px" }}>
+                          <i className="feather-calendar me-1" /> {selectedDate}
                           <button type="button" className="btn-close btn-close-sm ms-1" style={{ fontSize: "8px" }} onClick={() => setSelectedDate("")} aria-label="Remove" />
                         </span>
                       )}
                       {selectedAmenities.map((a) => (
-                        <span key={a} className="badge rounded-pill" style={{ backgroundColor: "#F0FDF4", color: "#15803D", border: "1px solid #BBF7D0", fontSize: "11px", fontWeight: "600", padding: "4px 8px" }}>
-                          âœ… {a}
+                        <span key={a} className="badge rounded-pill d-inline-flex align-items-center" style={{ backgroundColor: "#F0FDF4", color: "#15803D", border: "1px solid #BBF7D0", fontSize: "11px", fontWeight: "600", padding: "4px 8px" }}>
+                          <i className="feather-check-circle me-1" /> {a}
                           <button type="button" className="btn-close btn-close-sm ms-1" style={{ fontSize: "8px" }} onClick={() => setSelectedAmenities(selectedAmenities.filter((x) => x !== a))} aria-label="Remove" />
                         </span>
                       ))}
@@ -1023,7 +1023,7 @@ export default function VenueByCategory() {
               </div>
             </div>
 
-            {/* RIGHT COLUMN â€” Venue Cards Grid */}
+            {/* RIGHT COLUMN - Venue Cards Grid */}
             <div className="col-lg-9 col-md-8">
 
               {/* Mobile Filter Row (visible only on small screens) */}
@@ -1128,10 +1128,10 @@ export default function VenueByCategory() {
                               target="_blank"
                               rel="noopener noreferrer"
                               title="Open Google Maps"
-                              className="text-success ms-1 flex-shrink-0"
+                              className="text-success ms-1 flex-shrink-0 d-inline-flex align-items-center"
                               style={{ fontSize: "10px", fontWeight: "600" }}
                             >
-                              Map ðŸ—ºï¸
+                              Map <i className="feather-map-pin ms-0.5" style={{ fontSize: "10px" }} />
                             </a>
                           )}
                         </div>
@@ -1139,7 +1139,7 @@ export default function VenueByCategory() {
                         {/* Price & Book Button */}
                         <div className="d-flex align-items-center justify-content-between pt-1.5" style={{ borderTop: "1px solid #F1F5F9" }}>
                           <span style={{ fontSize: "13px", fontWeight: "800", color: "#17222D" }}>
-                            â‚¹{venue.price_per_hr || "750"} <span style={{ fontSize: "9px", fontWeight: "normal", color: "#606D76" }}>/hr</span>
+                            {"\u20B9"}{venue.price_per_hr || "750"} <span style={{ fontSize: "9px", fontWeight: "normal", color: "#606D76" }}>/hr</span>
                           </span>
                           <Link 
                             to={`/sports-venue/${venue.vendor_type ? venue.vendor_type.replace(/\s+/g, "-").toLowerCase() : "venue"}/${venue.name.replace(/\s+/g, "-").toLowerCase()}/${venue._id}`}
