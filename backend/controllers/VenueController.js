@@ -10,6 +10,44 @@ const mail = require("../helper/sendMail");
 
 const mailContent = require("../middlewares/mail-content");
 require('dotenv').config();
+
+const resolveRedirect = (url) => {
+  return new Promise((resolve) => {
+    if (!url || typeof url !== 'string') {
+      return resolve(url);
+    }
+    
+    const isShortUrl = url.includes("maps.app.goo.gl") || url.includes("share.google");
+    if (!isShortUrl) {
+      return resolve(url);
+    }
+
+    const https = require('https');
+    
+    const follow = (currentUrl, depth = 0) => {
+      if (depth > 5) {
+        return resolve(currentUrl);
+      }
+      
+      try {
+        https.get(currentUrl, { headers: { 'User-Agent': 'Mozilla/5.0' } }, (res) => {
+          if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+            follow(res.headers.location, depth + 1);
+          } else {
+            resolve(currentUrl);
+          }
+        }).on('error', () => {
+          resolve(currentUrl);
+        });
+      } catch (err) {
+        resolve(currentUrl);
+      }
+    };
+
+    follow(url);
+  });
+};
+
 // Save data to the database
 
 
@@ -92,6 +130,10 @@ exports.updateVenue = async (req, res) => {
   try {
     const id = req.params.id;
     const update = req.body;
+
+    if (update.google_location) {
+      update.google_location = await resolveRedirect(update.google_location);
+    }
 
     // Check if the name is provided and not empty
     if (!update.name || update.name.trim() === "") {
@@ -238,6 +280,8 @@ exports.addVenue = async (req, res) => {
 
     const data = { vendor_data: transformedVendorDetails };
 
+    const resolvedGoogleLocation = google_location ? await resolveRedirect(google_location) : google_location;
+
     // Create new venue
     const newVenueDB = await Venue1.create({
       name,
@@ -250,7 +294,7 @@ exports.addVenue = async (req, res) => {
       vendor_id,
       amenities,
       near_by_location,
-      google_location,
+      google_location: resolvedGoogleLocation,
       googleCoordinates,
       emailId,
       facilities,

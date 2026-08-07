@@ -50,6 +50,45 @@ const getVenueImgUrl = (images: any, index = 0): string => {
   return `${IMG_URL}${str}`;
 };
 
+const getMinimapSrc = (venueData: any) => {
+  const defaultQuery = ((venueData?.address ? `${venueData.address}, ` : "") +
+    (venueData?.city || "Indore") + ", " +
+    (venueData?.state || "Madhya Pradesh"));
+
+  if (!venueData?.google_location) {
+    return `https://maps.google.com/maps?q=${encodeURIComponent(defaultQuery)}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
+  }
+
+  const url = venueData.google_location;
+
+  // Case 1: Coordinates in query parameter (e.g. ?q=22.7533,75.8937)
+  const qMatch = url.match(/[?&](q|query)=([0-9.-]+),([0-9.-]+)/);
+  if (qMatch) {
+    return `https://maps.google.com/maps?q=${qMatch[2]},${qMatch[3]}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
+  }
+
+  // Case 2: Coordinates in path after @ (e.g. /@22.7533,75.8937)
+  const atMatch = url.match(/@([0-9.-]+),([0-9.-]+)/);
+  if (atMatch) {
+    return `https://maps.google.com/maps?q=${atMatch[1]},${atMatch[2]}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
+  }
+
+  // Case 3: Place title in path (e.g. /place/OneHope+Cricket+Turf)
+  const placeMatch = url.match(/\/place\/([^/]+)/);
+  if (placeMatch) {
+    return `https://maps.google.com/maps?q=${placeMatch[1]}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
+  }
+
+  // Case 4: Search query in path (e.g. /search/OneHope+Cricket+Turf)
+  const searchMatch = url.match(/\/search\/([^/]+)/);
+  if (searchMatch) {
+    return `https://maps.google.com/maps?q=${searchMatch[1]}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
+  }
+
+  // Fallback to address
+  return `https://maps.google.com/maps?q=${encodeURIComponent(defaultQuery)}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
+};
+
 const VenueDetails = () => {
   const routes = all_routes;
   const [selectedItems, setSelectedItems] = useState(Array(4).fill(false));
@@ -219,6 +258,28 @@ const VenueDetails = () => {
 
   }
 
+  // Opens (or starts) a real chat with the venue owner
+  const handleMessageOwner = async (e: any) => {
+    e.preventDefault();
+    const token = localStorage.getItem("token");
+    if (!token) {
+      Swal.fire({
+        title: "Please Log In",
+        text: "Log in to send a message to the venue owner.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "OK",
+        cancelButtonText: "Cancel",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          navigate("/login", { state: { URL: location.pathname } });
+        }
+      });
+      return;
+    }
+    navigate(`/user/user-chat?peerType=Venue&peerId=${id}`);
+  };
+
 
   return (
     <>
@@ -312,6 +373,59 @@ const VenueDetails = () => {
             }
             .khelo-pro-wrapper {
               padding-top: 24px !important;
+            }
+            .venue-details-bar-text {
+              color: #475569 !important;
+              font-weight: 500 !important;
+              font-size: 13px !important;
+            }
+            .amenity-pill span {
+              color: #111827 !important;
+              font-size: 12px !important;
+              font-weight: 600 !important;
+            }
+            .amenity-pill i {
+              color: #16A34A !important;
+              font-size: 13px !important;
+            }
+            .amenity-pill:hover span,
+            .amenity-pill:hover i {
+              color: #FFFFFF !important;
+            }
+            .seg-tab-btn {
+              color: #64748B !important;
+              font-size: 12px !important;
+              font-weight: 600 !important;
+            }
+            .seg-tab-btn.active {
+              color: #16A34A !important;
+            }
+            .seg-tab-btn i {
+              color: inherit !important;
+              font-size: 11px !important;
+            }
+            .about-venue-box,
+            .about-venue-box p,
+            .about-venue-box span,
+            .about-venue-box div,
+            .body-text,
+            .body-text p,
+            .body-text span,
+            .body-text div,
+            .body-text li {
+              color: #334155 !important;
+            }
+            .pro-amenity-card span {
+              color: #111827 !important;
+            }
+            .pro-spec-card .spec-label {
+              color: #64748B !important;
+            }
+            .pro-spec-card .spec-val {
+              color: #0F172A !important;
+            }
+            .pro-spec-card .spec-unit {
+              color: #94A3B8 !important;
             }
           `}} />
 
@@ -443,37 +557,45 @@ const VenueDetails = () => {
                       {venueData?.name || (name ? name.replaceAll('-', ' ') : "Sports Venue")}
                     </h1>
                     <div className="d-flex flex-wrap align-items-center gap-3" style={{ fontSize: "13px" }}>
-                      <span className="d-inline-flex align-items-center" style={{ color: "#475569", fontWeight: "500" }}>
-                        <i className="fas fa-star text-warning me-1.5" /> 4.8 (128 Reviews)
+                      <span className="venue-details-bar-text d-inline-flex align-items-center">
+                        <i className="fas fa-star text-warning me-1" style={{ fontSize: "13px" }} /> 4.8 (128 Reviews)
                       </span>
-                      <span className="d-inline-flex align-items-center" style={{ color: "#475569", fontWeight: "500" }}>
-                        <i className="fas fa-map-marker-alt text-success me-1.5" /> {venueData?.address || (venueData?.city ? `${venueData.city}, Madhya Pradesh` : "Indore, Madhya Pradesh")}
+                      <span className="venue-details-bar-text d-inline-flex align-items-center">
+                        <i className="fas fa-map-marker-alt text-success me-1" style={{ fontSize: "13px" }} /> {venueData?.address || (venueData?.city ? `${venueData.city}, Madhya Pradesh` : "Indore, Madhya Pradesh")}
                       </span>
                     </div>
                   </div>
-                  {venueData?.google_location && (
-                    <a
-                      href={venueData.google_location.startsWith("http") ? venueData.google_location : `https://${venueData.google_location}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="btn btn-success d-inline-flex align-items-center gap-2 px-3 py-2 rounded-pill font-weight-bold"
-                      style={{ fontSize: "13px", backgroundColor: "#22C55E", borderColor: "#22C55E" }}
-                    >
-                      <i className="feather-navigation" /> Directions (Google Maps)
-                    </a>
-                  )}
+                  <a
+                    href={
+                      venueData?.google_location
+                        ? (venueData.google_location.startsWith("http") ? venueData.google_location : `https://${venueData.google_location}`)
+                        : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                            (venueData?.address ? `${venueData.address}, ` : "") +
+                            (venueData?.city || "Indore") + ", " +
+                            (venueData?.state || "Madhya Pradesh")
+                          )}`
+                    }
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn btn-success d-inline-flex align-items-center gap-2 px-3 py-2 rounded-pill font-weight-bold"
+                    style={{ fontSize: "13px", backgroundColor: "#22C55E", borderColor: "#22C55E" }}
+                  >
+                    <i className="feather-navigation" /> Directions (Google Maps)
+                  </a>
                 </div>
 
-                {/* D. Top Amenities Section (Positioned above map & below details bar) */}
-                <div className="pro-card mb-4">
-                  <div className="d-flex align-items-center justify-content-between gap-3 mb-3">
+                {/* D. Top Amenities Section - Premium Redesign */}
+                <div className="pro-card mb-4" style={{ padding: "20px" }}>
+                  <div className="d-flex align-items-start justify-content-between mb-4">
                     <div>
-                      <h3 className="card-title-head mb-1" style={{ color: "#111827", fontFamily: "Space Grotesk, sans-serif" }}>Amenities</h3>
-                      <p className="mb-0 text-muted" style={{ fontSize: "13px" }}>Everything you need for a comfortable game.</p>
+                      <div className="d-flex align-items-center gap-2 mb-1">
+                        <span className="badge rounded-pill px-2 py-1" style={{ background: "linear-gradient(135deg, #22C55E, #16A34A)", color: "#fff", fontSize: "10px", fontWeight: "700", letterSpacing: "0.5px", textTransform: "uppercase" }}>
+                          <i className="fas fa-concierge-bell me-1" style={{ fontSize: "9px" }} />Amenities
+                        </span>
+                      </div>
+                      <h3 className="card-title-head mb-0" style={{ color: "#111827", fontFamily: "Space Grotesk, sans-serif", fontSize: "18px" }}>What&apos;s Available</h3>
                     </div>
-                    <div className="d-flex align-items-center justify-content-center rounded-circle flex-shrink-0" style={{ width: "58px", height: "58px", background: "#EAF8ED", border: "1px solid #CDEFD5" }}>
-                      <ImageWithBasePath src="/assets/img/icons/amenities.svg" alt="Venue amenities" style={{ width: "32px", height: "32px", objectFit: "contain" }} />
-                    </div>
+                    <span className="venue-details-bar-text" style={{ fontSize: "12px" }}>{Array.isArray(venueData?.amenities) ? venueData.amenities.length : 0} amenities</span>
                   </div>
                   {(() => {
                     const amenityIconMap: Record<string, string> = {
@@ -483,6 +605,7 @@ const VenueDetails = () => {
                       floodlight: "fas fa-lightbulb",
                       floodlights: "fas fa-lightbulb",
                       "flood lights": "fas fa-lightbulb",
+                      lighting: "fas fa-lightbulb",
                       washroom: "fas fa-shower",
                       washrooms: "fas fa-shower",
                       restroom: "fas fa-restroom",
@@ -500,13 +623,18 @@ const VenueDetails = () => {
                       cafeteria: "fas fa-coffee",
                       canteen: "fas fa-utensils",
                       "air conditioning": "fas fa-snowflake",
+                      "air conditon": "fas fa-snowflake",
                       ac: "fas fa-snowflake",
                       cctv: "fas fa-video",
                       security: "fas fa-shield-alt",
                       "equipment rental": "fas fa-baseball-ball",
                       equipment: "fas fa-baseball-ball",
+                      "equipment storage": "fas fa-boxes",
+                      "sound system": "fas fa-volume-up",
                       coaching: "fas fa-graduation-cap",
                       "pro shop": "fas fa-shopping-bag",
+                      shower: "fas fa-shower",
+                      "waiting lounge": "fas fa-couch",
                     };
                     const getIcon = (name: string) => {
                       const key = name.toLowerCase().trim();
@@ -517,19 +645,44 @@ const VenueDetails = () => {
                       : [];
                     if (amenityList.length === 0) {
                       return (
-                        <p className="text-muted small">No amenities listed for this venue.</p>
+                        <p className="venue-details-bar-text" style={{ fontSize: "13px" }}>No amenities listed for this venue.</p>
                       );
                     }
                     return (
-                      <div className="row row-cols-md-3 row-cols-2 g-3">
+                      <div className="d-flex flex-wrap gap-2">
                         {amenityList.map((amenity: string, idx: number) => (
-                          <div className="col" key={idx}>
-                            <div className="pro-amenity-card d-flex align-items-center gap-2.5 p-2 rounded-3 border" style={{ borderColor: "#E2E8F0", backgroundColor: "#F8FAFC", height: "100%" }}>
-                              <div className="d-flex align-items-center justify-content-center bg-success bg-opacity-10 text-success rounded-circle" style={{ width: "32px", height: "32px", flexShrink: 0 }}>
-                                <i className={getIcon(amenity)} style={{ fontSize: "14px" }} />
-                              </div>
-                              <span className="fw-semibold text-dark text-capitalize text-truncate" style={{ fontSize: "13px" }} title={amenity}>{amenity}</span>
-                            </div>
+                          <div
+                            key={idx}
+                            className="amenity-pill d-inline-flex align-items-center gap-2 px-3 py-2 rounded-pill"
+                            style={{
+                              backgroundColor: "#F0FDF4",
+                              border: "1px solid #DCFCE7",
+                              transition: "all 0.2s ease",
+                              cursor: "default",
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.backgroundColor = "#22C55E";
+                              e.currentTarget.style.borderColor = "#22C55E";
+                              e.currentTarget.style.transform = "translateY(-2px)";
+                              e.currentTarget.style.boxShadow = "0 4px 12px rgba(34,197,94,0.25)";
+                              const icon = e.currentTarget.querySelector("i") as HTMLElement;
+                              const text = e.currentTarget.querySelector("span") as HTMLElement;
+                              if (icon) icon.style.color = "#FFFFFF";
+                              if (text) text.style.color = "#FFFFFF";
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.backgroundColor = "#F0FDF4";
+                              e.currentTarget.style.borderColor = "#DCFCE7";
+                              e.currentTarget.style.transform = "translateY(0)";
+                              e.currentTarget.style.boxShadow = "none";
+                              const icon = e.currentTarget.querySelector("i") as HTMLElement;
+                              const text = e.currentTarget.querySelector("span") as HTMLElement;
+                              if (icon) icon.style.color = "#16A34A";
+                              if (text) text.style.color = "#111827";
+                            }}
+                          >
+                            <i className={getIcon(amenity)} style={{ fontSize: "13px", color: "#16A34A", transition: "color 0.2s" }} />
+                            <span className="fw-semibold text-capitalize" style={{ fontSize: "12px", color: "#111827", transition: "color 0.2s" }}>{amenity}</span>
                           </div>
                         ))}
                       </div>
@@ -537,22 +690,40 @@ const VenueDetails = () => {
                   })()}
                 </div>
 
-                {/* B. NAVIGATION TABS (Immediately follows Hero Gallery!) */}
                 {(venueData?.gameType || (venueData?.facilities && venueData.facilities.length > 0) || venueData?.policiesAndRules || venueData?.additionalNotes) && (
-                  <div className="tabs-container-card">
+                  <div className="d-flex flex-wrap gap-2 mb-4 p-2 rounded-3" style={{ backgroundColor: "#F1F5F9", border: "1px solid #E2E8F0" }}>
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab("overview")}
+                      className={`seg-tab-btn d-inline-flex align-items-center gap-2 border-0 px-3 py-2 rounded-pill fw-semibold${activeTab === "overview" ? " active" : ""}`}
+                      style={{
+                        background: activeTab === "overview" ? "#FFFFFF" : "transparent",
+                        color: activeTab === "overview" ? "#16A34A" : "#64748B",
+                        fontSize: "12px",
+                        boxShadow: activeTab === "overview" ? "0 1px 3px rgba(0,0,0,0.1)" : "none",
+                        transition: "all 0.2s ease",
+                        cursor: "pointer",
+                      }}
+                    >
+                      <i className="fas fa-info-circle" style={{ fontSize: "11px" }} />
+                      Overview
+                    </button>
                     {venueData?.gameType && (
                       <button
                         type="button"
                         onClick={() => setActiveTab("game")}
-                        className={`pro-tab-pill ${activeTab === "game" ? "active" : "inactive"}`}
+                        className={`seg-tab-btn d-inline-flex align-items-center gap-2 border-0 px-3 py-2 rounded-pill fw-semibold${activeTab === "game" ? " active" : ""}`}
                         style={{
-                          background: activeTab === "game" ? "#22C55E" : "#F1F5F9",
-                          color: activeTab === "game" ? "#FFFFFF" : "#1E293B",
-                          border: activeTab === "game" ? "none" : "1px solid #E2E8F0"
+                          background: activeTab === "game" ? "#FFFFFF" : "transparent",
+                          color: activeTab === "game" ? "#16A34A" : "#64748B",
+                          fontSize: "12px",
+                          boxShadow: activeTab === "game" ? "0 1px 3px rgba(0,0,0,0.1)" : "none",
+                          transition: "all 0.2s ease",
+                          cursor: "pointer",
                         }}
                       >
-                        <i className="fas fa-volleyball-ball" style={{ color: activeTab === "game" ? "#FFFFFF" : "#22C55E" }} />
-                        <span>Game Type</span>
+                        <i className="fas fa-volleyball-ball" style={{ fontSize: "11px" }} />
+                        Game Type
                       </button>
                     )}
 
@@ -560,15 +731,18 @@ const VenueDetails = () => {
                       <button
                         type="button"
                         onClick={() => setActiveTab("facilities")}
-                        className={`pro-tab-pill ${activeTab === "facilities" ? "active" : "inactive"}`}
+                        className={`seg-tab-btn d-inline-flex align-items-center gap-2 border-0 px-3 py-2 rounded-pill fw-semibold${activeTab === "facilities" ? " active" : ""}`}
                         style={{
-                          background: activeTab === "facilities" ? "#22C55E" : "#F1F5F9",
-                          color: activeTab === "facilities" ? "#FFFFFF" : "#1E293B",
-                          border: activeTab === "facilities" ? "none" : "1px solid #E2E8F0"
+                          background: activeTab === "facilities" ? "#FFFFFF" : "transparent",
+                          color: activeTab === "facilities" ? "#16A34A" : "#64748B",
+                          fontSize: "12px",
+                          boxShadow: activeTab === "facilities" ? "0 1px 3px rgba(0,0,0,0.1)" : "none",
+                          transition: "all 0.2s ease",
+                          cursor: "pointer",
                         }}
                       >
-                        <i className="fas fa-building" style={{ color: activeTab === "facilities" ? "#FFFFFF" : "#22C55E" }} />
-                        <span>Facilities ({venueData.facilities.length})</span>
+                        <i className="fas fa-building" style={{ fontSize: "11px" }} />
+                        Facilities ({venueData.facilities.length})
                       </button>
                     )}
 
@@ -576,15 +750,18 @@ const VenueDetails = () => {
                       <button
                         type="button"
                         onClick={() => setActiveTab("rules")}
-                        className={`pro-tab-pill ${activeTab === "rules" ? "active" : "inactive"}`}
+                        className={`seg-tab-btn d-inline-flex align-items-center gap-2 border-0 px-3 py-2 rounded-pill fw-semibold${activeTab === "rules" ? " active" : ""}`}
                         style={{
-                          background: activeTab === "rules" ? "#22C55E" : "#F1F5F9",
-                          color: activeTab === "rules" ? "#FFFFFF" : "#1E293B",
-                          border: activeTab === "rules" ? "none" : "1px solid #E2E8F0"
+                          background: activeTab === "rules" ? "#FFFFFF" : "transparent",
+                          color: activeTab === "rules" ? "#16A34A" : "#64748B",
+                          fontSize: "12px",
+                          boxShadow: activeTab === "rules" ? "0 1px 3px rgba(0,0,0,0.1)" : "none",
+                          transition: "all 0.2s ease",
+                          cursor: "pointer",
                         }}
                       >
-                        <i className="fas fa-gavel" style={{ color: activeTab === "rules" ? "#FFFFFF" : "#22C55E" }} />
-                        <span>Rules & Policies</span>
+                        <i className="fas fa-gavel" style={{ fontSize: "11px" }} />
+                        Rules &amp; Policies
                       </button>
                     )}
 
@@ -592,15 +769,18 @@ const VenueDetails = () => {
                       <button
                         type="button"
                         onClick={() => setActiveTab("notes")}
-                        className={`pro-tab-pill ${activeTab === "notes" ? "active" : "inactive"}`}
+                        className={`seg-tab-btn d-inline-flex align-items-center gap-2 border-0 px-3 py-2 rounded-pill fw-semibold${activeTab === "notes" ? " active" : ""}`}
                         style={{
-                          background: activeTab === "notes" ? "#22C55E" : "#F1F5F9",
-                          color: activeTab === "notes" ? "#FFFFFF" : "#1E293B",
-                          border: activeTab === "notes" ? "none" : "1px solid #E2E8F0"
+                          background: activeTab === "notes" ? "#FFFFFF" : "transparent",
+                          color: activeTab === "notes" ? "#16A34A" : "#64748B",
+                          fontSize: "12px",
+                          boxShadow: activeTab === "notes" ? "0 1px 3px rgba(0,0,0,0.1)" : "none",
+                          transition: "all 0.2s ease",
+                          cursor: "pointer",
                         }}
                       >
-                        <i className="fas fa-sticky-note" style={{ color: activeTab === "notes" ? "#FFFFFF" : "#22C55E" }} />
-                        <span>Notes</span>
+                        <i className="fas fa-sticky-note" style={{ fontSize: "11px" }} />
+                        Notes
                       </button>
                     )}
                   </div>
@@ -875,6 +1055,13 @@ const VenueDetails = () => {
                       >
                         <i className="fas fa-calendar-check" /> Book Now
                       </button>
+                      <button
+                        type="button"
+                        className="pro-btn-secondary"
+                        onClick={handleMessageOwner}
+                      >
+                        <i className="fas fa-comment-dots" /> Message Owner
+                      </button>
                     </div>
                   </div>
 
@@ -890,12 +1077,7 @@ const VenueDetails = () => {
                         style={{ border: 0 }}
                         loading="lazy"
                         allowFullScreen
-                        src={`https://maps.google.com/maps?q=${encodeURIComponent(
-                          venueData?.google_location ||
-                          ((venueData?.address ? `${venueData.address}, ` : "") +
-                          (venueData?.city || "Indore") + ", " +
-                          (venueData?.state || "Madhya Pradesh"))
-                        )}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
+                        src={getMinimapSrc(venueData)}
                       ></iframe>
                     </div>
                     {/* Address Detail displayed only once (below minimap) */}
