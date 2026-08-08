@@ -24,6 +24,12 @@ interface Coach {
   near_by_location: string;
   category: string;
   trainer_type: string;
+  experience?: number;
+  package?: {
+    monthly?: number;
+    quarterly?: number;
+    yearly?: number;
+  };
 }
 
 interface Trainer {
@@ -39,6 +45,12 @@ interface Trainer {
   near_by_location: string;
   specializations: string;
   trainer_type: string;
+  experience?: number;
+  package?: {
+    monthly?: number;
+    quarterly?: number;
+    yearly?: number;
+  };
 }
 
 interface Venues {
@@ -54,6 +66,7 @@ interface Venues {
   src: string;
   vendor_type: string;
   near_by_location: string;
+  price_per_hr?: number;
 }
 
 const getVenueImage = (images: any): string => {
@@ -63,6 +76,24 @@ const getVenueImage = (images: any): string => {
   if (!imgStr) return "assets/img/venues/venue-01.jpg";
   if (imgStr.startsWith("http://") || imgStr.startsWith("https://")) return imgStr;
   return `${IMG_URL}${imgStr}`;
+};
+
+const getCategoryIcon = (category: string) => {
+  const cat = String(category || "").toLowerCase();
+  if (cat.includes("swim")) return "fas fa-swimmer";
+  if (cat.includes("tennis")) return "fas fa-table-tennis";
+  if (cat.includes("cricket")) return "fas fa-baseball-ball";
+  if (cat.includes("football") || cat.includes("soccer")) return "fas fa-soccer-ball";
+  if (cat.includes("badminton")) return "fas fa-table-tennis";
+  if (cat.includes("gym") || cat.includes("fitness")) return "fas fa-dumbbell";
+  return "fas fa-running";
+};
+
+const formatLocation = (loc: string) => {
+  if (!loc) return "Indore";
+  const cleaned = loc.trim();
+  if (cleaned.toLowerCase().includes("indore")) return cleaned;
+  return `${cleaned}, Indore`;
 };
 
 interface Goto {
@@ -378,6 +409,8 @@ const Home = () => {
           near_by_location: coach.near_by_location,
           category: coach.category,
           trainer_type: coach.trainer_type,
+          experience: coach.experience,
+          package: coach.package,
         }));
         setCoaches(mappedData);
       } catch (error) {
@@ -403,7 +436,7 @@ const Home = () => {
           _id: venues._id,
           vendor_type: venues.vendor_type,
           near_by_location: venues.near_by_location,
-          // profile: coach.profile
+          price_per_hr: venues.price_per_hr,
         }));
         setVenues(mappedData);
       } catch (error) {
@@ -435,6 +468,8 @@ const Home = () => {
           near_by_location: trainer.near_by_location,
           specializations: trainer.specializations,
           trainer_type: trainer.trainer_type,
+          experience: trainer.experience,
+          package: trainer.package,
         }));
         setTrainer(mappedData);
       } catch (error) {
@@ -1011,17 +1046,38 @@ const Home = () => {
       {/* Top Rated Venues */}
       <section className="section featured-venues-list top-providers-section py-5">
         <div className="container">
-          <div className="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2 aos" data-aos="fade-up">
-            <h3 style={{ fontFamily: "Space Grotesk, sans-serif", color: "#17222D", fontWeight: "700", fontSize: "20px" }}>
-              Top Rated <span style={{ color: "var(--ki-primary)" }}>Venues</span>
-            </h3>
+          <div className="d-flex align-items-center justify-content-between mb-5 flex-wrap gap-3 aos" data-aos="fade-up">
+            <div className="text-start">
+              <h3 style={{ fontFamily: "Space Grotesk, sans-serif", color: "#0F172A", fontWeight: "700", fontSize: "26px", marginBottom: "6px" }}>
+                Top Rated <span style={{ color: "#22C55E" }}>Venues</span>
+              </h3>
+              <p className="mb-0" style={{ color: "#64748B", fontSize: "14px", fontWeight: "400" }}>
+                Discover and book Indore&apos;s best sports venues, turfs, and courts.
+              </p>
+              <div style={{ width: "32px", height: "3px", backgroundColor: "#22C55E", borderRadius: "5px", marginTop: "12px" }} />
+            </div>
             {venues.length > 6 && (
               <Link
                 to={routes.blogListSidebarLeft}
-                className="btn btn-primary btn-sm d-inline-flex align-items-center px-3 py-1.5"
-                style={{ borderRadius: "10px", fontSize: "13px", background: "linear-gradient(90deg, #49BC4F, #38A941)", border: "none" }}
+                className="btn d-inline-flex align-items-center px-4 py-2"
+                style={{
+                  borderRadius: "12px",
+                  fontSize: "14px",
+                  fontWeight: "600",
+                  color: "#22C55E",
+                  border: "1px solid #22C55E",
+                  backgroundColor: "#FFFFFF",
+                  transition: "all 0.2s"
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = "rgba(34, 197, 94, 0.05)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = "#FFFFFF";
+                }}
               >
-                View All Venues <i className="feather-arrow-right-circle ms-2" />
+                View All Venues
+                <i className="fas fa-arrow-circle-right ms-2" style={{ fontSize: "16px", color: "#22C55E" }} />
               </Link>
             )}
           </div>
@@ -1051,21 +1107,61 @@ const Home = () => {
                             )}
                           </Link>
                           <div className="fav-item-venues news-sports" style={{ top: "12px", left: "12px" }}>
-                            <span className="tag tag-blue" style={{ background: "var(--ki-primary)", color: "#FFFFFF", fontWeight: "700", borderRadius: "8px", fontSize: "12px", textTransform: "uppercase" }}>
+                            <span className="tag tag-blue" style={{ display: "inline-flex", alignItems: "center", gap: "6px", minHeight: "28px", padding: "4px 12px", background: "#FFFFFF", color: "#16A34A", fontWeight: "700", borderRadius: "999px", fontSize: "10px", lineHeight: 1, letterSpacing: "0.04em", textTransform: "uppercase", whiteSpace: "nowrap", boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)", border: "1px solid rgba(22, 163, 74, 0.1)" }}>
+                              <i className={getCategoryIcon(venue.vendor_type)} style={{ fontSize: "11px" }} />
                               {venue.vendor_type.replace("_", " ")}
                             </span>
                           </div>
                         </div>
-                        <div className="listing-content home-venue news-content p-3">
-                          <h3 className="listing-title" style={{ fontSize: "18px", fontWeight: "600", marginBottom: "8px", fontFamily: "Space Grotesk, sans-serif" }}>
-                            <Link to={`/sports-venue/${venue.vendor_type.replace(/\s+/g, "-").toLowerCase()}/${venue.name.replace(/\s+/g, "-").toLowerCase()}/${venue._id}`} className="text-truncate d-block" style={{ color: "#17222D" }}>
+                        <div className="listing-content home-venue news-content p-3" style={{ textAlign: "left" }}>
+                          <h3 className="listing-title" style={{ fontSize: "16px", fontWeight: "700", color: "#0F172A", marginBottom: "8px", fontFamily: "Space Grotesk, sans-serif" }}>
+                            <Link to={`/sports-venue/${venue.vendor_type.replace(/\s+/g, "-").toLowerCase()}/${venue.name.replace(/\s+/g, "-").toLowerCase()}/${venue._id}`} className="text-truncate d-block" style={{ color: "#0F172A", textDecoration: "none" }}>
                               {venue.name}
                             </Link>
                           </h3>
-                          <p style={{ fontSize: "13px", color: "#606D76" }}>
-                            <i className="feather-map-pin me-2" style={{ color: "var(--ki-primary)" }} />
-                            {venue?.near_by_location}
-                          </p>
+                          <div className="d-flex align-items-center justify-content-between mt-2">
+                            <p className="mb-0 text-truncate" style={{ fontSize: "13px", color: "#64748B", maxWidth: "70%", display: "flex", alignItems: "center", gap: "6px" }}>
+                              <i className="feather-map-pin" style={{ color: "#94A3B8", fontSize: "14px" }} />
+                              {formatLocation(venue?.near_by_location)}
+                            </p>
+                          </div>
+                          
+                          <div className="d-flex align-items-center justify-content-between mt-4">
+                            <div className="d-flex flex-column text-start">
+                              <span style={{ fontSize: "12px", color: "#64748B", fontWeight: "500", marginBottom: "4px" }}>Hourly Rate</span>
+                              {venue?.price_per_hr !== undefined && venue?.price_per_hr > 0 ? (
+                                <span style={{ fontSize: "20px", fontWeight: "800", color: "#0F172A", display: "inline-flex", alignItems: "baseline", gap: "2px" }}>
+                                  ₹{venue.price_per_hr}
+                                  <span style={{ fontSize: "13px", fontWeight: "400", color: "#64748B" }}>/hr</span>
+                                </span>
+                              ) : (
+                                <span style={{ fontSize: "15px", fontWeight: "600", color: "#64748B" }}>Contact Venue</span>
+                              )}
+                            </div>
+                            <Link 
+                              to={`/sports-venue/${venue.vendor_type.replace(/\s+/g, "-").toLowerCase()}/${venue.name.replace(/\s+/g, "-").toLowerCase()}/${venue._id}`}
+                              className="d-flex align-items-center justify-content-center"
+                              style={{
+                                width: "36px",
+                                height: "36px",
+                                borderRadius: "50%",
+                                backgroundColor: "#22C55E",
+                                color: "#FFFFFF",
+                                transition: "all 0.2s ease-in-out",
+                                textDecoration: "none"
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.backgroundColor = "#16A34A";
+                                e.currentTarget.style.transform = "scale(1.05)";
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.backgroundColor = "#22C55E";
+                                e.currentTarget.style.transform = "scale(1)";
+                              }}
+                            >
+                              <i className="fas fa-chevron-right" style={{ fontSize: "14px" }} />
+                            </Link>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -1080,17 +1176,38 @@ const Home = () => {
       {/* Top Rated Coaches */}
       <section className="section featured-venues-list top-coaches-section py-5">
         <div className="container">
-          <div className="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2 aos" data-aos="fade-up">
-            <h3 style={{ fontFamily: "Space Grotesk, sans-serif", color: "#17222D", fontWeight: "700", fontSize: "20px" }}>
-              Top Rated <span style={{ color: "var(--ki-accent)" }}>Coaches</span>
-            </h3>
+          <div className="d-flex align-items-center justify-content-between mb-5 flex-wrap gap-3 aos" data-aos="fade-up">
+            <div className="text-start">
+              <h3 style={{ fontFamily: "Space Grotesk, sans-serif", color: "#0F172A", fontWeight: "700", fontSize: "26px", marginBottom: "6px" }}>
+                Top Rated <span style={{ color: "#22C55E" }}>Coaches</span>
+              </h3>
+              <p className="mb-0" style={{ color: "#64748B", fontSize: "14px", fontWeight: "400" }}>
+                Discover and connect with Indore&apos;s best coaches across various sports.
+              </p>
+              <div style={{ width: "32px", height: "3px", backgroundColor: "#22C55E", borderRadius: "5px", marginTop: "12px" }} />
+            </div>
             {coaches.length > 6 && (
               <Link
                 to={routes.coachesGrid}
-                className="btn btn-primary btn-sm d-inline-flex align-items-center px-3 py-1.5"
-                style={{ borderRadius: "10px", fontSize: "13px", background: "linear-gradient(90deg, #49BC4F, #38A941)", border: "none" }}
+                className="btn d-inline-flex align-items-center px-4 py-2"
+                style={{
+                  borderRadius: "12px",
+                  fontSize: "14px",
+                  fontWeight: "600",
+                  color: "#22C55E",
+                  border: "1px solid #22C55E",
+                  backgroundColor: "#FFFFFF",
+                  transition: "all 0.2s"
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = "rgba(34, 197, 94, 0.05)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = "#FFFFFF";
+                }}
               >
-                View All Coaches <i className="feather-arrow-right-circle ms-2" />
+                View All Coaches
+                <i className="fas fa-arrow-circle-right ms-2" style={{ fontSize: "16px", color: "#22C55E" }} />
               </Link>
             )}
           </div>
@@ -1113,21 +1230,62 @@ const Home = () => {
                             />
                           </Link>
                           <div className="fav-item-venues" style={{ top: "14px", left: "14px", right: "auto", width: "auto", padding: 0, zIndex: 2 }}>
-                            <span className="tag tag-blue" style={{ display: "inline-flex", alignItems: "center", minHeight: "28px", padding: "7px 10px", background: "var(--ki-accent)", color: "#FFFFFF", fontWeight: "700", borderRadius: "999px", fontSize: "10px", lineHeight: 1, letterSpacing: "0.04em", textTransform: "uppercase", whiteSpace: "nowrap", boxShadow: "0 4px 10px rgba(28, 145, 51, 0.24)" }}>
-                              {coach.trainer_type || "Coach"}
+                            <span className="tag tag-blue" style={{ display: "inline-flex", alignItems: "center", gap: "6px", minHeight: "28px", padding: "4px 12px", background: "#FFFFFF", color: "#16A34A", fontWeight: "700", borderRadius: "999px", fontSize: "10px", lineHeight: 1, letterSpacing: "0.04em", textTransform: "uppercase", whiteSpace: "nowrap", boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)", border: "1px solid rgba(22, 163, 74, 0.1)" }}>
+                              <i className={getCategoryIcon(coach.category)} style={{ fontSize: "11px" }} />
+                              {(coach.category || "Coach").toUpperCase()} COACH
                             </span>
                           </div>
                         </div>
-                        <div className="listing-content list-coche-content p-3">
-                          <h3 style={{ fontSize: "18px", fontWeight: "600", marginBottom: "8px", fontFamily: "Space Grotesk, sans-serif" }}>
-                            <Link to={`/coaches/${coach?.category?.replace(/\s+/g, "-").toLowerCase()}/${coach?.first_name?.replace(/\s+/g, "-").toLowerCase()}/${coach?._id}`} className="text-truncate d-block" style={{ color: "#17222D" }}>
+                        <div className="listing-content list-coche-content p-3" style={{ textAlign: "left" }}>
+                          <h3 style={{ fontSize: "16px", fontWeight: "700", color: "#0F172A", marginBottom: "8px", fontFamily: "Space Grotesk, sans-serif", display: "flex", alignItems: "center", justifyContent: "flex-start" }}>
+                            <Link to={`/coaches/${coach?.category?.replace(/\s+/g, "-").toLowerCase()}/${coach?.first_name?.replace(/\s+/g, "-").toLowerCase()}/${coach?._id}`} className="text-truncate d-block" style={{ color: "#0F172A", textDecoration: "none" }}>
                               {coach?.first_name} {coach?.last_name}
                             </Link>
+                            <i className="fas fa-check-circle text-success ms-1.5" style={{ fontSize: "13px", flexShrink: 0, color: "#22C55E" }} />
                           </h3>
-                          <p style={{ fontSize: "13px", color: "#606D76" }}>
-                            <i className="feather-map-pin me-2" style={{ color: "var(--ki-primary)" }} />
-                            {coach?.near_by_location || "Indore"}
-                          </p>
+                          <div className="d-flex align-items-center justify-content-between mt-2">
+                            <p className="mb-0 text-truncate" style={{ fontSize: "13px", color: "#64748B", maxWidth: "70%", display: "flex", alignItems: "center", gap: "6px" }}>
+                              <i className="feather-map-pin" style={{ color: "#94A3B8", fontSize: "14px" }} />
+                              {formatLocation(coach?.near_by_location)}
+                            </p>
+                            {coach?.experience !== undefined && coach?.experience > 0 && (
+                              <span style={{ fontSize: "11px", fontWeight: "600", color: "#16A34A", background: "#F0FDF4", padding: "4px 10px", borderRadius: "999px", whiteSpace: "nowrap", flexShrink: 0 }}>
+                                {coach?.experience} Yrs Exp
+                              </span>
+                            )}
+                          </div>
+                          <div className="d-flex align-items-center justify-content-between mt-4">
+                            <div className="d-flex flex-column text-start">
+                              <span style={{ fontSize: "12px", color: "#64748B", fontWeight: "500", marginBottom: "4px" }}>Starts from</span>
+                              <span style={{ fontSize: "20px", fontWeight: "800", color: "#0F172A", display: "inline-flex", alignItems: "baseline", gap: "2px" }}>
+                                ₹{coach?.price || coach?.package?.monthly || 0}
+                                <span style={{ fontSize: "13px", fontWeight: "400", color: "#64748B" }}>/month</span>
+                              </span>
+                            </div>
+                            <Link 
+                              to={`/coaches/${coach?.category?.replace(/\s+/g, "-").toLowerCase()}/${coach?.first_name?.replace(/\s+/g, "-").toLowerCase()}/${coach?._id}`}
+                              className="d-flex align-items-center justify-content-center"
+                              style={{
+                                width: "36px",
+                                height: "36px",
+                                borderRadius: "50%",
+                                backgroundColor: "#22C55E",
+                                color: "#FFFFFF",
+                                transition: "all 0.2s ease-in-out",
+                                textDecoration: "none"
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.backgroundColor = "#16A34A";
+                                e.currentTarget.style.transform = "scale(1.05)";
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.backgroundColor = "#22C55E";
+                                e.currentTarget.style.transform = "scale(1)";
+                              }}
+                            >
+                              <i className="fas fa-chevron-right" style={{ fontSize: "14px" }} />
+                            </Link>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -1142,17 +1300,38 @@ const Home = () => {
       {/* Top Rated Trainers */}
       <section className="section featured-venues-list top-trainers-section py-5">
         <div className="container">
-          <div className="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2 aos" data-aos="fade-up">
-            <h3 style={{ fontFamily: "Space Grotesk, sans-serif", color: "#17222D", fontWeight: "700", fontSize: "20px" }}>
-              Top Rated <span style={{ color: "var(--ki-primary)" }}>Trainers</span>
-            </h3>
+          <div className="d-flex align-items-center justify-content-between mb-5 flex-wrap gap-3 aos" data-aos="fade-up">
+            <div className="text-start">
+              <h3 style={{ fontFamily: "Space Grotesk, sans-serif", color: "#0F172A", fontWeight: "700", fontSize: "26px", marginBottom: "6px" }}>
+                Top Rated <span style={{ color: "#22C55E" }}>Trainers</span>
+              </h3>
+              <p className="mb-0" style={{ color: "#64748B", fontSize: "14px", fontWeight: "400" }}>
+                Discover and connect with Indore&apos;s best personal trainers across various fitness goals.
+              </p>
+              <div style={{ width: "32px", height: "3px", backgroundColor: "#22C55E", borderRadius: "5px", marginTop: "12px" }} />
+            </div>
             {trainer.length > 6 && (
               <Link
                 to={routes.blogList}
-                className="btn btn-primary btn-sm d-inline-flex align-items-center px-3 py-1.5"
-                style={{ borderRadius: "10px", fontSize: "13px", background: "linear-gradient(90deg, #49BC4F, #38A941)", border: "none" }}
+                className="btn d-inline-flex align-items-center px-4 py-2"
+                style={{
+                  borderRadius: "12px",
+                  fontSize: "14px",
+                  fontWeight: "600",
+                  color: "#22C55E",
+                  border: "1px solid #22C55E",
+                  backgroundColor: "#FFFFFF",
+                  transition: "all 0.2s"
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = "rgba(34, 197, 94, 0.05)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = "#FFFFFF";
+                }}
               >
-                View All Trainers <i className="feather-arrow-right-circle ms-2" />
+                View All Trainers
+                <i className="fas fa-arrow-circle-right ms-2" style={{ fontSize: "16px", color: "#22C55E" }} />
               </Link>
             )}
           </div>
@@ -1175,21 +1354,62 @@ const Home = () => {
                             />
                           </Link>
                           <div className="fav-item-venues" style={{ top: "14px", left: "14px", right: "auto", width: "auto", padding: 0, zIndex: 2 }}>
-                            <span className="tag tag-blue" style={{ display: "inline-flex", alignItems: "center", minHeight: "28px", padding: "7px 10px", background: "var(--ki-accent)", color: "#FFFFFF", fontWeight: "700", borderRadius: "999px", fontSize: "10px", lineHeight: 1, letterSpacing: "0.04em", textTransform: "uppercase", whiteSpace: "nowrap", boxShadow: "0 4px 10px rgba(28, 145, 51, 0.24)" }}>
-                              {train.trainer_type || "Trainer"}
+                            <span className="tag tag-blue" style={{ display: "inline-flex", alignItems: "center", gap: "6px", minHeight: "28px", padding: "4px 12px", background: "#FFFFFF", color: "#16A34A", fontWeight: "700", borderRadius: "999px", fontSize: "10px", lineHeight: 1, letterSpacing: "0.04em", textTransform: "uppercase", whiteSpace: "nowrap", boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)", border: "1px solid rgba(22, 163, 74, 0.1)" }}>
+                              <i className={getCategoryIcon(train.category || train.trainer_type)} style={{ fontSize: "11px" }} />
+                              {(train.category || train.trainer_type || "Trainer").toUpperCase()}
                             </span>
                           </div>
                         </div>
-                        <div className="listing-content p-3">
-                          <h3 style={{ fontSize: "18px", fontWeight: "600", marginBottom: "8px", fontFamily: "Space Grotesk, sans-serif" }}>
-                            <Link to={`/personal-training/trainer/${train.first_name.replace(/\s+/g, "-").toLowerCase()}/${train._id}`} className="text-truncate d-block" style={{ color: "#17222D" }}>
+                        <div className="listing-content p-3" style={{ textAlign: "left" }}>
+                          <h3 style={{ fontSize: "16px", fontWeight: "700", color: "#0F172A", marginBottom: "8px", fontFamily: "Space Grotesk, sans-serif", display: "flex", alignItems: "center", justifyContent: "flex-start" }}>
+                            <Link to={`/personal-training/trainer/${train.first_name.replace(/\s+/g, "-").toLowerCase()}/${train._id}`} className="text-truncate d-block" style={{ color: "#0F172A", textDecoration: "none" }}>
                               {train.first_name} {train.last_name}
                             </Link>
+                            <i className="fas fa-check-circle text-success ms-1.5" style={{ fontSize: "13px", flexShrink: 0, color: "#22C55E" }} />
                           </h3>
-                          <p style={{ fontSize: "13px", color: "#606D76" }}>
-                            <i className="feather-map-pin me-2" style={{ color: "var(--ki-primary)" }} />
-                            {train?.near_by_location || "Indore"}
-                          </p>
+                          <div className="d-flex align-items-center justify-content-between mt-2">
+                            <p className="mb-0 text-truncate" style={{ fontSize: "13px", color: "#64748B", maxWidth: "70%", display: "flex", alignItems: "center", gap: "6px" }}>
+                              <i className="feather-map-pin" style={{ color: "#94A3B8", fontSize: "14px" }} />
+                              {formatLocation(train?.near_by_location)}
+                            </p>
+                            {train?.experience !== undefined && train?.experience > 0 && (
+                              <span style={{ fontSize: "11px", fontWeight: "600", color: "#16A34A", background: "#F0FDF4", padding: "4px 10px", borderRadius: "999px", whiteSpace: "nowrap", flexShrink: 0 }}>
+                                {train?.experience} Yrs Exp
+                              </span>
+                            )}
+                          </div>
+                          <div className="d-flex align-items-center justify-content-between mt-4">
+                            <div className="d-flex flex-column text-start">
+                              <span style={{ fontSize: "12px", color: "#64748B", fontWeight: "500", marginBottom: "4px" }}>Starts from</span>
+                              <span style={{ fontSize: "20px", fontWeight: "800", color: "#0F172A", display: "inline-flex", alignItems: "baseline", gap: "2px" }}>
+                                ₹{train?.price || train?.package?.monthly || 0}
+                                <span style={{ fontSize: "13px", fontWeight: "400", color: "#64748B" }}>/month</span>
+                              </span>
+                            </div>
+                            <Link 
+                              to={`/personal-training/trainer/${train.first_name.replace(/\s+/g, "-").toLowerCase()}/${train._id}`}
+                              className="d-flex align-items-center justify-content-center"
+                              style={{
+                                width: "36px",
+                                height: "36px",
+                                borderRadius: "50%",
+                                backgroundColor: "#22C55E",
+                                color: "#FFFFFF",
+                                transition: "all 0.2s ease-in-out",
+                                textDecoration: "none"
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.backgroundColor = "#16A34A";
+                                e.currentTarget.style.transform = "scale(1.05)";
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.backgroundColor = "#22C55E";
+                                e.currentTarget.style.transform = "scale(1)";
+                              }}
+                            >
+                              <i className="fas fa-chevron-right" style={{ fontSize: "14px" }} />
+                            </Link>
+                          </div>
                         </div>
                       </div>
                     </div>

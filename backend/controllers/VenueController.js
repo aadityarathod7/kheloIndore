@@ -2,6 +2,7 @@ const express = require("express");
 const route = express.Router();
 // const Venue = require("../models/VenueModel");
 const Venue1 = require('../models/Venue1')
+const Slot = require("../models/SlotModel");
 const SuperAdmin = require("../models/SuperAdminModel");
 const jwt = require("jsonwebtoken");
 const User = require("../models/UserModel");
@@ -631,11 +632,79 @@ exports.getVenueRoleList = async(req,res)=>{
     
   }
 }
+// ---- helpers for web venue filtering ----
+const escapeRegex = (str) => String(str).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+// Slot time windows (minutes from midnight) aligned with the listing page filters
+const SLOT_TIME_WINDOWS = {
+  "all-full": { start: 360, end: 1380 }, // 06:00 AM - 11:00 PM
+  morning: { start: 360, end: 720 }, // 06:00 AM - 12:00 PM
+  afternoon: { start: 720, end: 1020 }, // 12:00 PM - 05:00 PM
+  evening: { start: 1020, end: 1260 }, // 05:00 PM - 09:00 PM
+  night: { start: 1260, end: 1380 }, // 09:00 PM - 11:00 PM
+};
+
+// Parses "06:00 AM", "04:00 PM" or 24h "06:00" into minutes from midnight (or null)
+const parseSlotTime = (t) => {
+  if (!t) return null;
+  const str = String(t).trim();
+  const m = str.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/i);
+  if (!m) return null;
+  let h = parseInt(m[1], 10);
+  const min = parseInt(m[2], 10);
+  const mer = (m[3] || "").toUpperCase();
+  if (mer === "PM" && h < 12) h += 12;
+  if (mer === "AM" && h === 12) h = 0;
+  if (mer === "" && h === 24) h = 0;
+  return h * 60 + min;
+};
+
+// Computes [from, to) date range for a date filter value ("YYYY-MM-DD" or keyword)
+const computeSlotDateRange = (dateKey) => {
+  const startOfDay = (d) => {
+    const x = new Date(d);
+    x.setHours(0, 0, 0, 0);
+    return x;
+  };
+  const addDays = (d, n) => {
+    const x = new Date(d);
+    x.setDate(x.getDate() + n);
+    return x;
+  };
+
+  const dateMatch = String(dateKey).match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (dateMatch) {
+    const d = new Date(Number(dateMatch[1]), Number(dateMatch[2]) - 1, Number(dateMatch[3]));
+    d.setHours(0, 0, 0, 0);
+    return { from: d, to: addDays(d, 1) };
+  }
+
+  const today = startOfDay(new Date());
+  switch (String(dateKey)) {
+    case "today":
+      return { from: today, to: addDays(today, 1) };
+    case "tomorrow":
+      return { from: addDays(today, 1), to: addDays(today, 2) };
+    case "next-7-days":
+      return { from: today, to: addDays(today, 8) };
+    case "this-weekend": {
+      // upcoming Saturday -> end of Sunday (skips if today is a past day)
+      const day = today.getDay(); // 0 = Sunday
+      let satOffset = (6 - day + 7) % 7;
+      if (satOffset === 0 && day === 0) satOffset = 6; // Sunday -> next Saturday
+      const sat = addDays(today, satOffset);
+      return { from: sat, to: addDays(sat, 2) };
+    }
+    default:
+      return null;
+  }
+};
+
 // web 
 exports.getVenue = async (req, res) => {
   try {
-    const { search } = req.query;
-    let queryConditions = { status: true,verification_status: 1, };
+    const { search, sport, location, grassType, amenities, date, time, sort } = req.query;
+    let queryConditions = { status: true, verification_status: 1 };
 
     // Add column-specific search conditions dynamically
     const searchFields = ["name", "category", "address", "status"];
@@ -644,14 +713,14 @@ exports.getVenue = async (req, res) => {
         if (field === "status") {
           queryConditions[field] = req.query[field] === "true";
         } else {
-          queryConditions[field] = new RegExp(req.query[field], "i");
+          queryConditions[field] = new RegExp(escapeRegex(req.query[field]), "i");
         }
       }
     });
 
     // Add global search condition
     if (search) {
-      const searchRegex = new RegExp(search, "i");
+      const searchRegex = new RegExp(escapeRegex(search), "i");
       queryConditions["$or"] = [
         { name: searchRegex },
         { category: searchRegex },
@@ -660,9 +729,96 @@ exports.getVenue = async (req, res) => {
       ];
     }
 
-    const newVenueDB = await Venue1.find(queryConditions).sort({
-      createdAt: -1,
-    });
+    // Web listing filters (all optional, backward compatible)
+    const addAnd = (cond) => {
+      if (!queryConditions["$and"]) queryConditions["$and"] = [];
+      queryConditions["$and"].push(cond);
+    };
+
+    // 1. Sport filter: match vendor_type / category / name
+    if (sport && sport !== "all") {
+      const sportTerm = escapeRegex(String(sport).replace(/-/g, " ").replace(/&/g, "and").trim());
+      if (sportTerm) {
+        addAnd({
+          $or: [
+            { vendor_type: new RegExp(sportTerm, "i") },
+            { category: new RegExp(sportTerm, "i") },
+            { name: new RegExp(sportTerm, "i") },
+          ],
+        });
+      }
+    }
+
+    // 2. Location filter: match near_by_location (case-insensitive substring)
+    if (location && location !== "all") {
+      queryConditions.near_by_location = new RegExp(escapeRegex(location), "i");
+    }
+
+    // 3. Grass type filter: derived from vendor_type / category / name keywords
+    if (grassType && grassType !== "any") {
+      const grassRegex = {
+        box: /box/i,
+        natural: /ground|natural/i,
+        artificial: /turf|astro|artificial/i,
+      }[grassType];
+      if (grassRegex) {
+        addAnd({
+          $or: [
+            { vendor_type: grassRegex },
+            { category: grassRegex },
+            { name: grassRegex },
+          ],
+        });
+      }
+    }
+
+    // 4. Amenities filter: every selected amenity must appear in amenities OR facilities (case-insensitive)
+    if (amenities) {
+      const amenityList = String(amenities)
+        .split(",")
+        .map((a) => a.trim())
+        .filter(Boolean)
+        .map((a) => new RegExp(escapeRegex(a), "i"));
+      if (amenityList.length > 0) {
+        const perAmenity = amenityList.map((regex) => ({
+          $or: [{ amenities: regex }, { facilities: regex }],
+        }));
+        addAnd({ $and: perAmenity });
+      }
+    }
+
+    let newVenueDB = await Venue1.find(queryConditions);
+
+    // 5. Date / Time filter: keep only venues that have slots in the requested window
+    if (date || time) {
+      const slotQuery = {};
+      if (date) {
+        const range = computeSlotDateRange(date);
+        if (range) slotQuery.date = { $gte: range.from, $lt: range.to };
+      }
+      const timeWindow = time ? SLOT_TIME_WINDOWS[time] : null;
+      const slotDocs = await Slot.find(slotQuery).select("venue_id slots");
+      const venueIds = new Set();
+      slotDocs.forEach((doc) => {
+        if (!doc.venue_id || !Array.isArray(doc.slots)) return;
+        const matchesWindow = doc.slots.some((s) => {
+          if (!timeWindow) return true;
+          const startMin = parseSlotTime(s.startTime);
+          return startMin !== null && startMin >= timeWindow.start && startMin < timeWindow.end;
+        });
+        if (matchesWindow) venueIds.add(doc.venue_id.toString());
+      });
+      newVenueDB = newVenueDB.filter((v) => venueIds.has(v._id.toString()));
+    }
+
+    // 6. Sort: price low -> high, price high -> low, otherwise newest first
+    if (sort === "price-low") {
+      newVenueDB.sort((a, b) => (a.price_per_hr || Infinity) - (b.price_per_hr || Infinity));
+    } else if (sort === "price-high") {
+      newVenueDB.sort((a, b) => (b.price_per_hr || 0) - (a.price_per_hr || 0));
+    } else {
+      newVenueDB.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    }
 
     return res
       .status(200)

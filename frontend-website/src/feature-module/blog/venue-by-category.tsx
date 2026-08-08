@@ -11,7 +11,8 @@ interface Venues {
   city: string;
   state: string;
   zipcode: number;
-  activities: string;
+  amenities: string[];
+  facilities: string[];
   category: string;
   _id: string;
   images: any;
@@ -632,17 +633,40 @@ const GRASS_OPTIONS: DropdownOption[] = [
   { value: "box", label: "Box Cricket Turf" },
   { value: "natural", label: "Natural Grass Ground" },
   { value: "artificial", label: "Artificial Turf" },
-  { value: "matting", label: "Matting Pitch" },
 ];
 
-const AMENITY_OPTIONS: DropdownOption[] = [
-  { value: "any", label: "Any Amenities" },
-  { value: "floodlights", label: "Floodlights" },
+// Fallback amenity list (used only when the API returns no amenity data at all).
+// Values are slug keys matched against venue amenities/facilities via AMENITY_KEYWORDS.
+const FALLBACK_AMENITY_OPTIONS: DropdownOption[] = [
   { value: "parking", label: "Parking" },
-  { value: "changing-room", label: "Changing Room" },
+  { value: "washrooms", label: "Washrooms" },
+  { value: "lockers", label: "Lockers" },
+  { value: "food", label: "Food / Canteen" },
   { value: "water", label: "Drinking Water" },
-  { value: "canteen", label: "Canteen / Cafe" },
+  { value: "floodlights", label: "Floodlights / Lighting" },
+  { value: "seating", label: "Seating" },
+  { value: "wi-fi", label: "Wi-Fi" },
+  { value: "cctv", label: "CCTV / Security" },
+  { value: "first-aid", label: "First Aid" },
+  { value: "shower", label: "Shower" },
+  { value: "sound-system", label: "Sound System" },
 ];
+
+// Keyword map used to match fallback amenity slugs against real venue data values
+const AMENITY_KEYWORDS: Record<string, string[]> = {
+  parking: ["parking"],
+  washrooms: ["washroom", "toilet"],
+  lockers: ["locker"],
+  food: ["food", "canteen", "cafe", "snack"],
+  water: ["drinking water", "water"],
+  floodlights: ["floodlight", "lighting", "light"],
+  seating: ["seating", "sit"],
+  "wi-fi": ["wi-fi", "wifi", "internet"],
+  cctv: ["cctv", "camera", "security"],
+  "first-aid": ["first aid", "medical"],
+  shower: ["shower"],
+  "sound-system": ["sound", "speaker", "music"],
+};
 
 const SORT_OPTIONS: DropdownOption[] = [
   { value: "popular", label: "Popular" },
@@ -695,15 +719,27 @@ export default function VenueByCategory() {
   useEffect(() => {
     const fetchVenues = async () => {
       try {
-        const response = await axios.get(`${API_URL}/web/venue/getVenue`);
-        const venuesData = response.data.venue;
+        // Send active filters to the backend (all optional params). The backend
+        // filters when deployed; the client re-applies the same rules below so
+        // results stay correct either way.
+        const params: Record<string, string> = {};
+        if (selectedSport && selectedSport !== "all" && selectedSport !== "other-sports") params.sport = selectedSport;
+        if (locationName) params.location = locationName;
+        if (selectedGrassType && selectedGrassType !== "any") params.grassType = selectedGrassType;
+        if (selectedAmenities.length > 0) params.amenities = selectedAmenities.join(",");
+        if (selectedDate) params.date = selectedDate;
+        if (selectedSlot && selectedSlot !== "all") params.time = selectedSlot;
+        if (sortBy && sortBy !== "popular") params.sort = sortBy;
+        const response = await axios.get(`${API_URL}/web/venue/getVenue`, { params });
+        const venuesData = response.data.venue || [];
         const mappedData = venuesData.map((venues: any) => ({
           name: venues.name,
           address: venues.address,
           city: venues.city,
           state: venues.state,
           zipcode: venues.zipcode,
-          activities: venues.activities,
+          amenities: Array.isArray(venues.amenities) ? venues.amenities : [],
+          facilities: Array.isArray(venues.facilities) ? venues.facilities : [],
           images: venues.images,
           category: venues.category,
           _id: venues._id,
@@ -719,7 +755,26 @@ export default function VenueByCategory() {
       }
     };
     fetchVenues();
-  }, []);
+  }, [selectedSport, locationName, selectedGrassType, selectedAmenities, selectedDate, selectedSlot, sortBy]);
+
+  // Amenity options are built from the real amenities/facilities the API returns
+  // (falling back to common amenities only when the data has none).
+  const amenityOptions: DropdownOption[] = useMemo(() => {
+    const unique = Array.from(
+      new Set(
+        venues.flatMap((v) =>
+          [...(v.amenities || []), ...(v.facilities || [])]
+            .map((a) => String(a).trim())
+            .filter(Boolean)
+        )
+      )
+    );
+    const dynamic = unique.map((a) => ({ value: a, label: a }));
+    return [
+      { value: "any", label: "Any Amenities" },
+      ...(dynamic.length > 0 ? dynamic : FALLBACK_AMENITY_OPTIONS),
+    ];
+  }, [venues]);
 
   const toggleFavorite = (venueId: string) => {
     const token = localStorage.getItem("token");
@@ -813,14 +868,31 @@ export default function VenueByCategory() {
         }
       }
 
-      // 3. Amenities Multi-Select Filter
+      // 3. Grass Type Filter (derived from the venue's vendor_type / category / name)
+      if (selectedGrassType && selectedGrassType !== "any") {
+        const grassText = `${t.vendor_type || ""} ${t.category || ""} ${t.name || ""}`
+          .toLowerCase()
+          .replace(/_/g, " ");
+        const matchesGrass =
+          selectedGrassType === "box"
+            ? grassText.includes("box")
+            : selectedGrassType === "natural"
+            ? grassText.includes("ground") || grassText.includes("natural")
+            : selectedGrassType === "artificial"
+            ? grassText.includes("turf") || grassText.includes("astro") || grassText.includes("artificial")
+            : true;
+        if (!matchesGrass) return false;
+      }
+
+      // 4. Amenities Multi-Select Filter (matches real amenities + facilities fields)
       if (selectedAmenities.length > 0) {
-        const venueText = `${t.activities || ""} ${t.name || ""}`.toLowerCase();
-        const hasMatchingAmenity = selectedAmenities.some((amenity) => {
-          const keyword = amenity.replace(/-/g, " ").toLowerCase();
-          return venueText.includes(keyword);
+        const venueAmenities = [...(t.amenities || []), ...(t.facilities || [])]
+          .map((a) => String(a).toLowerCase());
+        const hasAllAmenities = selectedAmenities.every((amenity) => {
+          const keywords = AMENITY_KEYWORDS[amenity] || [amenity.replace(/-/g, " ").toLowerCase()];
+          return keywords.some((kw) => venueAmenities.some((a) => a.includes(kw)));
         });
-        if (!hasMatchingAmenity) return false;
+        if (!hasAllAmenities) return false;
       }
 
       return true;
@@ -834,7 +906,7 @@ export default function VenueByCategory() {
     }
 
     return result;
-  }, [venues, selectedSport, locationName, selectedAmenities, sortBy]);
+  }, [venues, selectedSport, locationName, selectedGrassType, selectedAmenities, sortBy]);
 
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -1006,7 +1078,7 @@ export default function VenueByCategory() {
                     <i className="feather-grid text-success" style={{ fontSize: "13px" }} /> Amenities
                   </label>
                   <MultiSelectDropdown
-                    options={AMENITY_OPTIONS}
+                    options={amenityOptions}
                     selectedValues={selectedAmenities}
                     onChange={setSelectedAmenities}
                     placeholder="Any Amenities"
