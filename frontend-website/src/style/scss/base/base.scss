@@ -232,7 +232,11 @@ h1, h2, h3, h4, h5, h6,
 	color: #FFFFFF !important;
 }
 
-p, span, li, label, .text-white-50 {
+/* Only the explicit white-text utility is forced light. A blanket override of
+   every p/span/li/label broke light-themed UI (badges, labels, dropdowns) by
+   painting them white with !important; sections that need light text (footer,
+   dark banners) set their own colors. */
+.text-white-50 {
 	color: rgba(255, 255, 255, 0.7) !important;
 }
 

@@ -200,7 +200,7 @@ const Home = () => {
         .replace(/,\s*Indore/gi, "")
         .replace(/,\s*Ind/gi, "")
         .replace(/\s+/g, " ");
-      
+
       // Capitalize words
       return cleaned.split(" ")
         .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
@@ -209,7 +209,7 @@ const Home = () => {
 
     const locationsSet = new Set<string>();
     const sportsSet = new Set<string>();
-    
+
     // Collect from venues
     venues.forEach(v => {
       if (v.near_by_location) {
@@ -256,7 +256,7 @@ const Home = () => {
         const cleaned = sport.trim();
         // Skip invalid characters, hyphens, and empty entries
         if (cleaned === "-" || cleaned === "_" || cleaned.length < 2) return null;
-        
+
         // Capitalize each word (Title Case)
         let formatted = cleaned.split(" ")
           .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
@@ -264,7 +264,7 @@ const Home = () => {
 
         // Fix common spelling errors
         if (formatted.toLowerCase() === "swiming") formatted = "Swimming";
-        
+
         return { name: formatted };
       })
       .filter((s): s is { name: string } => s !== null);
@@ -274,7 +274,7 @@ const Home = () => {
     uniqueSports.forEach(s => {
       uniqueSportsMap.set(s.name.toLowerCase(), s);
     });
-    
+
     const finalSports = Array.from(uniqueSportsMap.values())
       .sort((a, b) => a.name.localeCompare(b.name));
 
@@ -630,7 +630,7 @@ const Home = () => {
                         <div style={{ color: "#334155", fontSize: "13px", fontWeight: "600" }}>Certified &amp; Experienced</div>
                       </div>
                     </div>
-                    
+
                     <div className="ki-feature-item d-flex align-items-center gap-2">
                       <div className="d-flex align-items-center justify-content-center rounded-circle flex-shrink-0" style={{ width: "36px", height: "36px", background: "#EAF5EB", color: "#3CAB4B" }}>
                         <i className="feather-grid" style={{ fontSize: "15px" }} />
@@ -655,7 +655,7 @@ const Home = () => {
                   {/* Search Box Capsule */}
                   <div className="ki-search-card">
                     <form>
-                      
+
                       {/* Column 1: Category */}
                       <div className="search-col">
                         <div className="form-group">
@@ -959,7 +959,7 @@ const Home = () => {
               Select a sport category to view all registered venues, coaches, and academies.
             </p>
           </div>
-          
+
           <div className="container">
             <div className="row g-3 justify-content-center">
               {[
@@ -974,12 +974,12 @@ const Home = () => {
                 { name: "Other Sports", slug: "other-sports", count: "514 Listings", icon: "fas fa-trophy", color: "#4F46E5", bg: "#E0E7FF" },
               ].slice(0, showAllCategories ? undefined : 6).map((cat, idx) => (
                 <div key={idx} className="col-xl-2 col-lg-3 col-md-4 col-sm-6 col-6 d-flex">
-                  <div 
-                    className="ki-category-slider-card p-3 text-center d-flex flex-column align-items-center justify-content-between w-100" 
+                  <div
+                    className="ki-category-slider-card p-3 text-center d-flex flex-column align-items-center justify-content-between w-100"
                     style={{ height: "175px", borderRadius: "20px" }}
                     onClick={() => navigate(`/sports-venue/${cat.slug}`)}
                   >
-                    <div 
+                    <div
                       className="category-icon-wrap d-flex align-items-center justify-content-center mb-2"
                       style={{
                         width: "48px",
@@ -995,7 +995,7 @@ const Home = () => {
                       <h4 className="ki-cat-name mb-0">{cat.name}</h4>
                       <p className="ki-cat-count mb-0">{cat.count}</p>
                     </div>
-                    <button 
+                    <button
                       className="btn rounded-pill ki-category-explore-btn w-100"
                       style={{
                         fontSize: "11px",
@@ -1125,7 +1125,7 @@ const Home = () => {
                               {formatLocation(venue?.near_by_location)}
                             </p>
                           </div>
-                          
+
                           <div className="d-flex align-items-center justify-content-between mt-4">
                             <div className="d-flex flex-column text-start">
                               <span style={{ fontSize: "12px", color: "#64748B", fontWeight: "500", marginBottom: "4px" }}>Hourly Rate</span>
@@ -1138,7 +1138,7 @@ const Home = () => {
                                 <span style={{ fontSize: "15px", fontWeight: "600", color: "#64748B" }}>Contact Venue</span>
                               )}
                             </div>
-                            <Link 
+                            <Link
                               to={`/sports-venue/${venue.vendor_type.replace(/\s+/g, "-").toLowerCase()}/${venue.name.replace(/\s+/g, "-").toLowerCase()}/${venue._id}`}
                               className="d-flex align-items-center justify-content-center"
                               style={{
@@ -1262,7 +1262,7 @@ const Home = () => {
                                 <span style={{ fontSize: "13px", fontWeight: "400", color: "#64748B" }}>/month</span>
                               </span>
                             </div>
-                            <Link 
+                            <Link
                               to={`/coaches/${coach?.category?.replace(/\s+/g, "-").toLowerCase()}/${coach?.first_name?.replace(/\s+/g, "-").toLowerCase()}/${coach?._id}`}
                               className="d-flex align-items-center justify-content-center"
                               style={{
@@ -1386,7 +1386,7 @@ const Home = () => {
                                 <span style={{ fontSize: "13px", fontWeight: "400", color: "#64748B" }}>/month</span>
                               </span>
                             </div>
-                            <Link 
+                            <Link
                               to={`/personal-training/trainer/${train.first_name.replace(/\s+/g, "-").toLowerCase()}/${train._id}`}
                               className="d-flex align-items-center justify-content-center"
                               style={{
@@ -1672,94 +1672,194 @@ const Home = () => {
       {/* Group Coaching */}
 
       {/* Earn Money */}
-      <section className="section earn-money">
-        <div className="cock-img cock-position">
-          <div className="cock-img-one ">
-            {/* <ImageWithBasePath src="assets/img/icons/cock-01.svg" alt="Icon" /> */}
+      <section className="section earn-money py-4 position-relative" style={{ background: "#FFFFFF", overflow: "hidden" }}>
+
+        <div className="container position-relative" style={{ zIndex: 1 }}>
+          {/* Section Heading */}
+          <div className="text-center mb-4 aos" data-aos="fade-up">
+            <div className="d-flex align-items-center justify-content-center gap-3 mb-2">
+              <span style={{ width: "32px", height: "3px", backgroundColor: "#16A34A", borderRadius: "2px" }}></span>
+              <h2 style={{ fontFamily: "Space Grotesk, sans-serif", color: "#0F172A", fontWeight: "700", fontSize: "32px", margin: 0 }}>
+                Grow with <span style={{ color: "#16A34A" }}>Khelo Indore</span>
+              </h2>
+              <span style={{ width: "32px", height: "3px", backgroundColor: "#16A34A", borderRadius: "2px" }}></span>
+            </div>
+            <p className="mb-0" style={{ color: "#64748B", fontSize: "16px", fontWeight: "400" }}>
+              Join our community and take your sports journey to the next level.
+            </p>
           </div>
-          <div className="cock-img-two">
-            {/* <ImageWithBasePath src="assets/img/icons/cock-02.svg" alt="Icon" /> */}
-          </div>
-          <div className="cock-circle">
-            {/* <ImageWithBasePath src="assets/img/bg/cock-shape.png" alt="Icon" /> */}
-          </div>
-        </div>
-        <div className="container">
-          <div className="row g-4 justify-content-center">
-            {/* Venue Partner Card */}
-            <div className="col-lg-5 col-md-6 d-flex">
-              <div className="private-venue w-100 d-flex flex-column justify-content-between p-4 aos" data-aos="fade-up" style={{ borderRadius: "28px" }}>
-                <div>
-                  <div className="icon-badge mb-3 d-flex align-items-center justify-content-center" style={{ width: "50px", height: "50px", borderRadius: "12px", background: "rgba(67, 182, 73, 0.1)", color: "#3CAB4B" }}>
-                    <i className="fa-solid fa-building-circle-check" style={{ fontSize: "22px" }} />
+
+          <div className="row justify-content-between align-items-center g-4">
+            {/* Left Column (Venues) */}
+            <div className="col-lg-5 col-md-12">
+              <div className="row align-items-center g-4">
+                <div className="col-md-7 text-start">
+                  <div className="d-flex align-items-start mb-3">
+                    <div style={{ width: "56px", height: "56px", borderRadius: "50%", background: "#DCFCE7", color: "#16A34A", display: "flex", alignItems: "center", justifyContent: "center", marginRight: "16px", flexShrink: 0, boxShadow: "0 4px 10px rgba(22, 163, 74, 0.15)" }}>
+                      <i className="fa-solid fa-building" style={{ fontSize: "22px" }} />
+                    </div>
+                    <div>
+                      <h3 style={{ fontSize: "24px", color: "#0F172A", fontFamily: "Space Grotesk, sans-serif", fontWeight: "700", marginBottom: "0", lineHeight: "1.3" }}>
+                        List your <br />
+                        <span style={{ color: "#16A34A" }}>sports venue</span> <br />
+                        with us
+                      </h3>
+                      <div style={{ width: "32px", height: "3px", backgroundColor: "#16A34A", borderRadius: "2px", marginTop: "12px" }} />
+                    </div>
                   </div>
-                  <h3 style={{ fontSize: "22px", color: "#17222D", fontFamily: "Space Grotesk, sans-serif", fontWeight: "700", marginBottom: "16px" }}>
-                    List your sports venue with us
-                  </h3>
-                  <p style={{ color: "#606D76", fontSize: "14px", lineHeight: "1.6", marginBottom: "20px" }}>
-                    Earn money renting out your private fields, turf, pool, or gym on {"Indore's"} largest local sports search platform.
+                  <p style={{ color: "#64748B", fontSize: "14px", lineHeight: "1.6", marginBottom: "20px" }}>
+                    Earn money renting out your private fields, turf, pool, or gym on Indore&apos;s largest local sports search platform.
                   </p>
-                  <ul className="list-unstyled mb-4" style={{ paddingLeft: 0 }}>
-                    <li className="d-flex align-items-center mb-2" style={{ color: "#606D76", fontSize: "14px" }}>
-                      <i className="fa-solid fa-circle-check me-2" style={{ color: "#43B649" }} />
+                  <ul className="list-unstyled mb-0" style={{ paddingLeft: 0 }}>
+                    <li style={{ display: "flex", alignItems: "center", marginBottom: "12px", color: "#334155", fontSize: "14px", fontWeight: "500" }}>
+                      <i className="fa-solid fa-circle-check" style={{ color: "#16A34A", marginRight: "8px", fontSize: "16px" }} />
                       ₹1,000,000 liability insurance
                     </li>
-                    <li className="d-flex align-items-center mb-2" style={{ color: "#606D76", fontSize: "14px" }}>
-                      <i className="fa-solid fa-circle-check me-2" style={{ color: "#43B649" }} />
+                    <li style={{ display: "flex", alignItems: "center", marginBottom: "12px", color: "#334155", fontSize: "14px", fontWeight: "500" }}>
+                      <i className="fa-solid fa-circle-check" style={{ color: "#16A34A", marginRight: "8px", fontSize: "16px" }} />
                       Build of Trust with validation
                     </li>
-                    <li className="d-flex align-items-center mb-2" style={{ color: "#606D76", fontSize: "14px" }}>
-                      <i className="fa-solid fa-circle-check me-2" style={{ color: "#43B649" }} />
+                    <li style={{ display: "flex", alignItems: "center", marginBottom: "0", color: "#334155", fontSize: "14px", fontWeight: "500" }}>
+                      <i className="fa-solid fa-circle-check" style={{ color: "#16A34A", marginRight: "8px", fontSize: "16px" }} />
                       Protected booking environment
                     </li>
                   </ul>
+                  <div className="d-block d-md-none mt-4 text-center">
+                    <img
+                      src="/images.jpg"
+                      alt="Sports Turf"
+                      style={{ width: "100%", maxWidth: "210px", height: "240px", objectFit: "cover", borderRadius: "24px", boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.05)" }}
+                    />
+                  </div>
                 </div>
+                <div className="col-md-5 d-none d-md-flex justify-content-center justify-content-md-end">
+                  <img
+                    src="/images.jpg"
+                    alt="Sports Turf"
+                    style={{ width: "100%", maxWidth: "210px", height: "240px", objectFit: "cover", borderRadius: "24px", boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.05)" }}
+                  />
+                </div>
+              </div>
+              {/* Centered Button below Venues */}
+              <div className="d-flex justify-content-center mt-3 pt-1">
                 <Link
-                  to={routes.login}
-                  className="btn btn-primary w-100 d-flex align-items-center justify-content-center py-2"
-                  style={{ background: "linear-gradient(90deg, #49BC4F, #38A941)", border: "none", borderRadius: "12px", fontWeight: "700" }}
+                  to={routes.contactUs}
+                  className="btn d-inline-flex align-items-center justify-content-between px-4 py-2.5"
+                  style={{
+                    width: "100%",
+                    maxWidth: "340px",
+                    borderRadius: "12px",
+                    fontSize: "14px",
+                    fontWeight: "600",
+                    color: "#16A34A",
+                    border: "1px solid #16A34A",
+                    backgroundColor: "#FFFFFF",
+                    transition: "all 0.2s",
+                    whiteSpace: "nowrap"
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = "rgba(22, 163, 74, 0.05)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "#FFFFFF";
+                  }}
                 >
-                  Get Started Now
-                  <i className="feather-arrow-right-circle ms-2" />
+                  <div className="d-flex align-items-center gap-2">
+                    <i className="fa-solid fa-building" style={{ fontSize: "15px" }} />
+                    <span>List Your Venue</span>
+                  </div>
+                  <i className="fa-solid fa-arrow-right" style={{ fontSize: "13px" }} />
                 </Link>
               </div>
             </div>
 
-            {/* Coach Partner Card */}
-            <div className="col-lg-5 col-md-6 d-flex">
-              <div className="private-venue w-100 d-flex flex-column justify-content-between p-4 aos" data-aos="fade-up" data-aos-delay="100" style={{ borderRadius: "28px" }}>
-                <div>
-                  <div className="icon-badge mb-3 d-flex align-items-center justify-content-center" style={{ width: "50px", height: "50px", borderRadius: "12px", background: "rgba(67, 182, 73, 0.1)", color: "#3CAB4B" }}>
-                    <i className="fa-solid fa-user-graduate" style={{ fontSize: "22px" }} />
+            {/* Separator Column (Vertical Line & OR Bubble) */}
+            <div className="col-lg-2 d-none d-lg-flex align-items-center justify-content-center position-relative" style={{ minHeight: "260px" }}>
+              <div style={{ position: "absolute", top: "5%", bottom: "5%", width: "1px", backgroundColor: "#E2E8F0" }} />
+              <div className="d-flex align-items-center justify-content-center" style={{ width: "42px", height: "42px", borderRadius: "50%", background: "#F1F5F9", border: "1px solid #E2E8E3", color: "#64748B", fontSize: "12px", fontWeight: "700", zIndex: 1, boxShadow: "0 2px 8px rgba(0,0,0,0.03)" }}>
+                OR
+              </div>
+            </div>
+
+            {/* Right Column (Trainers/Coaches) */}
+            <div className="col-lg-5 col-md-12">
+              <div className="row align-items-center g-4">
+                <div className="col-md-7 text-start">
+                  <div className="d-flex align-items-start mb-3">
+                    <div style={{ width: "56px", height: "56px", borderRadius: "50%", background: "#FFEDD5", color: "#EA580C", display: "flex", alignItems: "center", justifyContent: "center", marginRight: "16px", flexShrink: 0, boxShadow: "0 4px 10px rgba(234, 88, 12, 0.15)" }}>
+                      <i className="fa-solid fa-graduation-cap" style={{ fontSize: "22px" }} />
+                    </div>
+                    <div>
+                      <h3 style={{ fontSize: "24px", color: "#0F172A", fontFamily: "Space Grotesk, sans-serif", fontWeight: "700", marginBottom: "0", lineHeight: "1.3" }}>
+                        Are you a <br />
+                        <span style={{ color: "#EA580C" }}>trainer/coach?</span> <br />
+                        Enroll with us
+                      </h3>
+                      <div style={{ width: "32px", height: "3px", backgroundColor: "#EA580C", borderRadius: "2px", marginTop: "12px" }} />
+                    </div>
                   </div>
-                  <h3 style={{ fontSize: "22px", color: "#17222D", fontFamily: "Space Grotesk, sans-serif", fontWeight: "700", marginBottom: "16px" }}>
-                    Are you a trainer/coach? Enroll with us
-                  </h3>
-                  <p style={{ color: "#606D76", fontSize: "14px", lineHeight: "1.6", marginBottom: "20px" }}>
+                  <p style={{ color: "#64748B", fontSize: "14px", lineHeight: "1.6", marginBottom: "20px" }}>
                     Grow your training business, reach local players, schedule sessions, and manage bookings securely.
                   </p>
-                  <ul className="list-unstyled mb-4" style={{ paddingLeft: 0 }}>
-                    <li className="d-flex align-items-center mb-2" style={{ color: "#606D76", fontSize: "14px" }}>
-                      <i className="fa-solid fa-circle-check me-2" style={{ color: "#43B649" }} />
+                  <ul className="list-unstyled mb-0" style={{ paddingLeft: 0 }}>
+                    <li style={{ display: "flex", alignItems: "center", marginBottom: "12px", color: "#334155", fontSize: "14px", fontWeight: "500" }}>
+                      <i className="fa-solid fa-circle-check" style={{ color: "#EA580C", marginRight: "8px", fontSize: "16px" }} />
                       Connect with students in Indore
                     </li>
-                    <li className="d-flex align-items-center mb-2" style={{ color: "#606D76", fontSize: "14px" }}>
-                      <i className="fa-solid fa-circle-check me-2" style={{ color: "#43B649" }} />
+                    <li style={{ display: "flex", alignItems: "center", marginBottom: "12px", color: "#334155", fontSize: "14px", fontWeight: "500" }}>
+                      <i className="fa-solid fa-circle-check" style={{ color: "#EA580C", marginRight: "8px", fontSize: "16px" }} />
                       Flexible calendar scheduling
                     </li>
-                    <li className="d-flex align-items-center mb-2" style={{ color: "#606D76", fontSize: "14px" }}>
-                      <i className="fa-solid fa-circle-check me-2" style={{ color: "#43B649" }} />
+                    <li style={{ display: "flex", alignItems: "center", marginBottom: "0", color: "#334155", fontSize: "14px", fontWeight: "500" }}>
+                      <i className="fa-solid fa-circle-check" style={{ color: "#EA580C", marginRight: "8px", fontSize: "16px" }} />
                       Fast, secured online payouts
                     </li>
                   </ul>
+                  <div className="d-block d-md-none mt-4 text-center">
+                    <img
+                      src="/trainer.png"
+                      alt="Coaching Session"
+                      style={{ width: "100%", maxWidth: "210px", height: "240px", objectFit: "cover", borderRadius: "24px", boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.05)" }}
+                    />
+                  </div>
                 </div>
+                <div className="col-md-5 d-none d-md-flex justify-content-center justify-content-md-end">
+                  <img
+                    src="/trainer.png"
+                    alt="Coaching Session"
+                    style={{ width: "100%", maxWidth: "210px", height: "240px", objectFit: "cover", borderRadius: "24px", boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.05)" }}
+                  />
+                </div>
+              </div>
+              {/* Centered Button below Trainers */}
+              <div className="d-flex justify-content-center mt-3 pt-1">
                 <Link
                   to={routes.contactUs}
-                  className="btn btn-primary w-100 d-flex align-items-center justify-content-center py-2"
-                  style={{ background: "linear-gradient(90deg, #49BC4F, #38A941)", border: "none", borderRadius: "12px", fontWeight: "700" }}
+                  className="btn d-inline-flex align-items-center justify-content-between px-4 py-2.5"
+                  style={{
+                    width: "100%",
+                    maxWidth: "340px",
+                    borderRadius: "12px",
+                    fontSize: "14px",
+                    fontWeight: "600",
+                    color: "#EA580C",
+                    border: "1px solid #EA580C",
+                    backgroundColor: "#FFFFFF",
+                    transition: "all 0.2s",
+                    whiteSpace: "nowrap"
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = "rgba(234, 88, 12, 0.05)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "#FFFFFF";
+                  }}
                 >
-                  Contact Us To Join
-                  <i className="feather-arrow-right-circle ms-2" />
+                  <div className="d-flex align-items-center gap-2">
+                    <i className="fa-solid fa-user" style={{ fontSize: "15px" }} />
+                    <span>Join as a Trainer / Coach</span>
+                  </div>
+                  <i className="fa-solid fa-arrow-right" style={{ fontSize: "13px" }} />
                 </Link>
               </div>
             </div>

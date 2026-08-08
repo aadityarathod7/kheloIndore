@@ -1092,19 +1092,19 @@ export default function VenueByCategory() {
                     <p className="text-muted mb-2" style={{ fontSize: "11px", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.6px" }}>Active Filters</p>
                     <div className="d-flex flex-wrap gap-1">
                       {locationName && (
-                        <span className="badge rounded-pill d-inline-flex align-items-center" style={{ backgroundColor: "#F0FDF4", color: "#15803D", border: "1px solid #BBF7D0", fontSize: "11px", fontWeight: "600", padding: "4px 8px" }}>
+                        <span className="badge rounded-pill d-inline-flex align-items-center ki-filter-badge" style={{ backgroundColor: "#F0FDF4", color: "#15803D", border: "1px solid #BBF7D0", fontSize: "11px", fontWeight: "600", padding: "4px 8px" }}>
                           <i className="feather-map-pin me-1" /> {locationName}
                           <button type="button" className="btn-close btn-close-sm ms-1" style={{ fontSize: "8px" }} onClick={() => setLocationName("")} aria-label="Remove" />
                         </span>
                       )}
                       {selectedDate && (
-                        <span className="badge rounded-pill d-inline-flex align-items-center" style={{ backgroundColor: "#F0FDF4", color: "#15803D", border: "1px solid #BBF7D0", fontSize: "11px", fontWeight: "600", padding: "4px 8px" }}>
+                        <span className="badge rounded-pill d-inline-flex align-items-center ki-filter-badge" style={{ backgroundColor: "#F0FDF4", color: "#15803D", border: "1px solid #BBF7D0", fontSize: "11px", fontWeight: "600", padding: "4px 8px" }}>
                           <i className="feather-calendar me-1" /> {selectedDate}
                           <button type="button" className="btn-close btn-close-sm ms-1" style={{ fontSize: "8px" }} onClick={() => setSelectedDate("")} aria-label="Remove" />
                         </span>
                       )}
                       {selectedAmenities.map((a) => (
-                        <span key={a} className="badge rounded-pill d-inline-flex align-items-center" style={{ backgroundColor: "#F0FDF4", color: "#15803D", border: "1px solid #BBF7D0", fontSize: "11px", fontWeight: "600", padding: "4px 8px" }}>
+                        <span key={a} className="badge rounded-pill d-inline-flex align-items-center ki-filter-badge" style={{ backgroundColor: "#F0FDF4", color: "#15803D", border: "1px solid #BBF7D0", fontSize: "11px", fontWeight: "600", padding: "4px 8px" }}>
                           <i className="feather-check-circle me-1" /> {a}
                           <button type="button" className="btn-close btn-close-sm ms-1" style={{ fontSize: "8px" }} onClick={() => setSelectedAmenities(selectedAmenities.filter((x) => x !== a))} aria-label="Remove" />
                         </span>

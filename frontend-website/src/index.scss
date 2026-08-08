@@ -8,10 +8,30 @@
 // ─── Global Cursor & Text-Selection Reset ────────────────────────────────────
 // Prevent text I-beam (text selection cursor) on general static text containers.
 body,
-h1, h2, h3, h4, h5, h6,
-p, span, li, label:not([for]), small, strong, em, blockquote,
-td, th, tr, tbody, thead, table,
-.listing-title, .section-heading, .sub-title, .badge {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+span,
+li,
+label:not([for]),
+small,
+strong,
+em,
+blockquote,
+td,
+th,
+tr,
+tbody,
+thead,
+table,
+.listing-title,
+.section-heading,
+.sub-title,
+.badge {
   cursor: default !important;
   user-select: none;
   -webkit-user-select: none;
@@ -41,6 +61,7 @@ textarea,
   user-select: text !important;
   -webkit-user-select: text !important;
 }
+
 // ───────────────────────────────────────────────────────────────────────────── ─────────────────────────────────────────────────────────────────────────────
 
 body {
@@ -565,14 +586,14 @@ div.p-datepicker table td.p-datepicker-today>span:focus {
 .trending-searches {
   flex-wrap: nowrap !important;
 
-  > div {
+  >div {
     flex-wrap: nowrap !important;
   }
 
   @media (max-width: 1199.98px) {
     flex-wrap: wrap !important;
 
-    > div {
+    >div {
       flex-wrap: wrap !important;
     }
   }
@@ -1030,6 +1051,7 @@ textarea,
 .service-section,
 .convenient-section,
 .earn-money {
+
   h2,
   h3,
   .section-heading h2,
@@ -1246,6 +1268,7 @@ textarea,
 // control (all options fit on one row at any phone width) and the floating
 // enquiry button shrinks to a compact icon so it never collides with content.
 @media (max-width: 767.98px) {
+
   .card-header-btns nav .nav-tabs,
   .request-coach-list .nav-tabs {
     display: flex !important;
@@ -1282,7 +1305,7 @@ textarea,
     flex-direction: column !important;
     align-items: stretch !important;
 
-    > .d-inline-flex:last-child {
+    >.d-inline-flex:last-child {
       display: grid !important;
       grid-template-columns: repeat(2, 1fr) !important;
       gap: 8px !important;
@@ -1652,7 +1675,9 @@ textarea,
   .work-content {
     padding: 0 24px;
 
-    h5 { margin-bottom: 8px !important; }
+    h5 {
+      margin-bottom: 8px !important;
+    }
 
     p {
       margin: 0 auto 18px !important;
@@ -1677,37 +1702,56 @@ textarea,
     display: block !important;
   }
 
-  .footer-title { color: #ffffff !important; }
+  .footer-title {
+    color: #ffffff !important;
+  }
 
   .footer-top .footer-about .footer-desc,
-  .footer-about p { color: rgba(232, 242, 234, 0.78) !important; }
+  .footer-about p {
+    color: rgba(232, 242, 234, 0.78) !important;
+  }
 
-  .footer-menu ul li a { color: rgba(232, 242, 234, 0.76) !important; }
-  .footer-menu ul li a:hover { color: #9bea6d !important; }
+  .footer-menu ul li a {
+    color: rgba(232, 242, 234, 0.76) !important;
+  }
+
+  .footer-menu ul li a:hover {
+    color: #9bea6d !important;
+  }
 
   .footer-logo {
     color: #ffffff !important;
 
-    > span span { color: #82d946 !important; }
+    >span span {
+      color: #82d946 !important;
+    }
   }
 
-  .footer-enquiry { color: #9bea6d !important; }
+  .footer-enquiry {
+    color: #9bea6d !important;
+  }
 
   .social-icon ul li a {
     background: rgba(255, 255, 255, 0.08) !important;
     border-color: rgba(255, 255, 255, 0.16) !important;
 
-    i { color: #e7f1e9 !important; }
+    i {
+      color: #e7f1e9 !important;
+    }
   }
 
   .footer-bottom {
     background: #0b1e14 !important;
     border-top-color: rgba(208, 241, 216, 0.12) !important;
 
-    .copyright-text p { color: rgba(232, 242, 234, 0.62) !important; }
+    .copyright-text p {
+      color: rgba(232, 242, 234, 0.62) !important;
+    }
   }
 
-  .footer-legal-links a { color: rgba(232, 242, 234, 0.72) !important; }
+  .footer-legal-links a {
+    color: rgba(232, 242, 234, 0.72) !important;
+  }
 }
 
 // Hide section SVG dividers globally to ensure clean, consistent section transitions
@@ -1756,10 +1800,12 @@ textarea,
 
 // Listing Cards content contrast fixes
 .listing-item {
+
   .listing-content,
   .listing-content.home-venue.news-content,
   .listing-content.news-content,
   .listing-content.list-coche-content {
+
     h3,
     h3 a,
     .listing-title,
@@ -2897,6 +2943,12 @@ button {
     font-weight: 700 !important;
   }
 
+  // Active-filter pills stay dark green (they sit on a light green background,
+  // unlike the white-text card badges above)
+  .badge.ki-filter-badge {
+    color: #15803D !important;
+  }
+
   .text-primary,
   .text-success,
   span.text-primary,
@@ -3665,24 +3717,62 @@ header.header.header-sticky {
     left: -9999px !important;
   }
 
-  .container-fluid {
-    padding-left: 8px !important;
-    padding-right: 8px !important;
+  // Make header flush full-width on mobile (remove floating card look)
+  header.header,
+  header.header.fixed,
+  header.header.header-sticky {
+    width: 100% !important;
+    max-width: 100% !important;
+    top: 0 !important;
+    border-radius: 0 !important;
+    border: none !important;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06) !important;
+    overflow-x: hidden !important;
   }
 
-  .navbar-header {
+  .header .container-fluid {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    overflow: hidden !important;
+  }
+
+  // Allow the nav to wrap so mobile-navbar takes full width
+  .header-nav {
+    flex-wrap: wrap !important;
+  }
+
+  // Force navbar-header to full width (overrides custom.css 30% rule)
+  .header .navbar-header {
     width: 100% !important;
+    flex: 0 0 100% !important;
+    max-width: 100% !important;
+  }
+
+  // Restore navbar-brand auto sizing (overrides custom.css 58px constraint)
+  .header .navbar-header .navbar-brand {
+    width: auto !important;
+    margin-right: 0 !important;
   }
 
   .mobile-navbar {
-    background: transparent !important;
-    border-bottom: none !important;
-    box-shadow: none !important;
-    padding: 6px 12px !important;
+    display: flex !important;
+    width: 100% !important;
   }
 
-  .header-navbar-rht {
+  // Hide all desktop-only nav elements (profile dropdown, search bar, login)
+  .header-navbar-rht,
+  .header-navbar-rht > *,
+  .user-profile-nav,
+  .profile-trigger,
+  .navbar-register-btn {
     display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    width: 0 !important;
+    overflow: hidden !important;
+    position: absolute !important;
+    left: -9999px !important;
+    pointer-events: none !important;
   }
 }
 
@@ -3906,7 +3996,7 @@ header.header.header-sticky {
       position: relative !important;
       margin-bottom: 16px !important;
 
-      > i {
+      >i {
         position: absolute !important;
         left: 13px !important;
         top: 50% !important;
@@ -3986,7 +4076,8 @@ header.header.header-sticky {
 
       .ki-mob-nav-label {
         flex: 1 1 auto !important;
-        color: inherit !important; /* beat global `span` white override in base.scss */
+        color: inherit !important;
+        /* beat global `span` white override in base.scss */
       }
 
       .ki-mob-nav-arrow {
@@ -4197,7 +4288,9 @@ header.header.header-sticky {
     width: 92vw !important;
     max-width: 420px !important;
   }
-}// Global Hero Section Spacing & Flush Top Layout
+}
+
+// Global Hero Section Spacing & Flush Top Layout
 .hero-section,
 .hero-booking-section {
   margin-top: 0 !important;
@@ -5467,12 +5560,15 @@ body .ki-category-card {
   @media (max-width: 1200px) {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
+
   @media (max-width: 992px) {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
+
   @media (max-width: 768px) {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
   @media (max-width: 480px) {
     grid-template-columns: repeat(1, minmax(0, 1fr));
   }
@@ -5486,9 +5582,11 @@ body .ki-category-card {
   @media (max-width: 1200px) {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
+
   @media (max-width: 992px) {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
   @media (max-width: 576px) {
     grid-template-columns: repeat(1, minmax(0, 1fr));
   }
