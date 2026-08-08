@@ -1470,6 +1470,7 @@ exports.updateProfileSettting = async (req, res) => {
     const {
       first_name,
       last_name,
+      email,
       address,
       city,
       state,
@@ -1500,6 +1501,7 @@ exports.updateProfileSettting = async (req, res) => {
     const updates = {
       first_name: first_name || user.first_name,
       last_name: last_name || user.last_name,
+      email: email || user.email,
       address: address || user.address,
       city: city || user.city,
       state: state || user.state,
