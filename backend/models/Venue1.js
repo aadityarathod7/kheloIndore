@@ -83,6 +83,22 @@ const venueSchema = new mongoose.Schema(
     type: Number,
     default:0
   },
+  categories: {
+    type: [String],
+    default: []
+  },
+  videos: {
+    type: Array,
+    default: []
+  },
+  sports_details: {
+    type: Array,
+    default: []
+  },
+  share_token: {
+    type: String,
+    default: ""
+  },
   },
   
    { timestamps: true }

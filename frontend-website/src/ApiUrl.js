@@ -8,9 +8,10 @@
 // export const IMG_URL = 'http://192.168.0.145:4000';
 // export const IMG_URL = "https://api-kheloindore.swapinfotech.com";
 
-
-export const IMG_URL = "https://qa.kheloindore.in";
-export const API_URL = "https://qa.kheloindore.in/api";
+export const API_URL = "http://localhost:4000/api";
+export const IMG_URL = "http://localhost:4000";
+// export const IMG_URL = "https://qa.kheloindore.in";
+// export const API_URL = "https://qa.kheloindore.in/api";
 
 // Google Maps browser key (client-side key, restricted by HTTP referrer in
 // the Google Cloud console). Kept in one place so it can be rotated easily.

@@ -117,21 +117,51 @@ exports.updatePersonalTrainer = async (req, res) => {
 
     const personalTrainerData = await PersonalTrainer.findById(id);
 
+    const updatePayload = {
+      first_name: detail.first_name || personalTrainerData.first_name,
+      last_name: detail.last_name || personalTrainerData.last_name,
+      email: detail.email || personalTrainerData.email,
+      experience: detail.experience || personalTrainerData.experience,
+      availability: detail.availability || personalTrainerData.availability,
+      specializations:
+        detail.specializations || personalTrainerData.specializations,
+      location: detail.location || personalTrainerData.location,
+      bio: detail.bio || personalTrainerData.bio,
+      status: detail.status,
+      isUpdated: true,
+    };
+
+    // Extended profile fields (levels, response time, class location, students, views, socials, etc.)
+    const extendedFields = [
+      "gender", "age", "price", "category", "trainer_type", "near_by_location",
+      "qualifications", "skills", "languages", "address", "city", "state", "zipcode",
+      "own_level", "response_time", "class_location", "students_trained",
+      "profile_views", "rating", "reviews_count", "gallery_videos", "gallery",
+      "coaching_levels", "daily_availability", "social_media", "categories", "videos",
+    ];
+    extendedFields.forEach((field) => {
+      if (detail[field] !== undefined && detail[field] !== null && detail[field] !== "") {
+        if (field === "coaching_levels" || field === "daily_availability" || field === "categories" || field === "videos") {
+          if (typeof detail[field] === "string") {
+            try {
+              updatePayload[field] = JSON.parse(detail[field]);
+            } catch (e) {
+              updatePayload[field] = detail[field];
+            }
+          } else {
+            updatePayload[field] = detail[field];
+          }
+        } else if (field === "social_media" && typeof detail[field] === "object" && !Array.isArray(detail[field])) {
+          updatePayload.social_media = { ...(personalTrainerData.social_media || {}), ...detail[field] };
+        } else {
+          updatePayload[field] = detail[field];
+        }
+      }
+    });
+
     const updatedPersonalTrainer = await PersonalTrainer.findByIdAndUpdate(
       id,
-      {
-        first_name: detail.first_name || personalTrainerData.first_name,
-        last_name: detail.last_name || personalTrainerData.last_name,
-        email: detail.email || personalTrainerData.email,
-        experience: detail.experience || personalTrainerData.experience,
-        availability: detail.availability || personalTrainerData.availability,
-        specializations:
-          detail.specializations || personalTrainerData.specializations,
-        location: detail.location || personalTrainerData.location,
-        bio: detail.bio || personalTrainerData.bio,
-        status: detail.status,
-        isUpdated: true,
-      },
+      updatePayload,
       { new: true }
     );
 
@@ -456,6 +486,153 @@ exports.fetchAllPersonalTrainersForWeb = async (req, res) => {
       success: false,
       message: err.message,
     });
+  }
+};
+
+// Public trainer detail fetch - increments profile views (used by the website)
+exports.fetchPublicTrainer = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!id || id.trim() === "") {
+      return res.status(400).json({ success: false, message: "Invalid trainer ID provided" });
+    }
+    const trainer = await PersonalTrainer.findById(id);
+    if (!trainer) {
+      return res.status(404).json({ success: false, message: "Trainer not found" });
+    }
+    if (trainer.status !== true) {
+      return res.status(403).json({ success: false, message: "Trainer is not active" });
+    }
+    trainer.profile_views = (trainer.profile_views || 0) + 1;
+    await trainer.save();
+    return res.status(200).json({ success: true, personalTrainer: trainer });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// Generate a shareable profile link (hides contact + address when shared)
+exports.generateTrainerShareLink = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const trainer = await PersonalTrainer.findById(id);
+    if (!trainer) {
+      return res.status(404).json({ success: false, message: "Trainer not found" });
+    }
+    if (!trainer.share_token) {
+      trainer.share_token = require("crypto").randomBytes(16).toString("hex");
+      await trainer.save();
+    }
+    const baseUrl = process.env.WEBSITE_URL || "https://kheloindore.in";
+    return res.status(200).json({
+      success: true,
+      shareLink: `${baseUrl}/personal-training/shared/${trainer.share_token}`,
+      share_token: trainer.share_token,
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// Fetch a shared trainer profile by token - contact + address hidden
+exports.fetchSharedTrainer = async (req, res) => {
+  try {
+    const { token } = req.params;
+    const trainer = await PersonalTrainer.findOne({ share_token: token });
+    if (!trainer) {
+      return res.status(404).json({ success: false, message: "Invalid or expired share link" });
+    }
+    const shared = trainer.toObject();
+    delete shared.mobile;
+    delete shared.other_contact_number;
+    delete shared.email;
+    delete shared.address;
+    delete shared.zipcode;
+    if (shared.location) {
+      delete shared.location.address;
+      delete shared.location.zipcode;
+    }
+    return res.status(200).json({ success: true, personalTrainer: shared });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// Complete trainer profile from the onboarding link
+exports.completeTrainerProfile = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const detail = req.body;
+    const trainer = await PersonalTrainer.findById(id);
+    if (!trainer) {
+      return res.status(404).json({ success: false, message: "Trainer not found" });
+    }
+    const allowed = [
+      "gender", "age", "date_of_birth", "price", "category", "trainer_type",
+      "near_by_location", "experience", "availability", "specializations", "bio",
+      "qualifications", "skills", "languages", "address", "city", "state", "zipcode",
+      "coaching_levels", "own_level", "response_time", "class_location",
+      "students_trained", "daily_availability", "social_media", "gallery_videos",
+      "profile_picture", "gallery", "package",
+    ];
+    allowed.forEach((field) => {
+      if (detail[field] !== undefined && detail[field] !== null) {
+        trainer[field] = detail[field];
+      }
+    });
+    trainer.is_profile_completed = true;
+    await trainer.save();
+    return res.status(200).json({ success: true, message: "Profile completed successfully", personalTrainer: trainer });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// Send onboarding email + SMS with a link to complete the profile
+exports.sendTrainerOnboardingProfileLink = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const trainer = await PersonalTrainer.findById(id);
+    if (!trainer) {
+      return res.status(404).json({ success: false, message: "Trainer not found" });
+    }
+    if (!trainer.profile_completion_token) {
+      trainer.profile_completion_token = require("crypto").randomBytes(12).toString("hex");
+      await trainer.save();
+    }
+    const baseUrl = process.env.WEBSITE_URL || "https://kheloindore.in";
+    const completeLink = `${baseUrl}/personal-training/complete-profile/${trainer._id}?token=${trainer.profile_completion_token}`;
+
+    const mail = require("../helper/sendMail");
+    const mailContent = require("../middlewares/mail-content");
+    if (trainer.email) {
+      try {
+        await mail.superAdminAddUsersendEmail(
+          trainer.email,
+          mailContent.onboarding_profile_link(
+            `${trainer.first_name} ${trainer.last_name || ""}`.trim(),
+            completeLink
+          )
+        );
+      } catch (e) {
+        console.error("Onboarding email failed:", e.message);
+      }
+    }
+    if (trainer.mobile) {
+      try {
+        const { sendCustomMessage } = require("../helper/bhashMessaging");
+        const msg =
+          `Dear ${trainer.first_name}, welcome to Khelo Indore! Complete your trainer profile here: ${completeLink}`.slice(0, 160);
+        await sendCustomMessage({ mobile: String(trainer.mobile), message: msg });
+      } catch (e) {
+        console.error("Onboarding SMS failed:", e.message);
+      }
+    }
+    trainer.onboard_email_sent = true;
+    await trainer.save();
+    return res.status(200).json({ success: true, message: "Onboarding link sent" });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
   }
 };
 

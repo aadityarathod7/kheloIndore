@@ -16,10 +16,126 @@ const nodemailer = require("nodemailer");
 const { mail } = require("./NodeMailerController");
 const mailContent = require("../middlewares/mail-content");
 const nodeSendMail = require("../helper/sendMail")
+const { processBookingRefund } = require("./paymentController");
 require('dotenv').config();
 const mongoose = require('mongoose');
 const { ObjectId } = require("mongoose").Types;
 const superAdminEmail = process.env.SUPER_ADMIN_EMAIL
+// Venue Admin CRM - manually add a booking that came directly to the venue
+// (walk-in / phone bookings). Finds or creates a lightweight user, then books
+// the slots without requiring an online payment.
+exports.addManualBooking = async (req, res) => {
+  try {
+    const {
+      venue_id,
+      date,
+      slotsBooked,
+      customer_name,
+      customer_mobile,
+      customer_email,
+      amount_paid,
+      payment_mode,
+      notes,
+    } = req.body;
+
+    if (!venue_id) {
+      return res.status(400).json({ success: false, message: "Venue Id is required" });
+    }
+    if (!date) {
+      return res.status(400).json({ success: false, message: "Date is required" });
+    }
+    if (!slotsBooked || !Array.isArray(slotsBooked) || slotsBooked.length === 0) {
+      return res.status(400).json({ success: false, message: "Booking Slot is Empty" });
+    }
+    if (!customer_mobile || String(customer_mobile).length !== 10) {
+      return res.status(400).json({ success: false, message: "Valid 10-digit customer mobile number is required" });
+    }
+
+    // Find or create the customer user (role: User)
+    let customer = await User.findOne({ mobile: customer_mobile });
+    if (!customer) {
+      customer = await User.create({
+        first_name: customer_name ? customer_name.split(" ")[0] : "Walk-in",
+        last_name: customer_name && customer_name.split(" ").length > 1 ? customer_name.split(" ").slice(1).join(" ") : "Customer",
+        mobile: customer_mobile,
+        email: customer_email || `${customer_mobile}@walkin.kheloindore.com`,
+        role: "User",
+      });
+    }
+
+    const dateObj = new Date(date);
+    const slots1 = await Slot.find({ venue_id: venue_id, date: dateObj });
+    if (slots1.length === 0) {
+      return res.status(400).json({ success: false, message: "Slots are not found for the selected date" });
+    }
+
+    let total_price = 0;
+    const slotsArray1 = slots1[0].slots;
+    for (let slot of slotsArray1) {
+      const slotID = slot._id.toString();
+      if (slotsBooked.includes(slotID)) {
+        total_price += slot.price || 0;
+        if (slot.isBooked) {
+          return res.status(400).json({
+            success: false,
+            message: `The Slot ${slot.startTime} to ${slot.endTime} is Already Booked, Book another Slot`,
+          });
+        }
+      }
+    }
+
+    const venueData = await Venue1.findById(venue_id);
+    const vendor_id = venueData ? venueData.vendor_id : null;
+
+    const newBooking = await Booking.create({
+      user_id: customer._id,
+      venue_id,
+      vendor_id,
+      date,
+      slotsBooked,
+      total_price: amount_paid || total_price,
+      transaction_id: `MANUAL-${Date.now()}`,
+      merchantTransaction_id: `MANUAL-${Date.now()}`,
+      paymentStatus: amount_paid ? "PAID" : "PENDING",
+      paymentState: "MANUAL",
+      payment_type: "manual",
+      manual_booking: true,
+      manual_notes: notes || "",
+      payment_mode: payment_mode || "cash",
+    });
+
+    // Mark the selected slots as booked
+    await Slot.updateMany(
+      {
+        venue_id: venue_id,
+        date: dateObj,
+        "slots._id": { $in: slotsBooked },
+      },
+      {
+        $set: { "slots.$[slot].isBooked": true },
+      },
+      {
+        arrayFilters: [{ "slot._id": { $in: slotsBooked } }],
+      }
+    );
+
+    await User.findByIdAndUpdate(customer._id, { $inc: { booking_count: 1 } }, { new: true });
+
+    const populatedBooking = await Booking.findById(newBooking._id)
+      .populate("user_id")
+      .populate("venue_id");
+
+    return res.status(200).json({
+      success: true,
+      message: "Manual booking added successfully",
+      data: populatedBooking,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ success: false, message: "Failed to add manual booking", error: error.message });
+  }
+};
+
 exports.addBooking = async (req, res) => {
   try {
     const { user_id, venue_id,date, slotsBooked } = req.body;
@@ -1464,6 +1580,14 @@ exports.cancelBookingForVenue = async (req, res) => {
       return res.status(400).json({ success: false, message: "Booking is already canceled" });
     }
 
+    // Process refund per policy (partial = non-refundable; full >= 4hrs before = 75% refunded)
+    let refundResult = null;
+    try {
+      refundResult = await processBookingRefund({ booking, reason: "User cancelled venue booking" });
+    } catch (refundErr) {
+      console.error("Refund processing failed:", refundErr.message);
+    }
+
     // Update the cancellation status
     booking.cancellation_status = 1;
     await booking.save();
@@ -1531,6 +1655,7 @@ exports.cancelBookingForVenue = async (req, res) => {
       success: true,
       message: "Booking canceled, slots updated, and notification sent successfully",
       booking,
+      refund: refundResult,
     });
   } catch (error) {
     console.error("Error canceling booking:", error);
@@ -1558,6 +1683,14 @@ exports.cancelBookingForPersonalTrainer = async (req, res) => {
     // Check if the booking is already canceled
     if (booking.cancellation_status === 1) {
       return res.status(400).json({ success: false, message: "Booking is already canceled" });
+    }
+
+    // Process refund per policy (partial = non-refundable; full >= 4hrs before = 75% refunded)
+    let refundResult = null;
+    try {
+      refundResult = await processBookingRefund({ booking, reason: "User cancelled personal trainer booking" });
+    } catch (refundErr) {
+      console.error("Refund processing failed:", refundErr.message);
     }
 
     // Update the cancellation status
@@ -1626,6 +1759,7 @@ exports.cancelBookingForPersonalTrainer = async (req, res) => {
       success: true,
       message: "Booking canceled, slots updated, and notification sent successfully",
       booking,
+      refund: refundResult,
     });
 
   } catch (error) {
@@ -1654,6 +1788,14 @@ exports.cancelBookingForCoach = async (req, res) => {
     // Check if the booking is already canceled
     if (booking.cancellation_status === 1) {
       return res.status(400).json({ success: false, message: "Booking is already canceled" });
+    }
+
+    // Process refund per policy (partial = non-refundable; full >= 4hrs before = 75% refunded)
+    let refundResult = null;
+    try {
+      refundResult = await processBookingRefund({ booking, reason: "User cancelled coach booking" });
+    } catch (refundErr) {
+      console.error("Refund processing failed:", refundErr.message);
     }
 
     // Update the cancellation status
@@ -1728,6 +1870,7 @@ exports.cancelBookingForCoach = async (req, res) => {
       success: true,
       message: "Booking canceled, slots updated, and notification sent successfully",
       booking,
+      refund: refundResult,
     });
 
   } catch (error) {

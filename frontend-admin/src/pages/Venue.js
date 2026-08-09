@@ -61,6 +61,9 @@ const AddVenue = () => {
     additionalNotes: "",
     gameType: "",
     policiesAndRules: "",
+    categories: [],
+    videos: [],
+    sports_details: [],
   });
 
   const amenitiesOptions = [
@@ -124,6 +127,25 @@ const AddVenue = () => {
     setFormData((prevState) => ({
       ...prevState,
       images: prevState.images.filter((_, i) => i !== index),
+    }));
+  };
+
+  const handleVideoInputChange = (e) => {
+    const files = Array.from(e.target.files);
+    setFormData((prevState) => ({
+      ...prevState,
+      videos: [...(prevState.videos || []), ...files],
+    }));
+    setErrors((prevErrors) => ({
+      ...prevErrors,
+      videos: "",
+    }));
+  };
+
+  const handleRemoveVideo = (index) => {
+    setFormData((prevState) => ({
+      ...prevState,
+      videos: (prevState.videos || []).filter((_, i) => i !== index),
     }));
   };
 
@@ -833,6 +855,7 @@ const AddVenue = () => {
 
     try {
       const uploadResponses = await uploadImage(formData.images);
+      const videoUploadResponses = formData.videos && formData.videos.length > 0 ? await uploadImage(formData.videos) : [];
       if (uploadResponses) {
         const images = uploadResponses;
         const amenitiesArr = formData.amenities.map((data) => data.name);
@@ -854,6 +877,7 @@ const AddVenue = () => {
           {
             ...formData,
             images,
+            videos: videoUploadResponses,
           },
           {
             headers: {
@@ -929,17 +953,24 @@ const AddVenue = () => {
                   <Form.Label className="heading">
                     Category Type <span style={{ color: "red" }}>*</span>
                   </Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="vendor_type"
-                    value={formData.vendor_type}
-                    onChange={handleChange}
-                    placeholder="Enter Category Type"
-                    isInvalid={!!errors.vendor_type}
+                  <Select
+                    isMulti
+                    name="categories"
+                    options={categories.map(c => ({ value: c.category_name, label: c.category_name }))}
+                    value={(formData.categories || []).map(cat => ({ value: cat, label: cat }))}
+                    onChange={(selectedOptions) => {
+                      const selectedVals = selectedOptions ? selectedOptions.map(o => o.value) : [];
+                      setFormData({ ...formData, categories: selectedVals, vendor_type: selectedVals[0] || "" });
+                      setErrors({ ...errors, vendor_type: "" });
+                    }}
+                    placeholder="Select Categories"
+                    styles={{
+                      control: (base) => ({
+                        ...base,
+                        borderColor: errors.vendor_type ? "red" : base.borderColor,
+                      }),
+                    }}
                   />
-                  <Form.Control.Feedback type="invalid">
-                    {errors.vendor_type}
-                  </Form.Control.Feedback>
                 </Form.Group>
               </Col>
             </Row>
@@ -1540,6 +1571,97 @@ const AddVenue = () => {
               </div>
             </Row>
             <Row>
+              <div className="mb-3">
+                <Form.Label
+                  className="heading"
+                  style={{ marginBottom: "15px" }}
+                >
+                  Upload Video
+                </Form.Label>
+                <div
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    const files = Array.from(e.dataTransfer.files);
+                    setFormData((prevState) => ({
+                      ...prevState,
+                      videos: [
+                        ...prevState.videos,
+                        ...files.filter((file) =>
+                          file.type.startsWith("video/")
+                        ),
+                      ],
+                    }));
+                  }}
+                  onDragOver={(e) => e.preventDefault()}
+                  style={{
+                    border: "2px dashed #ccc",
+                    padding: "20px",
+                    textAlign: "center",
+                  }}
+                >
+                  <h3 style={{ fontSize: "18px" }}>Drag & Drop here</h3>
+                  <div style={{ marginBottom: "10px" }}>
+                    <FiUpload
+                      style={{ fontSize: "48px", marginBottom: "10px", cursor: "pointer" }}
+                      onClick={() => document.getElementById("videoFileInput").click()}
+                    />
+                    <input
+                      type="file"
+                      multiple
+                      accept="video/*"
+                      onChange={handleVideoInputChange}
+                      style={{ display: "none" }}
+                      id="videoFileInput"
+                    />
+                  </div>
+                  <div>
+                    {formData.videos.map((videoFile, index) => (
+                      <div
+                        key={index}
+                        style={{
+                          position: "relative",
+                          display: "inline-block",
+                          marginRight: "12px",
+                          marginBottom: "12px",
+                        }}
+                      >
+                        <video
+                          src={URL.createObjectURL(videoFile)}
+                          controls
+                          style={{
+                            width: "150px",
+                            height: "100px",
+                            objectFit: "cover",
+                          }}
+                        />
+                        <button
+                          onClick={() => handleRemoveVideo(index)}
+                          type="button"
+                          style={{
+                            position: "absolute",
+                            top: "5px",
+                            right: "5px",
+                            background: "rgba(0,0,0,0.6)",
+                            color: "white",
+                            border: "none",
+                            borderRadius: "50%",
+                            width: "20px",
+                            height: "20px",
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                        >
+                          <FiX style={{ fontSize: "12px" }} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </Row>
+            <Row>
               {formData.vendor_type === "Cricket Turf" ? (
                 <Turf
                   errors={errors}
@@ -1774,6 +1896,101 @@ const AddVenue = () => {
                   }
                 />
               ) : null}
+            </Row>
+            <Row className="mb-4 mt-3">
+              <Col md={12}>
+                <h5 style={{ fontWeight: "bold", borderBottom: "2px solid #097e52", paddingBottom: "6px", marginBottom: "16px" }}>
+                  Multiple Sports Details (Optional)
+                </h5>
+                {(formData.sports_details || []).map((sportDetail, index) => (
+                  <Row key={index} className="align-items-center mb-3 p-3 bg-light rounded shadow-sm border">
+                    <Col md={3}>
+                      <Form.Group>
+                        <Form.Label className="fw-bold">Sport / Game</Form.Label>
+                        <Select
+                          options={categories.map(c => ({ value: c.category_name, label: c.category_name }))}
+                          value={sportDetail.sport ? { value: sportDetail.sport, label: sportDetail.sport } : null}
+                          onChange={(opt) => {
+                            const updated = [...formData.sports_details];
+                            updated[index].sport = opt ? opt.value : "";
+                            setFormData({ ...formData, sports_details: updated });
+                          }}
+                          placeholder="Select Sport"
+                        />
+                      </Form.Group>
+                    </Col>
+                    <Col md={2}>
+                      <Form.Group>
+                        <Form.Label className="fw-bold">Price / Hr (₹)</Form.Label>
+                        <Form.Control
+                          type="number"
+                          value={sportDetail.price_per_hr || ""}
+                          onChange={(e) => {
+                            const updated = [...formData.sports_details];
+                            updated[index].price_per_hr = Number(e.target.value) || "";
+                            setFormData({ ...formData, sports_details: updated });
+                          }}
+                          placeholder="Price"
+                        />
+                      </Form.Group>
+                    </Col>
+                    <Col md={2}>
+                      <Form.Group>
+                        <Form.Label className="fw-bold">Capacity</Form.Label>
+                        <Form.Control
+                          type="number"
+                          value={sportDetail.capacity || ""}
+                          onChange={(e) => {
+                            const updated = [...formData.sports_details];
+                            updated[index].capacity = Number(e.target.value) || "";
+                            setFormData({ ...formData, sports_details: updated });
+                          }}
+                          placeholder="Max players"
+                        />
+                      </Form.Group>
+                    </Col>
+                    <Col md={4}>
+                      <Form.Group>
+                        <Form.Label className="fw-bold">Notes / Description</Form.Label>
+                        <Form.Control
+                          type="text"
+                          value={sportDetail.description || ""}
+                          onChange={(e) => {
+                            const updated = [...formData.sports_details];
+                            updated[index].description = e.target.value;
+                            setFormData({ ...formData, sports_details: updated });
+                          }}
+                          placeholder="E.g. timings, ground type"
+                        />
+                      </Form.Group>
+                    </Col>
+                    <Col md={1} className="text-center mt-4">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const updated = formData.sports_details.filter((_, i) => i !== index);
+                          setFormData({ ...formData, sports_details: updated });
+                        }}
+                        className="btn btn-danger btn-sm rounded-circle d-flex align-items-center justify-content-center"
+                        style={{ width: "32px", height: "32px", padding: 0 }}
+                      >
+                        <FiX />
+                      </button>
+                    </Col>
+                  </Row>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => {
+                    const newDetail = { sport: "", price_per_hr: "", capacity: "", description: "" };
+                    setFormData({ ...formData, sports_details: [...(formData.sports_details || []), newDetail] });
+                  }}
+                  className="btn btn-outline-success mt-2"
+                  style={{ fontWeight: "600" }}
+                >
+                  + Add Sport Details
+                </button>
+              </Col>
             </Row>
             <Form.Group controlId="formCheckbox cursor-pointer">
               <div className="checkbox-container ">

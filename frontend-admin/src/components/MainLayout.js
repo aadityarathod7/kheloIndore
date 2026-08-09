@@ -3,6 +3,7 @@ import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
   LogoutOutlined,
+  DollarOutlined,
 } from "@ant-design/icons";
 import { AiOutlineDashboard } from "react-icons/ai";
 import { RiCouponLine, RiUserLine } from "react-icons/ri";
@@ -17,6 +18,34 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Outlet } from "react-router-dom";
 import { Layout, ConfigProvider, theme } from "antd";
+import { useEffect, useRef } from "react";
+
+// Auto-logout after 15 minutes of inactivity
+const useAutoLogout = () => {
+  const timerRef = useRef(null);
+  const navigateToLogin = () => {
+    if (!localStorage.getItem("token")) return;
+    localStorage.removeItem("token");
+    localStorage.removeItem("id");
+    localStorage.removeItem("role");
+    localStorage.removeItem("userName");
+    window.location.href = "/";
+  };
+  useEffect(() => {
+    const resetTimer = () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+      if (!localStorage.getItem("token")) return;
+      timerRef.current = setTimeout(navigateToLogin, 15 * 60 * 1000);
+    };
+    const events = ["mousemove", "mousedown", "keydown", "scroll", "touchstart", "click"];
+    events.forEach((event) => window.addEventListener(event, resetTimer, { passive: true }));
+    resetTimer();
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+      events.forEach((event) => window.removeEventListener(event, resetTimer));
+    };
+  }, []);
+};
 import { useNavigate, useLocation } from "react-router-dom";
 import logoImage from "../Khelo Indore Logo/logo.png";
 import Userlogo from "../Khelo Indore Logo/dashboard_user.jpg";
@@ -57,6 +86,7 @@ const buildMenu = (role) => {
     });
   }
   items.push({ key: "bookings", icon: <FaCalendarAlt />, label: "Bookings" });
+  items.push({ key: "earnings", icon: <DollarOutlined />, label: "Earnings" });
   return items;
 };
 
@@ -200,6 +230,8 @@ const MainLayout = () => {
   const { token: { colorBgContainer } } = theme.useToken();
   const navigate = useNavigate();
   const location = useLocation();
+  // Auto-logout after 15 minutes of inactivity
+  useAutoLogout();
   const currentKey =
     location.pathname.split("/").filter(Boolean).pop() || "dashboard";
   const role = localStorage.getItem("role");

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { BsArrowUpRight } from "react-icons/bs";
 import { Table, DatePicker } from "antd";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import axios from "axios";
 import { API_URL } from '../utils/ApiUrl';
 import BookingList from "../pages/Bookings"
@@ -126,6 +126,63 @@ const Dashboard = () => {
 
   const [graphData, setGraphData] = useState([])
   const [revenueData, setRevenueData] = useState()
+
+  // Analytics (bookings/revenue breakdown with Day/Week/Month/Custom filters)
+  const [analytics, setAnalytics] = useState(null);
+  const [analyticsFilter, setAnalyticsFilter] = useState("week");
+  const [customFrom, setCustomFrom] = useState("");
+  const [customTo, setCustomTo] = useState("");
+  const [analyticsLoading, setAnalyticsLoading] = useState(false);
+  const PIE_COLORS = ["#22C55E", "#0EA5E9", "#F59E0B"];
+
+  const fetchAnalytics = async (filter = analyticsFilter, from = customFrom, to = customTo) => {
+    setAnalyticsLoading(true);
+    try {
+      const params = { filter };
+      if (filter === "custom" && from && to) {
+        params.fromDate = from;
+        params.toDate = to;
+      }
+      const response = await axios.get(`${API_URL}/dashboard/analytics`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        params,
+      });
+      setAnalytics(response.data);
+    } catch (error) {
+      console.error("Error fetching analytics:", error);
+    } finally {
+      setAnalyticsLoading(false);
+    }
+  };
+
+  const downloadAnalyticsReport = async () => {
+    try {
+      const params = { filter: analyticsFilter };
+      if (analyticsFilter === "custom" && customFrom && customTo) {
+        params.fromDate = customFrom;
+        params.toDate = customTo;
+      }
+      const response = await axios.get(`${API_URL}/dashboard/analytics/download`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        params,
+        responseType: "blob",
+      });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `khelo-indore-report-${analyticsFilter}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error downloading report:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchAnalytics("week");
+  }, []);
 
 
   useEffect(() => {
@@ -452,6 +509,154 @@ const Dashboard = () => {
           />
         </div> */}
       </div>
+      {/* Analytics: Total Bookings & Total Revenue breakdown */}
+      <div className="mt-4 bg-white p-4 rounded-3" style={{ border: "1px solid #E2E8F0" }}>
+        <div className="d-flex flex-wrap align-items-center justify-content-between mb-3 gap-2">
+          <h3 className="mb-0 title">Booking &amp; Revenue Analytics</h3>
+          <div className="d-flex align-items-center gap-2 flex-wrap">
+            {["day", "week", "month", "custom"].map((f) => (
+              <button
+                key={f}
+                onClick={() => {
+                  setAnalyticsFilter(f);
+                  if (f !== "custom") fetchAnalytics(f);
+                }}
+                className="btn btn-sm"
+                style={{
+                  borderRadius: "50px",
+                  fontWeight: "600",
+                  textTransform: "capitalize",
+                  background: analyticsFilter === f ? "#22C55E" : "#F1F5F9",
+                  color: analyticsFilter === f ? "#FFFFFF" : "#475569",
+                  border: "1px solid " + (analyticsFilter === f ? "#22C55E" : "#E2E8F0"),
+                }}
+              >
+                {f}
+              </button>
+            ))}
+            <button
+              onClick={downloadAnalyticsReport}
+              className="btn btn-sm"
+              style={{
+                borderRadius: "50px",
+                fontWeight: "600",
+                background: "#0F172A",
+                color: "#FFFFFF",
+                border: "none",
+              }}
+            >
+              <i className="feather-download me-1" /> Download Report
+            </button>
+          </div>
+        </div>
+
+        {analyticsFilter === "custom" && (
+          <div className="d-flex align-items-end gap-2 mb-3 flex-wrap">
+            <div>
+              <label className="fw-semibold mb-1 d-block" style={{ fontSize: "12px" }}>From</label>
+              <input
+                type="date"
+                className="form-control form-control-sm"
+                value={customFrom}
+                onChange={(e) => setCustomFrom(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="fw-semibold mb-1 d-block" style={{ fontSize: "12px" }}>To</label>
+              <input
+                type="date"
+                className="form-control form-control-sm"
+                value={customTo}
+                onChange={(e) => setCustomTo(e.target.value)}
+              />
+            </div>
+            <button
+              onClick={() => fetchAnalytics("custom", customFrom, customTo)}
+              className="btn btn-sm"
+              style={{ background: "#22C55E", color: "#FFFFFF", borderRadius: "8px", fontWeight: "600" }}
+            >
+              Apply
+            </button>
+          </div>
+        )}
+
+        {analyticsLoading ? (
+          <p className="text-muted py-3 mb-0">Loading analytics...</p>
+        ) : analytics ? (
+          <div className="row g-4">
+            {/* Totals */}
+            <div className="col-12">
+              <div className="row g-3">
+                <div className="col-md-6">
+                  <div className="p-3 rounded-3 text-white" style={{ background: "linear-gradient(135deg, #22C55E 0%, #16A34A 100%)" }}>
+                    <p className="mb-1" style={{ fontSize: "13px", opacity: 0.85 }}>Total Bookings</p>
+                    <h3 className="mb-0 fw-bold">{analytics.totalBookings ?? 0}</h3>
+                  </div>
+                </div>
+                <div className="col-md-6">
+                  <div className="p-3 rounded-3 text-white" style={{ background: "linear-gradient(135deg, #0F172A 0%, #1E293B 100%)" }}>
+                    <p className="mb-1" style={{ fontSize: "13px", opacity: 0.85 }}>Total Revenue</p>
+                    <h3 className="mb-0 fw-bold">₹ {Number(analytics.totalRevenue ?? 0).toLocaleString("en-IN")}</h3>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Pie charts */}
+            <div className="col-md-6">
+              <div className="p-3 rounded-3 text-center" style={{ background: "#F8FAFC", border: "1px solid #E2E8F0" }}>
+                <h6 className="fw-bold mb-3">Total Bookings by Category</h6>
+                <ResponsiveContainer width="100%" height={240}>
+                  <PieChart>
+                    <Pie
+                      data={analytics.bookingBreakdown}
+                      dataKey="value"
+                      nameKey="name"
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={80}
+                      label={(entry) => `${entry.name}: ${entry.value}`}
+                    >
+                      {analytics.bookingBreakdown.map((_, index) => (
+                        <Cell key={index} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                    <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+            <div className="col-md-6">
+              <div className="p-3 rounded-3 text-center" style={{ background: "#F8FAFC", border: "1px solid #E2E8F0" }}>
+                <h6 className="fw-bold mb-3">Total Revenue by Category</h6>
+                <ResponsiveContainer width="100%" height={240}>
+                  <PieChart>
+                    <Pie
+                      data={analytics.revenueBreakdown}
+                      dataKey="value"
+                      nameKey="name"
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={80}
+                      label={(entry) => `${entry.name}: ₹${entry.value}`}
+                    >
+                      {analytics.revenueBreakdown.map((_, index) => (
+                        <Cell key={index} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                    <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <p className="text-muted py-3 mb-0">No analytics data available.</p>
+        )}
+      </div>
+
       {/* Recent Visitor */}
       <div className="mt-4">
         <h3 className="mb-5 title">Recent Visitor</h3>

@@ -134,6 +134,78 @@ const PersonalTrainerSchema = new mongoose.Schema(
     endTime: {
       type: Date,
     },
+    // ---- Extended profile fields ----
+    coaching_levels: {
+      type: [String],
+      default: [],
+    },
+    own_level: {
+      type: String,
+      default: "",
+    },
+    response_time: {
+      type: String,
+      default: "",
+    },
+    class_location: {
+      type: String,
+      default: "",
+    },
+    students_trained: {
+      type: Number,
+      default: 0,
+    },
+    profile_views: {
+      type: Number,
+      default: 0,
+    },
+    social_media: {
+      facebook: { type: String, default: "" },
+      instagram: { type: String, default: "" },
+      youtube: { type: String, default: "" },
+      twitter: { type: String, default: "" },
+      linkedin: { type: String, default: "" },
+    },
+    gallery_videos: {
+      type: Array,
+      default: null,
+    },
+    daily_availability: {
+      type: Array,
+      default: [],
+    },
+    rating: {
+      type: Number,
+      default: 0,
+    },
+    reviews_count: {
+      type: Number,
+      default: 0,
+    },
+    share_token: {
+      type: String,
+      default: "",
+    },
+    profile_completion_token: {
+      type: String,
+      default: "",
+    },
+    is_profile_completed: {
+      type: Boolean,
+      default: false,
+    },
+    onboard_email_sent: {
+      type: Boolean,
+      default: false,
+    },
+    categories: {
+      type: [String],
+      default: [],
+    },
+    videos: {
+      type: Array,
+      default: [],
+    },
   },
   { timestamps: true }
 );

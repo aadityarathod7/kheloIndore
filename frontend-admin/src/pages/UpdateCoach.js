@@ -44,7 +44,72 @@ const UpdateCoach = () => {
     gallery: [],
     bio: "",
     status: "",
+    // ---- Extended profile fields ----
+    coaching_levels: [],
+    own_level: "",
+    response_time: "",
+    class_location: "",
+    students_trained: 0,
+    social_media: {
+      facebook: "",
+      instagram: "",
+      youtube: "",
+      twitter: "",
+      linkedin: "",
+    },
+    daily_availability: [],
   });
+
+  const LEVEL_OPTIONS = ["Beginner", "Intermediate", "Advanced"];
+  const RESPONSE_TIME_OPTIONS = [
+    "Within 1 hour",
+    "Within 2 hours",
+    "Within 6 hours",
+    "Within 12 hours",
+    "Within 24 hours",
+    "Within 48 hours",
+  ];
+  const DAY_OPTIONS = [
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+    "Sunday",
+  ];
+  const handleLevelToggle = (level) => {
+    setInput((prev) => {
+      const current = prev.coaching_levels || [];
+      return {
+        ...prev,
+        coaching_levels: current.includes(level)
+          ? current.filter((l) => l !== level)
+          : [...current, level],
+      };
+    });
+  };
+  const handleSocialChange = (e) => {
+    const { name, value } = e.target;
+    setInput({
+      ...input,
+      social_media: {
+        ...input.social_media,
+        [name]: value,
+      },
+    });
+  };
+  const handleAvailabilityChange = (index, field, value) => {
+    setInput((prev) => {
+      const next = [...(prev.daily_availability || [])];
+      if (!next[index]) next[index] = { day: DAY_OPTIONS[index] };
+      next[index] = { ...next[index], [field]: value };
+      return {
+        ...prev,
+        daily_availability: next,
+      };
+    });
+  };
 
   const [newFile, setNewFile] = useState({ new_images: [] });
   const [filePreview, setFilePreview] = useState();
@@ -91,6 +156,19 @@ const UpdateCoach = () => {
           bio: coach.bio,
           profile_picture: coach.profile_picture,
           status: coach.status,
+          coaching_levels: coach.coaching_levels || [],
+          own_level: coach.own_level || "",
+          response_time: coach.response_time || "",
+          class_location: coach.class_location || "",
+          students_trained: coach.students_trained || 0,
+          social_media: coach.social_media || {
+            facebook: "",
+            instagram: "",
+            youtube: "",
+            twitter: "",
+            linkedin: "",
+          },
+          daily_availability: coach.daily_availability || [],
         });
         if (response.data.coach.profile_picture.length > 0) {
           const imageUrl = response.data.coach.profile_picture; 
@@ -577,8 +655,99 @@ const UpdateCoach = () => {
                 />
               </Form.Group>
             </Col>
+
+            <Col sm={3}>
+              <Form.Group controlId="formClassLocation">
+                <Form.Label>Class Location</Form.Label>
+                <Form.Control
+                  type="text"
+                  placeholder="e.g. On-site / Online / Player's home"
+                  name="class_location"
+                  value={input.class_location || ""}
+                  onChange={handleChange}
+                />
+              </Form.Group>
+            </Col>
+
+            <Col sm={3}>
+              <Form.Group controlId="formStudentsTrained">
+                <Form.Label>Students Trained</Form.Label>
+                <Form.Control
+                  type="number"
+                  placeholder="Enter number of students trained"
+                  name="students_trained"
+                  value={input.students_trained || 0}
+                  onChange={handleChange}
+                />
+              </Form.Group>
+              <br></br>
+            </Col>
           </Row>
           <Row>
+            <Col sm={3}>
+              <Form.Group controlId="formCoachingLevels">
+                <Form.Label>Coaching Levels (who you coach)</Form.Label>
+                <div className="d-flex flex-wrap gap-2 mt-1">
+                  {LEVEL_OPTIONS.map((level) => (
+                    <button
+                      type="button"
+                      key={level}
+                      onClick={() => handleLevelToggle(level)}
+                      className="btn btn-sm"
+                      style={{
+                        borderRadius: "50px",
+                        fontWeight: "600",
+                        background: (input.coaching_levels || []).includes(level)
+                          ? "#22C55E"
+                          : "#F1F5F9",
+                        color: (input.coaching_levels || []).includes(level)
+                          ? "#FFFFFF"
+                          : "#475569",
+                        border: "1px solid #E2E8F0",
+                      }}
+                    >
+                      {level}
+                    </button>
+                  ))}
+                </div>
+              </Form.Group>
+            </Col>
+            <Col sm={3}>
+              <Form.Group controlId="formOwnLevel">
+                <Form.Label>Your Own Level</Form.Label>
+                <Form.Control
+                  as="select"
+                  name="own_level"
+                  value={input.own_level || ""}
+                  onChange={handleChange}
+                >
+                  <option value="">Select Your Level</option>
+                  {LEVEL_OPTIONS.map((level) => (
+                    <option key={level} value={level}>
+                      {level}
+                    </option>
+                  ))}
+                </Form.Control>
+              </Form.Group>
+            </Col>
+            <Col sm={3}>
+              <Form.Group controlId="formResponseTime">
+                <Form.Label>Response Time</Form.Label>
+                <Form.Control
+                  as="select"
+                  name="response_time"
+                  value={input.response_time || ""}
+                  onChange={handleChange}
+                >
+                  <option value="">Select Response Time</option>
+                  {RESPONSE_TIME_OPTIONS.map((opt) => (
+                    <option key={opt} value={opt}>
+                      {opt}
+                    </option>
+                  ))}
+                </Form.Control>
+              </Form.Group>
+            </Col>
             <Col sm={3}>
               <Form.Group controlId="formBio">
                 <Form.Label>Bio</Form.Label>
@@ -592,19 +761,62 @@ const UpdateCoach = () => {
                 />
               </Form.Group>
             </Col>
-
+          </Row>
+          <Row>
+            <h5 className="mb-3 mt-3">Social Media Profiles</h5>
+            {["facebook", "instagram", "youtube", "twitter", "linkedin"].map((platform) => (
+              <Col sm={3} key={platform} className="mb-3">
+                <Form.Group controlId={`formSocial${platform}`}>
+                  <Form.Label style={{ textTransform: "capitalize" }}>{platform}</Form.Label>
+                  <Form.Control
+                    type="text"
+                    placeholder={`Enter ${platform} URL`}
+                    name={platform}
+                    value={input.social_media?.[platform] || ""}
+                    onChange={handleSocialChange}
+                  />
+                </Form.Group>
+              </Col>
+            ))}
+          </Row>
+          <Row>
+            <h5 className="mb-3">Daily Availability Timings</h5>
+            {DAY_OPTIONS.map((day, index) => {
+              const item = (input.daily_availability || [])[index] || {};
+              return (
+                <Col sm={3} key={day} className="mb-3">
+                  <div
+                    className="p-3 rounded-3"
+                    style={{ background: "#F8FAFC", border: "1px solid #E2E8F0" }}
+                  >
+                    <Form.Label className="fw-bold">{day}</Form.Label>
+                    <div className="d-flex gap-2">
+                      <Form.Control
+                        type="time"
+                        value={item.startTime || ""}
+                        onChange={(e) =>
+                          handleAvailabilityChange(index, "startTime", e.target.value)
+                        }
+                      />
+                      <Form.Control
+                        type="time"
+                        value={item.endTime || ""}
+                        onChange={(e) =>
+                          handleAvailabilityChange(index, "endTime", e.target.value)
+                        }
+                      />
+                    </div>
+                  </div>
+                </Col>
+              );
+            })}
+          </Row>
+          <Row>
             {/* <Col sm={3}>
               <div className="mb-3">
                 <h6 style={{ fontWeight: "bold", marginBottom: "10px" }}>
                   Upload Profile Picture
                 </h6>
-                <div
-                  onDrop={(e) => {
-                    e.preventDefault();
-                    const files = Array.from(e.dataTransfer.files);
-                    setInput((prevState) => ({
-                      ...prevState,
-                      profile_picture: [
                         ...prevState.profile_picture,
                         ...files.filter((file) =>
                           file.type.startsWith("image/")

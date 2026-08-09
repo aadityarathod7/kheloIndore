@@ -87,4 +87,10 @@ const sendOtp = async ({ mobile, otp }) => {
   return { delivered, failed: channels.filter((channel) => !delivered.includes(channel)) };
 };
 
-module.exports = { sendOtp };
+/** Sends a custom (non-OTP) SMS text, e.g. onboarding links. */
+const sendCustomMessage = async ({ mobile, message }) => {
+  const response = await sendSms({ mobile, message });
+  return { delivered: ["sms"], failed: [] };
+};
+
+module.exports = { sendOtp, sendCustomMessage };

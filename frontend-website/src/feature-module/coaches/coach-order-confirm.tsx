@@ -9,6 +9,8 @@ import axios from "axios";
 import { API_URL, IMG_URL } from "../../ApiUrl";
 import Swal from 'sweetalert2';
 
+const PARTIAL_PAYMENT_PERCENT = 0.5;
+
 
 interface CoachData {
   first_name: string;
@@ -44,6 +46,7 @@ const CoachOrderConfirm = (props: any) => {
   const { id } = useParams<{ id: string }>();
 
   const { bookingData, selectedTimeSlot } = state || {};
+  const [paymentType, setPaymentType] = useState<string>("full");
 
   console.log(bookingData, "confirm data")
   useEffect(() => {
@@ -83,7 +86,10 @@ const CoachOrderConfirm = (props: any) => {
     try {
       const response = await axios.post(
         `${API_URL}/coach/payment`,
-        bookingData
+        {
+          ...bookingData,
+          payment_type: paymentType,
+        }
       );
 
       if (response && response.data && response.data.url) {
@@ -337,6 +343,65 @@ const CoachOrderConfirm = (props: any) => {
                   <p className="primary-text">₹{bookingData?.total_price}</p>
                 </li>
               </ul> */}
+            </section>
+            {/* Booking Disclaimer */}
+            <section className="card mt-4" style={{ padding: "20px", backgroundColor: "#FFF7ED", border: "1px solid #FED7AA" }}>
+              <p className="mb-0" style={{ fontSize: "13px", color: "#9A3412", lineHeight: "1.6", fontWeight: "500" }}>
+                <i className="feather-alert-triangle me-1" />
+                <strong>Disclaimer:</strong> If you book this Coach/Trainer directly or through any platform other than Khelo Indore, Khelo Indore will not be responsible for any issues, refunds or disputes related to that booking.
+              </p>
+            </section>
+            {/* Payment Type Selection */}
+            <section className="card mt-4" style={{ padding: "24px" }}>
+              <h5 className="mb-3">Select Payment Option</h5>
+              <div className="row">
+                <div className="col-md-6 mb-2">
+                  <label
+                    className="d-flex align-items-start gap-2 p-3 rounded border"
+                    style={{ cursor: "pointer", borderColor: paymentType === "full" ? "#22C55E" : "#E2E8F0", background: paymentType === "full" ? "#F0FDF4" : "#FFFFFF" }}
+                  >
+                    <input
+                      type="radio"
+                      name="paymentType"
+                      value="full"
+                      checked={paymentType === "full"}
+                      onChange={() => setPaymentType("full")}
+                    />
+                    <span>
+                      <strong style={{ color: "#0F172A" }}>Full Payment</strong>
+                      <br />
+                      <span style={{ fontSize: "12px", color: "#64748B" }}>Pay 100% now. If you cancel at least 4 hours before the booking time, 25% is deducted and the rest is refunded.</span>
+                    </span>
+                  </label>
+                </div>
+                <div className="col-md-6 mb-2">
+                  <label
+                    className="d-flex align-items-start gap-2 p-3 rounded border"
+                    style={{ cursor: "pointer", borderColor: paymentType === "partial" ? "#22C55E" : "#E2E8F0", background: paymentType === "partial" ? "#F0FDF4" : "#FFFFFF" }}
+                  >
+                    <input
+                      type="radio"
+                      name="paymentType"
+                      value="partial"
+                      checked={paymentType === "partial"}
+                      onChange={() => setPaymentType("partial")}
+                    />
+                    <span>
+                      <strong style={{ color: "#0F172A" }}>Partial Payment (50% advance)</strong>
+                      <br />
+                      <span style={{ fontSize: "12px", color: "#64748B" }}>Pay 50% now and the rest later. Partial payments are non-refundable.</span>
+                    </span>
+                  </label>
+                </div>
+              </div>
+              <div style={{ background: "#F8FAFC", borderRadius: "10px", padding: "14px 18px", marginTop: "8px" }}>
+                <span style={{ fontSize: "14px", color: "#475569" }}>
+                  Amount payable now: <strong style={{ color: "#16A34A", fontSize: "16px" }}>₹{Math.round((Number(bookingData?.total_price) || 0) * (paymentType === "partial" ? PARTIAL_PAYMENT_PERCENT : 1))}</strong>
+                  {paymentType === "partial" && (
+                    <span style={{ fontSize: "12px", color: "#64748B" }}> (balance of ₹{Math.round((Number(bookingData?.total_price) || 0) * (1 - PARTIAL_PAYMENT_PERCENT))} payable later)</span>
+                  )}
+                </span>
+              </div>
             </section>
             <div className="text-center btn-row">
               <Link

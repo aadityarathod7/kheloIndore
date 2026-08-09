@@ -147,7 +147,50 @@ exports.updateCoachSuperAdmin = async (req, res) => {
       "state",
       "zipcode",
       "status",
+      // ---- Extended profile fields ----
+      "coaching_levels",
+      "own_level",
+      "response_time",
+      "class_location",
+      "students_trained",
+      "profile_views",
+      "rating",
+      "reviews_count",
+      "daily_availability",
+      "gallery_videos",
+      "social_media",
+      "categories",
+      "videos",
     ];
+
+    // Handle array-type fields that arrive as JSON strings from the admin form
+    ["coaching_levels", "daily_availability", "categories", "videos"].forEach((field) => {
+      const value = detail[field];
+      if (value === undefined || value === null || value === "") return;
+      if (typeof value === "string") {
+        try {
+          updatePayload[field] = JSON.parse(value);
+        } catch (e) {
+          // keep as-is if not valid JSON
+          updatePayload[field] = value;
+        }
+      } else {
+        updatePayload[field] = value;
+      }
+    });
+
+    // social_media is a nested object - merge instead of replace
+    if (
+      detail.social_media &&
+      typeof detail.social_media === "object" &&
+      !Array.isArray(detail.social_media)
+    ) {
+      const mergedSocial = { ...(coachData.social_media || {}), ...detail.social_media };
+      const hasValue = Object.values(mergedSocial).some(
+        (v) => v !== undefined && v !== null && v !== ""
+      );
+      if (hasValue) updatePayload.social_media = mergedSocial;
+    }
     scalarFields.forEach((field) => {
       const value = detail[field];
       if (value !== undefined && value !== null && value !== "") {
@@ -507,6 +550,156 @@ exports.coachVerifyBySuperAdmin = async(req,res)=>{
     })
   }
 }
+
+// Public coach detail fetch - increments profile views (used by the website)
+exports.fetchPublicCoach = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!id || id.trim() === "") {
+      return res.status(400).json({ success: false, message: "Invalid coach ID provided" });
+    }
+    const coach = await Coach.findById(id);
+    if (!coach) {
+      return res.status(404).json({ success: false, message: "Coach not found" });
+    }
+    if (coach.status !== true) {
+      return res.status(403).json({ success: false, message: "Coach is not active" });
+    }
+    // Increment profile view counter
+    coach.profile_views = (coach.profile_views || 0) + 1;
+    await coach.save();
+    return res.status(200).json({ success: true, coach });
+  } catch (error) {
+    console.error("Error fetching public coach:", error);
+    return res.status(500).json({ success: false, message: "An unexpected error occurred" });
+  }
+};
+
+// Generate a shareable profile link (hides contact + address when shared)
+exports.generateCoachShareLink = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const coach = await Coach.findById(id);
+    if (!coach) {
+      return res.status(404).json({ success: false, message: "Coach not found" });
+    }
+    if (!coach.share_token) {
+      coach.share_token = require("crypto").randomBytes(16).toString("hex");
+      await coach.save();
+    }
+    const baseUrl = process.env.WEBSITE_URL || "https://kheloindore.in";
+    return res.status(200).json({
+      success: true,
+      shareLink: `${baseUrl}/coaches/shared/${coach.share_token}`,
+      share_token: coach.share_token,
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// Fetch a shared coach profile by token - contact number and address are hidden
+exports.fetchSharedCoach = async (req, res) => {
+  try {
+    const { token } = req.params;
+    const coach = await Coach.findOne({ share_token: token });
+    if (!coach) {
+      return res.status(404).json({ success: false, message: "Invalid or expired share link" });
+    }
+    // Strip private information
+    const shared = coach.toObject();
+    delete shared.mobile;
+    delete shared.other_contact_number;
+    delete shared.email;
+    delete shared.address;
+    delete shared.zipcode;
+    if (shared.location) {
+      delete shared.location.address;
+      delete shared.location.zipcode;
+    }
+    return res.status(200).json({ success: true, coach: shared });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// Complete coach profile (from the onboarding email/SMS link) - also sets new extended fields
+exports.completeCoachProfile = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const detail = req.body;
+    const coach = await Coach.findById(id);
+    if (!coach) {
+      return res.status(404).json({ success: false, message: "Coach not found" });
+    }
+    const allowed = [
+      "gender", "age", "date_of_birth", "price", "category", "trainer_type",
+      "near_by_location", "experience", "availability", "specializations", "bio",
+      "qualifications", "skills", "languages", "address", "city", "state", "zipcode",
+      "coaching_levels", "own_level", "response_time", "class_location",
+      "students_trained", "daily_availability", "social_media", "gallery_videos",
+      "profile_picture", "package",
+    ];
+    allowed.forEach((field) => {
+      if (detail[field] !== undefined && detail[field] !== null) {
+        coach[field] = detail[field];
+      }
+    });
+    coach.is_profile_completed = true;
+    await coach.save();
+    return res.status(200).json({ success: true, message: "Profile completed successfully", coach });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// Send onboarding email + SMS with a link to complete the profile (after registration)
+exports.sendOnboardingProfileLink = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const coach = await Coach.findById(id);
+    if (!coach) {
+      return res.status(404).json({ success: false, message: "Coach not found" });
+    }
+    if (!coach.profile_completion_token) {
+      coach.profile_completion_token = require("crypto").randomBytes(12).toString("hex");
+      await coach.save();
+    }
+    const baseUrl = process.env.WEBSITE_URL || "https://kheloindore.in";
+    const completeLink = `${baseUrl}/coaches/complete-profile/${coach._id}?token=${coach.profile_completion_token}`;
+
+    // Email
+    if (coach.email) {
+      try {
+        await mail.superAdminAddUsersendEmail(
+          coach.email,
+          mailContent.onboarding_profile_link(
+            `${coach.first_name} ${coach.last_name || ""}`.trim(),
+            completeLink
+          )
+        );
+      } catch (e) {
+        console.error("Onboarding email failed:", e.message);
+      }
+    }
+    // SMS (Bhash SMS)
+    if (coach.mobile) {
+      try {
+        const { sendCustomMessage } = require("../helper/bhashMessaging");
+        const msg =
+          `Dear ${coach.first_name}, welcome to Khelo Indore! Complete your coach profile here: ${completeLink}`.slice(0, 160);
+        await sendCustomMessage({ mobile: String(coach.mobile), message: msg });
+      } catch (e) {
+        console.error("Onboarding SMS failed:", e.message);
+      }
+    }
+    coach.onboard_email_sent = true;
+    await coach.save();
+    return res.status(200).json({ success: true, message: "Onboarding link sent" });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
 
 // Update Coach API
 exports.updatecoach = async (req, res) => {

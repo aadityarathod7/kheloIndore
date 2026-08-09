@@ -133,6 +133,90 @@ const coachSchema = new mongoose.Schema(
       type: Number,
       default:0
     },
+    // ---- Extended profile fields ----
+    // Levels of people this coach wants to coach (Beginner/Intermediate/Advanced)
+    coaching_levels: {
+      type: [String],
+      default: [],
+    },
+    // Coach's own level (Beginner/Intermediate/Advanced)
+    own_level: {
+      type: String,
+      default: "",
+    },
+    // How quickly the coach responds to enquiries
+    response_time: {
+      type: String,
+      default: "",
+    },
+    // Where classes are conducted
+    class_location: {
+      type: String,
+      default: "",
+    },
+    // Number of students trained by the coach
+    students_trained: {
+      type: Number,
+      default: 0,
+    },
+    // Profile view counter (incremented on public profile visits)
+    profile_views: {
+      type: Number,
+      default: 0,
+    },
+    // Social media profile links
+    social_media: {
+      facebook: { type: String, default: "" },
+      instagram: { type: String, default: "" },
+      youtube: { type: String, default: "" },
+      twitter: { type: String, default: "" },
+      linkedin: { type: String, default: "" },
+    },
+    // Video gallery on the profile
+    gallery_videos: {
+      type: Array,
+      default: null,
+    },
+    // Daily availability timings e.g. [{day:"Monday",startTime:"06:00",endTime:"20:00"}]
+    daily_availability: {
+      type: Array,
+      default: [],
+    },
+    // Rating + review count used for sorting/filtering
+    rating: {
+      type: Number,
+      default: 0,
+    },
+    reviews_count: {
+      type: Number,
+      default: 0,
+    },
+    // Profile sharing (share link hides contact + address)
+    share_token: {
+      type: String,
+      default: "",
+    },
+    // Token used in the "complete your profile" email/SMS link
+    profile_completion_token: {
+      type: String,
+      default: "",
+    },
+    is_profile_completed: {
+      type: Boolean,
+      default: false,
+    },
+    onboard_email_sent: {
+      type: Boolean,
+      default: false,
+    },
+    categories: {
+      type: [String],
+      default: [],
+    },
+    videos: {
+      type: Array,
+      default: [],
+    },
   },
   { timestamps: true }
 );

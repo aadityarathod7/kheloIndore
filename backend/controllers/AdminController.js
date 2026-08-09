@@ -114,6 +114,36 @@ exports.signupBySuperAdmin = async (req, res) => {
 
     await mail.superAdminAddUsersendEmail(email, emailContent);
 
+    // After registration, send coach/trainer an onboarding email + SMS with a link to complete their profile
+    if (role === "Coach" || role === "Personal Trainer") {
+      try {
+        const completionToken = require("crypto").randomBytes(12).toString("hex");
+        const baseUrl = process.env.WEBSITE_URL || "https://kheloindore.in";
+        const completeLink =
+          role === "Coach"
+            ? `${baseUrl}/coaches/complete-profile/${newUser._id}?token=${completionToken}`
+            : `${baseUrl}/personal-training/complete-profile/${newUser._id}?token=${completionToken}`;
+        await mail.superAdminAddUsersendEmail(
+          email,
+          mailContent.onboarding_profile_link(`${first_name} ${last_name}`.trim(), completeLink)
+        );
+        try {
+          const { sendCustomMessage } = require("../helper/bhashMessaging");
+          const msg = `Dear ${first_name}, welcome to Khelo Indore! Complete your ${role === "Coach" ? "coach" : "trainer"} profile here: ${completeLink}`.slice(0, 160);
+          await sendCustomMessage({ mobile: String(mobile), message: msg });
+        } catch (smsErr) {
+          console.error("Onboarding SMS failed:", smsErr.message);
+        }
+        if (role === "Coach") {
+          await Coach.findByIdAndUpdate(newUser._id, { profile_completion_token: completionToken });
+        } else {
+          await PersonalTrainer.findByIdAndUpdate(newUser._id, { profile_completion_token: completionToken });
+        }
+      } catch (onboardErr) {
+        console.error("Onboarding notification failed:", onboardErr.message);
+      }
+    }
+
     // Response
     return res.status(200).json({
       success: true,

@@ -65,7 +65,8 @@ const getPuppeteerLaunchOptions = () => {
 
 const venuePayment = async (req, res) => {
   try {
-    const { user_id, venue_id, date, slotsBooked, total_price } = req.body;
+    const { user_id, venue_id, date, slotsBooked, total_price, payment_type } = req.body;
+    const paymentType = payment_type === "partial" ? "partial" : "full";
     const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
 
     // Validate required fields
@@ -132,11 +133,16 @@ const venuePayment = async (req, res) => {
 
     console.log(merchantTransactionId,"merchantTransactionId")
     const expirationTime = new Date().getTime() + 5 * 60 * 1000;
+    // Partial payment = 50% advance; full payment = 100%
+    const payableAmount =
+      paymentType === "partial"
+        ? Math.round(totalBookedPrice * PARTIAL_PAYMENT_PERCENT)
+        : totalBookedPrice;
     const data = {
       merchantId: process.env.MERCHANT_ID,
       merchantTransactionId: merchantTransactionId,
       merchantUserId: `MUID${user_id}`,
-      amount: totalBookedPrice * 100,
+      amount: payableAmount * 100,
       redirectUrl: `${process.env.REDIRECT_API_URL}/api/get/venue/payment/status/${merchantTransactionId}`,
       redirectMode: "POST",
       paymentInstrument: {
@@ -173,6 +179,9 @@ const venuePayment = async (req, res) => {
       date,
       slotsBooked,
       vendor_id,
+      total_price: totalBookedPrice,
+      payment_type: paymentType,
+      payable_amount: payableAmount,
     });
 
     // Send success response
@@ -783,7 +792,7 @@ const venuePaymentStatus = async (req, res) => {
     const user = await UserDetailsAtPayments.findOne({ user_id: userId }).sort({ createdAt: -1 });
     if (!user) return res.status(404).json({ error: "User not found for the transaction" });
 
-    const { user_id, date, venue_id, slotsBooked, vendor_id } = user;
+    const { user_id, date, venue_id, slotsBooked, vendor_id, payment_type } = user;
     const venueData = await Venue1.findById(venue_id);
     if (!venueData) return res.status(404).json({ error: "Venue not found" });
 
@@ -883,7 +892,9 @@ const venuePaymentStatus = async (req, res) => {
         paymentState: state,
         vendor_id,
         pdf_url: pdfUrl,
-        slot_time:allSlotDetails,  
+        slot_time:allSlotDetails,
+        payment_type: payment_type || "full",
+        payable_amount: payment_type === "partial" ? amount/100 : null,
       });
       // Delete UserDetailsAtPayment
       await UserDetailsAtPayments.deleteOne({ user_id: userId });
@@ -1027,9 +1038,126 @@ const getVenueBookingByUserId = async (req, res) => {
   }
 };
 
+// Payment types: partial = 50% advance (non-refundable), full = 100% (cancellation refund rules apply)
+const PARTIAL_PAYMENT_PERCENT = 0.5;
+
+// Refund policy:
+//  - Partial payment: non-refundable
+//  - Full payment cancelled at least 4 hours before booking time: 25% deducted, 75% refunded
+//  - Full payment cancelled less than 4 hours before: 50% deducted (last-minute cancellation fee)
+const REFUND_WINDOW_HOURS = 4;
+const FULL_PAYMENT_REFUND_PERCENT = 0.75;
+
+// Computes how much (if any) is refundable for a cancelled booking
+const computeRefundAmount = (booking) => {
+  if (!booking) return 0;
+  if (booking.payment_type === "partial") return 0; // partial payments are non-refundable
+
+  const paidAmount = booking.payable_amount || booking.total_price || 0;
+  // Determine booking start time: venue uses `date` + first slot_time; coach/PT use startDate
+  let bookingStart = booking.startDate || booking.date;
+  if (!bookingStart && booking.slot_time && booking.slot_time.length > 0) {
+    const start = booking.slot_time[0].startTime;
+    if (start && booking.date) {
+      const [h, m] = String(start).split(":").map(Number);
+      const d = new Date(booking.date);
+      d.setHours(h || 0, m || 0, 0, 0);
+      bookingStart = d;
+    }
+  }
+  const startTime = new Date(bookingStart);
+  if (isNaN(startTime.getTime())) return Math.round(paidAmount * FULL_PAYMENT_REFUND_PERCENT);
+
+  const hoursUntilBooking = (startTime.getTime() - Date.now()) / (1000 * 60 * 60);
+  if (hoursUntilBooking >= REFUND_WINDOW_HOURS) {
+    return Math.round(paidAmount * FULL_PAYMENT_REFUND_PERCENT); // 25% deduction
+  }
+  return 0; // cancelled too late - no refund
+};
+
+// Processes a PhonePe refund for a cancelled booking (reuses venueRefund internals)
+const processBookingRefund = async ({ booking, reason }) => {
+  const refundAmount = computeRefundAmount(booking);
+  if (refundAmount <= 0) {
+    return { success: false, refundAmount: 0, message: "No refund applicable (partial payment or cancellation too late)" };
+  }
+  const txnId = booking.merchantTransaction_id;
+  if (!txnId) {
+    return { success: false, refundAmount: 0, message: "No transaction id - cannot refund" };
+  }
+
+  const shortTxnId = txnId.slice(-10);
+  const refundTxnId = `R-${shortTxnId}-${Date.now().toString().slice(-6)}`;
+  const amnt = Math.round(refundAmount * 100);
+  const refundPayload = {
+    merchantId: process.env.MERCHANT_ID,
+    transactionId: refundTxnId,
+    originalTransactionId: txnId,
+    amount: amnt,
+    message: reason || "Booking cancellation refund",
+  };
+  const base64Payload = Buffer.from(JSON.stringify(refundPayload)).toString("base64");
+  const stringToHash = base64Payload + "/v3/credit/backToSource" + process.env.SALT_KEY;
+  const sha256Hash = crypto.createHash("sha256").update(stringToHash).digest("hex");
+  const checksum = `${sha256Hash}###${process.env.KEY_INDEX}`;
+  const refundUrl = "https://mercury-t2.phonepe.com/v3/credit/backToSource";
+
+  let refundTransactionId = refundTxnId;
+  let refundStatus = "SUCCESS";
+  let providerReferenceId = `REF-${Date.now()}`;
+
+  if (process.env.MERCHANT_ID !== "PGTESTPAYUAT86") {
+    try {
+      const result = await axios.post(
+        refundUrl,
+        { request: base64Payload },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            "X-VERIFY": checksum,
+          },
+        }
+      );
+      if (result.data && result.data.data) {
+        refundTransactionId = result.data.data.transactionId || refundTxnId;
+        refundStatus = result.data.data.status || "SUCCESS";
+        providerReferenceId = result.data.data.providerReferenceId || providerReferenceId;
+      }
+    } catch (err) {
+      console.log("[PhonePe Refund Note]", err.message);
+    }
+  }
+
+  const userId = booking.user_id || booking.userId;
+  const entityName =
+    (booking.venue_id && booking.venue_id.name) ||
+    (booking.coachId && `${booking.coachId.first_name || ""} ${booking.coachId.last_name || ""}`.trim()) ||
+    (booking.pt_id && `${booking.pt_id.first_name || ""} ${booking.pt_id.last_name || ""}`.trim()) ||
+    "N/A";
+
+  const newRefund = new Refund({
+    transaction_id: booking.transaction_id,
+    user_id: userId ? userId._id || userId : null,
+    merchantTransaction_id: txnId,
+    booking_id: booking._id,
+    user_name: userId ? `${userId.first_name || ""} ${userId.last_name || ""}`.trim() : "Unknown User",
+    associated_entity_name: entityName,
+    slotsBook: booking.slotsBook || booking.slotsBooked,
+    refund_id: refundTransactionId,
+    refundAmount,
+    refundStatus,
+    refundReason: reason || "Booking cancellation refund",
+    providerReferenceId,
+  });
+  await newRefund.save();
+
+  return { success: true, refundAmount, refundId: refundTransactionId, refundStatus };
+};
+
 const coachPayment = async (req, res) => {
   try {
-    const { user_id, coachId, start_date, end_date, start_time, end_time } = req.body;
+    const { user_id, coachId, start_date, end_date, start_time, end_time, payment_type } = req.body;
 
     // Validate the request body
     if (!user_id || !coachId || !start_date || !end_date || !start_time || !end_time) {
@@ -1038,6 +1166,7 @@ const coachPayment = async (req, res) => {
         message: "Required fields are missing (user_id, coachId, start_date, end_date, start_time, end_time)",
       });
     }
+    const paymentType = payment_type === "partial" ? "partial" : "full";
 
     // Convert start_date and end_date to Date objects
     const startDate = new Date(start_date);
@@ -1100,11 +1229,16 @@ const coachPayment = async (req, res) => {
     const expirationTime = new Date().getTime() + 5 * 60 * 1000;
     // Proceed to payment if all slots are available
     const merchantTransactionId = `${user_id}-${Date.now()}`;
+    // Partial payment = 50% advance; full payment = 100%
+    const payableAmount =
+      paymentType === "partial"
+        ? Math.round(totalBookedPrice * PARTIAL_PAYMENT_PERCENT)
+        : totalBookedPrice;
     const data = {
       merchantId: process.env.MERCHANT_ID,
       merchantTransactionId: merchantTransactionId,
       merchantUserId: "MUID" + user_id,
-      amount: totalBookedPrice * 100, // Convert to the smallest currency unit (e.g., paise)
+      amount: payableAmount * 100, // Convert to the smallest currency unit (e.g., paise)
       redirectUrl: `${process.env.REDIRECT_API_URL}/api/get/coach/payment/status/${merchantTransactionId}`,
       redirectMode: "POST",
       paymentInstrument: {
@@ -1156,6 +1290,8 @@ const coachPayment = async (req, res) => {
       ), // Store the slot IDs
       packageType: "monthly", // Assuming the packageType is fixed or passed in the request
       total_price: totalBookedPrice,
+      payment_type: paymentType,
+      payable_amount: payableAmount,
     });
 
     // Respond with the payment URL
@@ -1221,7 +1357,7 @@ const coachPaymentStatus = async (req, res) => {
     }
 
     // Destructure necessary details
-    const { user_id, date, coachId, slotsBook, start_date, end_date,start_time,end_time,createdAt } = user;
+    const { user_id, date, coachId, slotsBook, start_date, end_date,start_time,end_time,createdAt, payment_type } = user;
 console.log(user,"user")
     // Fetch coach data
     const coachData = await CoachModel.findById(coachId);
@@ -1320,7 +1456,9 @@ console.log(`${start_time} to ${end_time}`)
                 merchantTransaction_id: merchantTransaction_id,
                 paymentStatus: responseCode,
                 paymentState: state,
-                pdf_url:pdfUrl
+                pdf_url:pdfUrl,
+                payment_type: payment_type || "full",
+                payable_amount: payment_type === "partial" ? amount/100 : null,
               });
               const transaction = await Transaction.create({
                 user_id,
@@ -1497,7 +1635,7 @@ const getCoachBookingByUserId = async (req, res) => {
 
 const personalTrainerPayment = async (req, res) => {
   try {
-    const { user_id, trainerId, start_date, end_date, start_time, end_time } = req.body;
+    const { user_id, trainerId, start_date, end_date, start_time, end_time, payment_type } = req.body;
 // Personal_trainer_id
     // Validate the request body
     if (!user_id || !trainerId || !start_date || !end_date || !start_time || !end_time) {
@@ -1506,6 +1644,7 @@ const personalTrainerPayment = async (req, res) => {
         message: "Required fields are missing (user_id, trainerId, start_date, end_date, start_time, end_time)",
       });
     }
+    const paymentType = payment_type === "partial" ? "partial" : "full";
 
     // Convert start_date and end_date to Date objects
     const startDate = new Date(start_date);
@@ -1568,11 +1707,16 @@ console.log(trainerSlot,"trainerSlot")
     const expirationTime = new Date().getTime() + 5 * 60 * 1000;
     // Proceed to payment if all slots are available
     const merchantTransactionId = `${user_id}-${Date.now()}`;
+    // Partial payment = 50% advance; full payment = 100%
+    const payableAmount =
+      paymentType === "partial"
+        ? Math.round(totalBookedPrice * PARTIAL_PAYMENT_PERCENT)
+        : totalBookedPrice;
     const data = {
       merchantId: process.env.MERCHANT_ID,
       merchantTransactionId: merchantTransactionId,
       merchantUserId: "MUID" + user_id,
-      amount: totalBookedPrice * 100, // Convert to the smallest currency unit (e.g., paise)
+      amount: payableAmount * 100, // Convert to the smallest currency unit (e.g., paise)
       redirectUrl: `${process.env.REDIRECT_API_URL}/api/get/personalTrainer/payment/status/${merchantTransactionId}`,
       redirectMode: "POST",
       paymentInstrument: {
@@ -1622,6 +1766,8 @@ console.log(trainerSlot,"trainerSlot")
       ), // Store the slot IDs
       packageType: "monthly", // Assuming the packageType is fixed or passed in the request
       total_price: totalBookedPrice,
+      payment_type: paymentType,
+      payable_amount: payableAmount,
     });
 
    
@@ -1684,7 +1830,7 @@ const personalTrainerPaymentStatus = async (req, res) => {
       return res.status(404).json({ success: false, message: "No payment details found for user" });
     }
 
-    const { user_id, date, trainerId, slotsBook, start_date, end_date,start_time,end_time,createdAt } = user;
+    const { user_id, date, trainerId, slotsBook, start_date, end_date,start_time,end_time,createdAt, payment_type } = user;
 
     const trainerData = await personalTrainer.findById(trainerId);
 
@@ -1770,7 +1916,9 @@ const slotDates = `${formattedStartDate} to ${formattedEndDate}`;
             merchantTransaction_id: merchantTransaction_id,
             paymentStatus: responseCode,
             paymentState: state,
-            pdf_url:pdfUrl
+            pdf_url:pdfUrl,
+            payment_type: payment_type || "full",
+            payable_amount: payment_type === "partial" ? amount/100 : null,
           });
 
            for (const slotId of slotsBook) {
@@ -2277,6 +2425,8 @@ const getAllRefunds = async (req, res) => {
 
 
 module.exports = {
+  computeRefundAmount,
+  processBookingRefund,
   venuePayment,
   venuePaymentStatus,
   coachPayment,

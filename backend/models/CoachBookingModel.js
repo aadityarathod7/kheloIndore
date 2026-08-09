@@ -63,6 +63,18 @@
       type: String,
       // required: true,
   },
+  payment_type: {
+      type: String,
+      default: "full", // "full" or "partial"
+  },
+  payable_amount: {
+      type: Number,
+      default: null, // amount actually paid when partial
+  },
+  total_amount: {
+      type: Number,
+      default: null, // full booking amount (before partial split)
+  },
  },
  { timestamps: true }
 )

@@ -83,6 +83,12 @@ const VenueOrderConfirm = () => {
   const date = bookingData?.date || formattedDate;
   const total_Price = bookingData?.totalPrice || totalPrice;
 
+  // Payment type selection (Partial 50% advance / Full payment)
+  const [paymentType, setPaymentType] = useState<"partial" | "full">("full");
+  const [acceptedPolicy, setAcceptedPolicy] = useState(false);
+  const payableAmount =
+    paymentType === "partial" ? Math.round((totalPrice || 0) * 0.5) : totalPrice || 0;
+
   //   const openNewWindow = () => {
   //     window.open('https://mercury-uat.phonepe.com/transact/simulator?token=3GobA5RNrRCwUWUccUBeyTBSCransuCxvBXLOIZMWZVrgKGdyyuZJ', '_blank');
   // };
@@ -101,6 +107,15 @@ const VenueOrderConfirm = () => {
   }, [id]);
 
   const handleSubmit = async () => {
+    if (!acceptedPolicy) {
+      Swal.fire({
+        icon: "warning",
+        title: "Please accept the terms",
+        text: "You must accept the booking & refund policy before proceeding to payment.",
+        confirmButtonColor: "#22C55E"
+      });
+      return;
+    }
     try {
       const response = await axios.post(`${API_URL}/venue/payment`, {
         user_id: userId,
@@ -108,6 +123,7 @@ const VenueOrderConfirm = () => {
         date: date,
         slotsBooked: slotIds,
         total_price: totalPrice,
+        payment_type: paymentType,
       });
 
       if (response && response.data && response.data.url) {
@@ -382,10 +398,56 @@ const VenueOrderConfirm = () => {
                   <h5 className="fw-bold mb-0 text-dark" style={{ fontSize: "16px" }}>Payment Information</h5>
                 </div>
 
+                {/* Payment Type Selection */}
+                <div className="mb-4">
+                  <span className="text-muted d-block mb-2" style={{ fontSize: "12px", fontWeight: "600" }}>Select Payment Option</span>
+                  <div className="d-flex flex-column gap-2">
+                    <label
+                      className={`d-flex align-items-center justify-content-between px-3 py-2.5 rounded-3 border cursor-pointer ${paymentType === "full" ? "border-success bg-success-subtle" : "border-secondary-subtle bg-white"}`}
+                      style={{ cursor: "pointer" }}
+                    >
+                      <div className="d-flex align-items-center gap-2">
+                        <input
+                          type="radio"
+                          name="paymentType"
+                          checked={paymentType === "full"}
+                          onChange={() => setPaymentType("full")}
+                          style={{ accentColor: "#22C55E" }}
+                        />
+                        <div>
+                          <span className="fw-bold text-dark d-block" style={{ fontSize: "13px" }}>Full Payment</span>
+                          <span className="text-muted" style={{ fontSize: "11px" }}>Pay the full amount now. Refundable (75%) if cancelled at least 4 hours before the booking.</span>
+                        </div>
+                      </div>
+                      <strong className="text-success" style={{ fontSize: "15px" }}>₹{totalPrice || "0"}</strong>
+                    </label>
+
+                    <label
+                      className={`d-flex align-items-center justify-content-between px-3 py-2.5 rounded-3 border ${paymentType === "partial" ? "border-success bg-success-subtle" : "border-secondary-subtle bg-white"}`}
+                      style={{ cursor: "pointer" }}
+                    >
+                      <div className="d-flex align-items-center gap-2">
+                        <input
+                          type="radio"
+                          name="paymentType"
+                          checked={paymentType === "partial"}
+                          onChange={() => setPaymentType("partial")}
+                          style={{ accentColor: "#22C55E" }}
+                        />
+                        <div>
+                          <span className="fw-bold text-dark d-block" style={{ fontSize: "13px" }}>Partial Payment (50% advance)</span>
+                          <span className="text-muted" style={{ fontSize: "11px" }}>Pay 50% now to confirm your booking. <strong>Non-refundable.</strong></span>
+                        </div>
+                      </div>
+                      <strong className="text-success" style={{ fontSize: "15px" }}>₹{Math.round((totalPrice || 0) * 0.5)}</strong>
+                    </label>
+                  </div>
+                </div>
+
                 <div className="d-flex align-items-center justify-content-between flex-wrap gap-3">
                   <div>
-                    <span className="text-muted d-block mb-0.5" style={{ fontSize: "12px" }}>Total Price</span>
-                    <span className="fw-extrabold text-dark" style={{ fontSize: "28px", fontWeight: "800" }}>₹{totalPrice || "0"}</span>
+                    <span className="text-muted d-block mb-0.5" style={{ fontSize: "12px" }}>Amount Payable</span>
+                    <span className="fw-extrabold text-dark" style={{ fontSize: "28px", fontWeight: "800" }}>₹{payableAmount || "0"}</span>
                   </div>
 
                   <div className="d-flex align-items-center gap-2 px-3 py-2 rounded-3" style={{ border: "1px solid #DCFCE7", backgroundColor: "#F0FDF4" }}>
@@ -395,6 +457,20 @@ const VenueOrderConfirm = () => {
                       <span className="text-muted">Your payment details are safe with us.</span>
                     </div>
                   </div>
+                </div>
+
+                {/* Policy Acceptance */}
+                <div className="mt-3 p-3 rounded-3 d-flex align-items-start gap-2" style={{ background: "#F8FAFC", border: "1px solid #E2E8F0" }}>
+                  <input
+                    type="checkbox"
+                    id="acceptPolicy"
+                    checked={acceptedPolicy}
+                    onChange={(e) => setAcceptedPolicy(e.target.checked)}
+                    style={{ accentColor: "#22C55E", marginTop: "2px" }}
+                  />
+                  <label htmlFor="acceptPolicy" className="text-muted" style={{ fontSize: "11px", lineHeight: "1.5", cursor: "pointer" }}>
+                    I understand that <strong>partial payments are non-refundable</strong>, and full payments cancelled at least 4 hours before the booking time are refunded after a <strong>25% deduction</strong>. If this booking is made directly or through any platform other than Khelo Indore, Khelo Indore will not be responsible.
+                  </label>
                 </div>
               </div>
 

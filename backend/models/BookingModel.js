@@ -73,6 +73,30 @@ read_seen: {
   type: Number, // 1 for open, 0 for close
   default: 1,  // Default to open
 },
+payment_type: {
+  type: String,
+  default: "full", // "full", "partial" or "manual"
+},
+payable_amount: {
+  type: Number,
+  default: null,
+},
+total_amount: {
+  type: Number,
+  default: null,
+},
+manual_booking: {
+  type: Boolean,
+  default: false,
+},
+manual_notes: {
+  type: String,
+  default: "",
+},
+payment_mode: {
+  type: String,
+  default: "cash",
+},
   },
   { timestamps: true }
 );

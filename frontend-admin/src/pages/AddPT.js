@@ -40,7 +40,78 @@ const AddPT = () => {
     gallery: [],
     bio: "",
     status: true,
+    // ---- Extended profile fields ----
+    coaching_levels: [],
+    own_level: "",
+    response_time: "",
+    class_location: "",
+    students_trained: 0,
+    social_media: {
+      facebook: "",
+      instagram: "",
+      youtube: "",
+      twitter: "",
+      linkedin: "",
+    },
+    daily_availability: [],
   });
+
+  const LEVEL_OPTIONS = ["Beginner", "Intermediate", "Advanced"];
+  const RESPONSE_TIME_OPTIONS = [
+    "Within 1 hour",
+    "Within 2 hours",
+    "Within 6 hours",
+    "Within 12 hours",
+    "Within 24 hours",
+    "Within 48 hours",
+  ];
+  const DAY_OPTIONS = [
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+    "Sunday",
+  ];
+  const [dailyAvailability, setDailyAvailability] = useState(
+    DAY_OPTIONS.map((day) => ({ day, startTime: "", endTime: "" }))
+  );
+  const handleAvailabilityChange = (index, field, value) => {
+    setDailyAvailability((prev) => {
+      const next = prev.map((item, i) =>
+        i === index ? { ...item, [field]: value } : item
+      );
+      setFormData((fd) => ({
+        ...fd,
+        daily_availability: next.filter(
+          (item) => item.startTime && item.endTime
+        ),
+      }));
+      return next;
+    });
+  };
+  const handleLevelToggle = (level) => {
+    setFormData((prev) => {
+      const current = prev.coaching_levels || [];
+      return {
+        ...prev,
+        coaching_levels: current.includes(level)
+          ? current.filter((l) => l !== level)
+          : [...current, level],
+      };
+    });
+  };
+  const handleSocialChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      social_media: {
+        ...formData.social_media,
+        [name]: value,
+      },
+    });
+  };
 
   useEffect(() => {
     setCountryid(101);
@@ -712,6 +783,149 @@ const AddPT = () => {
                 />
               </Form.Group>
             </Col>
+
+            <Col sm={4}>
+              <Form.Group controlId="formCoachingLevels">
+                <Form.Label>Coaching Levels (who you coach)</Form.Label>
+                <div className="d-flex flex-wrap gap-2 mt-1">
+                  {LEVEL_OPTIONS.map((level) => (
+                    <button
+                      type="button"
+                      key={level}
+                      onClick={() => handleLevelToggle(level)}
+                      className="btn btn-sm"
+                      style={{
+                        borderRadius: "50px",
+                        fontWeight: "600",
+                        background: (formData.coaching_levels || []).includes(level)
+                          ? "#22C55E"
+                          : "#F1F5F9",
+                        color: (formData.coaching_levels || []).includes(level)
+                          ? "#FFFFFF"
+                          : "#475569",
+                        border: "1px solid #E2E8F0",
+                      }}
+                    >
+                      {level}
+                    </button>
+                  ))}
+                </div>
+              </Form.Group>
+            </Col>
+
+            <Col sm={4}>
+              <Form.Group controlId="formOwnLevel">
+                <Form.Label>Your Own Level</Form.Label>
+                <Form.Control
+                  as="select"
+                  name="own_level"
+                  value={formData.own_level}
+                  onChange={handleChange}
+                >
+                  <option value="">Select Your Level</option>
+                  {LEVEL_OPTIONS.map((level) => (
+                    <option key={level} value={level}>
+                      {level}
+                    </option>
+                  ))}
+                </Form.Control>
+              </Form.Group>
+            </Col>
+
+            <Col sm={4}>
+              <Form.Group controlId="formResponseTime">
+                <Form.Label>Response Time</Form.Label>
+                <Form.Control
+                  as="select"
+                  name="response_time"
+                  value={formData.response_time}
+                  onChange={handleChange}
+                >
+                  <option value="">Select Response Time</option>
+                  {RESPONSE_TIME_OPTIONS.map((opt) => (
+                    <option key={opt} value={opt}>
+                      {opt}
+                    </option>
+                  ))}
+                </Form.Control>
+              </Form.Group>
+            </Col>
+
+            <Col sm={4}>
+              <Form.Group controlId="formClassLocation">
+                <Form.Label>Class Location</Form.Label>
+                <Form.Control
+                  type="text"
+                  placeholder="e.g. On-site / Online / Player's home"
+                  name="class_location"
+                  value={formData.class_location}
+                  onChange={handleChange}
+                />
+              </Form.Group>
+            </Col>
+
+            <Col sm={4}>
+              <Form.Group controlId="formStudentsTrained">
+                <Form.Label>Students Trained</Form.Label>
+                <Form.Control
+                  type="number"
+                  placeholder="Enter number of students trained"
+                  name="students_trained"
+                  value={formData.students_trained}
+                  onChange={handleChange}
+                />
+              </Form.Group>
+            </Col>
+          </Row>
+
+          {/* Social Media Profiles */}
+          <Row className="mt-4">
+            <h5 className="mb-3">Social Media Profiles</h5>
+            {["facebook", "instagram", "youtube", "twitter", "linkedin"].map((platform) => (
+              <Col sm={4} key={platform} className="mb-3">
+                <Form.Group controlId={`formSocial${platform}`}>
+                  <Form.Label style={{ textTransform: "capitalize" }}>{platform}</Form.Label>
+                  <Form.Control
+                    type="text"
+                    placeholder={`Enter ${platform} URL`}
+                    name={platform}
+                    value={formData.social_media?.[platform] || ""}
+                    onChange={handleSocialChange}
+                  />
+                </Form.Group>
+              </Col>
+            ))}
+          </Row>
+
+          {/* Daily Availability Timings */}
+          <Row className="mt-4">
+            <h5 className="mb-3">Daily Availability Timings</h5>
+            {dailyAvailability.map((item, index) => (
+              <Col sm={4} key={item.day} className="mb-3">
+                <div
+                  className="p-3 rounded-3"
+                  style={{ background: "#F8FAFC", border: "1px solid #E2E8F0" }}
+                >
+                  <Form.Label className="fw-bold">{item.day}</Form.Label>
+                  <div className="d-flex gap-2">
+                    <Form.Control
+                      type="time"
+                      value={item.startTime}
+                      onChange={(e) =>
+                        handleAvailabilityChange(index, "startTime", e.target.value)
+                      }
+                    />
+                    <Form.Control
+                      type="time"
+                      value={item.endTime}
+                      onChange={(e) =>
+                        handleAvailabilityChange(index, "endTime", e.target.value)
+                      }
+                    />
+                  </div>
+                </div>
+              </Col>
+            ))}
           </Row>
           <Row>
             <Form.Group controlId="formCheckbox">

@@ -461,17 +461,27 @@ const VenueDetails = () => {
                   <p style={{ color: "#64748B", fontSize: "18px", marginBottom: "24px", fontWeight: "500", maxWidth: "480px" }}>
                     {venueData?.name || (name ? name.replaceAll('-', ' ') : "Venue Details")}
                   </p>
-                  {/* Breadcrumb pill */}
-                  <div className="breadcrumb-pill d-inline-flex align-items-center bg-white px-3 py-2 rounded-pill shadow-sm" style={{ fontSize: "13px", border: "1px solid #E5E7EB" }}>
-                    <Link to="/" style={{ color: "#64748B", textDecoration: "none", fontWeight: "500" }}>
-                      <i className="feather-home me-1" style={{ color: "#64748B" }} /> Home
-                    </Link>
-                    <span style={{ margin: "0 10px", color: "#64748B" }}><i className="feather-chevron-right" style={{ fontSize: "12px", color: "#64748B" }} /></span>
-                    <Link to={routes.blogListSidebarLeft} style={{ color: "#64748B", textDecoration: "none", fontWeight: "500" }}>Sports Venues</Link>
-                    <span style={{ margin: "0 10px", color: "#64748B" }}><i className="feather-chevron-right" style={{ fontSize: "12px", color: "#64748B" }} /></span>
-                    <span className="active-crumb text-capitalize" style={{ color: "#22C55E", fontWeight: "600" }}>
-                      {venueData?.name || (name ? name.replaceAll('-', ' ') : "Venue Details")}
-                    </span>
+                  <div className="d-flex align-items-center gap-3 flex-wrap">
+                    {/* Breadcrumb pill */}
+                    <div className="breadcrumb-pill d-inline-flex align-items-center bg-white px-3 py-2 rounded-pill shadow-sm" style={{ fontSize: "13px", border: "1px solid #E5E7EB" }}>
+                      <Link to="/" style={{ color: "#64748B", textDecoration: "none", fontWeight: "500" }}>
+                        <i className="feather-home me-1" style={{ color: "#64748B" }} /> Home
+                      </Link>
+                      <span style={{ margin: "0 10px", color: "#64748B" }}><i className="feather-chevron-right" style={{ fontSize: "12px", color: "#64748B" }} /></span>
+                      <Link to={routes.blogListSidebarLeft} style={{ color: "#64748B", textDecoration: "none", fontWeight: "500" }}>Sports Venues</Link>
+                      <span style={{ margin: "0 10px", color: "#64748B" }}><i className="feather-chevron-right" style={{ fontSize: "12px", color: "#64748B" }} /></span>
+                      <span className="active-crumb text-capitalize" style={{ color: "#22C55E", fontWeight: "600" }}>
+                        {venueData?.name || (name ? name.replaceAll('-', ' ') : "Venue Details")}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => setIsShareOpen(true)}
+                      type="button"
+                      className="btn rounded-pill d-inline-flex align-items-center px-3 py-2 shadow-sm"
+                      style={{ fontSize: "13px", fontWeight: "600", border: "1px solid #22C55E", color: "#22C55E", backgroundColor: "#fff" }}
+                    >
+                      <i className="feather-share-2 me-1" /> Share Profile
+                    </button>
                   </div>
                 </div>
               </div>

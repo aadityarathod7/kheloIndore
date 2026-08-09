@@ -34,6 +34,11 @@ const ALLOWED_MIME_TYPES = {
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "docx",
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": "xlsx",
   "text/plain": "txt",
+  "video/mp4": "mp4",
+  "video/webm": "webm",
+  "video/ogg": "ogg",
+  "video/quicktime": "mov",
+  "video/x-msvideo": "avi",
 };
 
 const storage = multer.diskStorage({
@@ -64,11 +69,11 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-// 10 MB per file, 10 files max as enforced at the route level.
+// 50 MB per file to support videos, 10 files max as enforced at the route level.
 const imageUpload = multer({
   storage: storage,
   fileFilter: fileFilter,
-  limits: { fileSize: 10 * 1024 * 1024 },
+  limits: { fileSize: 50 * 1024 * 1024 },
 });
 
 module.exports = imageUpload;

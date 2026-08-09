@@ -1998,3 +1998,61 @@ exports.generateBookingEmail = (
   return mailContent;
 };
 
+// Email sent to a newly registered Coach/Trainer with a link to complete their profile
+exports.onboarding_profile_link = (name, completeLink) => {
+  let mailContent = `
+  <!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Transitional //EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+  <html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Complete Your Profile</title>
+  </head>
+  <body style="margin: 0; padding: 0; background-color: #f4f4f5; font-family: Arial, Helvetica, sans-serif;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f4f4f5; padding: 30px 10px;">
+      <tr>
+        <td align="center">
+          <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.06);">
+            <tr>
+              <td style="background: linear-gradient(135deg, #22C55E 0%, #15803D 100%); padding: 28px 30px; text-align: center;">
+                <h1 style="margin: 0; color: #ffffff; font-size: 22px;">Khelo Indore</h1>
+                <p style="margin: 6px 0 0; color: #dcfce7; font-size: 13px;">Welcome to the team!</p>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding: 30px;">
+                <p style="margin: 0 0 12px; color: #0f172a; font-size: 16px;">Dear ${name},</p>
+                <p style="margin: 0 0 14px; color: #334155; font-size: 14px; line-height: 1.7;">
+                  Congratulations on registering as a Coach/Trainer with Khelo Indore! Your account has been created successfully.
+                </p>
+                <p style="margin: 0 0 14px; color: #334155; font-size: 14px; line-height: 1.7;">
+                  To start receiving bookings, please complete your profile by clicking the button below. You will be able to add your
+                  specialization, experience, coaching levels, hourly rate, availability and more.
+                </p>
+                <p style="text-align: center; margin: 26px 0;">
+                  <a href="${completeLink}" style="display: inline-block; background: linear-gradient(135deg, #22C55E 0%, #16A34A 100%); color: #ffffff; text-decoration: none; padding: 13px 34px; border-radius: 50px; font-size: 15px; font-weight: bold;">
+                    Complete My Profile
+                  </a>
+                </p>
+                <p style="margin: 0 0 14px; color: #64748b; font-size: 13px; line-height: 1.7;">
+                  If the button doesn't work, copy and paste this link in your browser:
+                </p>
+                <p style="margin: 0 0 14px; color: #22C55E; font-size: 12px; word-break: break-all;">${completeLink}</p>
+                <p style="margin: 20px 0 0; color: #475569; font-size: 14px;">Best Regards,<br/>Team Khelo Indore</p>
+              </td>
+            </tr>
+            <tr>
+              <td style="background-color: #f8fafc; padding: 16px 30px; text-align: center; font-size: 12px; color: #94a3b8;">
+                This email was sent by Khelo Indore. For support, contact us at kheloindore.in/contact-us
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+  </html>
+  `;
+  return mailContent;
+};
+

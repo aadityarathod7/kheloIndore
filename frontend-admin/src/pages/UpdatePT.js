@@ -34,8 +34,84 @@ const UpdatepersonalTrainer  = () => {
     identity_Proof: [],
     other_document: [],
     status: "",
+    // ---- Extended profile fields ----
+    coaching_levels: [],
+    own_level: "",
+    response_time: "",
+    class_location: "",
+    students_trained: 0,
+    social_media: {
+      facebook: "",
+      instagram: "",
+      youtube: "",
+      twitter: "",
+      linkedin: "",
+    },
+    daily_availability: [],
+    categories: [],
+    videos: [],
   });
-  const navigate = useNavigate();
+
+  const LEVEL_OPTIONS = ["Beginner", "Intermediate", "Advanced"];
+  const RESPONSE_TIME_OPTIONS = [
+    "Within 1 hour",
+    "Within 2 hours",
+    "Within 6 hours",
+    "Within 12 hours",
+    "Within 24 hours",
+    "Within 48 hours",
+  ];
+  const DAY_OPTIONS = [
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+    "Sunday",
+  ];
+  const [categories, setCategories] = useState([]);
+
+  const fetchCategories = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/category/fetch`);
+      setCategories(response.data.categories || []);
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+    }
+  };
+  const handleLevelToggle = (level) => {
+    setFormData((prev) => {
+      const current = prev.coaching_levels || [];
+      return {
+        ...prev,
+        coaching_levels: current.includes(level)
+          ? current.filter((l) => l !== level)
+          : [...current, level],
+      };
+    });
+  };
+  const handleSocialChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      social_media: {
+        ...formData.social_media,
+        [name]: value,
+      },
+    });
+  };
+  const handleAvailabilityChange = (index, field, value) => {
+    setFormData((prev) => {
+      const next = [...(prev.daily_availability || [])];
+      if (!next[index]) next[index] = { day: DAY_OPTIONS[index] };
+      next[index] = { ...next[index], [field]: value };
+      return {
+        ...prev,
+        daily_availability: next,
+      };
+    });
+  };
 
   console.log(formData);
 
@@ -223,6 +299,40 @@ const UpdatepersonalTrainer  = () => {
     }
   };
 
+  const handleUploadVideo = async (e) => {
+    const files = Array.from(e.target.files);
+    const uploaded = [];
+
+    for (let file of files) {
+      const formDataUpload = new FormData();
+      formDataUpload.append("uploadFile", file);
+
+      try {
+        const response = await axios.post(
+          `${API_URL}/upload-file?types=coach`,
+          formDataUpload
+        );
+        if (response.data && response.data.file_data && response.data.file_data[0]) {
+          uploaded.push(response.data.file_data[0]);
+        }
+      } catch (error) {
+        console.error("Error uploading the video", error);
+      }
+    }
+
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      videos: [...(prevFormData.videos || []), ...uploaded],
+    }));
+  };
+
+  const handleRemoveVideo = (index) => {
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      videos: (prevFormData.videos || []).filter((_, i) => i !== index),
+    }));
+  };
+
   const removeImage = (type) => {
     if (type === "profile") {
       setFormData((prevFormData) => ({
@@ -274,6 +384,21 @@ const UpdatepersonalTrainer  = () => {
         identity_Proof: response.data.personalTrainer.identity_Proof || [], // Ensure it's an array
         other_document: response.data.personalTrainer.other_document || [], // Ensure it's an array
         status: response.data.personalTrainer.status || "", // Default to an empty string if not available
+        coaching_levels: response.data.personalTrainer.coaching_levels || [],
+        own_level: response.data.personalTrainer.own_level || "",
+        response_time: response.data.personalTrainer.response_time || "",
+        class_location: response.data.personalTrainer.class_location || "",
+        students_trained: response.data.personalTrainer.students_trained || 0,
+        social_media: response.data.personalTrainer.social_media || {
+          facebook: "",
+          instagram: "",
+          youtube: "",
+          twitter: "",
+          linkedin: "",
+        },
+        daily_availability: response.data.personalTrainer.daily_availability || [],
+        categories: response.data.personalTrainer.categories || [],
+        videos: response.data.personalTrainer.videos || [],
       });
     } catch (error) {
       console.error("Error fetching PersonalTrainer data:", error);
@@ -282,6 +407,7 @@ const UpdatepersonalTrainer  = () => {
 
   useEffect(() => {
     getCoachData();
+    fetchCategories();
   }, [UpdatepersonalTrainerID._id]);
 
   return (
@@ -331,15 +457,16 @@ const UpdatepersonalTrainer  = () => {
                   Game type <span className="text-danger">*</span>
                 </Form.Label>
                 <Select
-                  id="trainer_type"
-                  maxLength={25}
-                  options={options}
-                  value={options.find(
-                    (option) => option.value === formData.trainer_type
-                  )}
-                  onChange={handleSelectChange}
-                  isInvalid={!!errors.trainer_type}
-                  placeholder="Select Game Type"
+                  isMulti
+                  id="categories"
+                  options={categories.map(c => ({ value: c.category_name, label: c.category_name }))}
+                  value={(formData.categories || []).map(cat => ({ value: cat, label: cat }))}
+                  onChange={(selectedOptions) => {
+                    const selectedVals = selectedOptions ? selectedOptions.map(o => o.value) : [];
+                    setFormData({ ...formData, categories: selectedVals, trainer_type: selectedVals[0] || "" });
+                    setErrors({ ...errors, trainer_type: "" });
+                  }}
+                  placeholder="Select Game Types"
                 />
                 {errors.trainer_type && (
                   <div
@@ -823,6 +950,145 @@ const UpdatepersonalTrainer  = () => {
                 )}
               </Form.Group>
             </Col>
+            <Col sm={4}>
+              <Form.Group controlId="formClassLocation">
+                <Form.Label>Class Location</Form.Label>
+                <Form.Control
+                  type="text"
+                  placeholder="e.g. On-site / Online / Player's home"
+                  name="class_location"
+                  value={formData.class_location || ""}
+                  onChange={handleInputChange}
+                />
+              </Form.Group>
+            </Col>
+            <Col sm={4}>
+              <Form.Group controlId="formStudentsTrained">
+                <Form.Label>Students Trained</Form.Label>
+                <Form.Control
+                  type="number"
+                  placeholder="Enter number of students trained"
+                  name="students_trained"
+                  value={formData.students_trained || 0}
+                  onChange={handleInputChange}
+                />
+              </Form.Group>
+            </Col>
+          </Row>
+          <Row className="mt-3">
+            <Col sm={4}>
+              <Form.Group controlId="formCoachingLevels">
+                <Form.Label>Coaching Levels (who you coach)</Form.Label>
+                <div className="d-flex flex-wrap gap-2 mt-1">
+                  {LEVEL_OPTIONS.map((level) => (
+                    <button
+                      type="button"
+                      key={level}
+                      onClick={() => handleLevelToggle(level)}
+                      className="btn btn-sm"
+                      style={{
+                        borderRadius: "50px",
+                        fontWeight: "600",
+                        background: (formData.coaching_levels || []).includes(level)
+                          ? "#22C55E"
+                          : "#F1F5F9",
+                        color: (formData.coaching_levels || []).includes(level)
+                          ? "#FFFFFF"
+                          : "#475569",
+                        border: "1px solid #E2E8F0",
+                      }}
+                    >
+                      {level}
+                    </button>
+                  ))}
+                </div>
+              </Form.Group>
+            </Col>
+            <Col sm={4}>
+              <Form.Group controlId="formOwnLevel">
+                <Form.Label>Your Own Level</Form.Label>
+                <Form.Control
+                  as="select"
+                  name="own_level"
+                  value={formData.own_level || ""}
+                  onChange={handleInputChange}
+                >
+                  <option value="">Select Your Level</option>
+                  {LEVEL_OPTIONS.map((level) => (
+                    <option key={level} value={level}>
+                      {level}
+                    </option>
+                  ))}
+                </Form.Control>
+              </Form.Group>
+            </Col>
+            <Col sm={4}>
+              <Form.Group controlId="formResponseTime">
+                <Form.Label>Response Time</Form.Label>
+                <Form.Control
+                  as="select"
+                  name="response_time"
+                  value={formData.response_time || ""}
+                  onChange={handleInputChange}
+                >
+                  <option value="">Select Response Time</option>
+                  {RESPONSE_TIME_OPTIONS.map((opt) => (
+                    <option key={opt} value={opt}>
+                      {opt}
+                    </option>
+                  ))}
+                </Form.Control>
+              </Form.Group>
+            </Col>
+          </Row>
+          <Row className="mt-3">
+            <h5 className="mb-3">Social Media Profiles</h5>
+            {["facebook", "instagram", "youtube", "twitter", "linkedin"].map((platform) => (
+              <Col sm={4} key={platform} className="mb-3">
+                <Form.Group controlId={`formSocial${platform}`}>
+                  <Form.Label style={{ textTransform: "capitalize" }}>{platform}</Form.Label>
+                  <Form.Control
+                    type="text"
+                    placeholder={`Enter ${platform} URL`}
+                    name={platform}
+                    value={formData.social_media?.[platform] || ""}
+                    onChange={handleSocialChange}
+                  />
+                </Form.Group>
+              </Col>
+            ))}
+          </Row>
+          <Row className="mt-3">
+            <h5 className="mb-3">Daily Availability Timings</h5>
+            {DAY_OPTIONS.map((day, index) => {
+              const item = (formData.daily_availability || [])[index] || {};
+              return (
+                <Col sm={4} key={day} className="mb-3">
+                  <div
+                    className="p-3 rounded-3"
+                    style={{ background: "#F8FAFC", border: "1px solid #E2E8F0" }}
+                  >
+                    <Form.Label className="fw-bold">{day}</Form.Label>
+                    <div className="d-flex gap-2">
+                      <Form.Control
+                        type="time"
+                        value={item.startTime || ""}
+                        onChange={(e) =>
+                          handleAvailabilityChange(index, "startTime", e.target.value)
+                        }
+                      />
+                      <Form.Control
+                        type="time"
+                        value={item.endTime || ""}
+                        onChange={(e) =>
+                          handleAvailabilityChange(index, "endTime", e.target.value)
+                        }
+                      />
+                    </div>
+                  </div>
+                </Col>
+              );
+            })}
           </Row>
           <Row className="mt-3">
             <Col sm={12}>
@@ -1083,6 +1349,78 @@ const UpdatepersonalTrainer  = () => {
                       </button>
                     </div>
                   )}
+                </div>
+              </Form.Group>
+            </Col>
+            <Col sm={4}>
+              <Form.Group controlId="formVideos">
+                <Form.Label>Upload Video</Form.Label>
+                <div
+                  style={{
+                    border: "2px dashed #ccc",
+                    padding: "20px",
+                    textAlign: "center",
+                  }}
+                >
+                  <h3 style={{ fontSize: "18px" }}>Upload</h3>
+
+                  <input
+                    type="file"
+                    accept="video/*"
+                    multiple
+                    style={{ display: "none" }}
+                    id="fileInput-video"
+                    onChange={handleUploadVideo}
+                  />
+                  <label
+                    htmlFor="fileInput-video"
+                    style={{ cursor: "pointer" }}
+                  >
+                    <FiUpload
+                      style={{
+                        fontSize: "48px",
+                        marginBottom: "10px",
+                        cursor: "pointer",
+                      }}
+                    />
+                  </label>
+
+                  <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center" }}>
+                    {(formData.videos || []).map((vid, index) => (
+                      <div key={index} style={{ position: "relative", margin: "5px" }}>
+                        <video
+                          src={`${Image_URL}${vid.src}`}
+                          controls
+                          style={{
+                            width: "120px",
+                            height: "80px",
+                            objectFit: "cover",
+                          }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveVideo(index)}
+                          style={{
+                            position: "absolute",
+                            top: "2px",
+                            right: "2px",
+                            background: "rgba(0,0,0,0.6)",
+                            color: "white",
+                            border: "none",
+                            borderRadius: "50%",
+                            width: "18px",
+                            height: "18px",
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                        >
+                          <FiX style={{ fontSize: "10px" }} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </Form.Group>
             </Col>

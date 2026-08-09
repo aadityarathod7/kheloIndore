@@ -217,6 +217,10 @@ exports.addVenue = async (req, res) => {
       package_type,
       vendor_type,
       vendor_details,
+      categories,
+      videos,
+      sports_details,
+      share_token,
     } = req.body;
 
     const user = req.user?.userID;
@@ -315,6 +319,10 @@ exports.addVenue = async (req, res) => {
       created_by: user,
       verification_status, // Use verification_status based on the role
       read_seen: 1, // Optional: Include if required
+      categories,
+      videos,
+      sports_details,
+      share_token,
     });
 
     const vendor = await User.findOne({ _id: vendor_id });

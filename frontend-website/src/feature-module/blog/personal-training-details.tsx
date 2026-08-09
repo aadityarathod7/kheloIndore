@@ -8,6 +8,7 @@ import { all_routes } from "../router/all_routes";
 import Lightbox from "yet-another-react-lightbox";
 import { API_URL, IMG_URL } from "../../ApiUrl";
 import { sanitizeHtml } from "../../utils/sanitize";
+import Swal from "sweetalert2";
 
 interface TrainerData {
   first_name: any;
@@ -34,6 +35,22 @@ interface TrainerData {
   policiesAndRules: string;
   skills: string;
   qualifications: string;
+  languages: string;
+  class_location: string;
+  students_trained: number;
+  response_time: string;
+  coaching_levels: string[];
+  own_level: string;
+  profile_views: number;
+  reviews_count: number;
+  rating: number;
+  social_media: any;
+  gallery_videos: any;
+  daily_availability: any;
+  share_token: string;
+  mobile: string;
+  package: any;
+  package_type: string;
 }
 // ---------- Display helpers (aligned with how admins enter the data) ----------
 // Gender / trainer type are saved lowercase by the admin form.
@@ -89,6 +106,7 @@ const PersonalTrainingDetails = (props: any) => {
   }, []);
 
   const [open, setOpen] = React.useState(false);
+  const [isShareOpen, setIsShareOpen] = useState(false);
   const [trainerData, setTrainerData] = useState<TrainerData>();
   const [activeSection, setActiveSection] = useState<string>("short-bio");
   const idData = useParams();
@@ -115,6 +133,46 @@ const PersonalTrainingDetails = (props: any) => {
       trainerData?.skills ||
       formattedPrice
   );
+
+  // ---- Extended profile derived values ----
+  const languagesList = trainerData?.languages
+    ? String(trainerData.languages)
+        .split(/[,;\n|•]+/)
+        .map((l: string) => l.trim())
+        .filter(Boolean)
+    : [];
+  const coachingLevelsList = trainerData?.coaching_levels?.length
+    ? trainerData.coaching_levels
+    : [];
+  const socialMedia = trainerData?.social_media || {};
+  const dailyAvailability =
+    trainerData?.daily_availability && trainerData.daily_availability.length
+      ? trainerData.daily_availability
+      : [];
+  const profileViews = trainerData?.profile_views || 0;
+  const studentsTrained = trainerData?.students_trained || 0;
+
+  // ---- Share profile ----
+  const [shareCopied, setShareCopied] = useState(false);
+  const generateShareLink = async () => {
+    try {
+      const res = await axios.post(`${API_URL}/web/PersonalTraining/share/${id}`);
+      const link = res.data?.shareLink || window.location.href;
+      if (navigator.share) {
+        try {
+          await navigator.share({ title: trainerName, url: link });
+          return;
+        } catch (_) {
+          /* user dismissed native share sheet */
+        }
+      }
+      await navigator.clipboard.writeText(link);
+      setShareCopied(true);
+      setTimeout(() => setShareCopied(false), 2000);
+    } catch (error) {
+      console.error("Error generating share link:", error);
+    }
+  };
 
   const openSection = (id: string) => {
     setActiveSection(id);
@@ -241,13 +299,23 @@ const PersonalTrainingDetails = (props: any) => {
                 {trainerName || "View trainer profile and book your session"}
               </p>
               
-              {/* Breadcrumb pill */}
-              <div style={{ display: "inline-flex", alignItems: "center", background: "#FFFFFF", padding: "8px 16px", borderRadius: "50px", boxShadow: "0 1px 6px rgba(0,0,0,0.08)", fontSize: "13px", border: "1px solid #E5E7EB" }}>
-                <Link to="/" style={{ color: "#64748B", textDecoration: "none", fontWeight: "500" }}><i className="feather-home" style={{ color: "#64748B", marginRight: "4px" }} /> Home</Link>
-                <span style={{ margin: "0 10px", color: "#64748B" }}><i className="feather-chevron-right" style={{ fontSize: "12px", color: "#64748B" }} /></span>
-                <Link to="/personal-training" style={{ color: "#64748B", textDecoration: "none", fontWeight: "500" }}>Trainers</Link>
-                <span style={{ margin: "0 10px", color: "#64748B" }}><i className="feather-chevron-right" style={{ fontSize: "12px", color: "#64748B" }} /></span>
-                <span style={{ color: "#22C55E", fontWeight: "600" }}>Details</span>
+              <div className="d-flex align-items-center gap-3 flex-wrap">
+                {/* Breadcrumb pill */}
+                <div style={{ display: "inline-flex", alignItems: "center", background: "#FFFFFF", padding: "8px 16px", borderRadius: "50px", boxShadow: "0 1px 6px rgba(0,0,0,0.08)", fontSize: "13px", border: "1px solid #E5E7EB" }}>
+                  <Link to="/" style={{ color: "#64748B", textDecoration: "none", fontWeight: "500" }}><i className="feather-home" style={{ color: "#64748B", marginRight: "4px" }} /> Home</Link>
+                  <span style={{ margin: "0 10px", color: "#64748B" }}><i className="feather-chevron-right" style={{ fontSize: "12px", color: "#64748B" }} /></span>
+                  <Link to="/personal-training" style={{ color: "#64748B", textDecoration: "none", fontWeight: "500" }}>Trainers</Link>
+                  <span style={{ margin: "0 10px", color: "#64748B" }}><i className="feather-chevron-right" style={{ fontSize: "12px", color: "#64748B" }} /></span>
+                  <span style={{ color: "#22C55E", fontWeight: "600" }}>Details</span>
+                </div>
+                <button
+                  onClick={() => setIsShareOpen(true)}
+                  type="button"
+                  className="btn rounded-pill d-inline-flex align-items-center px-3 py-2 shadow-sm"
+                  style={{ fontSize: "13px", fontWeight: "600", border: "1px solid #22C55E", color: "#22C55E", backgroundColor: "#fff" }}
+                >
+                  <i className="feather-share-2 me-1" /> Share Profile
+                </button>
               </div>
             </div>
           </div>
@@ -606,6 +674,11 @@ const PersonalTrainingDetails = (props: any) => {
                       Specializations
                     </Link>
                   </li>
+                  <li className={activeSection === "availability" ? "active" : ""}>
+                    <Link onClick={() => openSection("availability")} to={""}>
+                      Availability
+                    </Link>
+                  </li>
                   <li className={activeSection === "rules" ? "active" : ""}>
                     <Link onClick={() => openSection("rules")} to={""}>
                       Policies & Rules
@@ -695,6 +768,48 @@ const PersonalTrainingDetails = (props: any) => {
                             <div className="cdg-item">
                               <span className="cdg-label">Price</span>
                               <strong className="cdg-value">{formattedPrice}/hr</strong>
+                            </div>
+                          ) : null}
+                          {trainerData?.class_location ? (
+                            <div className="cdg-item">
+                              <span className="cdg-label">Class Location</span>
+                              <strong className="cdg-value">{trainerData.class_location}</strong>
+                            </div>
+                          ) : null}
+                          {languagesList.length > 0 ? (
+                            <div className="cdg-item">
+                              <span className="cdg-label">Languages</span>
+                              <strong className="cdg-value">{languagesList.join(", ")}</strong>
+                            </div>
+                          ) : null}
+                          {trainerData?.response_time ? (
+                            <div className="cdg-item">
+                              <span className="cdg-label">Response Time</span>
+                              <strong className="cdg-value">{trainerData.response_time}</strong>
+                            </div>
+                          ) : null}
+                          {studentsTrained > 0 ? (
+                            <div className="cdg-item">
+                              <span className="cdg-label">Students Trained</span>
+                              <strong className="cdg-value">{studentsTrained}+ Students</strong>
+                            </div>
+                          ) : null}
+                          {coachingLevelsList.length > 0 ? (
+                            <div className="cdg-item">
+                              <span className="cdg-label">Coaching Levels</span>
+                              <strong className="cdg-value">{coachingLevelsList.join(", ")}</strong>
+                            </div>
+                          ) : null}
+                          {trainerData?.own_level ? (
+                            <div className="cdg-item">
+                              <span className="cdg-label">Trainer Level</span>
+                              <strong className="cdg-value">{capitalize(trainerData.own_level)}</strong>
+                            </div>
+                          ) : null}
+                          {profileViews > 0 ? (
+                            <div className="cdg-item">
+                              <span className="cdg-label">Profile Views</span>
+                              <strong className="cdg-value"><i className="feather-eye me-1" style={{ color: "#16A34A" }} />{profileViews.toLocaleString("en-IN")}</strong>
                             </div>
                           ) : null}
                         </div>
@@ -872,6 +987,54 @@ const PersonalTrainingDetails = (props: any) => {
                         </div>
                       ) : (
                         <p className="mb-0">No specializations listed yet.</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                <div className="accordion-item mb-4" id="availability">
+                  <h4 className="accordion-header" id="panelsStayOpen-availability">
+                    <button
+                      className={`accordion-button ${
+                        activeSection === "availability" ? "" : "collapsed"
+                      }`}
+                      type="button"
+                      aria-expanded={activeSection === "availability"}
+                      aria-controls="panelsStayOpen-collapseAvail"
+                      onClick={() =>
+                        setActiveSection(activeSection === "availability" ? "" : "availability")
+                      }
+                    >
+                      Daily Availability
+                    </button>
+                  </h4>
+                  <div
+                    id="panelsStayOpen-collapseAvail"
+                    className={`accordion-collapse collapse ${
+                      activeSection === "availability" ? "show" : ""
+                    }`}
+                    aria-labelledby="panelsStayOpen-availability"
+                  >
+                    <div className="accordion-body">
+                      {dailyAvailability.length > 0 ? (
+                        <div className="row g-2">
+                          {dailyAvailability.map((avail: any, idx: number) => (
+                            <div className="col-sm-6" key={idx}>
+                              <div
+                                className="d-flex align-items-center justify-content-between px-3 py-2 rounded-3 mb-2"
+                                style={{ background: "#F0FDF4", border: "1px solid #DCFCE7" }}
+                              >
+                                <span className="fw-bold" style={{ color: "#166534", fontSize: "13px" }}>
+                                  <i className="feather-calendar me-1" /> {avail.day || avail.day_of_week || "—"}
+                                </span>
+                                <span style={{ color: "#334155", fontSize: "13px", fontWeight: "600" }}>
+                                  {avail.startTime || avail.start_time || "—"} - {avail.endTime || avail.end_time || "—"}
+                                </span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="mb-0">Daily availability timings not provided yet.</p>
                       )}
                     </div>
                   </div>
@@ -1360,6 +1523,35 @@ const PersonalTrainingDetails = (props: any) => {
                       </h4>
                     )}
                   </div>
+                  {/* Packages before Book Now */}
+                  {trainerData?.package && (Object.values(trainerData.package).some((v: any) => v) || trainerData?.package_type) ? (
+                    <div className="mt-3">
+                      <p className="mb-2 fw-bold" style={{ fontSize: "13px", color: "#475569" }}>
+                        <i className="feather-gift me-1" style={{ color: "#16A34A" }} /> Packages
+                      </p>
+                      <div className="d-flex flex-column gap-2">
+                        {(Object.keys(trainerData.package || {}) as string[]).map((key) => {
+                          const val = trainerData.package[key];
+                          if (!val) return null;
+                          return (
+                            <div
+                              key={key}
+                              className="d-flex align-items-center justify-content-between px-3 py-2 rounded-3"
+                              style={{ background: "#F8FAFC", border: "1px solid #E2E8F0" }}
+                            >
+                              <span className="text-muted" style={{ fontSize: "13px", fontWeight: "600", textTransform: "capitalize" }}>{key}</span>
+                              <strong style={{ color: "#16A34A", fontSize: "14px" }}>{formatPrice(val)}</strong>
+                            </div>
+                          );
+                        })}
+                        {trainerData.package_type && (
+                          <div className="px-3 py-2 rounded-3" style={{ background: "#F0FDF4", border: "1px dashed #DCFCE7", fontSize: "12px", color: "#166534", fontWeight: "600" }}>
+                            {trainerData.package_type}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ) : null}
                   <div className="d-grid mt-3 gap-2">
                     <button
                       onClick={() => checkToken(id)}
@@ -1377,6 +1569,59 @@ const PersonalTrainingDetails = (props: any) => {
                       Message Trainer
                     </button>
                   </div>
+                  {/* Response time + profile views + share */}
+                  <div className="d-flex align-items-center justify-content-between mt-3 pt-3" style={{ borderTop: "1px dashed #E2E8F0" }}>
+                    {trainerData?.response_time ? (
+                      <span className="d-flex align-items-center gap-1" style={{ fontSize: "12px", color: "#64748B" }}>
+                        <i className="feather-clock" style={{ color: "#16A34A" }} />
+                        Responds in <strong style={{ color: "#0F172A" }}>&nbsp;{trainerData.response_time}</strong>
+                      </span>
+                    ) : <span />}
+                    {profileViews > 0 ? (
+                      <span className="d-flex align-items-center gap-1" style={{ fontSize: "12px", color: "#64748B" }}>
+                        <i className="feather-eye" style={{ color: "#16A34A" }} />
+                        {profileViews.toLocaleString("en-IN")} views
+                      </span>
+                    ) : <span />}
+                  </div>
+                  <button
+                    onClick={generateShareLink}
+                    className="btn btn-outline-success d-inline-flex justify-content-center align-items-center gap-2 mt-2 w-100"
+                    style={{ borderColor: "#22C55E", color: "#16A34A", fontWeight: "600", fontSize: "13px", borderRadius: "8px" }}
+                  >
+                    <i className={shareCopied ? "feather-check" : "feather-share-2"} />
+                    {shareCopied ? "Link Copied!" : "Share Profile"}
+                  </button>
+                  {/* Social media */}
+                  {Object.values(socialMedia).some((v: any) => v) ? (
+                    <div className="d-flex align-items-center justify-content-center gap-2 mt-3 pt-3" style={{ borderTop: "1px dashed #E2E8F0" }}>
+                      {socialMedia.facebook && (
+                        <a href={socialMedia.facebook} target="_blank" rel="noopener noreferrer" className="d-flex align-items-center justify-content-center rounded-circle" style={{ width: 32, height: 32, background: "#F0FDF4", color: "#16A34A" }}>
+                          <i className="fa-brands fa-facebook-f" />
+                        </a>
+                      )}
+                      {socialMedia.instagram && (
+                        <a href={socialMedia.instagram} target="_blank" rel="noopener noreferrer" className="d-flex align-items-center justify-content-center rounded-circle" style={{ width: 32, height: 32, background: "#F0FDF4", color: "#16A34A" }}>
+                          <i className="fa-brands fa-instagram" />
+                        </a>
+                      )}
+                      {socialMedia.youtube && (
+                        <a href={socialMedia.youtube} target="_blank" rel="noopener noreferrer" className="d-flex align-items-center justify-content-center rounded-circle" style={{ width: 32, height: 32, background: "#F0FDF4", color: "#16A34A" }}>
+                          <i className="fa-brands fa-youtube" />
+                        </a>
+                      )}
+                      {socialMedia.twitter && (
+                        <a href={socialMedia.twitter} target="_blank" rel="noopener noreferrer" className="d-flex align-items-center justify-content-center rounded-circle" style={{ width: 32, height: 32, background: "#F0FDF4", color: "#16A34A" }}>
+                          <i className="fa-brands fa-twitter" />
+                        </a>
+                      )}
+                      {socialMedia.linkedin && (
+                        <a href={socialMedia.linkedin} target="_blank" rel="noopener noreferrer" className="d-flex align-items-center justify-content-center rounded-circle" style={{ width: 32, height: 32, background: "#F0FDF4", color: "#16A34A" }}>
+                          <i className="fa-brands fa-linkedin-in" />
+                        </a>
+                      )}
+                    </div>
+                  ) : null}
                 </div>
                 {/* <div className="white-bg next-availability">
                   <div className="d-flex justify-content-start align-items-center">
@@ -1697,7 +1942,69 @@ const PersonalTrainingDetails = (props: any) => {
           </div>
         </section> */}
       </div>
-      {/* /Page Content */}
+      {/* Share Modal */}
+      {isShareOpen && (
+        <div className="modal show d-block" style={{ backgroundColor: "rgba(0,0,0,0.5)", zIndex: 10050 }}>
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content" style={{ borderRadius: "20px", border: "none", boxShadow: "0 10px 30px rgba(0,0,0,0.2)" }}>
+              <div className="modal-header border-0 pb-0 justify-content-between align-items-center px-4 pt-4">
+                <h5 className="modal-title fw-bold" style={{ fontFamily: "Space Grotesk, sans-serif", fontSize: "20px" }}>Share Trainer</h5>
+                <button type="button" className="btn-close opacity-50" onClick={() => setIsShareOpen(false)} aria-label="Close" style={{ fontSize: "14px", border: "none", background: "none" }}><i className="feather-x" /></button>
+              </div>
+              <div className="modal-body px-4 py-3">
+                <p className="text-muted mb-3" style={{ fontSize: "13px" }}>Share this trainer profile with your friends!</p>
+                <div className="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+                  <a
+                    href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="d-flex flex-column align-items-center text-decoration-none"
+                    style={{ width: "60px" }}
+                  >
+                    <div className="d-flex align-items-center justify-content-center text-white rounded-circle mb-1" style={{ width: "45px", height: "45px", backgroundColor: "#1877F2" }}>
+                      <i className="fa-brands fa-facebook-f" style={{ fontSize: "18px" }} />
+                    </div>
+                    <span className="text-muted" style={{ fontSize: "11px", fontWeight: "600" }}>Facebook</span>
+                  </a>
+                  <a 
+                    href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(`Check out trainer ${trainerName || ""} on Khelo Indore!`)}`} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="d-flex flex-column align-items-center text-decoration-none"
+                    style={{ width: "60px" }}
+                  >
+                    <div className="d-flex align-items-center justify-content-center bg-dark text-white rounded-circle mb-1" style={{ width: "45px", height: "45px" }}>
+                      <i className="fa-brands fa-x-twitter" style={{ fontSize: "18px" }} />
+                    </div>
+                    <span className="text-muted" style={{ fontSize: "11px", fontWeight: "600" }}>X / Twitter</span>
+                  </a>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(window.location.href);
+                      setIsShareOpen(false);
+                      Swal.fire({
+                        icon: "success",
+                        title: "Copied!",
+                        text: "Link copied to clipboard",
+                        timer: 1500,
+                        showConfirmButton: false,
+                      });
+                    }}
+                    type="button"
+                    className="d-flex flex-column align-items-center text-decoration-none border-0 bg-transparent"
+                    style={{ width: "60px" }}
+                  >
+                    <div className="d-flex align-items-center justify-content-center bg-success text-white rounded-circle mb-1" style={{ width: "45px", height: "45px" }}>
+                      <i className="feather-copy" style={{ fontSize: "18px" }} />
+                    </div>
+                    <span className="text-muted" style={{ fontSize: "11px", fontWeight: "600" }}>Copy Link</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

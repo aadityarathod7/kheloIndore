@@ -34,6 +34,8 @@ const Coaches = () => {
     identity_Proof: [],
     other_document: [],
     status: "",
+    categories: [],
+    videos: [],
   });
   const navigate = useNavigate();
 
@@ -41,6 +43,16 @@ const Coaches = () => {
 
   const [errors, setErrors] = useState({});
   const coachId = useParams();
+  const [categories, setCategories] = useState([]);
+
+  const fetchCategories = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/category/fetch`);
+      setCategories(response.data.categories || []);
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+    }
+  };
 
   console.log(coachId._id, "id of coach");
 
@@ -226,6 +238,40 @@ const Coaches = () => {
     }
   };
 
+  const handleUploadVideo = async (e) => {
+    const files = Array.from(e.target.files);
+    const uploaded = [];
+
+    for (let file of files) {
+      const formDataUpload = new FormData();
+      formDataUpload.append("uploadFile", file);
+
+      try {
+        const response = await axios.post(
+          `${API_URL}/upload-file?types=coach`,
+          formDataUpload
+        );
+        if (response.data && response.data.file_data && response.data.file_data[0]) {
+          uploaded.push(response.data.file_data[0]);
+        }
+      } catch (error) {
+        console.error("Error uploading the video", error);
+      }
+    }
+
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      videos: [...(prevFormData.videos || []), ...uploaded],
+    }));
+  };
+
+  const handleRemoveVideo = (index) => {
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      videos: (prevFormData.videos || []).filter((_, i) => i !== index),
+    }));
+  };
+
   const removeImage = (type) => {
     if (type === "profile") {
       setFormData((prevFormData) => ({
@@ -276,6 +322,8 @@ const Coaches = () => {
         identity_Proof: response.data.coach.identity_Proof || [], // Ensure it's an array
         other_document: response.data.coach.other_document || [], // Ensure it's an array
         status: response.data.coach.status || "", // Default to an empty string if not available
+        categories: response.data.coach.categories || [],
+        videos: response.data.coach.videos || [],
       });
     } catch (error) {
       console.error("Error fetching coach data:", error);
@@ -284,6 +332,7 @@ const Coaches = () => {
 
   useEffect(() => {
     getCoachData();
+    fetchCategories();
   }, [coachId._id]);
 
   return (
@@ -337,15 +386,16 @@ const Coaches = () => {
                   Game type <span className="text-danger">*</span>
                 </Form.Label>
                 <Select
-                  id="trainer_type"
-                  options={options}
-                  value={options.find(
-                    (option) => option.value === formData.trainer_type
-                  )}
-                  onChange={handleSelectChange}
-                  isInvalid={!!errors.trainer_type}
-                  placeholder="Select Game Type"
-
+                  isMulti
+                  id="categories"
+                  options={categories.map(c => ({ value: c.category_name, label: c.category_name }))}
+                  value={(formData.categories || []).map(cat => ({ value: cat, label: cat }))}
+                  onChange={(selectedOptions) => {
+                    const selectedVals = selectedOptions ? selectedOptions.map(o => o.value) : [];
+                    setFormData({ ...formData, categories: selectedVals, trainer_type: selectedVals[0] || "" });
+                    setErrors({ ...errors, trainer_type: "" });
+                  }}
+                  placeholder="Select Game Types"
                 />
                 {errors.trainer_type && (
                   <div
@@ -1100,6 +1150,78 @@ const Coaches = () => {
                       </button>
                     </div>
                   )}
+                </div>
+              </Form.Group>
+            </Col>
+            <Col sm={4}>
+              <Form.Group controlId="formVideos">
+                <Form.Label>Upload Video</Form.Label>
+                <div
+                  style={{
+                    border: "2px dashed #ccc",
+                    padding: "20px",
+                    textAlign: "center",
+                  }}
+                >
+                  <h3 style={{ fontSize: "18px" }}>Upload</h3>
+
+                  <input
+                    type="file"
+                    accept="video/*"
+                    multiple
+                    style={{ display: "none" }}
+                    id="fileInput-video"
+                    onChange={handleUploadVideo}
+                  />
+                  <label
+                    htmlFor="fileInput-video"
+                    style={{ cursor: "pointer" }}
+                  >
+                    <FiUpload
+                      style={{
+                        fontSize: "48px",
+                        marginBottom: "10px",
+                        cursor: "pointer",
+                      }}
+                    />
+                  </label>
+
+                  <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center" }}>
+                    {(formData.videos || []).map((vid, index) => (
+                      <div key={index} style={{ position: "relative", margin: "5px" }}>
+                        <video
+                          src={`${Image_URL}${vid.src}`}
+                          controls
+                          style={{
+                            width: "120px",
+                            height: "80px",
+                            objectFit: "cover",
+                          }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveVideo(index)}
+                          style={{
+                            position: "absolute",
+                            top: "2px",
+                            right: "2px",
+                            background: "rgba(0,0,0,0.6)",
+                            color: "white",
+                            border: "none",
+                            borderRadius: "50%",
+                            width: "18px",
+                            height: "18px",
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                        >
+                          <FiX style={{ fontSize: "10px" }} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </Form.Group>
             </Col>

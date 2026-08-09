@@ -674,6 +674,17 @@ const TrainingTimeDate = (props: any) => {
                   )}
                 </div>
 
+                {/* Booking Disclaimer */}
+                <div className="card time-date-card mb-4" style={{ padding: "20px", borderRadius: "16px", background: "#FFFBEB", border: "1px solid #FDE68A" }}>
+                  <h4 className="mb-3" style={{ color: "#92400E", fontWeight: "700", fontSize: "15px" }}>
+                    <i className="feather-alert-triangle me-2" style={{ color: "#D97706" }} />
+                    Important Booking Notice
+                  </h4>
+                  <p style={{ color: "#78350F", fontSize: "13px", lineHeight: "1.6", margin: 0 }}>
+                    If you book this Coach/Trainer directly or through any platform other than Khelo Indore, Khelo Indore will not be responsible for any issues, disputes, or losses arising from such bookings.
+                  </p>
+                </div>
+
                 {/* Card 3: Available Time Slots */}
                 <div className="card time-date-card mb-4" style={{ padding: "24px", borderRadius: "16px", opacity: (!isNextButtonDisabledTwo && timeSlot?.slots) ? 1 : 0.5 }}>
                   <h4 className="mb-4" style={{ color: "#0F172A", fontWeight: "700" }}>

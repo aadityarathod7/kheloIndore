@@ -173,6 +173,149 @@ exports.totalrevenue = async (req, res) => {
   }
 };
 
+// Helper to compute date-range boundaries for Day / Week / Month / Custom filters
+exports.analyticsRange = (filter) => {
+  const now = new Date();
+  let from, to = new Date(now);
+  switch (filter) {
+    case "day":
+      from = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+      to = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+      break;
+    case "week":
+      const day = (now.getDay() + 6) % 7; // Monday start
+      from = new Date(now.getFullYear(), now.getMonth(), now.getDate() - day, 0, 0, 0, 0);
+      break;
+    case "month":
+      from = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
+      break;
+    case "custom":
+      return { from: null, to: null, isCustom: true };
+    default:
+      from = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+  }
+  return { from, to, isCustom: false };
+};
+
+// Combined booking + revenue analytics for dashboards, with Day/Week/Month/Custom filters
+// and downloadable report (CSV) support.
+exports.bookingRevenueAnalytics = async (req, res) => {
+  try {
+    const user = req.user.userID;
+    if (!user) {
+      return res.status(500).json({ success: false, message: "User Id not found" });
+    }
+
+    const { filter = "day", fromDate, toDate } = req.query;
+    const range = exports.analyticsRange(filter);
+    let match = {};
+    if (filter === "custom" && fromDate && toDate) {
+      match = {
+        createdAt: {
+          $gte: new Date(fromDate),
+          $lte: new Date(new Date(toDate).getTime() + 24 * 60 * 60 * 1000 - 1),
+        },
+      };
+    } else if (!range.isCustom) {
+      match = { createdAt: { $gte: range.from, $lte: range.to } };
+    }
+
+    const [venueAgg, coachAgg, trainerAgg] = await Promise.all([
+      Booking.aggregate([
+        { $match: match },
+        { $group: { _id: null, bookings: { $sum: 1 }, revenue: { $sum: "$total_price" } } },
+      ]),
+      CoachBooking.aggregate([
+        { $match: match },
+        { $group: { _id: null, bookings: { $sum: 1 }, revenue: { $sum: "$total_price" } } },
+      ]),
+      PersonalTrainerBooking.aggregate([
+        { $match: match },
+        { $group: { _id: null, bookings: { $sum: 1 }, revenue: { $sum: "$total_price" } } },
+      ]),
+    ]);
+
+    const venue = venueAgg[0] || { bookings: 0, revenue: 0 };
+    const coach = coachAgg[0] || { bookings: 0, revenue: 0 };
+    const trainer = trainerAgg[0] || { bookings: 0, revenue: 0 };
+
+    const totalBookings = venue.bookings + coach.bookings + trainer.bookings;
+    const totalRevenue = parseFloat(
+      ((venue.revenue || 0) + (coach.revenue || 0) + (trainer.revenue || 0)).toFixed(2)
+    );
+
+    // Breakdown for pie charts
+    const bookingBreakdown = [
+      { name: "Venue", value: venue.bookings },
+      { name: "Coach", value: coach.bookings },
+      { name: "Personal Trainer", value: trainer.bookings },
+    ];
+    const revenueBreakdown = [
+      { name: "Venue", value: Math.round((venue.revenue || 0) * 100) / 100 },
+      { name: "Coach", value: Math.round((coach.revenue || 0) * 100) / 100 },
+      { name: "Personal Trainer", value: Math.round((trainer.revenue || 0) * 100) / 100 },
+    ];
+
+    return res.status(200).json({
+      success: true,
+      filter,
+      totalBookings,
+      totalRevenue,
+      bookingBreakdown,
+      revenueBreakdown,
+      summary: { venue, coach, trainer },
+    });
+  } catch (err) {
+    return res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+// Download a CSV report of bookings + revenue for the selected filter
+exports.downloadAnalyticsReport = async (req, res) => {
+  try {
+    const user = req.user.userID;
+    if (!user) {
+      return res.status(500).json({ success: false, message: "User Id not found" });
+    }
+    const { filter = "day", fromDate, toDate } = req.query;
+    const range = exports.analyticsRange(filter);
+    let match = {};
+    if (filter === "custom" && fromDate && toDate) {
+      match = {
+        createdAt: {
+          $gte: new Date(fromDate),
+          $lte: new Date(new Date(toDate).getTime() + 24 * 60 * 60 * 1000 - 1),
+        },
+      };
+    } else if (!range.isCustom) {
+      match = { createdAt: { $gte: range.from, $lte: range.to } };
+    }
+
+    const [venues, coaches, trainers] = await Promise.all([
+      Booking.find(match).select("createdAt total_price paymentState").lean(),
+      CoachBooking.find(match).select("createdAt total_price paymentState").lean(),
+      PersonalTrainerBooking.find(match).select("createdAt total_price paymentState").lean(),
+    ]);
+
+    const rows = [
+      ["Type", "Date", "Amount (INR)", "Payment Status"],
+      ...venues.map((b) => ["Venue", new Date(b.createdAt).toISOString(), b.total_price || 0, b.paymentState || ""]),
+      ...coaches.map((b) => ["Coach", new Date(b.createdAt).toISOString(), b.total_price || 0, b.paymentState || ""]),
+      ...trainers.map((b) => ["Personal Trainer", new Date(b.createdAt).toISOString(), b.total_price || 0, b.paymentState || ""]),
+    ];
+
+    const csv = rows
+      .map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(","))
+      .join("\n");
+    const filename = `khelo-indore-analytics-${filter}-${Date.now()}.csv`;
+    res.setHeader("Content-Type", "text/csv");
+    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+    return res.status(200).send(csv);
+  } catch (err) {
+    return res.status(500).json({ success: false, message: err.message });
+  }
+};
+
 exports.getMoneyReviews = async (req, res) => {
   try {
     // Fetch bookings data (You can filter by user or date range if necessary)

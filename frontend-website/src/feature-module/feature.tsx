@@ -1,8 +1,11 @@
 /* eslint-disable */
 import React, { useEffect, useState } from "react";
 import AllRoutes from "./router/router";
+import useAutoLogout from "../utils/autoLogout";
 
 const Feature = () => {
+  // Auto-logout after 15 minutes of inactivity
+  useAutoLogout();
   const [base, setBase] = useState("");
   const [page, setPage] = useState("");
   const [last, setLast] = useState("");

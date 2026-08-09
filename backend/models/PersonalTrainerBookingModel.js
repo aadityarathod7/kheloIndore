@@ -65,6 +65,18 @@ start_time:{
 end_time:{
   type: String,
 },
+payment_type: {
+  type: String,
+  default: "full", // "full" or "partial"
+},
+payable_amount: {
+  type: Number,
+  default: null,
+},
+total_amount: {
+  type: Number,
+  default: null,
+},
 },
 { timestamps: true },
 );

@@ -70,18 +70,11 @@ const MainLayout = () => {
               key: "venues/table",
               icon: <RiCouponLine className="fs-4" />,
               label: "Venues",
-              // children: [
-              //   {
-              //     key: "venue",
-              //     icon: <ImBlog className="fs-4" />,
-              //     label: "Add Venue",
-              //   },
-              //   {
-              //     key: "venuelist",
-              //     icon: <RiCouponLine className="fs-4" />,
-              //     label: "Venue List",
-              //   },
-              // ],
+            },
+            {
+              key: "venue-admin-dashboard/crm",
+              icon: <FaCalendarAlt className="fs-4" />,
+              label: "Manual Bookings (CRM)",
             },
             // {
             //   key: "coaches",

@@ -112,6 +112,11 @@ const {
   fetchAllCoachesNew,
   coachVerifyBySuperAdmin,
   updatecoach,
+  fetchPublicCoach,
+  generateCoachShareLink,
+  fetchSharedCoach,
+  completeCoachProfile,
+  sendOnboardingProfileLink,
 } = require("../controllers/CoachController");
 //PERSONAL TRAINING
 const {
@@ -122,6 +127,11 @@ const {
   deletePersonalTrainer,
   fetchAllPersonalTrainersForWeb,
   updatePersonalTrainers,
+  fetchPublicTrainer,
+  generateTrainerShareLink,
+  fetchSharedTrainer,
+  completeTrainerProfile,
+  sendTrainerOnboardingProfileLink,
 } = require("../controllers/PersonalTrainingController");
 
 //CONTACT US
@@ -206,6 +216,12 @@ route.put("/update-coach-super-admin/:id", updateCoachSuperAdmin);
 route.get('/fetch-all-coaches',auth,fetchAllCoachesNew); // new by sunil
 route.get('/fetch-coach/:id', fetchCoachById);
 route.put("/update/coach/:coachId",updatecoach)
+// Public coach endpoints (website)
+route.get("/web/fetch-coach/:id", fetchPublicCoach);
+route.post("/web/coach/share/:id", generateCoachShareLink);
+route.get("/web/coach/shared/:token", fetchSharedCoach);
+route.put("/web/coach/complete-profile/:id", completeCoachProfile);
+route.post("/web/coach/onboarding/:id", sendOnboardingProfileLink);
 
 //category
 route.post("/category/create",auth,AddCategory);
@@ -275,10 +291,14 @@ route.get("/contactUs/fetchAll", fetchContactUs);
 const {
   DateFilter,
   fetchVisitors,
+  bookingRevenueAnalytics,
+  downloadAnalyticsReport,
 } = require("../controllers/DashboardController");
 
 route.get("/dashboard/datefilter",auth, DateFilter);
 route.get("/dashboard/fetch-visitors",auth, fetchVisitors);
+route.get("/dashboard/analytics",auth, bookingRevenueAnalytics);
+route.get("/dashboard/analytics/download",auth, downloadAnalyticsReport);
 
 //Images
 route.post(
@@ -303,6 +323,7 @@ route.get("/get/venue/fetch-slot/:id", getSlotsBySlotID);
 
 const {
   addBooking,
+  addManualBooking,
   getBookings,
   getBookingByVendorId,
   bookingVerifyStatusById,
@@ -313,6 +334,7 @@ const {
 } = require('../controllers/BookingController');
 // for venue
 route.post("/booking/add", addBooking);
+route.post("/booking/manual/add", addManualBooking);
 route.get("/booking/get",auth, getBookings); // for admin 
 route.get("/get/booking/:vendor_id",auth, getBookingByVendorId); // for admin 
 route.get("/booking/notification",auth, getBookingsNotification ); 
@@ -326,6 +348,12 @@ route.get("/dashboard/revenue",auth, totalrevenue);
 route.get("/dashboard/amountReviews",auth, getMoneyReviews);
 
 route.get("/user-growth-graph",auth,userGrowthGraph);
+
+// Provider Earnings Dashboard APIs
+const { getEarningsSummary, getMonthlyEarnings, getRecentBookings } = require("../controllers/EarningsController");
+route.get("/earnings/summary", auth, getEarningsSummary);
+route.get("/earnings/monthly", auth, getMonthlyEarnings);
+route.get("/earnings/recent-bookings", auth, getRecentBookings);
 const {
   addLoaction,
   getLoaction,
@@ -401,6 +429,12 @@ route.get('/get/venue-coach-pt-booking/:userId',getVenueCoachPTBookingByUserId)
 route.get('/web/fetch-all-coaches', fetchAllCoaches);
 route.get("/web/venue/getVenue", getVenue)
 route.get("/web/PersonalTraining/fetchAll", fetchAllPersonalTrainersForWeb);
+// Public trainer endpoints (website)
+route.get("/web/PersonalTraining/fetch/:id", fetchPublicTrainer);
+route.post("/web/PersonalTraining/share/:id", generateTrainerShareLink);
+route.get("/web/PersonalTraining/shared/:token", fetchSharedTrainer);
+route.put("/web/PersonalTraining/complete-profile/:id", completeTrainerProfile);
+route.post("/web/PersonalTraining/onboarding/:id", sendTrainerOnboardingProfileLink);
 //Chat (real-time messaging between users, coaches, trainers & venue owners)
 const {
   startConversation,

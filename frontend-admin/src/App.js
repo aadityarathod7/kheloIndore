@@ -28,6 +28,7 @@ import EnquiryList from "./pages/EnquiryList";
 import Bookings from "./pages/Bookings";
 import AddSlots from "./pages/addSlots";
 import VenueAdmin_Dashboard from "./pages/VenueAdmin_Dashboard";
+import VenueAdminCRM from "./pages/VenueAdminCRM";
 import AddCoachSlot from "./pages/addCoachSots";
 import ViewCoachSlots from "./pages/viewCoachSlots";
 import SlotsDetails from "./pages/slotsDetails";
@@ -47,6 +48,7 @@ import CoachTrainerApprove from "./pages/coachTrainerApprove";
 import ApproveCoachTrainer from "./pages/approveCoachTrainer";
 import AddCoachTrainerSlot from "./pages/addCoachSlot";
 import AddTrainerSlots from "./pages/addTrainerSlots";
+import Earnings from "./pages/Earnings";
 
 
 function App() {
@@ -62,6 +64,7 @@ function App() {
           <Route path="/" element={<MainLayout />}>
             {/* <Route path="/" element={<UserLogin />} /> */}
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/earnings" element={<Earnings />} />
 
             {/* <Route path="/userprofile" element={ }>
           </Route> */}
@@ -144,6 +147,10 @@ function App() {
             <Route
               path="/venue-admin-dashboard/venues/table"
               element={<Venuetable />}
+            />
+            <Route
+              path="/venue-admin-dashboard/crm"
+              element={<VenueAdminCRM />}
             />
             {/* <Route path="/venue-admin-dashboard/venues/edit/:_id" element={<UpdateVenue />} /> */}
           </Route>

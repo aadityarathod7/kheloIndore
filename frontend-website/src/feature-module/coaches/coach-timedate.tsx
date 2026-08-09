@@ -760,6 +760,13 @@ const CoachTimeDate = (props: any) => {
               </div>
               <div className="col-12 col-sm-12 col-md-12 col-lg-4">
                 <aside className="card booking-details" style={{ position: "sticky", top: "120px" }}>
+                  {/* Booking Disclaimer */}
+                  <div style={{ background: "#FFF7ED", border: "1px solid #FED7AA", borderRadius: "12px", padding: "14px 16px", marginBottom: "20px" }}>
+                    <p className="mb-0" style={{ fontSize: "12.5px", color: "#9A3412", lineHeight: "1.6", fontWeight: "500" }}>
+                      <i className="feather-alert-triangle me-1" />
+                      <strong>Important:</strong> If you book this Coach/Trainer directly or through any platform other than Khelo Indore, we will not be responsible for any issues, refunds or disputes related to that booking.
+                    </p>
+                  </div>
                   <h3 className="border-bottom">Booking Details</h3>
                   <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
                     <li style={{ padding: "12px 0", borderBottom: "1px dashed #E2E8F0", display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "6px" }}>
