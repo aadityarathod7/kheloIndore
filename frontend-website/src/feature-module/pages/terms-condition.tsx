@@ -37,7 +37,7 @@ const TermsCondition = () => {
             <div className="terms-data">
               <h3> Introduction</h3>
               <p>
-                Welcome to <b>Khelo Indore</b> powered by <b>Mans Sports Entertainment!</b> These Terms and Conditions (&quot;Terms&quot;) govern your use of our website, http://127.0.0.1:3037/ (the &quot;Site&quot;), and the services provided therein. By accessing or using our Site, you agree to be bound by these Terms. If you do not agree to these Terms, please do not use our Site.
+                Welcome to <b>Khelo Indore</b> powered by <b>Mans Sports Entertainment!</b> These Terms and Conditions (&quot;Terms&quot;) govern your use of our website, https://kheloindore.in/ (the &quot;Site&quot;), and the services provided therein. By accessing or using our Site, you agree to be bound by these Terms. If you do not agree to these Terms, please do not use our Site.
               </p>
             </div>
             <div className="terms-data">
