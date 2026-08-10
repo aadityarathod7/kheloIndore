@@ -746,11 +746,11 @@ const Header = () => {
                               >
                                 <i className={item.icon} style={{ fontSize: "15px" }} />
                               </div>
-                              <div className="flex-grow-1 min-w-0">
-                                <div className="fw-bold text-truncate" style={{ fontSize: "13px", color: "#0F172A", lineHeight: "1.3" }}>
+                              <div className="flex-grow-1" style={{ minWidth: 0 }}>
+                                <div className="fw-bold" style={{ fontSize: "13px", color: "#0F172A", lineHeight: "1.3", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                                   {item.label}
                                 </div>
-                                <div className="text-truncate" style={{ fontSize: "11px", color: "#64748B" }}>
+                                <div style={{ fontSize: "11px", color: "#64748B", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                                   {item.subtitle}
                                 </div>
                               </div>
