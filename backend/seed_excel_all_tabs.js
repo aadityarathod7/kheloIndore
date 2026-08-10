@@ -170,7 +170,7 @@ async function seedCoach() {
     startTime: timeToday(6, 0),
     endTime:   timeToday(20, 0),
 
-    profile_picture: [{ src: "/assets/img/profiles/avatar-coach-01.jpg" }],
+    profile_picture: [{ src: "https://i.pravatar.cc/300?img=12" }],
   });
 
   
@@ -247,7 +247,7 @@ async function seedTrainer() {
     startTime: timeToday(5, 30),
     endTime:   timeToday(21, 0),
 
-    profile_picture: [{ src: "/assets/img/profiles/avatar-trainer-01.jpg" }],
+    profile_picture: [{ src: "https://i.pravatar.cc/300?img=47" }],
     gallery:         [
       { src: "/assets/img/venues/venue-01.jpg" },
       { src: "/assets/img/venues/venue-02.jpg" },
@@ -395,11 +395,10 @@ async function seedAllSlots() {
 }
 
 async function seedExcelAllTabs() {
-  
+  console.log("Connecting to Database at " + process.env.DATABASE_URL + "...");
   await mongoose.connect(process.env.DATABASE_URL);
-  
+  console.log("Connected! Clearing old collections...");
 
-  
   await Venue.deleteMany({});
   await Slot.deleteMany({});
   await Coach.deleteMany({});
@@ -422,20 +421,21 @@ async function seedExcelAllTabs() {
   await db.collection('enquiries').deleteMany({});
   await db.collection('nearbylocations').deleteMany({});
 
-  
   const users = await User.find({});
   for (let u of users) {
     if (u.mobile !== 9999999999 && u.email !== 'iamsuperadmin@gmail.com') {
       await User.deleteOne({ _id: u._id });
     }
   }
+  console.log("Old collections cleared successfully.");
 
   const filePath = path.join(__dirname, 'Khelo Indore Venue Data 2026.xlsx');
   if (!fs.existsSync(filePath)) {
-    
+    console.error("Excel file not found at: " + filePath);
     process.exit(1);
   }
 
+  console.log("Reading Excel file: " + filePath + "...");
   const workbook = XLSX.readFile(filePath);
   const defaultPassword = 'Kheloindore@123';
   const hashedPassword = await bcrypt.hash(defaultPassword, 10);
@@ -444,6 +444,7 @@ async function seedExcelAllTabs() {
   const createdCategories = new Set();
   const uniqueLocations = new Set();
 
+  console.log("Importing venues from sheets...");
   for (let sheetName of workbook.SheetNames) {
     const worksheet = workbook.Sheets[sheetName];
     const rawRows = XLSX.utils.sheet_to_json(worksheet);
@@ -579,22 +580,21 @@ async function seedExcelAllTabs() {
   );
 
   
+  console.log("Seeding Coaches...");
   await seedCoach();
+  console.log("Seeding Personal Trainers...");
   await seedTrainer();
+  console.log("Seeding Additional Profiles...");
   await seedAdditionalProfiles();
+  console.log("Seeding Venue Slots (this can take some time)...");
   await seedAllSlots();
 
-  
-  
-  
-  
-  
-  
-
+  console.log("Disconnecting Mongoose...");
   await mongoose.disconnect();
+  console.log("Database seeded successfully! Total venues imported: " + totalImported);
 }
 
 seedExcelAllTabs().catch(err => {
-  
+  console.error("Error seeding database: ", err);
   process.exit(1);
 });
