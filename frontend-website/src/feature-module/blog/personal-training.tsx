@@ -365,12 +365,15 @@ const BlogList = () => {
     }
 
     if (selectedCategory) {
-      filteredData = filteredData.filter(
-        (t) =>
-          t.category?.toLowerCase()?.includes(selectedCategory.toLowerCase()) ||
-          t.trainer_type?.toLowerCase()?.includes(selectedCategory.toLowerCase()) ||
-          t.specializations?.toLowerCase()?.includes(selectedCategory.toLowerCase())
-      );
+      const q = selectedCategory.toLowerCase();
+      filteredData = filteredData.filter((t) => {
+        const catMatch = t.category?.toLowerCase()?.includes(q);
+        const typeMatch = t.trainer_type?.toLowerCase()?.includes(q);
+        const specMatch = Array.isArray(t.specializations)
+          ? t.specializations.some((s) => String(s || "").toLowerCase().includes(q))
+          : String(t.specializations || "").toLowerCase().includes(q);
+        return catMatch || typeMatch || specMatch;
+      });
     }
 
     // Specialization filter
