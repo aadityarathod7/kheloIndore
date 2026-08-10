@@ -10,12 +10,17 @@
 
 // Use the hostname currently open in the browser. This lets the same dev
 // server work from a phone on the local network as well as from localhost.
-const apiOrigin = `${window.location.protocol}//${window.location.hostname}:4000`;
+const isLocal = 
+  window.location.hostname === "localhost" || 
+  window.location.hostname === "127.0.0.1" || 
+  window.location.hostname.startsWith("192.168.");
+
+const apiOrigin = isLocal
+  ? `${window.location.protocol}//${window.location.hostname}:4000`
+  : `${window.location.protocol}//${window.location.hostname}`;
 
 export const API_URL = `${apiOrigin}/api`;
 export const IMG_URL = apiOrigin;
-// export const IMG_URL = "https://qa.kheloindore.in";
-// export const API_URL = "https://qa.kheloindore.in/api";
 
 // Google Maps browser key (client-side key, restricted by HTTP referrer in
 // the Google Cloud console). Kept in one place so it can be rotated easily.
