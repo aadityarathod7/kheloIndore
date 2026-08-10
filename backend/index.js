@@ -62,4 +62,6 @@ app.use((err, req, res, next) => {
   });
 });
 
-app.listen(PORT, () => undefined);
+app.listen(PORT, () => {
+  console.log(`[Success] Local backend server is running on http://localhost:${PORT}`);
+});

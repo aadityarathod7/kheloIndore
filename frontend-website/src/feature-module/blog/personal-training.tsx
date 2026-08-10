@@ -365,15 +365,36 @@ const BlogList = () => {
     }
 
     if (selectedCategory) {
-      const q = selectedCategory.toLowerCase();
-      filteredData = filteredData.filter((t) => {
-        const catMatch = t.category?.toLowerCase()?.includes(q);
-        const typeMatch = t.trainer_type?.toLowerCase()?.includes(q);
-        const specMatch = Array.isArray(t.specializations)
-          ? t.specializations.some((s) => String(s || "").toLowerCase().includes(q))
-          : String(t.specializations || "").toLowerCase().includes(q);
-        return catMatch || typeMatch || specMatch;
-      });
+      const q = selectedCategory.toLowerCase().trim();
+      if (q === "other sports" || q === "other-sports") {
+        filteredData = filteredData.filter((t) => {
+          const cat = (t.category || "").toLowerCase().replace(/_/g, " ").trim();
+          const trainerType = (t.trainer_type || "").toLowerCase().replace(/_/g, " ").trim();
+          const spec = Array.isArray(t.specializations)
+            ? t.specializations.join(" ").toLowerCase()
+            : String(t.specializations || "").toLowerCase();
+
+          const isStandard =
+            cat.includes("cricket") || trainerType.includes("cricket") || spec.includes("cricket") || cat.includes("turf") || trainerType.includes("turf") ||
+            cat.includes("badminton") || trainerType.includes("badminton") || spec.includes("badminton") ||
+            cat.includes("swim") || trainerType.includes("swim") || spec.includes("swim") ||
+            cat.includes("football") || trainerType.includes("football") || spec.includes("football") ||
+            cat.includes("pickle") || trainerType.includes("pickle") || spec.includes("pickle") ||
+            ((cat.includes("tennis") || trainerType.includes("tennis") || spec.includes("tennis")) && !cat.includes("table") && !trainerType.includes("table") && !spec.includes("table")) ||
+            cat.includes("basketball") || trainerType.includes("basketball") || spec.includes("basketball") ||
+            cat.includes("table tennis") || trainerType.includes("table tennis") || spec.includes("table tennis");
+          return !isStandard;
+        });
+      } else {
+        filteredData = filteredData.filter((t) => {
+          const catMatch = t.category?.toLowerCase()?.includes(q);
+          const typeMatch = t.trainer_type?.toLowerCase()?.includes(q);
+          const specMatch = Array.isArray(t.specializations)
+            ? t.specializations.some((s) => String(s || "").toLowerCase().includes(q))
+            : String(t.specializations || "").toLowerCase().includes(q);
+          return catMatch || typeMatch || specMatch;
+        });
+      }
     }
 
     // Specialization filter

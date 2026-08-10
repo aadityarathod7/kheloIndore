@@ -408,11 +408,33 @@ const CoachesGrid = (_props: { id?: string }) => {
     }
 
     if (selectedCategory) {
-      filteredData = filteredData.filter(
-        (coach) =>
-          coach.category?.toLowerCase()?.includes(selectedCategory.toLowerCase()) ||
-          coach.trainer_type?.toLowerCase()?.includes(selectedCategory.toLowerCase())
-      );
+      const q = selectedCategory.toLowerCase().trim();
+      if (q === "other sports" || q === "other-sports") {
+        filteredData = filteredData.filter((c) => {
+          const cat = (c.category || "").toLowerCase().replace(/_/g, " ").trim();
+          const trainerType = (c.trainer_type || "").toLowerCase().replace(/_/g, " ").trim();
+          const spec = Array.isArray(c.specializations)
+            ? c.specializations.join(" ").toLowerCase()
+            : String(c.specializations || "").toLowerCase();
+
+          const isStandard =
+            cat.includes("cricket") || trainerType.includes("cricket") || spec.includes("cricket") || cat.includes("turf") || trainerType.includes("turf") ||
+            cat.includes("badminton") || trainerType.includes("badminton") || spec.includes("badminton") ||
+            cat.includes("swim") || trainerType.includes("swim") || spec.includes("swim") ||
+            cat.includes("football") || trainerType.includes("football") || spec.includes("football") ||
+            cat.includes("pickle") || trainerType.includes("pickle") || spec.includes("pickle") ||
+            ((cat.includes("tennis") || trainerType.includes("tennis") || spec.includes("tennis")) && !cat.includes("table") && !trainerType.includes("table") && !spec.includes("table")) ||
+            cat.includes("basketball") || trainerType.includes("basketball") || spec.includes("basketball") ||
+            cat.includes("table tennis") || trainerType.includes("table tennis") || spec.includes("table tennis");
+          return !isStandard;
+        });
+      } else {
+        filteredData = filteredData.filter(
+          (coach) =>
+            coach.category?.toLowerCase()?.includes(q) ||
+            coach.trainer_type?.toLowerCase()?.includes(q)
+        );
+      }
     }
 
     // Specialization filter
