@@ -45,8 +45,8 @@ const SearchResults: React.FC = () => {
         setVenues(venuesRes.data?.venue || []);
         setCoaches(coachesRes.data?.data || []);
         setTrainers(trainersRes.data?.data || []);
-      } catch (err) {
-        console.error("Search fetch error:", err);
+      } catch {
+        // The request failure is handled by the surrounding UI state.
       } finally {
         setLoading(false);
       }

@@ -70,12 +70,11 @@ function PersonalTraininglist() {
       if (response.ok) {
         setData(result.data);
       } else {
-        console.error("Failed to fetch data:", result.error);
+        
       }
 
       setLoading(false);
     } catch (error) {
-      //console.error('Error fetching data:', error);
       setLoading(false);
     }
   };
@@ -134,10 +133,10 @@ function PersonalTraininglist() {
         setDetailData(detailResult.data);
         setPdfContent(generatePdfContent(detailResult.data));
       } else {
-        console.error("Failed to fetch detail data:", detailResult.error);
+        
       }
     } catch (error) {
-      console.error("Error fetching detail data:", error);
+      
     }
   };
 
@@ -151,10 +150,10 @@ function PersonalTraininglist() {
       if (detailResponse.ok) {
         setDetailData(detailResult.data);
       } else {
-        console.error("Failed to fetch detail data:", detailResult.error);
+        
       }
     } catch (error) {
-      console.error("Error fetching detail data:", error);
+      
     }
   };
 
@@ -166,10 +165,10 @@ function PersonalTraininglist() {
       if (response.ok) {
         const data = await response.json();
       } else {
-        console.error("Failed to fetch data for editing:", response.statusText);
+        
       }
     } catch (error) {
-      console.error("Error fetching data for editing:", error);
+      
     }
   };
 
@@ -190,14 +189,11 @@ function PersonalTraininglist() {
         );
         fetchData();
       } else {
-        console.error(
-          "Failed to deactivate Personal Training:",
-          response.statusText
-        );
+        
         Swal.fire("Error", "Failed to deactivate Personal Training.", "error");
       }
     } catch (error) {
-      console.error("Error deactivating Personal Training:", error);
+      
       Swal.fire(
         "Error",
         "An error occurred while deactivating the Personal Training.",
@@ -258,7 +254,7 @@ function PersonalTraininglist() {
           Swal.fire("Error", `Failed to update Personal Trainer admin access.`, "error");
         }
       } catch (error) {
-        console.error(`Error updating Personal Trainer admin access:`, error);
+        
         Swal.fire("Error", `An error occurred while updating Personal Trainer admin access.`, "error");
       }
     } else {
@@ -287,7 +283,7 @@ function PersonalTraininglist() {
       });
       fetchData();
     } catch (error) {
-      console.error("Error updating the PersonalTrainer:", error);
+      
     }
   }
 

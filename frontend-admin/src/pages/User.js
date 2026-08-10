@@ -113,7 +113,7 @@ const Users = () => {
       }
      
     } catch (error) {
-      console.error("Error:", error);
+      
      
    
       const errorMessage = error?.response?.data?.message || "An error occurred while adding the user.";

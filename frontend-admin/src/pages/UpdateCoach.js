@@ -130,7 +130,7 @@ const UpdateCoach = () => {
       try {
         const response = await axios.get(`${API_URL}/fetch-coach/${_id}`);
         const coach = response.data.coach;
-        console.log("Data->>>>>>>", coach);
+        
         setInput({
           first_name: coach.first_name,
           last_name: coach.last_name,
@@ -175,7 +175,7 @@ const UpdateCoach = () => {
           setFilePreview(imageUrl); 
         }
       } catch (error) {
-        console.error("Error fetching coach data:", error);
+        
       }
     };
 
@@ -218,7 +218,7 @@ const UpdateCoach = () => {
       ...input,
       [name]: value,
     });
-    console.log("Form Data Updated:", input);
+    
   };
 
   const handleStateChange = (state) => {
@@ -226,7 +226,7 @@ const UpdateCoach = () => {
       ...input,
       state: state,
     });
-    console.log("State Updated:", state);
+    
   };
 
   const handleCityChange = (city) => {
@@ -234,7 +234,7 @@ const UpdateCoach = () => {
       ...input,
       city: city.name,
     });
-    console.log("City Updated:", city);
+    
   };
 
   const handleLanguageChange = (city) => {
@@ -242,7 +242,7 @@ const UpdateCoach = () => {
       ...input,
       languages: languages.name,
     });
-    console.log("languages Updated:", languages);
+    
   };
 
   const handleCategoryChange = (selectedOption) => {
@@ -258,7 +258,7 @@ const UpdateCoach = () => {
       const response = await axios.get(`${API_URL}/category/fetch`);
       setCategories(response.data.categories);
     } catch (error) {
-      console.error("Error fetching categories:", error);
+      
     }
   };
 
@@ -267,12 +267,11 @@ const UpdateCoach = () => {
       const response = await axios.get(`${API_URL}/near-by/get`);
       setNearbyLoc(response.data.loc);
     } catch (error) {
-      console.error("Error fetching nearby locations:", error);
+      
     }
   };
 
   // const uploadImage = async (fileArray) => {
-  //   console.log("data before sending..................", fileArray);
   //   try {
   //     // formData.append("uploadFile", image);
   //     const formData = new FormData();
@@ -285,10 +284,8 @@ const UpdateCoach = () => {
   //         "Content-Type": "multipart/form-data",
   //       },
   //     });
-  //     // console.log(response, "response")
   //     return response;
   //   } catch (error) {
-  //     console.error("API Error:", error);
   //     return null;
   //   }
   // };
@@ -304,14 +301,13 @@ const UpdateCoach = () => {
       // if (uploadResponses) {
         const formData = new FormData();
         // uploadResponses.data.file_data.map((ele) => {
-        //   console.log(ele, "all eleeeeeeee");
         //   formData.append("profile_picture", ele);
         // });
         const response = await axios.put(
           `${API_URL}/update-coach-super-admin/${_id}`,
           input
         );
-        console.log("API Response:", response.data);
+        
         Swal.fire({
           icon: "success",
           title: "Updated!",
@@ -321,7 +317,7 @@ const UpdateCoach = () => {
         });
       // }
     } catch (error) {
-      console.error("API Error:", error);
+      
       Swal.fire({
         icon: "error",
         title: "Oops...",
@@ -464,7 +460,7 @@ const UpdateCoach = () => {
                 onChange={(e) => {
                   setInput({ ...input, language: e.name });
                   setlanguages(e.id);
-                  console.log("Form Data Updated:", input);
+                  
                 }}
                 placeHolder={input.languages}
               />
@@ -501,7 +497,6 @@ const UpdateCoach = () => {
                       city: e.name
                     }
                   });
-                  console.log("Form Data Updated:", input);
                 }}
                 placeHolder="Select City"
               />
@@ -522,7 +517,6 @@ const UpdateCoach = () => {
                         zipcode: e.target.value
                       }
                     });
-                    console.log("Form Data Updated:", input);
                   }}
                 />
               </Form.Group><br></br>
@@ -543,7 +537,6 @@ const UpdateCoach = () => {
                         address: e.target.value
                       }
                     });
-                    console.log("Form Data Updated:", input);
                   }}
                 />
               </Form.Group>

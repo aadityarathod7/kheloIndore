@@ -961,6 +961,35 @@
         margin-right: 5px;
     }
 }
+
+// Vertical transition used when the top-rated provider category changes.
+.top-provider-rotation {
+    animation: top-provider-slide-in 450ms ease-out both;
+}
+
+.top-provider-card {
+    height: auto !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+}
+
+// The legacy individual provider sections are replaced by the mixed three-column row.
+.top-providers-section ~ .top-providers-section,
+.top-providers-section ~ .top-coaches-section,
+.top-providers-section ~ .top-trainers-section {
+    display: none;
+}
+
+@keyframes top-provider-slide-in {
+    from {
+        opacity: 0;
+        transform: translateY(28px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
 .featured-slider-group {
     padding: 15px 15px 20px;
     @include respond-below(custom991) {
@@ -1014,7 +1043,7 @@
 }
 
 .convenient-section {
-    background-image: url(../../../../public/assets/img/bg/convenient.png);
+    background-image: url(../../../../public/assets/img/bg/convenient-bg.jpg);
     background-repeat: $__no_repeat;
     background-size: $__cover;
     background-position: $__center;
@@ -1307,7 +1336,7 @@
     }
 }
 .earn-money {
-    background-image: url(../../../../public/assets/img/bg/private.jpg);
+    background-image: url(../../../../public/assets/img/bg/private-bg-01.jpg);
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center;

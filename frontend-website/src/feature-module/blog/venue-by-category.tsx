@@ -188,7 +188,7 @@ const CustomDropdown = ({
                   <button
                     key={opt.value}
                     type="button"
-                    className="btn w-100 text-start px-3 py-2 d-flex align-items-center justify-content-between gap-2"
+                    className={`btn w-100 text-start px-3 py-2 d-flex align-items-center justify-content-between gap-2 ki-custom-dropdown-option ${isSelected ? "is-selected" : ""}`}
                     onClick={() => {
                       onChange(opt.value);
                       setIsOpen(false);
@@ -207,8 +207,8 @@ const CustomDropdown = ({
                       if (!isSelected) e.currentTarget.style.backgroundColor = "transparent";
                     }}
                   >
-                    <span>{opt.label}</span>
-                    {isSelected && <i className="feather-check text-success flex-shrink-0" style={{ fontSize: "12px" }} />}
+                    <span className="ki-custom-dropdown-option-label" style={{ color: isSelected ? "#FFFFFF" : "#334155" }}>{opt.label}</span>
+                    {isSelected && <i className="feather-check flex-shrink-0" style={{ fontSize: "12px", color: "#FFFFFF" }} />}
                   </button>
                 );
               })
@@ -750,8 +750,8 @@ export default function VenueByCategory() {
           description: venues.description || "",
         }));
         setVenues(mappedData);
-      } catch (error) {
-        console.error("Error fetching venues:", error);
+      } catch {
+        // The request failure is handled by the surrounding UI state.
       }
     };
     fetchVenues();
@@ -820,10 +820,9 @@ export default function VenueByCategory() {
           .filter(Boolean)
       ),
     ];
-    return [
-      { value: "", label: "Select Location" },
-      ...uniqueLocs.map((loc) => ({ value: loc, label: loc })),
-    ];
+    // Keep the placeholder in the trigger only; it must not be a selectable
+    // option that appears as the active location in the mobile list.
+    return uniqueLocs.map((loc) => ({ value: loc, label: loc }));
   }, [venues]);
 
   // Unified Filtering & Sorting Engine
@@ -924,7 +923,7 @@ export default function VenueByCategory() {
     setCurrentPage(1);
   };
 
-  const venuesPerPage = 10; // 10 cards per page (2 rows of 5 cards each)
+  const venuesPerPage = 6; // 6 cards per page (two rows of three cards)
   const indexOfLastVenue = currentPage * venuesPerPage;
   const indexOfFirstVenue = indexOfLastVenue - venuesPerPage;
 
@@ -1130,7 +1129,7 @@ export default function VenueByCategory() {
 
               {/* Cards Grid */}
               {currentVenues.length > 0 ? (
-                <div className="ki-4-col-grid">
+                <div className="ki-3-col-grid">
                   {currentVenues.map((venue, index) => (
                     <div key={index} className="listing-item venue-page ki-card-hover w-100 d-flex flex-column justify-content-between" style={{ margin: 0, overflow: "hidden", backgroundColor: "#FFFFFF", borderRadius: "16px", border: "1px solid #E2E8E3", boxShadow: "0 4px 15px rgba(0,0,0,0.02)", transition: "all 0.3s ease" }}>
                       

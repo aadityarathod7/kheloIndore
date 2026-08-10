@@ -64,3 +64,8 @@ This document lists the tasks and detailed code changes implemented dynamically 
 
 ---
 *Last updated: 2026-07-28 by Antigravity*
+<!-- & "C:\Program Files\nodejs\npm.cmd" install --legacy-peer-deps -->
+
+Super Admin seed.
+Mobile: 8349307444
+Password: Kheloindore@2026

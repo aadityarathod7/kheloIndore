@@ -19,7 +19,7 @@ mongoose.connect('mongodb://127.0.0.1:27017/KheloIndore').then(async () => {
     { _id: '6a6b1f6380018d9fbebb4fb4' },
     { $set: { data: dataMap } }
   );
-  console.log('Updated:', res.modifiedCount, 'doc(s)');
+  
   await mongoose.disconnect();
   process.exit(0);
-}).catch(e => { console.error(e); process.exit(1); });
+}).catch(e => {  process.exit(1); });

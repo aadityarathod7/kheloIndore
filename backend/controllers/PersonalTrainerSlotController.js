@@ -13,7 +13,7 @@ exports.addSlotPT = async (req, res) => {
         batch_date: batchDateObj,
         'slots.startTime': slot.startTime
       });
-      console.log(existingSlot, "existingSlot"); 
+       
       if (existingSlot) {
         return res.json({
           status:400,
@@ -38,7 +38,7 @@ exports.addSlotPT = async (req, res) => {
     });
 
   } catch (error) {
-    console.error(error);
+    
     res.status(500).json({
       success: false,
       message: "Failed to create coach slot",
@@ -65,7 +65,7 @@ exports.addSlotPTOld = async (req, res) => {
       data: newSlot,
     });
   } catch (err) {
-    console.log(err);
+    
     res.status(500).json({
       message: "Error adding slot to personal trainer",
       error: err.message,
@@ -107,7 +107,7 @@ exports.getPtBatch = async (req, res) => {
       data: data,
     });
   } catch (err) {
-    console.log(err);
+    
     return res.status(500).json({
       success: false,
       message: err.message,
@@ -141,7 +141,7 @@ exports.getPtSlots = async (req, res) => {
 
 
   } catch (err) {
-     console.log(err);
+     
      return res.status(500).json({
        success: false,
        message: err.message,
@@ -168,7 +168,7 @@ exports.deleteCoachBatch = async (req, res) => {
       message: "Batch deleted successfully",
     });
   } catch (error) {
-    console.error(error);
+    
     res.status(500).json({
       success: false,
       message: "Failed to update slot",
@@ -196,7 +196,7 @@ const slotId = req.params.slotId
         },
       }
     );
-    console.log(updatedSlot,"updatedSlotupdatedSlot");
+    
     
 // return
     if (updatedSlot.nModified === 0) {
@@ -212,7 +212,7 @@ const slotId = req.params.slotId
       data: updatedSlot,
     });
   } catch (error) {
-    console.error(error);
+    
     res.status(500).json({
       success: false,
       message: "Failed to update slot",
@@ -250,7 +250,7 @@ exports.updatePTSlotByIdNew = async (req, res) => {
       data: slot,
     });
   } catch (error) {
-    console.error(error);
+    
     res.status(500).json({
       success: false,
       message: "Failed to update slot",
@@ -365,7 +365,7 @@ exports.createPersonalTrainerSlot = async (req, res) => {
       data: savedSlots,
     });
   } catch (error) {
-    console.error("Error creating personal trainer slots:", error);
+    
     res.status(500).json({
       success: false,
       message: "Failed to create personal trainer slots",
@@ -419,7 +419,7 @@ exports.getAllPersonalTrainerSlotsByTrainerId = async (req, res) => {
       data: formattedSlots,
     });
   } catch (error) {
-    console.error("Error fetching personal trainer slots:", error);
+    
     res.status(500).json({
       success: false,
       message: "Failed to retrieve personal trainer slots",
@@ -457,7 +457,7 @@ exports.fetchPersonalTrainerSlotByDateId = async (req, res) => {
       data: personalTrainerSlot,
     });
   } catch (error) {
-    console.error("Error fetching personal trainer slot by ID:", error);
+    
 
     // Handle specific errors like invalid ObjectId
     if (error.name === "CastError") {
@@ -546,7 +546,7 @@ exports.fetchPersonalTrainerSlotByDateId = async (req, res) => {
       message: `${deletedCount} slots deleted successfully`,
     });
   } catch (error) {
-    console.error("Error deleting slots:", error);
+    
     return res.status(500).json({
       success: false,
       message: "Internal Server Error",
@@ -623,7 +623,7 @@ exports.deleteSlotsByDateRangept = async (req, res) => {
       message: `${deletedCount} slots deleted successfully`,
     });
   } catch (error) {
-    console.error("Error deleting slots:", error);
+    
     return res.status(500).json({
       success: false,
       message: "Internal Server Error",

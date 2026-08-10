@@ -1,390 +1,105 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { all_routes } from "../router/all_routes";
-import ImageWithBasePath from "../../core/data/img/ImageWithBasePath";
 import axios from "axios";
 import { API_URL, IMG_URL } from "../../ApiUrl";
 
-interface Event {
+interface EventItem {
+  _id: string;
   event_name: string;
-  location: any;
+  location: string;
   description: string;
-  start_date: number;
-  end_date: number;
-  terms_and_conditions: string;
-  _id: number;
-  price: number;
-  organized_by: string;
-  images: any;
-  src: any;
+  start_date: string;
+  price?: number;
+  category?: string;
+  organized_by?: string;
+  images?: { src?: string; alt?: string }[];
 }
 
+const imageUrl = (src?: string) => src && /^https?:\/\//i.test(src) ? src : src ? `${IMG_URL}${src}` : "/assets/img/no-img.png";
+
 const Events = () => {
-  const route = all_routes;
-  const [events, setEvents] = useState<Event[]>([]);
+  const [events, setEvents] = useState<EventItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [dateFilter, setDateFilter] = useState("all");
+  const [locationFilter, setLocationFilter] = useState("all");
+  const [priceFilter, setPriceFilter] = useState("all");
+  const [organizerFilter, setOrganizerFilter] = useState("all");
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
-    window.scrollTo(0, 0)
-  }, [])
-
-  useEffect(() => {
-    // Fetch event data from API
-    const fetchEvents = async () => {
-      setLoading(true);
-      try {
-        const response = await axios.get(`${API_URL}/event/fetchAll`);
-        const eventData = Array.isArray(response.data?.data) ? response.data.data : [];
-        const mappedData = eventData.map((event: any) => ({
-          event_name: event.event_name,
-          location: event.location,
-          description: event.description,
-          start_date: event.start_date,
-          end_date: event.end_date,
-          terms_and_conditions: event.terms_and_conditions,
-          organized_by: event.organized_by,
-          _id: event._id,
-          price: event.price,
-          images: event.images,
-        }));
-        setEvents(mappedData);
-      } catch (error) {
-        console.error("Error fetching events:", error);
-        setEvents([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchEvents();
+    window.scrollTo(0, 0);
+    axios.get(`${API_URL}/event/fetchAll`).then(({ data }) => setEvents(Array.isArray(data?.data) ? data.data : [])).catch(() => setEvents([])).finally(() => setLoading(false));
   }, []);
-  return (
-    <>
-      <div className="events-page" style={{ backgroundColor: "#F8FAFC" }}>
-        {/* Hero Header */}
-        <div
-          className="hero-booking-section"
-          style={{
-            background: "linear-gradient(135deg, #F0FDF4 0%, #ECFDF5 100%)",
-            paddingTop: "120px",
-            paddingBottom: "36px",
-            position: "relative",
-            overflow: "hidden",
-            borderBottom: "1px solid #E5E7EB",
-          }}
-        >
-          <div
-            className="hero-artwork-blend"
-            style={{
-              position: "absolute",
-              right: "-60px",
-              top: 0,
-              bottom: 0,
-              width: "55%",
-              backgroundImage: "url('/assets/img/bg/banner-illustration.png')",
-              backgroundSize: "cover",
-              backgroundPosition: "left center",
-              backgroundRepeat: "no-repeat",
-              maskImage: "linear-gradient(to left, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%)",
-              WebkitMaskImage: "linear-gradient(to left, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%)",
-              opacity: 0.9,
-            }}
-          />
 
-          <div className="container" style={{ position: "relative", zIndex: 2 }}>
-            <div className="row align-items-center">
-              <div className="col-lg-7 text-start">
-                <span
-                  className="font-weight-bold"
-                  style={{
-                    fontSize: "13px",
-                    letterSpacing: "1.5px",
-                    display: "block",
-                    marginBottom: "8px",
-                    color: "#22C55E",
-                    fontWeight: "700",
-                  }}
-                >
-                  DISCOVER WHAT&apos;S COMING UP
-                </span>
-                <h1
-                  className="d-flex align-items-center flex-wrap"
-                  style={{
-                    fontSize: "44px",
-                    fontWeight: "800",
-                    color: "#0F172A",
-                    lineHeight: "1.1",
-                    marginBottom: "12px",
-                  }}
-                >
-                  Upcoming <span style={{ color: "#22C55E", marginLeft: "10px" }}>Events</span>
-                </h1>
-                <p
-                  style={{
-                    color: "#64748B",
-                    fontSize: "18px",
-                    marginBottom: "16px",
-                    fontWeight: "500",
-                    maxWidth: "480px",
-                  }}
-                >
-                  Explore exciting sports activities, tournaments, and community events in Indore.
-                </p>
+  const categories = useMemo(() => ["All", ...Array.from(new Set(events.map((event) => event.category || "Sports")))], [events]);
+  const locations = useMemo(() => Array.from(new Set(events.map((event) => event.location).filter(Boolean))), [events]);
+  const organizers = useMemo(() => Array.from(new Set(events.map((event) => event.organized_by).filter(Boolean))) as string[], [events]);
+  const visibleEvents = events.filter((event) => {
+    const matchesCategory = selectedCategory === "All" || (event.category || "Sports") === selectedCategory;
+    const eventDate = new Date(event.start_date);
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const weekEnd = new Date(today); weekEnd.setDate(today.getDate() + 7);
+    const matchesDate = dateFilter === "all" || (dateFilter === "week" && eventDate >= today && eventDate <= weekEnd) || (dateFilter === "month" && eventDate.getMonth() === today.getMonth() && eventDate.getFullYear() === today.getFullYear());
+    const matchesLocation = locationFilter === "all" || event.location === locationFilter;
+    const matchesOrganizer = organizerFilter === "all" || event.organized_by === organizerFilter;
+    const matchesPrice = priceFilter === "all" || (priceFilter === "free" && !event.price) || (priceFilter === "under500" && (event.price || 0) > 0 && (event.price || 0) < 500) || (priceFilter === "500to1000" && (event.price || 0) >= 500 && (event.price || 0) <= 1000) || (priceFilter === "above1000" && (event.price || 0) > 1000);
+    const searchable = `${event.event_name} ${event.location} ${event.category || ""}`.toLowerCase();
+    return matchesCategory && matchesDate && matchesLocation && matchesOrganizer && matchesPrice && searchable.includes(search.trim().toLowerCase());
+  });
+  const clearFilters = () => { setSelectedCategory("All"); setDateFilter("all"); setLocationFilter("all"); setPriceFilter("all"); setOrganizerFilter("all"); setSearch(""); };
 
-                <div
-                  className="d-inline-flex align-items-center bg-white px-3 py-2 rounded-pill shadow-sm"
-                  style={{ fontSize: "13px", border: "1px solid #E5E7EB" }}
-                >
-                  <Link to={route.home} style={{ color: "#64748B", textDecoration: "none", fontWeight: "500" }}>
-                    <i className="feather-home me-1" style={{ color: "#64748B" }} /> Home
-                  </Link>
-                  <span style={{ margin: "0 10px", color: "#64748B" }}>
-                    <i className="feather-chevron-right" style={{ fontSize: "12px", color: "#64748B" }} />
-                  </span>
-                  <span style={{ color: "#22C55E", fontWeight: "600" }}>Events</span>
-                </div>
-              </div>
-            </div>
-          </div>
+  return <main className="ki-events-page" style={{ background: "#f5f7fb", minHeight: "100vh", padding: "0 0 56px" }}>
+    <style>{`
+      .ki-events-page { color: #17222d; }
+      .ki-events-page .event-page-title { color: #17222d !important; font-size: clamp(28px, 3vw, 38px); }
+      .ki-events-page .event-filter-title { color: #17222d !important; }
+      .ki-events-page .event-filter-label { color: #334155 !important; }
+      .ki-events-page .event-filter-card { border: 1px solid #e4eaf1; }
+      .ki-events-page .event-card-image { transition: transform .25s ease; }
+      .ki-events-page article:hover .event-card-image { transform: scale(1.04); }
+      .ki-events-page .event-card-title { color: #17222d !important; line-height: 1.3; }
+      .ki-events-page .event-filter-chip { background: #fff; border: 1px solid #d8e0e8; color: #475569; }
+      .ki-events-page .event-filter-chip.is-active { background: #16a34a; border-color: #16a34a; color: #fff; }
+      .ki-events-page .events-hero { background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%); min-height: 330px; overflow: hidden; }
+      .ki-events-page .events-hero-art { position: absolute; right: -60px; top: 0; bottom: 0; width: 55%; background: url('/assets/img/bg/banner-illustration.png') left center / cover no-repeat; opacity: .84; mask-image: linear-gradient(to left, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%); -webkit-mask-image: linear-gradient(to left, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%); }
+      .ki-events-page .events-hero-title { color: #0f172a !important; font-size: clamp(36px, 4vw, 52px); letter-spacing: -1.3px; }
+      .ki-events-page .events-content { padding-top: 42px; position: relative; z-index: 2; }
+      @media (max-width: 991px) { .ki-events-page .events-hero { min-height: 270px; } .ki-events-page .events-hero-art { opacity: .3; width: 80%; } }
+      @media (max-width: 575px) { .ki-events-page .events-hero { min-height: 0; padding-top: 88px !important; padding-bottom: 50px !important; } .ki-events-page .events-hero-title { font-size: 36px; } .ki-events-page .events-content { padding-top: 28px; } }
+    `}</style>
+    <section className="events-hero position-relative" style={{ paddingTop: "155px", paddingBottom: "82px" }}>
+      <div className="events-hero-art" />
+      <div className="container position-relative" style={{ zIndex: 1 }}>
+        <span className="d-block mb-2" style={{ color: "#22c55e", fontSize: 13, fontWeight: 800, letterSpacing: "1.5px" }}>BOOK. PLAY. ENJOY</span>
+        <h1 className="events-hero-title fw-bold mb-3">Sports <span style={{ color: "#22c55e" }}>Events</span> in Indore</h1>
+        <p className="mb-4" style={{ color: "#64748b", fontSize: "clamp(17px, 2vw, 21px)", maxWidth: 620 }}>Find upcoming sports events, tournaments, and community activities near you.</p>
+        <div className="d-inline-flex align-items-center bg-white px-3 py-2 rounded-pill shadow-sm" style={{ fontSize: 13, border: "1px solid #e5e7eb" }}>
+          <Link to="/" className="text-decoration-none text-secondary"><i className="feather-home me-1" />Home</Link><i className="feather-chevron-right mx-2" style={{ fontSize: 12 }} /><span className="text-success fw-semibold">Events</span>
         </div>
-        {/* /Hero Header */}
-        {/* Page Content */}
-        <div className="content" style={{ backgroundColor: "#F8FAFC", paddingTop: "28px", paddingBottom: "40px" }}>
-          <div className="container px-3 px-lg-4">
-            <section className="services">
-              <div className="row">
-                {loading ? (
-                  <div className="col-12">
-                    <div className="text-center py-5 bg-white rounded-4 border" style={{ borderColor: "#E2E8F0" }}>
-                      <div className="spinner-border text-success mb-3" role="status">
-                        <span className="visually-hidden">Loading...</span>
-                      </div>
-                      <h4 className="fw-bold text-dark mb-2">Loading events...</h4>
-                      <p className="text-muted mb-0">Please wait while we fetch the latest events.</p>
-                    </div>
-                  </div>
-                ) : events.length === 0 ? (
-                  <div className="col-12">
-                    <div className="text-center py-5 bg-white rounded-4 border" style={{ borderColor: "#E2E8F0" }}>
-                      <i className="feather-calendar text-muted mb-3 d-block" style={{ fontSize: "48px" }} />
-                      <h4 className="fw-bold text-dark mb-2">No events found</h4>
-                      <p className="text-muted mb-0">There are no events available right now. Please check back soon.</p>
-                    </div>
-                  </div>
-                ) : (
-                  events.map((event, index) => (
-                    <div className="col-12 col-sm-12 col-md-6 col-lg-4" key={index}>
-                      <div className="listing-item">
-                        <div className="listing-img">
-                          <Link to={`/events/event-details/${event._id}`}>
-                            <ImageWithBasePath
-                              src={
-                                event?.images[0]?.src
-                                  ? `${IMG_URL}${event.images[0].src}`
-                                  : "/assets/img/no-img.png"
-                              }
-                              className="img-fluid"
-                              alt="Event"
-                            />
-                          </Link>
-                          <div className="date-info text-center">
-                            <h6>{event ? new Date(event.start_date).toISOString().split("T")[0] : ""}</h6>
-                          </div>
-                        </div>
-                        <div className="listing-content">
-                          <ul className="d-flex justify-content-start align-items-center">
-                            <li>
-                              <i className="feather-map-pin" />
-                              {event?.location}
-                            </li>
-                          </ul>
-                          <h4 className="listing-title">
-                            <Link to={`/events/event-details/${event._id}`}>{event?.event_name}</Link>
-                          </h4>
-                        </div>
-                      </div>
-                    </div>
-                  ))
-                )}
-
-                {/* <div className="col-12 col-sm-12 col-md-6 col-lg-4">
-                  <div className="listing-item">
-                    <div className="listing-img">
-                      <Link to={route.eventdetails}>
-                        <ImageWithBasePath
-                          src="/assets/img/events/event-02.jpg"
-                          className="img-fluid"
-                          alt="Event"
-                        />
-                      </Link>
-                      <div className="date-info text-center">
-                        <h2>19</h2>
-                        <h6>Sep, 2023</h6>
-                      </div>
-                    </div>
-                    <div className="listing-content">
-                      <ul className="d-flex justify-content-start align-items-center">
-                        <li>
-                          <i className="feather-clock me-1" />
-                          06:20 AM
-                        </li>
-                        <li>
-                          <i className="feather-map-pin me-1" />
-                          152, 1st Street New York
-                        </li>
-                      </ul>
-                      <h4 className="listing-title">
-                        <Link to={route.eventdetails}>Rise to Victory</Link>
-                      </h4>
-                    </div>
-                  </div>
-                </div>
-                <div className="col-12 col-sm-12 col-md-6 col-lg-4">
-                  <div className="listing-item">
-                    <div className="listing-img">
-                      <Link to={route.eventdetails}>
-                        <ImageWithBasePath
-                          src="/assets/img/events/event-03.jpg"
-                          className="img-fluid"
-                          alt="Event"
-                        />
-                      </Link>
-                      <div className="date-info text-center">
-                        <h2>18</h2>
-                        <h6>Sep, 2023</h6>
-                      </div>
-                    </div>
-                    <div className="listing-content">
-                      <ul className="d-flex justify-content-start align-items-center">
-                        <li>
-                          <i className="feather-clock" />
-                          06:20 AM
-                        </li>
-                        <li>
-                          <i className="feather-map-pin" />
-                          152, 1st Street New York
-                        </li>
-                      </ul>
-                      <h4 className="listing-title">
-                        <Link to={route.eventdetails}>Shuttle Storm</Link>
-                      </h4>
-                    </div>
-                  </div>
-                </div>
-                <div className="col-12 col-sm-12 col-md-6 col-lg-4">
-                  <div className="listing-item">
-                    <div className="listing-img">
-                      <Link to={route.eventdetails}>
-                        <ImageWithBasePath
-                          src="/assets/img/events/event-04.jpg"
-                          className="img-fluid"
-                          alt="Event"
-                        />
-                      </Link>
-                      <div className="date-info text-center">
-                        <h2>17</h2>
-                        <h6>Sep, 2023</h6>
-                      </div>
-                    </div>
-                    <div className="listing-content">
-                      <ul className="d-flex justify-content-start align-items-center">
-                        <li>
-                          <i className="feather-clock" />
-                          06:20 AM
-                        </li>
-                        <li>
-                          <i className="feather-map-pin" />
-                          152, 1st Street New York
-                        </li>
-                      </ul>
-                      <h4 className="listing-title">
-                        <Link to={route.eventdetails}>
-                          Flight of the Feathers
-                        </Link>
-                      </h4>
-                    </div>
-                  </div>
-                </div>
-                <div className="col-12 col-sm-12 col-md-6 col-lg-4">
-                  <div className="listing-item">
-                    <div className="listing-img">
-                      <Link to={route.eventdetails}>
-                        <ImageWithBasePath
-                          src="/assets/img/events/event-05.jpg"
-                          className="img-fluid"
-                          alt="Event"
-                        />
-                      </Link>
-                      <div className="date-info text-center">
-                        <h2>16</h2>
-                        <h6>Sep, 2023</h6>
-                      </div>
-                    </div>
-                    <div className="listing-content">
-                      <ul className="d-flex justify-content-start align-items-center">
-                        <li>
-                          <i className="feather-clock" />
-                          06:20 AM
-                        </li>
-                        <li>
-                          <i className="feather-map-pin" />
-                          152, 1st Street New York
-                        </li>
-                      </ul>
-                      <h4 className="listing-title">
-                        <Link to={route.eventdetails}>Battle at the Net</Link>
-                      </h4>
-                    </div>
-                  </div>
-                </div>
-                <div className="col-12 col-sm-12 col-md-6 col-lg-4">
-                  <div className="listing-item">
-                    <div className="listing-img">
-                      <Link to={route.eventdetails}>
-                        <ImageWithBasePath
-                          src="/assets/img/events/event-06.jpg"
-                          className="img-fluid"
-                          alt="Event"
-                        />
-                      </Link>
-                      <div className="date-info text-center">
-                        <h2>15</h2>
-                        <h6>Sep, 2023</h6>
-                      </div>
-                    </div>
-                    <div className="listing-content">
-                      <ul className="d-flex justify-content-start align-items-center">
-                        <li>
-                          <i className="feather-clock" />
-                          06:20 AM
-                        </li>
-                        <li>
-                          <i className="feather-map-pin" />
-                          152, 1st Street New York
-                        </li>
-                      </ul>
-                      <h4 className="listing-title">
-                        <Link to={route.eventdetails}>Badminton Fusion</Link>
-                      </h4>
-                    </div>
-                  </div>
-                </div> */}
-              </div>
-            </section>
-          </div>
-        </div>
-        {/* /Page Content */}
       </div>
-    </>
-  );
+    </section>
+    <div className="container events-content">
+      <div className="row g-4">
+        <aside className="col-lg-3">
+          <div className="event-filter-card bg-white rounded-4 p-4 shadow-sm" style={{ position: "sticky", top: 110 }}>
+            <div className="d-flex justify-content-between align-items-center mb-4"><h2 className="event-filter-title h3 mb-0 fw-bold">Filters</h2><button onClick={clearFilters} className="btn btn-link text-success text-decoration-none p-0">Reset all</button></div>
+            <div className="mb-4"><label className="event-filter-label fw-semibold mb-2"><i className="feather-search me-2 text-success" />Search events</label><input value={search} onChange={(event) => setSearch(event.target.value)} className="form-control" placeholder="Event or sport" /></div>
+            <div className="border-top pt-3 mb-4"><div className="d-flex justify-content-between mb-3"><strong className="event-filter-label"><i className="feather-activity me-2 text-success" />Sports type</strong><button onClick={() => setSelectedCategory("All")} className="btn btn-link p-0 text-muted">Clear</button></div><div className="d-flex flex-wrap gap-2">{categories.filter((category) => category !== "All").map((category) => <button key={category} onClick={() => setSelectedCategory(category)} className={`btn btn-sm rounded-pill event-filter-chip ${selectedCategory === category ? "is-active" : ""}`}>{category}</button>)}</div></div>
+            <div className="border-top pt-3"><div className="d-flex justify-content-between mb-3"><strong className="event-filter-label"><i className="feather-calendar me-2 text-success" />Date</strong><button onClick={() => setDateFilter("all")} className="btn btn-link p-0 text-muted">Clear</button></div><select className="form-select" value={dateFilter} onChange={(event) => setDateFilter(event.target.value)}><option value="all">Any date</option><option value="week">This week</option><option value="month">This month</option></select></div>
+            <div className="border-top pt-3 mt-4"><label className="event-filter-label fw-semibold mb-2"><i className="feather-map-pin me-2 text-success" />Location</label><select className="form-select" value={locationFilter} onChange={(event) => setLocationFilter(event.target.value)}><option value="all">All locations</option>{locations.map((location) => <option key={location} value={location}>{location}</option>)}</select></div>
+            <div className="border-top pt-3 mt-4"><label className="event-filter-label fw-semibold mb-2"><i className="feather-tag me-2 text-success" />Price</label><select className="form-select" value={priceFilter} onChange={(event) => setPriceFilter(event.target.value)}><option value="all">Any price</option><option value="free">Free</option><option value="under500">Under ₹500</option><option value="500to1000">₹500 – ₹1,000</option><option value="above1000">Above ₹1,000</option></select></div>
+            {organizers.length > 1 && <div className="border-top pt-3 mt-4"><label className="event-filter-label fw-semibold mb-2"><i className="feather-user me-2 text-success" />Organiser</label><select className="form-select" value={organizerFilter} onChange={(event) => setOrganizerFilter(event.target.value)}><option value="all">All organisers</option>{organizers.map((organizer) => <option key={organizer} value={organizer}>{organizer}</option>)}</select></div>}
+          </div>
+        </aside>
+        <section className="col-lg-9">
+          <div className="d-flex flex-wrap gap-2 mb-4">{categories.map((category) => <button key={category} onClick={() => setSelectedCategory(category)} className={`btn rounded-pill px-3 event-filter-chip ${selectedCategory === category ? "is-active" : ""}`}>{category}</button>)}</div>
+          {loading ? <div className="text-center p-5 bg-white rounded-4">Loading events…</div> : <div className="row g-4">{visibleEvents.map((event) => <article key={event._id} className="col-md-6 col-xl-4"><Link to={`/events/event-details/${event._id}`} className="text-decoration-none"><div className="h-100"><div className="rounded-4 overflow-hidden shadow-sm bg-dark" style={{ aspectRatio: "4 / 5" }}><img src={imageUrl(event.images?.[0]?.src)} alt={event.images?.[0]?.alt || event.event_name} className="event-card-image w-100 h-100" style={{ objectFit: "cover" }} /><div className="text-white px-3 py-2" style={{ marginTop: "-43px", position: "relative", background: "linear-gradient(transparent, rgba(0,0,0,.88))" }}>{new Date(event.start_date).toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" })}</div></div><div className="pt-3"><h2 className="event-card-title h5 fw-bold mb-2">{event.event_name}</h2><p className="text-muted mb-1"><i className="feather-map-pin me-1" />{event.location}</p><p className="text-muted mb-1">{event.category || "Sports"}</p><strong className="text-success">₹{event.price || 0} onwards</strong></div></div></Link></article>)}</div>}
+          {!loading && !visibleEvents.length && <div className="text-center p-5 bg-white rounded-4">No events match these filters.</div>}
+        </section>
+      </div>
+    </div>
+  </main>;
 };
 
 export default Events;
-
-
-
-
-
-
-
-

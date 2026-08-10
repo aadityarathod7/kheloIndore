@@ -178,10 +178,10 @@ const UpdateVenue = () => {
           },
         }
       );
-      console.log(response.data.file_data, "response=-=-=-");
+      
       return response;
     } catch (error) {
-      console.error("API Error:", error);
+      
       return null;
     }
   };
@@ -220,7 +220,7 @@ const UpdateVenue = () => {
       const response = await axios.get(`${API_URL}/category/fetch`);
       setCategories(response.data.categories);
     } catch (error) {
-      console.error("Error fetching categories:", error);
+      
     }
   };
 
@@ -244,9 +244,9 @@ const UpdateVenue = () => {
         {}
       );
 
-      console.log(transformedVendorDetails,"transformedVendorDetails")
+      
 
-      console.log(result?.venue, "all data in result")
+      
       setFormData({
         name: result?.venue?.name,
         address: prev?.address,
@@ -278,7 +278,7 @@ const UpdateVenue = () => {
       });
     }
     catch (error) {
-      console.log(error)
+      
     }
   }
 
@@ -287,7 +287,7 @@ const UpdateVenue = () => {
       const response = await axios.get(`${API_URL}/get/venue/role/list`);
       setVenueOwnerData(response.data.data);
     } catch (error) {
-      console.error("Error fetching categories:", error);
+      
     }
   };
 
@@ -301,7 +301,7 @@ const UpdateVenue = () => {
   }, []);
 
 
-  console.log(formData, "ajksdfhlajksdfh")
+  
 
 
   const fetchNearbyLocations = async () => {
@@ -309,7 +309,7 @@ const UpdateVenue = () => {
       const response = await axios.get(`${API_URL}/near-by/get`);
       setNearbyLoc(response.data.loc);
     } catch (error) {
-      console.error("Error fetching nearby locations:", error);
+      
     }
   };
 
@@ -323,7 +323,7 @@ const UpdateVenue = () => {
       const response = await axios.get(`${API_URL}/vendor/get`);
       setVendor(response.data.vendors);
     } catch (error) {
-      console.error("Error fetching vendor type:", error);
+      
     }
   };
 
@@ -372,7 +372,7 @@ const UpdateVenue = () => {
         });
       }
     } catch (error) {
-      console.error("Error:", error);
+      
       Swal.fire({
         icon: "error",
         title: "Oops...",
@@ -392,7 +392,7 @@ const UpdateVenue = () => {
         venue_owner_name: fullName,
       }));
     } catch (error) {
-      console.error("Error fetching venue owner:", error);
+      
     }
   };
 
@@ -400,7 +400,7 @@ const UpdateVenue = () => {
     getVenueOwner();
   }, [formData.vendor_id]);
 
-  console.log(formData, "formdata")
+  
 
   const cleanedAmenities = formData?.amenities?.filter(item => item !== null) || [];
   const cleanedFacilities = formData?.facilities?.filter(item => item !== null) || [];
@@ -1206,7 +1206,7 @@ const UpdateVenue = () => {
                 />
               ) : null}
             </Row>
-            {console.log(formData.vendor_details)}
+            {undefined}
             <Row>
               {formData.vendor_type === "Basketball" ? (
                 <Basketball

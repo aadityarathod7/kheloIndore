@@ -29,7 +29,7 @@ exports.activeVenue = async (req,res)=>{
             message:`${name} is Activation ${updateActivation} `
         })
     }catch(err){
-        console.log(err.message)
+        
         return res.status(500).json({
           success: false,
           error:err.message

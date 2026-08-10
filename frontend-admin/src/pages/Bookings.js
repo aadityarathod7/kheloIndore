@@ -65,7 +65,7 @@ function BookingList({ listType }) {
     } else {
       setSelectedItem("trainer");
     }
-    console.log(userRole);
+    
   }, []);
 
   useEffect(() => {
@@ -86,11 +86,11 @@ function BookingList({ listType }) {
         setData(result.data);
         setTotalCount(result.totalCount);
       } else {
-        console.error("Failed to fetch data:", result.error);
+        
       }
       setLoading(false);
     } catch (error) {
-      console.error("Error fetching data:", error);
+      
       setLoading(false);
     }
   };
@@ -106,10 +106,10 @@ function BookingList({ listType }) {
 
         setCoachBooking(data.data);
       } else {
-        console.error("Response not ok:", response.status, response.statusText);
+        
       }
     } catch (error) {
-      console.error("Error fetching coaches:", error);
+      
     }
   };
 
@@ -128,10 +128,10 @@ function BookingList({ listType }) {
         const data = await response.json(); // Parse the JSON data
         setTrainerBooking(data.data);
       } else {
-        console.error("Response not ok:", response.status, response.statusText);
+        
       }
     } catch (error) {
-      console.error("Error fetching coaches:", error);
+      
     }
   };
 
@@ -140,7 +140,6 @@ function BookingList({ listType }) {
   }, []);
 
   const openrefunedmodel = (id) => {
-    // console.log(id,"hiiiiiii-=-=-=-=-=-=-")
     setRefunedBooking(id);
     setShowModal(true);
   };
@@ -151,6 +150,7 @@ function BookingList({ listType }) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
         body: JSON.stringify({
           refundAmount: refundAmount,
@@ -238,10 +238,10 @@ function BookingList({ listType }) {
       if (detailResponse.ok) {
         setDetailData(detailResult.data);
       } else {
-        console.error("Failed to fetch detail data:", detailResult.error);
+        
       }
     } catch (error) {
-      console.error("Error fetching detail data:", error);
+      
     }
   };
 
@@ -265,13 +265,10 @@ function BookingList({ listType }) {
       if (response.ok) {
       } else {
         const responseData = await response.json();
-        console.error(
-          "Failed to update event name:",
-          responseData.message || "Unknown error"
-        );
+        
       }
     } catch (error) {
-      console.error("Error updating event name:", error);
+      
     }
   };
 
@@ -291,11 +288,11 @@ function BookingList({ listType }) {
         // Update your state or refetch data to reflect the deletion
         fetchData();
       } else {
-        console.error("Failed to delete event:", response.statusText);
+        
         Swal.fire("Error", "Failed to delete event.", "error");
       }
     } catch (error) {
-      console.error("Error deleting event:", error);
+      
       Swal.fire(
         "Error",
         "An error occurred while deleting the event.",
@@ -361,7 +358,7 @@ function BookingList({ listType }) {
   }, [coachBooking]);
 
   useEffect(() => {
-    console.log(trainerBooking);
+    
     const transformed = trainerBooking.map((booking) => ({
       id: booking._id,
       startDate: booking.startDate,
@@ -375,7 +372,7 @@ function BookingList({ listType }) {
       verification_status: booking.verification_status,
       cancellation_status: booking.cancellation_status,
     }));
-    console.log(transformed);
+    
     setTransformedTrainerBookings(transformed);
   }, [trainerBooking]);
 
@@ -488,7 +485,7 @@ function BookingList({ listType }) {
         Swal.fire("Cancelled", "No changes were made.", "info");
       }
     } catch (error) {
-      console.error("Error updating status:", error);
+      
       Swal.fire(
         "Error",
         "An error occurred while updating the booking status.",
@@ -556,7 +553,7 @@ function BookingList({ listType }) {
             </div>
           ) : selectedItem === "Venue" ? (
             <div>
-              <Table className="custom-table">
+              <Table className="custom-table admin-bookings-table">
                 <thead>
                   <tr>
                     <th style={{ width: "7%" }}>S.No.</th>
@@ -664,21 +661,22 @@ function BookingList({ listType }) {
                     return (
                       <tr key={index}>
                         <td>{index + 1 + indexOfFirstItem}</td>
-                        <td>
+                        <td className="admin-booking-user">
                           {row?.info?.user_id?.first_name}{" "}
                           {row?.info?.user_id?.last_name}
                         </td>
                         {listType == "dashboard" && (
                           <td>{row.info.user_id.mobile}</td>
                         )}
-                        <td>{row.info.venue_id.name}</td>
+                        <td className="admin-booking-venue">{row.info.venue_id.name}</td>
                         {listType != "dashboard" && (
-                          <td>{slotTimesArray.join(", ")}</td>
+                          <td className="admin-booking-slots">{slotTimesArray.join(", ")}</td>
                         )}
                         <td>{row.info.venue_id.vendor_type}</td>
                         <td>{row.info.total_price}</td>
                         <td>{formatDate(row.info.date)}</td>
                         <td
+                          className="admin-booking-status"
                           style={{
                             color:
                               row.info.cancellation_status === 1
@@ -697,7 +695,7 @@ function BookingList({ listType }) {
                             }
                           })()}
                         </td>
-                        <td>
+                        <td className="admin-booking-actions">
                           <div>
                             {(() => {
                               if (row.info.verification_status === 0) {
@@ -723,7 +721,7 @@ function BookingList({ listType }) {
                               </div>
                             )}
                         </td>
-                        <td>
+                        <td className="admin-booking-actions">
                           {row.info.cancellation_status === 1 ? (
                             <span className="badge bg-success" style={{ padding: "8px 12px", fontSize: "12px", borderRadius: "6px" }}>
                               Refunded
@@ -744,7 +742,7 @@ function BookingList({ listType }) {
               </Table>
             </div>
           ) : (
-            <Table className="custom-table">
+            <Table className="custom-table admin-bookings-table">
               <thead>
                 <tr>
                   <th style={{ width: "7%" }}>S.No.</th>
@@ -867,7 +865,7 @@ function BookingList({ listType }) {
                             ? "CANCELLED"
                             : row.payment_state}
                         </td>
-                        {console.log(row)}
+                        {undefined}
                         <td>
                           {row.verification_status === 0 && (
                             <div className="d-flex">

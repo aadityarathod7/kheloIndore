@@ -41,11 +41,11 @@ function Enquirylist() {
         setData(result.data);
         setLoading(false);
       } else {
-        console.error("Failed to fetch data:", result.error);
+        
         setLoading(false);
       }
     } catch (error) {
-      console.error("Error fetching data:", error);
+      
       setLoading(false);
     }
   };

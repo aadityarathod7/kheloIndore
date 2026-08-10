@@ -8,15 +8,67 @@ import axios from "axios";
 import Swal from "sweetalert2";
 
 interface JwtPayload {
-  userID:number;
+  userID: string | number;
 }
 
 interface UserData{
-  last_name: "string",
-  first_name:"string",
-  email:"string",
-  mobile:"number",
-  booking_count:"number",
+  last_name: string;
+  first_name: string;
+  email: string;
+  mobile: string;
+  booking_count: number;
+}
+
+interface ApiBooking {
+  _id?: string;
+  date?: string;
+  startDate?: string;
+  endDate?: string;
+  start_time?: string;
+  end_time?: string;
+  total_price?: number;
+  paymentState?: string;
+  pdf_url?: string;
+  cancellation_status?: number;
+  verification_status?: number;
+  createdAt?: string;
+  status?: string;
+  refund?: { refundStatus?: string };
+  venue_id?: { name?: string; vendor_type?: string };
+  coachId?: { first_name?: string; last_name?: string };
+  pt_id?: { first_name?: string; last_name?: string };
+  slot_time?: string;
+  packageType?: string;
+}
+
+interface DashboardBooking {
+  id?: string;
+  date?: string;
+  startDate?: string;
+  endDate?: string;
+  startTime?: string;
+  endTime?: string;
+  first_name?: string;
+  last_name?: string;
+  name?: string;
+  vendor_type?: string;
+  slots?: string;
+  packageType?: string;
+  total_price?: number;
+  paymentState?: string;
+  verificationStatus?: number;
+  pdfUrl?: string;
+  cancellation_status?: number;
+  createdAt?: string;
+  status?: string;
+  refund?: { refundStatus?: string };
+}
+
+interface FavouriteVenue {
+  _id?: string;
+  id?: string | number;
+  name?: string;
+  images?: Array<{ src?: string }>;
 }
 
 const UserDashboard = () => {
@@ -49,8 +101,8 @@ const UserDashboard = () => {
         const response = await axios.get(`${API_URL}/user/fetch-user-by-id/${user_id}`);
         const userData = response.data.data;
         setUserData(userData);
-      } catch (error) {
-        console.error("Error fetching user data:", error);
+      } catch {
+        // The request failure is handled by the surrounding UI state.
       }
     };
     if (user_id) {
@@ -58,7 +110,7 @@ const UserDashboard = () => {
     }
   }, [user_id]);
 
-  const [favouriteVenues, setFavouriteVenues] = useState<Record<string, unknown>[]>([]);
+  const [favouriteVenues, setFavouriteVenues] = useState<FavouriteVenue[]>([]);
   const [favLoading, setFavLoading] = useState<boolean>(true);
 
   const loadFavVenues = async () => {
@@ -77,13 +129,13 @@ const UserDashboard = () => {
           axios.get(`${API_URL}/venue/individual/${vId}`).then(res => res.data?.venue).catch(() => null)
         );
         const results = await Promise.all(promises);
-        setFavouriteVenues(results.filter((v): v is Record<string, unknown> => v !== null));
+        setFavouriteVenues(results.filter((v): v is FavouriteVenue => v !== null));
       } else {
         setFavouriteVenues([]);
       }
-    } catch (err) {
-      console.error("Error loading favourite venues:", err);
-    } finally {
+    } catch {
+        // The request failure is handled by the surrounding UI state.
+      } finally {
       setFavLoading(false);
     }
   };
@@ -121,15 +173,30 @@ const UserDashboard = () => {
   };
 
 
-  const [venueBookingData, setVenueBookingData] = useState<any[]>([]);
-  const [coachBookingData, setCoachBookingData] = useState<any[]>([]);
-  const [trainerBookingData, setTrainerBookingData] = useState<any[]>([]);
+  const [venueBookingData, setVenueBookingData] = useState<DashboardBooking[]>([]);
+  const [coachBookingData, setCoachBookingData] = useState<DashboardBooking[]>([]);
+  const [trainerBookingData, setTrainerBookingData] = useState<DashboardBooking[]>([]);
   const [loadingBookings, setLoadingBookings] = useState<boolean>(true);
+
+  const getDashboardBookingStatus = (booking: ApiBooking) => {
+    const refundStatus = String(booking?.refund?.refundStatus || "").toUpperCase();
+    if (refundStatus === "SUCCESS" || refundStatus === "COMPLETED") return "Refunded";
+    if (refundStatus === "PENDING") return "Refund Pending";
+    if (booking?.cancellation_status === 1) return "Cancelled";
+    if (booking?.verification_status === 2) return "Rejected";
+    if (booking?.verification_status === 1) return "Approved";
+    return booking?.paymentState || "Pending";
+  };
+
+  const isActiveUpcomingBooking = (booking: DashboardBooking) => {
+    const status = String(booking?.status || "").toLowerCase();
+    return booking?.cancellation_status !== 1 && !["cancelled", "refunded", "rejected"].includes(status);
+  };
 
   const fetchBookings = async () => {
     try {
       setLoadingBookings(true);
-      const response = await axios.get(
+      const response = await axios.get<{ data?: { personalTrainer?: ApiBooking[]; venueAdmin?: ApiBooking[]; coach?: ApiBooking[] } }>(
         `${API_URL}/get/venue-coach-pt-booking/${user_id}`,
         {
           headers: {
@@ -140,7 +207,7 @@ const UserDashboard = () => {
       const booking = response.data;
       
       const ptData = booking?.data?.personalTrainer || [];
-      const transformedPt = ptData.map((booking: any) => ({
+      const transformedPt: DashboardBooking[] = ptData.map((booking) => ({
         id: booking._id,
         first_name: booking?.pt_id?.first_name,
         last_name: booking?.pt_id?.last_name,
@@ -153,18 +220,13 @@ const UserDashboard = () => {
         pdfUrl: booking?.pdf_url,
         cancellation_status: booking?.cancellation_status,
         createdAt: booking?.createdAt,
-        status: booking?.cancellation_status === 1
-          ? 'Cancelled'
-          : booking?.verification_status === 1
-            ? 'Approved'
-            : booking?.verification_status === 2
-              ? 'Rejected'
-              : booking?.paymentState
+        refund: booking?.refund,
+        status: getDashboardBookingStatus(booking)
       }));
       setTrainerBookingData(transformedPt);
 
       const venueData = booking?.data?.venueAdmin || [];
-      const transformedVenue = venueData.map((booking: any) => ({
+      const transformedVenue: DashboardBooking[] = venueData.map((booking) => ({
         date: booking?.date,
         name: booking?.venue_id?.name,
         vendor_type: booking?.venue_id?.vendor_type,
@@ -176,18 +238,13 @@ const UserDashboard = () => {
         id: booking?._id,
         cancellation_status: booking?.cancellation_status,
         createdAt: booking?.createdAt,
-        status: booking?.cancellation_status === 1
-          ? 'Cancelled'
-          : booking?.verification_status === 1
-            ? 'Approved'
-            : booking?.verification_status === 2
-              ? 'Rejected'
-              : booking?.paymentState
+        refund: booking?.refund,
+        status: getDashboardBookingStatus(booking)
       }));
       setVenueBookingData(transformedVenue);
 
       const coachData = booking?.data?.coach || [];
-      const transformedCoach = coachData.map((booking: any) => ({
+      const transformedCoach: DashboardBooking[] = coachData.map((booking) => ({
         startDate: booking?.startDate,
         endDate: booking?.endDate,
         first_name: booking?.coachId?.first_name,
@@ -201,18 +258,13 @@ const UserDashboard = () => {
         cancellation_status: booking?.cancellation_status,
         id: booking?._id,
         createdAt: booking?.createdAt,
-        status: booking?.cancellation_status === 1
-          ? 'Cancelled'
-          : booking?.verification_status === 1
-            ? 'Approved'
-            : booking?.verification_status === 2
-              ? 'Rejected'
-              : booking?.paymentState
+        refund: booking?.refund,
+        status: getDashboardBookingStatus(booking)
       }));
       setCoachBookingData(transformedCoach);
-    } catch (error) {
-      console.error("Error fetching bookings:", error);
-    } finally {
+    } catch {
+        // The request failure is handled by the surrounding UI state.
+      } finally {
       setLoadingBookings(false);
     }
   };
@@ -223,7 +275,7 @@ const UserDashboard = () => {
     }
   }, [user_id]);
 
-  const formatDate = (dateString: any) => {
+  const formatDate = (dateString?: string) => {
     if (!dateString) return 'N/A';
     const date = new Date(dateString);
     if (isNaN(date.getTime())) return dateString;
@@ -233,20 +285,13 @@ const UserDashboard = () => {
     return `${day}/${month}/${year}`;
   };
 
-  const formatMonthName = (dateString: any) => {
-    if (!dateString) return 'N/A';
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) return dateString;
-    return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-  };
-
   const getUpcomingAppointments = () => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const venueUpcoming = venueBookingData.filter(b => b.cancellation_status !== 1 && new Date(b.date) >= today);
-    const coachUpcoming = coachBookingData.filter(b => b.cancellation_status !== 1 && new Date(b.startDate) >= today);
-    const trainerUpcoming = trainerBookingData.filter(b => b.cancellation_status !== 1 && new Date(b.startDate) >= today);
+    const venueUpcoming = venueBookingData.filter(b => isActiveUpcomingBooking(b) && new Date(b.date) >= today);
+    const coachUpcoming = coachBookingData.filter(b => isActiveUpcomingBooking(b) && new Date(b.startDate) >= today);
+    const trainerUpcoming = trainerBookingData.filter(b => isActiveUpcomingBooking(b) && new Date(b.startDate) >= today);
 
     // Sort ascending by date
     venueUpcoming.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
@@ -388,6 +433,132 @@ const UserDashboard = () => {
     return null;
   };
 
+
+  const recentBookings = [
+    ...venueBookingData.map((booking) => ({
+      id: booking.id,
+      name: booking.name || "Sports venue",
+      type: booking.vendor_type || "Venue",
+      date: booking.date,
+      amount: booking.total_price,
+      status: booking.status,
+      icon: "fa-map-marker-alt",
+    })),
+    ...coachBookingData.map((booking) => ({
+      id: booking.id,
+      name: `${booking.first_name || ""} ${booking.last_name || ""}`.trim() || "Coach",
+      type: booking.packageType || "Coach",
+      date: booking.startDate,
+      amount: booking.total_price,
+      status: booking.status,
+      icon: "fa-user-tie",
+    })),
+    ...trainerBookingData.map((booking) => ({
+      id: booking.id,
+      name: `${booking.first_name || ""} ${booking.last_name || ""}`.trim() || "Personal trainer",
+      type: "Personal trainer",
+      date: booking.startDate,
+      amount: booking.total_price,
+      status: booking.status,
+      icon: "fa-dumbbell",
+    })),
+  ]
+    .sort((a, b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime())
+    .slice(0, 5);
+
+  const nextBooking = recentBookings
+    .filter((booking) => {
+      const bookingDate = new Date(booking.date);
+      const status = String(booking.status || "").toLowerCase();
+      return !Number.isNaN(bookingDate.getTime())
+        && bookingDate >= new Date(new Date().setHours(0, 0, 0, 0))
+        && !["cancelled", "refunded", "rejected"].includes(status);
+    })
+    .sort((a, b) => new Date(a.date || 0).getTime() - new Date(b.date || 0).getTime())[0];
+
+  return (
+    <div className="simple-user-dashboard">
+      <section className="simple-dashboard-hero">
+        <div className="container">
+          <div className="simple-dashboard-hero-inner">
+            <div>
+              <span className="simple-dashboard-eyebrow">MY ACCOUNT</span>
+              <h1>Hello, {userData?.first_name || "Player"}</h1>
+              <p>Everything you need to manage your Khelo Indore bookings in one place.</p>
+            </div>
+            <div className="simple-dashboard-actions">
+              <Link to={routes.userBookings} className="simple-dashboard-primary-action">
+                <i className="fas fa-calendar-alt" /> My bookings
+              </Link>
+              <Link to={routes.userProfile} className="simple-dashboard-secondary-action">
+                <i className="fas fa-user" /> Profile
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <main className="simple-dashboard-content">
+        <div className="container">
+          <section className="simple-dashboard-stats" aria-label="Booking summary">
+            <article className="simple-dashboard-stat-card">
+              <span className="simple-dashboard-stat-icon venue"><i className="fas fa-map-marker-alt" /></span>
+              <div><strong>{loadingBookings ? "—" : totalVenuesBooked}</strong><span>Venue bookings</span></div>
+            </article>
+            <article className="simple-dashboard-stat-card">
+              <span className="simple-dashboard-stat-icon coach"><i className="fas fa-user-tie" /></span>
+              <div><strong>{loadingBookings ? "—" : totalCoachesBooked}</strong><span>Coach sessions</span></div>
+            </article>
+            <article className="simple-dashboard-stat-card">
+              <span className="simple-dashboard-stat-icon trainer"><i className="fas fa-dumbbell" /></span>
+              <div><strong>{loadingBookings ? "—" : totalLessons}</strong><span>Trainer sessions</span></div>
+            </article>
+            <article className="simple-dashboard-stat-card">
+              <span className="simple-dashboard-stat-icon spend"><i className="fas fa-wallet" /></span>
+              <div><strong>{loadingBookings ? "—" : `₹${totalSpent.toLocaleString("en-IN")}`}</strong><span>Total spent</span></div>
+            </article>
+          </section>
+
+          <section className="simple-dashboard-grid">
+            <article className="simple-dashboard-panel simple-dashboard-recent-panel">
+              <div className="simple-dashboard-panel-heading">
+                <div><h2>Recent bookings</h2><p>Your latest reservations and sessions.</p></div>
+                <Link to={routes.userBookings}>View all <i className="fas fa-arrow-right" /></Link>
+              </div>
+              {loadingBookings ? (
+                <div className="simple-dashboard-empty"><i className="fas fa-spinner fa-spin" /> Loading bookings…</div>
+              ) : recentBookings.length ? (
+                <div className="simple-dashboard-booking-list">
+                  {recentBookings.map((booking, index) => (
+                    <div className="simple-dashboard-booking" key={`${booking.id || booking.name}-${index}`}>
+                      <span className="simple-dashboard-booking-icon"><i className={`fas ${booking.icon}`} /></span>
+                      <div className="simple-dashboard-booking-main"><strong>{booking.name}</strong><span>{booking.type} · {formatDate(booking.date)}</span></div>
+                      <div className="simple-dashboard-booking-meta"><strong>₹{Number(booking.amount || 0).toLocaleString("en-IN")}</strong><span className={`simple-booking-status ${String(booking.status).toLowerCase().replace(/\s+/g, "-")}`}>{booking.status || "Pending"}</span></div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="simple-dashboard-empty"><i className="fas fa-calendar-plus" /><p>No bookings yet. Find a venue, coach, or trainer to get started.</p><Link to="/venues">Explore venues</Link></div>
+              )}
+            </article>
+
+            <aside className="simple-dashboard-side">
+              <article className="simple-dashboard-panel simple-dashboard-next-card">
+                <span className="simple-dashboard-eyebrow">UP NEXT</span>
+                <h2>{nextBooking ? nextBooking.name : "No upcoming booking"}</h2>
+                {nextBooking ? <><p>{nextBooking.type}</p><div className="simple-dashboard-next-date"><i className="fas fa-calendar-alt" /> {formatDate(nextBooking.date)}</div></> : <p>Your upcoming sessions will appear here.</p>}
+                <Link to={routes.userBookings} className="simple-dashboard-primary-action">View schedule</Link>
+              </article>
+              <article id="favourites-section" className="simple-dashboard-panel simple-dashboard-favourites-card">
+                <div><span className="simple-dashboard-stat-icon favourite"><i className="fas fa-heart" /></span><strong>{favLoading ? "—" : favouriteVenues.length}</strong></div>
+                <div><h2>Favourite venues</h2><p>Keep your go-to places within reach.</p><Link to={`${routes.userDashboard}?tab=favourites`}>Manage favourites <i className="fas fa-arrow-right" /></Link></div>
+              </article>
+            </aside>
+          </section>
+        </div>
+      </main>
+    </div>
+  );
 
   return (
     <>
@@ -1044,7 +1215,7 @@ const UserDashboard = () => {
                         </div>
                       ) : favouriteVenues.length > 0 ? (
                         <div className="d-flex flex-column gap-2" style={{ maxHeight: "380px", overflowY: "auto", paddingRight: "4px" }}>
-                          {favouriteVenues.map((v: Record<string, any>, index: number) => {
+                          {favouriteVenues.map((v, index: number) => {
                             const venueId = v._id || v.id;
                             const imgPath = v.images && v.images[0]?.src
                               ? `${IMG_URL}${v.images[0].src}`

@@ -4,8 +4,7 @@ import { FiUpload } from "react-icons/fi";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import Swal from "sweetalert2";
-import ReactQuill from "react-quill";
-import "react-quill/dist/quill.snow.css";
+import { Editor } from "@tinymce/tinymce-react";
 import { API_URL, Image_URL } from "../utils/ApiUrl";
 
 export default function EditBlog() {
@@ -17,6 +16,7 @@ export default function EditBlog() {
   const [editMetaKey, setEditMetaKey] = useState("");
   const [editCanonical, setEditCanonical] = useState("");
   const [blog_image, setBlogImage] = useState(null);
+  const [imageAlt, setImageAlt] = useState("");
   const [imagePreview, setImagePreview] = useState(null);
   const [status, setStatus] = useState(false);
   const [errors, setErrors] = useState({
@@ -32,7 +32,7 @@ export default function EditBlog() {
   const [slugUrl, setSlugUrl] = useState(""); // Added slug_url state
 
   const { slugName } = useParams();
-  console.log(slugName);
+  
 
   const navigate = useNavigate();
 
@@ -51,13 +51,14 @@ export default function EditBlog() {
           setEditMetaKey(data.meta_keywords || "");
           setEditCanonical(data.canonical_url || "");
           setBlogImage(data.blog_image || null);
+          setImageAlt(data.blog_image_alt || data.blog_title || "");
           setStatus(data.status === "active");
           setSlugUrl(data.slug_url || "");
           setEditMetaDescription(data.meta_description || "");
           setEditMetaTitle(data.meta_title || "");
         }
       } catch (error) {
-        console.error("Error fetching blog details:", error);
+        
       }
     };
     fetchBlogDetails();
@@ -90,14 +91,6 @@ export default function EditBlog() {
       newErrors.description = "Description is required.";
       valid = false;
     }
-    if (!editMetaKey) {
-      newErrors.metaKeywords = "Meta Keywords are required.";
-      valid = false;
-    }
-    if (!editCanonical) {
-      newErrors.canonicalUrl = "Canonical URL is required.";
-      valid = false;
-    }
     if (!blog_image) {
       newErrors.image = "Image is required.";
       valid = false;
@@ -114,8 +107,9 @@ export default function EditBlog() {
     const payload = {
       blog_title: editTitle,
       blog_description: editDescription,
-      meta_keywords: editMetaKey,
-      canonical_url: editCanonical,
+      meta_keywords: Array.isArray(editMetaKey) ? editMetaKey : editMetaKey.split(",").map((keyword) => keyword.trim()).filter(Boolean),
+      canonical_url: editCanonical || `/blog/${slugUrl}`,
+      blog_image_alt: imageAlt,
       status: status ? "active" : "inactive",
       slug_url: slugUrl,
       meta_description: editMetaDescription,
@@ -145,7 +139,7 @@ export default function EditBlog() {
         throw new Error(response.data.message || "Failed to update blog.");
       }
     } catch (error) {
-      console.error("Error updating blog:", error);
+      
       Swal.fire({
         icon: "error",
         title: "Error",
@@ -179,10 +173,10 @@ export default function EditBlog() {
           setBlogImage(imageSrc);
           setImagePreview(null);
         } else {
-          console.error("Image upload failed, src is undefined.");
+          
         }
       } catch (error) {
-        console.error("Image upload failed", error);
+        
       }
     }
   };
@@ -229,10 +223,10 @@ export default function EditBlog() {
             </Col>
             <Col md={4}>
               <Form.Group>
-                <Form.Label>Canonical URL</Form.Label>
+                <Form.Label>Canonical URL <small className="text-muted">(defaults to slug)</small></Form.Label>
                 <Form.Control
                   type="text"
-                  placeholder="Enter URL"
+                  placeholder="/blog/my-blog-slug"
                   value={editCanonical}
                   onChange={(e) => setEditCanonical(e.target.value)}
                 />
@@ -249,26 +243,11 @@ export default function EditBlog() {
                 <Form.Label>
                   Meta Description <span style={{ color: "red" }}>*</span>
                 </Form.Label>
-                <ReactQuill
+                <Editor
                   value={editMetaDescription}
-                  onChange={setEditMetaDescription}
+                  onEditorChange={setEditMetaDescription}
                   placeholder="Enter description here"
-                  modules={{
-                    toolbar: [
-                      [{ header: "1" }, { header: "2" }, { font: [] }],
-                      [{ list: "ordered" }, { list: "bullet" }],
-                      ["bold", "italic", "underline"],
-                      ["link"],
-                      [{ align: [] }],
-                      ["image"],
-                      ["blockquote", "code-block"],
-                    ],
-                  }}
-                  style={{
-                    backgroundColor: "#ffffff",
-                    borderColor: "#cccccc",
-                    color: "#000000",
-                  }}
+                  init={{ height: 180, menubar: false, plugins: "lists link image code", toolbar: "undo redo | blocks | bold italic | bullist numlist | link image | code" }}
                 />
                 {errors.meta_description && (
                   <div className="text-danger" style={{ marginTop: "40px" }}>
@@ -323,6 +302,13 @@ export default function EditBlog() {
                   ) : (
                     <p>No image selected.</p>
                   )}
+                  <Form.Label className="mt-2">Image alt text</Form.Label>
+                  <Form.Control
+                    type="text"
+                    value={imageAlt}
+                    onChange={(e) => setImageAlt(e.target.value)}
+                    placeholder="Describe the blog image"
+                  />
                 </div>
                 {errors.image && (
                   <div className="text-danger">{errors.image}</div>
@@ -354,26 +340,11 @@ export default function EditBlog() {
                 <Form.Label>
                   Description<span style={{ color: "red" }}>*</span>
                 </Form.Label>
-                <ReactQuill
+                <Editor
                   value={editDescription}
-                  onChange={setEditDescription}
+                  onEditorChange={setEditDescription}
                   placeholder="Enter description here"
-                  modules={{
-                    toolbar: [
-                      [{ header: "1" }, { header: "2" }, { font: [] }],
-                      [{ list: "ordered" }, { list: "bullet" }],
-                      ["bold", "italic", "underline"],
-                      ["link"],
-                      [{ align: [] }],
-                      ["image"],
-                      ["blockquote", "code-block"],
-                    ],
-                  }}
-                  style={{
-                    backgroundColor: "#ffffff",
-                    borderColor: "#cccccc",
-                    color: "#000000",
-                  }}
+                  init={{ height: 360, menubar: false, plugins: "lists link image code", toolbar: "undo redo | blocks | bold italic | alignleft aligncenter alignright | bullist numlist | link image | code", block_formats: "Paragraph=p; Heading 2=h2; Heading 3=h3; Heading 4=h4" }}
                 />
                 {errors.description && (
                   <div className="text-danger" style={{ marginTop: "40px" }}>

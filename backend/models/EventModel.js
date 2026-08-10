@@ -11,6 +11,7 @@ const eventSchema = new mongoose.Schema(
     images: { type: Array, default: null },
     price: { type: Number, required: false },
     organized_by: { type: String, required: false },
+    category: { type: String, default: "Sports" },
     near_by_location: {
       type: String,
     },

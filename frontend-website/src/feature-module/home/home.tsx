@@ -25,6 +25,8 @@ interface Coach {
   category: string;
   trainer_type: string;
   experience?: number;
+  rating?: number;
+  reviews_count?: number;
   package?: {
     monthly?: number;
     quarterly?: number;
@@ -46,6 +48,8 @@ interface Trainer {
   specializations: string;
   trainer_type: string;
   experience?: number;
+  rating?: number;
+  reviews_count?: number;
   package?: {
     monthly?: number;
     quarterly?: number;
@@ -67,6 +71,26 @@ interface Venues {
   vendor_type: string;
   near_by_location: string;
   price_per_hr?: number;
+  size?: string;
+  venue_size?: string;
+  rating?: number;
+  reviews_count?: number;
+  data?: Record<string, unknown>;
+}
+
+interface ApiCategory {
+  _id: string;
+  category_name: string;
+  status?: boolean;
+}
+
+interface CategoryCard {
+  name: string;
+  slug: string;
+  count: number;
+  icon: string;
+  color: string;
+  bg: string;
 }
 
 const getVenueImage = (images: any): string => {
@@ -89,11 +113,92 @@ const getCategoryIcon = (category: string) => {
   return "fas fa-running";
 };
 
+const categoryStyle = (category: string) => {
+  const name = category.toLowerCase();
+  if (name.includes("swim")) return { color: "#0891B2", bg: "#CFFAFE" };
+  if (name.includes("tennis")) return { color: "#7C3AED", bg: "#EDE9FE" };
+  if (name.includes("badminton")) return { color: "#2563EB", bg: "#DBEAFE" };
+  if (name.includes("basket")) return { color: "#DC2626", bg: "#FEE2E2" };
+  if (name.includes("football") || name.includes("soccer")) return { color: "#059669", bg: "#D1FAE5" };
+  return { color: "#16A34A", bg: "#DCFCE7" };
+};
+
+const normaliseCategory = (value: string) => value.trim().toLowerCase().replace(/[_-]+/g, " ").replace(/\s+/g, " ");
+
 const formatLocation = (loc: string) => {
   if (!loc) return "Indore";
   const cleaned = loc.trim();
   if (cleaned.toLowerCase().includes("indore")) return cleaned;
   return `${cleaned}, Indore`;
+};
+
+const getArea = (location: string) => location?.split(",")[0]?.trim() || "Indore";
+
+const getProfileImage = (profilePicture: any): string => {
+  const first = Array.isArray(profilePicture) ? profilePicture[0] : profilePicture;
+  const imagePath = typeof first === "string" ? first : first?.src || first?.url || "";
+  if (!imagePath) return "/assets/img/no-img.png";
+  if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) return imagePath;
+  return `${IMG_URL}${imagePath}`;
+};
+
+type ProviderKind = "Venue" | "Coach" | "Trainer";
+
+const TopProviderCard = ({ kind, provider }: { kind: ProviderKind; provider: Venues | Coach | Trainer }) => {
+  const isVenue = kind === "Venue";
+  const venue = provider as Venues;
+  const person = provider as Coach | Trainer;
+  const name = isVenue ? venue.name : `${person.first_name || ""} ${person.last_name || ""}`.trim();
+  const category = isVenue ? venue.vendor_type : person.category || person.trainer_type || kind;
+  const image = isVenue
+    ? getVenueImage(venue.images)
+    : getProfileImage(person.profile_picture);
+  const link = isVenue
+    ? `/sports-venue/${(venue.vendor_type || "venue").replace(/\s+/g, "-").toLowerCase()}/${name.replace(/\s+/g, "-").toLowerCase()}/${venue._id}`
+    : kind === "Coach"
+      ? `/coaches/${(person.category || "coach").replace(/\s+/g, "-").toLowerCase()}/${(person.first_name || "coach").replace(/\s+/g, "-").toLowerCase()}/${person._id}`
+      : `/personal-training/trainer/${(person.first_name || "trainer").replace(/\s+/g, "-").toLowerCase()}/${person._id}`;
+  const viewAllLink = kind === "Venue" ? "/sports-venue" : kind === "Coach" ? "/coaches" : "/personal-training";
+  const rate = isVenue ? venue.price_per_hr : person.price || person.package?.monthly;
+  const area = getArea(isVenue ? venue.near_by_location : person.near_by_location);
+  const rating = isVenue ? venue.rating : person.rating;
+  const reviewCount = isVenue ? venue.reviews_count : person.reviews_count;
+  const venueSize = venue.size || venue.venue_size || String(venue.data?.size || venue.data?.venue_size || "Standard");
+
+  return (
+    <div className="col-lg-4 col-md-6">
+      <div className="d-flex align-items-center justify-content-between" style={{ marginBottom: "12px" }}>
+        <h3 style={{ fontFamily: "Space Grotesk, sans-serif", color: "#0F172A", fontWeight: 700, fontSize: "22px", margin: 0 }}>
+          Top Rated <span style={{ color: "#22C55E" }}>{kind}</span>
+        </h3>
+        <Link to={viewAllLink} style={{ color: "#16A34A", fontSize: "13px", fontWeight: 700, textDecoration: "none", whiteSpace: "nowrap" }}>
+          View all <i className="fas fa-arrow-right ms-1" />
+        </Link>
+      </div>
+      <article className="listing-item home-venue border-white-10 top-provider-card" style={{ background: "var(--ki-bg-surface)", border: "1px solid #E2E8E3", borderRadius: "20px", overflow: "hidden", boxShadow: "0 10px 30px rgba(15, 34, 45, 0.08)" }}>
+        <div className="listing-img" style={{ height: "165px", position: "relative", overflow: "hidden" }}>
+          <Link to={link}>
+            <img src={image} className="img-fluid" alt={name} onError={(event) => { event.currentTarget.src = "/assets/img/no-img.png"; }} style={{ height: "100%", width: "100%", objectFit: "cover" }} />
+          </Link>
+          <span className="tag tag-blue" style={{ position: "absolute", top: "12px", left: "12px", padding: "6px 10px", background: "#22C55E", color: "#fff", fontWeight: 700, borderRadius: "9px", fontSize: "11px" }}>
+            {kind === "Venue" ? category : `${category} ${kind}`}
+          </span>
+        </div>
+        <div className="listing-content" style={{ textAlign: "left", padding: "18px 20px" }}>
+          <h3 className="listing-title text-truncate mb-2" style={{ fontSize: "18px", fontWeight: 700 }}><Link to={link}>{name}</Link></h3>
+          <p className="mb-2 text-truncate" style={{ color: "#64748B", fontSize: "14px" }}><i className="feather-map-pin me-2" />{area}</p>
+          <div className="d-flex align-items-center gap-3 mb-3" style={{ color: "#64748B", fontSize: "13px" }}>
+            {isVenue && <span><i className="feather-maximize me-1" />Size: {venueSize}</span>}
+            {rating && rating > 0 ? <span><i className="fas fa-star me-1" style={{ color: "#F59E0B" }} />{rating.toFixed(1)}{reviewCount ? ` (${reviewCount})` : ""}</span> : !isVenue && <span><i className="fas fa-star me-1" style={{ color: "#94A3B8" }} />New provider</span>}
+          </div>
+          <div className="d-flex align-items-end justify-content-between pt-2" style={{ borderTop: "1px solid #EEF2F0" }}>
+            <div><small style={{ color: "#64748B" }}>{isVenue ? "Hourly Rate" : "Starts from"}</small><div style={{ fontSize: "22px", fontWeight: 800 }}>{rate ? `₹${rate}` : "Contact us"}{rate && <small style={{ fontSize: "13px", fontWeight: 400 }}>/{isVenue ? "hr" : "month"}</small>}</div></div>
+            <Link to={link} className="d-flex align-items-center justify-content-center" style={{ width: "38px", height: "38px", borderRadius: "50%", background: "#22C55E", color: "#fff" }}><i className="fas fa-chevron-right" /></Link>
+          </div>
+        </div>
+      </article>
+    </div>
+  );
 };
 
 interface Goto {
@@ -111,7 +216,9 @@ const Home = () => {
   const [coaches, setCoaches] = useState<Coach[]>([]);
   const [trainer, setTrainer] = useState<Trainer[]>([]);
   const [venues, setVenues] = useState<Venues[]>([]);
+  const [apiCategories, setApiCategories] = useState<ApiCategory[]>([]);
   const [activeTopRatedTab, setActiveTopRatedTab] = useState("venues");
+  const [topProviderIndex, setTopProviderIndex] = useState(0);
   const [selectedLocationSort, setSelectedLocationSort] = useState<{ name: string } | null>(null);
   const [selectedSport, setSelectedSport] = useState<{ name: string } | null>(null);
   const [showAllCategories, setShowAllCategories] = useState(false);
@@ -123,25 +230,45 @@ const Home = () => {
   }, []);
 
   useEffect(() => {
-    window.scrollTo(0, 0);
+    const rotation = window.setInterval(() => setTopProviderIndex((current) => current + 1), 5000);
+    return () => window.clearInterval(rotation);
   }, []);
 
   useEffect(() => {
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setLocation({
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
-          });
-        },
-        (error) => {
-          console.error("Error getting user location:", error.message);
-        }
-      );
-    } else {
-      console.log("Geolocation is not supported by this browser.");
-    }
+    window.scrollTo(0, 0);
+  }, []);
+
+  // Keep one provider section on screen and rotate the same three-card area.
+  useEffect(() => {
+    const providerTypes = ["venues", "coaches", "trainers"];
+    const rotation = window.setInterval(() => {
+      setActiveTopRatedTab((current) => {
+        const currentIndex = providerTypes.indexOf(current);
+        return providerTypes[(currentIndex + 1) % providerTypes.length];
+      });
+    }, 5000);
+
+    return () => window.clearInterval(rotation);
+  }, []);
+
+  useEffect(() => {
+    // Never trigger the browser prompt automatically. Location is used only
+    // after the visitor has already granted permission.
+    if (!("geolocation" in navigator) || !("permissions" in navigator)) return;
+
+    navigator.permissions.query({ name: "geolocation" }).then((permission) => {
+      if (permission.state !== "granted") return;
+
+      navigator.geolocation.getCurrentPosition((position) => {
+        setLocation({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+        });
+      });
+    }).catch(() => {
+      // Some browsers do not expose geolocation permission state. In that
+      // case, leave location unset instead of showing a disruptive prompt.
+    });
   }, []);
 
   const timeframeOptions = [
@@ -365,7 +492,7 @@ const Home = () => {
     infinite: true,
     arrows: false,
     speed: 500,
-    slidesToShow: 4,
+    slidesToShow: 3,
     autoplay: true,
     autoplaySpeed: 2000,
     slidesToScroll: 1,
@@ -411,10 +538,12 @@ const Home = () => {
           trainer_type: coach.trainer_type,
           experience: coach.experience,
           package: coach.package,
+          rating: coach.rating,
+          reviews_count: coach.reviews_count,
         }));
         setCoaches(mappedData);
-      } catch (error) {
-        console.error("Error fetching coaches:", error);
+      } catch {
+        // The request failure is handled by the surrounding UI state.
       }
     };
 
@@ -437,14 +566,30 @@ const Home = () => {
           vendor_type: venues.vendor_type,
           near_by_location: venues.near_by_location,
           price_per_hr: venues.price_per_hr,
+          size: venues.size,
+          venue_size: venues.venue_size,
+          rating: venues.rating,
+          reviews_count: venues.reviews_count,
+          data: venues.data,
         }));
         setVenues(mappedData);
-      } catch (error) {
-        console.error("Error fetching venues:", error);
+      } catch {
+        // The request failure is handled by the surrounding UI state.
       }
     };
 
     fetchVenues();
+
+    const fetchCategories = async () => {
+      try {
+        const response = await axios.get<{ categories?: ApiCategory[] }>(`${API_URL}/category/fetch`);
+        setApiCategories((response.data.categories || []).filter((category) => category.status !== false));
+      } catch {
+        // Provider data below remains a live fallback when categories are unavailable.
+      }
+    };
+
+    fetchCategories();
   }, []);
 
   useEffect(() => {
@@ -470,10 +615,12 @@ const Home = () => {
           trainer_type: trainer.trainer_type,
           experience: trainer.experience,
           package: trainer.package,
+          rating: trainer.rating,
+          reviews_count: trainer.reviews_count,
         }));
         setTrainer(mappedData);
-      } catch (error) {
-        console.error("Error fetching trainer:", error);
+      } catch {
+        // The request failure is handled by the surrounding UI state.
       }
     };
 
@@ -547,6 +694,47 @@ const Home = () => {
   const visibleVenues = venues.slice(0, 6);
   const visibleCoaches = coaches.slice(0, 6);
   const visibleTrainers = trainer.slice(0, 6);
+  const rotatingProviders = [
+    { kind: "Venue" as const, provider: visibleVenues.length ? visibleVenues[topProviderIndex % visibleVenues.length] : null },
+    { kind: "Coach" as const, provider: visibleCoaches.length ? visibleCoaches[topProviderIndex % visibleCoaches.length] : null },
+    { kind: "Trainer" as const, provider: visibleTrainers.length ? visibleTrainers[topProviderIndex % visibleTrainers.length] : null },
+  ];
+
+  const categoryCards = useMemo<CategoryCard[]>(() => {
+    const providerCategoryGroups = [
+      ...venues.map((item) => [item.category, item.activities, item.vendor_type]),
+      ...coaches.map((item) => [item.category, item.trainer_type]),
+      ...trainer.map((item) => [item.category, item.specializations, item.trainer_type]),
+    ].map((values) => values
+      .flatMap((value) => String(value || "").split(/[,|/]+/))
+      .map((value) => value.trim())
+      .filter(Boolean));
+
+    const liveCategoryNames = providerCategoryGroups.flat();
+
+    const sourceNames = apiCategories.length
+      ? apiCategories.map((category) => category.category_name)
+      : Array.from(new Map(liveCategoryNames.map((name) => [normaliseCategory(name), name])).values());
+
+    return sourceNames
+      .map((name) => {
+        const key = normaliseCategory(name);
+        const count = providerCategoryGroups.filter((names) => names.some((liveName) => {
+          const liveKey = normaliseCategory(liveName);
+          return liveKey === key || liveKey.includes(key) || key.includes(liveKey);
+        })).length;
+        const style = categoryStyle(name);
+        return {
+          name,
+          slug: key.replace(/\s+/g, "-"),
+          count,
+          icon: getCategoryIcon(name),
+          ...style,
+        };
+      })
+      .filter((category) => apiCategories.length > 0 || category.count > 0)
+      .sort((first, second) => second.count - first.count || first.name.localeCompare(second.name));
+  }, [apiCategories, venues, coaches, trainer]);
 
   // ─── Stats count-up trigger ───
   // countup.js's built-in scroll-spy measures element positions against the
@@ -962,18 +1150,8 @@ const Home = () => {
 
           <div className="container">
             <div className="row g-3 justify-content-center">
-              {[
-                { name: "Cricket", slug: "cricket", count: "141 Listings", icon: "fas fa-baseball-ball", color: "#16A34A", bg: "#DCFCE7" },
-                { name: "Badminton", slug: "badminton", count: "25 Listings", icon: "fas fa-table-tennis", color: "#2563EB", bg: "#DBEAFE" },
-                { name: "Football", slug: "football", count: "13 Listings", icon: "fas fa-futbol", color: "#059669", bg: "#D1FAE5" },
-                { name: "Swimming", slug: "swimming", count: "12 Listings", icon: "fas fa-swimmer", color: "#0891B2", bg: "#CFFAFE" },
-                { name: "Pickleball", slug: "pickleball", count: "24 Listings", icon: "fas fa-table-tennis", color: "#D97706", bg: "#FEF3C7" },
-                { name: "Tennis", slug: "tennis", count: "8 Listings", icon: "fas fa-basketball-ball", color: "#7C3AED", bg: "#EDE9FE" },
-                { name: "Basketball", slug: "basketball", count: "6 Listings", icon: "fas fa-basketball-ball", color: "#DC2626", bg: "#FEE2E2" },
-                { name: "Table Tennis", slug: "table-tennis", count: "10 Listings", icon: "fas fa-table-tennis", color: "#DB2777", bg: "#FCE7F3" },
-                { name: "Other Sports", slug: "other-sports", count: "514 Listings", icon: "fas fa-trophy", color: "#4F46E5", bg: "#E0E7FF" },
-              ].slice(0, showAllCategories ? undefined : 6).map((cat, idx) => (
-                <div key={idx} className="col-xl-2 col-lg-3 col-md-4 col-sm-6 col-6 d-flex">
+              {categoryCards.slice(0, showAllCategories ? undefined : 6).map((cat) => (
+                <div key={cat.slug} className="col-xl-2 col-lg-3 col-md-4 col-sm-6 col-6 d-flex">
                   <div
                     className="ki-category-slider-card p-3 text-center d-flex flex-column align-items-center justify-content-between w-100"
                     style={{ height: "175px", borderRadius: "20px" }}
@@ -993,7 +1171,7 @@ const Home = () => {
                     </div>
                     <div>
                       <h4 className="ki-cat-name mb-0">{cat.name}</h4>
-                      <p className="ki-cat-count mb-0">{cat.count}</p>
+                      <p className="ki-cat-count mb-0">{cat.count} {cat.count === 1 ? "Listing" : "Listings"}</p>
                     </div>
                     <button
                       className="btn rounded-pill ki-category-explore-btn w-100"
@@ -1013,7 +1191,7 @@ const Home = () => {
               ))}
             </div>
 
-            {9 > 6 && (
+            {categoryCards.length > 6 && (
               <div className="text-center mt-4">
                 <button
                   type="button"
@@ -1043,8 +1221,17 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Top Rated Venues */}
       <section className="section featured-venues-list top-providers-section py-5">
+        <div className="container">
+          <div className="row g-4 align-items-start top-provider-rotation" key={topProviderIndex}>
+            {rotatingProviders.map(({ kind, provider }) => provider && <TopProviderCard key={kind} kind={kind} provider={provider} />)}
+          </div>
+        </div>
+      </section>
+
+      {/* One rotating Top Rated Provider section: venues, coaches, then trainers. */}
+      {activeTopRatedTab === "venues" && (
+      <section key="venues" className="section featured-venues-list top-providers-section top-provider-rotation py-5">
         <div className="container">
           <div className="d-flex align-items-center justify-content-between mb-5 flex-wrap gap-3 aos" data-aos="fade-up">
             <div className="text-start">
@@ -1172,9 +1359,10 @@ const Home = () => {
           </div>
         </div>
       </section>
+      )}
 
-      {/* Top Rated Coaches */}
-      <section className="section featured-venues-list top-coaches-section py-5">
+      {activeTopRatedTab === "coaches" && (
+      <section key="coaches" className="section featured-venues-list top-coaches-section top-provider-rotation py-5">
         <div className="container">
           <div className="d-flex align-items-center justify-content-between mb-5 flex-wrap gap-3 aos" data-aos="fade-up">
             <div className="text-start">
@@ -1296,9 +1484,10 @@ const Home = () => {
           </div>
         </div>
       </section>
+      )}
 
-      {/* Top Rated Trainers */}
-      <section className="section featured-venues-list top-trainers-section py-5">
+      {activeTopRatedTab === "trainers" && (
+      <section key="trainers" className="section featured-venues-list top-trainers-section top-provider-rotation py-5">
         <div className="container">
           <div className="d-flex align-items-center justify-content-between mb-5 flex-wrap gap-3 aos" data-aos="fade-up">
             <div className="text-start">
@@ -1420,6 +1609,7 @@ const Home = () => {
           </div>
         </div>
       </section>
+      )}
 
 
       {/* /Featured Coaches */}
@@ -1672,7 +1862,7 @@ const Home = () => {
       {/* Group Coaching */}
 
       {/* Earn Money */}
-      <section className="section earn-money py-4 position-relative" style={{ background: "#FFFFFF", overflow: "hidden" }}>
+      <section className="section earn-money ki-grow-section py-5 position-relative" style={{ overflow: "hidden" }}>
 
         <div className="container position-relative" style={{ zIndex: 1 }}>
           {/* Section Heading */}
@@ -1689,9 +1879,10 @@ const Home = () => {
             </p>
           </div>
 
-          <div className="row justify-content-between align-items-center g-4">
+          <div className="row justify-content-between align-items-stretch g-4">
             {/* Left Column (Venues) */}
-            <div className="col-lg-5 col-md-12">
+            <div className="col-lg-5 col-md-12 d-flex">
+              <div className="ki-grow-option ki-grow-option--venue">
               <div className="row align-items-center g-4">
                 <div className="col-md-7 text-start">
                   <div className="d-flex align-items-start mb-3">
@@ -1725,7 +1916,7 @@ const Home = () => {
                     </li>
                   </ul>
                   <div className="d-block d-md-none mt-4 text-center">
-                    <img
+                    <img className="ki-grow-visual"
                       src="/images.jpg"
                       alt="Sports Turf"
                       style={{ width: "100%", maxWidth: "210px", height: "240px", objectFit: "cover", borderRadius: "24px", boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.05)" }}
@@ -1733,7 +1924,7 @@ const Home = () => {
                   </div>
                 </div>
                 <div className="col-md-5 d-none d-md-flex justify-content-center justify-content-md-end">
-                  <img
+                  <img className="ki-grow-visual"
                     src="/images.jpg"
                     alt="Sports Turf"
                     style={{ width: "100%", maxWidth: "210px", height: "240px", objectFit: "cover", borderRadius: "24px", boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.05)" }}
@@ -1744,7 +1935,7 @@ const Home = () => {
               <div className="d-flex justify-content-center mt-3 pt-1">
                 <Link
                   to={routes.contactUs}
-                  className="btn d-inline-flex align-items-center justify-content-between px-4 py-2.5"
+                  className="btn ki-grow-cta ki-grow-cta--venue d-inline-flex align-items-center justify-content-between px-4 py-2.5"
                   style={{
                     width: "100%",
                     maxWidth: "340px",
@@ -1771,6 +1962,7 @@ const Home = () => {
                   <i className="fa-solid fa-arrow-right" style={{ fontSize: "13px" }} />
                 </Link>
               </div>
+              </div>
             </div>
 
             {/* Separator Column (Vertical Line & OR Bubble) */}
@@ -1782,7 +1974,8 @@ const Home = () => {
             </div>
 
             {/* Right Column (Trainers/Coaches) */}
-            <div className="col-lg-5 col-md-12">
+            <div className="col-lg-5 col-md-12 d-flex">
+              <div className="ki-grow-option ki-grow-option--coach">
               <div className="row align-items-center g-4">
                 <div className="col-md-7 text-start">
                   <div className="d-flex align-items-start mb-3">
@@ -1816,7 +2009,7 @@ const Home = () => {
                     </li>
                   </ul>
                   <div className="d-block d-md-none mt-4 text-center">
-                    <img
+                    <img className="ki-grow-visual"
                       src="/trainer.png"
                       alt="Coaching Session"
                       style={{ width: "100%", maxWidth: "210px", height: "240px", objectFit: "cover", borderRadius: "24px", boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.05)" }}
@@ -1824,7 +2017,7 @@ const Home = () => {
                   </div>
                 </div>
                 <div className="col-md-5 d-none d-md-flex justify-content-center justify-content-md-end">
-                  <img
+                  <img className="ki-grow-visual"
                     src="/trainer.png"
                     alt="Coaching Session"
                     style={{ width: "100%", maxWidth: "210px", height: "240px", objectFit: "cover", borderRadius: "24px", boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.05)" }}
@@ -1835,7 +2028,7 @@ const Home = () => {
               <div className="d-flex justify-content-center mt-3 pt-1">
                 <Link
                   to={routes.contactUs}
-                  className="btn d-inline-flex align-items-center justify-content-between px-4 py-2.5"
+                  className="btn ki-grow-cta ki-grow-cta--coach d-inline-flex align-items-center justify-content-between px-4 py-2.5"
                   style={{
                     width: "100%",
                     maxWidth: "340px",
@@ -1861,6 +2054,7 @@ const Home = () => {
                   </div>
                   <i className="fa-solid fa-arrow-right" style={{ fontSize: "13px" }} />
                 </Link>
+              </div>
               </div>
             </div>
           </div>

@@ -6,6 +6,7 @@ import { all_routes } from "../router/all_routes";
 import axios from "axios";
 import { API_URL, IMG_URL } from "../../ApiUrl";
 import { sanitizeHtml } from "../../utils/sanitize";
+import { Helmet } from "react-helmet";
 
 const BlogDetailsSidebarLeft = () => {
   const routes = all_routes;
@@ -27,7 +28,7 @@ const BlogDetailsSidebarLeft = () => {
   };
 
   const blogSlug = useParams();
-  console.log(blogSlug.slugName)
+  
 
   useEffect(() => {
     document.title = `${blogDetails?.blog_title}`;
@@ -39,22 +40,22 @@ const BlogDetailsSidebarLeft = () => {
     const fetchEvents = async () => {
       try {
         const response = await axios.get(
-          `${API_URL}/blog/getBlogById?slug_url=${blogSlug.slugName}`
+          `${API_URL}/blog/getBlogById?slug_url=${blogSlug.slugName}&public=true`
         );
         if (response.data.success) {
           const data = response.data.data;
-          data.blog_image = `${IMG_URL}${data.blog_image}`;
+          data.blog_image = /^https?:\/\//i.test(data.blog_image || "") ? data.blog_image : `${IMG_URL}${data.blog_image}`;
           setBlogDetails(data);
         }
-      } catch (error) {
-        console.error("Error fetching events:", error);
+      } catch {
+        // The request failure is handled by the surrounding UI state.
       }
     };
 
     fetchEvents();
   }, []);
 
-  console.log(blogDetails);
+  
 
   const featuredVenuesSlider = {
     dots: false,
@@ -89,8 +90,32 @@ const BlogDetailsSidebarLeft = () => {
       },
     ],
   };
+  const canonicalPath = blogDetails?.canonical_url || `/blog/${blogSlug.slugName}`;
+  const canonicalUrl = /^https?:\/\//i.test(canonicalPath)
+    ? canonicalPath
+    : `${window.location.origin}${canonicalPath.startsWith('/') ? canonicalPath : `/blog/${canonicalPath}`}`;
+  const metaDescription = (blogDetails?.meta_description || "").replace(/<[^>]*>/g, "").trim();
+  const blogSchema = blogDetails?.blog_title ? {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: blogDetails.blog_title,
+    description: metaDescription,
+    image: blogDetails.blog_image || undefined,
+    mainEntityOfPage: canonicalUrl,
+    datePublished: blogDetails.created_at,
+    dateModified: blogDetails.updated_at || blogDetails.created_at,
+    author: { "@type": "Organization", name: "Khelo Indore" },
+    publisher: { "@type": "Organization", name: "Khelo Indore" },
+  } : null;
+
   return (
     <div style={{ backgroundColor: "#F8FAFC" }}>
+      <Helmet>
+        <title>{blogDetails?.meta_title || blogDetails?.blog_title || "Blog | Khelo Indore"}</title>
+        {metaDescription && <meta name="description" content={metaDescription} />}
+        <link rel="canonical" href={canonicalUrl} />
+        {blogSchema && <script type="application/ld+json">{JSON.stringify(blogSchema)}</script>}
+      </Helmet>
       {/* Hero Section */}
       <div className="hero-booking-section" style={{ background: "linear-gradient(135deg, #F0FDF4 0%, #ECFDF5 100%)", paddingTop: "110px", paddingBottom: "40px", position: "relative", overflow: "hidden", borderBottom: "1px solid #E5E7EB" }}>
         {/* Blended Background Turf Graphics */}
@@ -128,7 +153,7 @@ const BlogDetailsSidebarLeft = () => {
                   <div className="mb-4" style={{ borderRadius: "14px", overflow: "hidden", maxHeight: "420px" }}>
                     <img
                       src={blogDetails.blog_image}
-                      alt="blog-image"
+                      alt={blogDetails?.blog_image_alt || blogDetails?.blog_title || "Blog image"}
                       style={{
                         width: "100%",
                         height: "auto",
@@ -172,7 +197,11 @@ const BlogDetailsSidebarLeft = () => {
                     dangerouslySetInnerHTML={{
                       __html: sanitizeHtml(
                         blogDetails?.blog_description
-                          ? blogDetails?.blog_description.replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+                          ? blogDetails?.blog_description
+                              .replace(/&lt;/g, '<')
+                              .replace(/&gt;/g, '>')
+                              .replace(/<h1\b/gi, '<h2')
+                              .replace(/<\/h1>/gi, '</h2>')
                           : ''
                       ),
                     }}

@@ -41,16 +41,16 @@ function EventList() {
         }
       });
       const result = await response.json();
-      console.log("result.....->>>", result);
+      
       if (response.ok) {
         setData(result.data);
       } else {
-        console.error("Failed to fetch data:", result.error);
+        
       }
 
       setLoading(false);
     } catch (error) {
-      console.error("Error fetching data:", error);
+      
       setLoading(false);
     }
   };
@@ -111,7 +111,7 @@ function EventList() {
   const { Option } = Select;
 
   const handleInfo = async (row) => {
-    console.log("Info clicked for row:", row);
+    
     try {
       // Fetch detail data
       const detailResponse = await fetch(`${API_URL}/event/get/${row._id}`);
@@ -119,15 +119,15 @@ function EventList() {
       if (detailResponse.ok) {
         setDetailData(detailResult.data);
       } else {
-        console.error("Failed to fetch detail data:", detailResult.error);
+        
       }
     } catch (error) {
-      console.error("Error fetching detail data:", error);
+      
     }
   };
 
   const handleEdit = async (row) => {
-    console.log("Edit clicked for row:", row);
+    
     try {
       const response = await fetch(`${API_URL}/event/get/${row._id}`, {
         method: "GET",
@@ -145,16 +145,13 @@ function EventList() {
       });
 
       if (response.ok) {
-        console.log("event name updated successfully");
+        
       } else {
         const responseData = await response.json();
-        console.error(
-          "Failed to update event name:",
-          responseData.message || "Unknown error"
-        );
+        
       }
     } catch (error) {
-      console.error("Error updating event name:", error);
+      
     }
   };
 
@@ -178,11 +175,11 @@ function EventList() {
         // Update your state or refetch data to reflect the deletion
         fetchData();
       } else {
-        console.error("Failed to delete event:", response.statusText);
+        
         Swal.fire("Error", "Failed to delete event.", "error");
       }
     } catch (error) {
-      console.error("Error deleting event:", error);
+      
       Swal.fire(
         "Error",
         "An error occurred while deleting the event.",

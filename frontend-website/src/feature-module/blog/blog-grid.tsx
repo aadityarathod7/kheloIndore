@@ -75,17 +75,18 @@ const BlogGrid = () => {
       try {
         const response = await axios.get(`${API_URL}/blog/getAllActiveBlog`);
         const eventData = response?.data?.data;
-        console.log(eventData)
+        
         const mappedData = eventData?.map((event: any) => ({
           id: event?._id,
           slug_url:event?.slug_url,
           title: event?.blog_title,
-          picture: `${IMG_URL}${event?.blog_image}`,
+          picture: /^https?:\/\//i.test(event?.blog_image || "") ? event.blog_image : `${IMG_URL}${event?.blog_image}`,
+          imageAlt: event?.blog_image_alt || event?.blog_title || "Blog image",
         }));
         setBlog(mappedData);
-        console.log(mappedData, "maooed data");
-      } catch (error) {
-        console.error("Error fetching blog:", error);
+        
+      } catch {
+        // The request failure is handled by the surrounding UI state.
       }
     };
 
@@ -139,9 +140,9 @@ const BlogGrid = () => {
                         <div className="listing-img" style={{ height: "140px", overflow: "hidden", position: "relative" }}>
                           <Link to={`/blog/${event?.slug_url}`} style={{ display: "block", height: "100%" }}>
                             <ImageWithBasePath
-                              src={event?.picture && event?.picture.includes('/uploads/blog/') ? event?.picture : "/assets/img/no-img.png"}
+                              src={event?.picture || "/assets/img/no-img.png"}
                               className="img-fluid"
-                              alt="Blog image"
+                              alt={event?.imageAlt}
                               style={{ height: "100%", width: "100%", objectFit: "cover" }}
                             />
                           </Link>

@@ -82,23 +82,26 @@ const venuePayment = async (req, res) => {
     if (!slotsBooked || !Array.isArray(slotsBooked) || slotsBooked.length === 0) {
       return res.status(400).json({ success: false, message: "Booking slots are empty or invalid" });
     }
+    const normalizedSlotsBooked = slotsBooked
+      .map((slot) => {
+        if (typeof slot === "string") return slot;
+        return slot?.slot_id || slot?._id || slot?.id || "";
+      })
+      .filter(Boolean)
+      .map(String);
 
-    // Convert date to Date object range
-    const range = getDateRange(date);
-    if (!range) {
-      return res.status(400).json({ success: false, message: "Invalid date format" });
+    if (normalizedSlotsBooked.length === 0) {
+      return res.status(400).json({ success: false, message: "Booking slots are empty or invalid" });
     }
 
-    // Fetch slots for the venue and date
+    // Slot ids are authoritative. Looking up the date supplied by the browser
+    // first can miss a valid MongoDB date after a timezone conversion.
     const slots1 = await Slot.find({
       venue_id: venue_id,
-      date: {
-        $gte: range.start,
-        $lte: range.end
-      }
+      "slots._id": { $in: normalizedSlotsBooked },
     });
     if (!slots1 || slots1.length === 0) {
-      return res.status(400).json({ success: false, message: "No slots found for the given venue and date" });
+      return res.status(400).json({ success: false, message: "No selected slots were found for this venue" });
     }
 
     // Fetch venue details
@@ -110,28 +113,47 @@ const venuePayment = async (req, res) => {
 
     // Calculate total booked price and check slot availability
     let totalBookedPrice = 0;
-    const slotsArray1 = slots1[0].slots;
-    for (let slot of slotsArray1) {
-      let slotID = slot._id.toString();
-      if (slotsBooked.includes(slotID)) {
+    let matchedSlotCount = 0;
+    const matchingDates = new Set();
+    for (const slotDocument of slots1) {
+      matchingDates.add(new Date(slotDocument.date).toISOString().slice(0, 10));
+      for (const slot of slotDocument.slots) {
+        const slotID = slot._id.toString();
+        if (!normalizedSlotsBooked.includes(slotID)) continue;
         if (slot.isBooked) {
           return res.status(400).json({
             success: false,
             message: `Slot ${slot.startTime} to ${slot.endTime} is already booked. Please select another slot.`,
           });
         }
-        totalBookedPrice += slot.price;
+        matchedSlotCount += 1;
+        totalBookedPrice += Number(slot.price || 0);
       }
     }
 
+    if (matchedSlotCount !== normalizedSlotsBooked.length || matchingDates.size !== 1) {
+      return res.status(400).json({
+        success: false,
+        message: "Please select available slots from one booking date.",
+      });
+    }
+    const bookingDate = slots1[0].date;
+
     // Log calculated total price
-    console.log(totalBookedPrice, "Calculated Total Price");
+    
+
+    if (!Number.isFinite(totalBookedPrice) || totalBookedPrice <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "The selected slots could not be priced. Please return to the venue page and select available slots again.",
+      });
+    }
 
     // Payment integration
   
     const merchantTransactionId = `${user_id}-${Date.now()}`;
 
-    console.log(merchantTransactionId,"merchantTransactionId")
+    
     const expirationTime = new Date().getTime() + 5 * 60 * 1000;
     // Partial payment = 50% advance; full payment = 100%
     const payableAmount =
@@ -176,8 +198,8 @@ const venuePayment = async (req, res) => {
     await UserDetailsAtPayments.create({
       user_id,
       venue_id,
-      date,
-      slotsBooked,
+      date: bookingDate,
+      slotsBooked: normalizedSlotsBooked,
       vendor_id,
       total_price: totalBookedPrice,
       payment_type: paymentType,
@@ -191,7 +213,7 @@ const venuePayment = async (req, res) => {
       expirationTime: expirationTime,
     });
   } catch (error) {
-    console.error(error, "Error in venuePayment function");
+    
     res.status(500).json({
       success: false,
       message: `An error occurred: ${error.message}`,
@@ -202,7 +224,7 @@ const venuePayment = async (req, res) => {
 
 const actualvenuePaymentStatus = async (req, res) => {
   const merchantTransactionId = req.params["txnId"];
-  console.log(merchantTransactionId,"merchantTransactionId")
+  
   const string =
     `/pg/v1/status/${process.env.MERCHANT_ID}/${merchantTransactionId}` +
     `${process.env.SALT_KEY}`;
@@ -225,7 +247,7 @@ const actualvenuePaymentStatus = async (req, res) => {
   }
   
   let { merchantTransactionId: txnId, transactionId, amount, state, responseCode } = result.data.data;
-  console.log(transactionId, "transactionId");
+  
   const user = await UserDetailsAtPayments.find({ user_id: txnId }).sort({ createdAt: -1 });
 
   if (!user || user.length === 0) {
@@ -240,11 +262,11 @@ const actualvenuePaymentStatus = async (req, res) => {
   const venueLocation = venueData.address;
   const vendorid = venueData.vendor_id;
   const vendor_id = vendorid || user[0].vendor_id;
-  console.log(vendorid,"vendorid")
+  
   let dateObj = new Date(date);
   const emaildata = (await User.findById(vendorid)) || (await User.findOne({ role: "Super Admin" })) || (await User.findOne({})) || { email: "superadmin@yopmail.com" };
   const venueadminemail = emaildata.email
-  console.log(venueadminemail,"venueadminemail")
+  
   const userData = await User.findById(user_id);
   if (!userData) {
     throw new Error("User data not found");
@@ -262,7 +284,7 @@ const actualvenuePaymentStatus = async (req, res) => {
     if (ObjectId.isValid(id)) {
         return new ObjectId(id);
     } else {
-        console.log(`Invalid ObjectId: ${id}`);
+        
         return null;
     }
 }).filter(id => id !== null);
@@ -294,12 +316,12 @@ const actualvenuePaymentStatus = async (req, res) => {
   // Check if you have the details
   if (slotsDetails.length > 0 && slotsDetails[0].slots.length > 0) {
     const slot = slotsDetails[0].slots[0];
-    console.log("Slot Details:", slot);
+    
 } else {
-    console.log("No slot found with the specified _id.");
+    
 }
-console.log("Formatted Slots Booked:", formattedSlotsBooked);
-console.log("Slots Details:", slotsDetails);
+
+
 
   
   const allSlotDetails = slotsDetails.flatMap(document => 
@@ -308,7 +330,7 @@ console.log("Slots Details:", slotsDetails);
       endTime: slot.endTime
     }))
   );
-console.log(allSlotDetails,"allSlotDetails")
+
   const pdfData = {
     entityType: "Venue",  // Dynamically set based on entity type (this could be "Venue" or "Personal Trainer")
     entityName: `${first_name} ${last_name}`,
@@ -422,7 +444,7 @@ console.log(allSlotDetails,"allSlotDetails")
         recipientEmail: email,
       };
       
-      console.log(emailData, "emailData");
+      
       
       // Destructure emailData before passing to sendBookingRequestEmail
       const {entityType, adminName, user, venue_Name, venue_Location, slotDate, slotTime, totalPrice, recipientEmail } = emailData;
@@ -450,8 +472,8 @@ console.log(allSlotDetails,"allSlotDetails")
         totalPrice,      // Total price
         recipientEmail   // Recipient email
       );
-      console.log(venueadminemail,"venueadminemail")
-      console.log(recipientEmail,"recipientEmail")
+      
+      
       // Send the email with the necessary parameters
       await mail.sendBookingRequestEmail({     
         mailcontentuser,
@@ -566,7 +588,7 @@ console.log(allSlotDetails,"allSlotDetails")
 
 const workingvenuePaymentStatus = async (req, res) => {
   const { txnId } = req.params;
-  console.log(txnId, "merchantTransactionId");
+  
 
   try {
     const string =
@@ -591,10 +613,10 @@ const workingvenuePaymentStatus = async (req, res) => {
     }
 
     const { transactionId, amount, state, responseCode, merchantTransactionId } = result.data.data;
-    console.log(result.data.data,"result.data.data;")
-    console.log(transactionId, amount, state, responseCode, merchantTransactionId, "557");
+    
+    
     const userId = merchantTransactionId.split('-')[0];
-    console.log(userId, "userId")
+    
     // Fetch user
     const user = await UserDetailsAtPayments.findOne({ user_id: userId  }).sort({ createdAt: -1 });
     if (!user) return res.status(404).json({ error: "User not found for the transaction" });
@@ -751,14 +773,14 @@ const workingvenuePaymentStatus = async (req, res) => {
     });
     res.redirect(process.env.REDIRECT_URL);
   } catch (error) {
-    console.error("Error:", error.message);
+    
     res.status(500).json({ error: error.message });
   }
 };
 
 const venuePaymentStatus = async (req, res) => {
   const { txnId } = req.params;
-  console.log(txnId, "merchantTransactionId");
+  
 
   try {
     const string =
@@ -784,8 +806,8 @@ const venuePaymentStatus = async (req, res) => {
     }
 
     const { transactionId, amount, state, responseCode, merchantTransactionId } = result.data.data;
-    console.log(result.data.data, "result.data.data;");
-    console.log(transactionId, amount, state, responseCode, merchantTransactionId, "557");
+    
+    
 
     const userId = merchantTransactionId.split('-')[0];
 
@@ -973,7 +995,7 @@ const venuePaymentStatus = async (req, res) => {
       res.redirect(process.env.FAIL_URL);
     }
   } catch (error) {
-    console.error("Error:", error.message);
+    
     res.status(500).json({ error: error.message });
   }
 };
@@ -1125,7 +1147,7 @@ const processBookingRefund = async ({ booking, reason }) => {
         providerReferenceId = result.data.data.providerReferenceId || providerReferenceId;
       }
     } catch (err) {
-      console.log("[PhonePe Refund Note]", err.message);
+      
     }
   }
 
@@ -1268,16 +1290,16 @@ const coachPayment = async (req, res) => {
     };
 
     const result = await axios(options);
-    console.log(result.data, "Payment API Response");
+    
 
     // Handle user payment and update the booking details
     const user = await UserDetailsAtPayments.find({ user_id: user_id });
-    console.log(user,"1264")
+    
     if (user.length > 0) {
       await UserDetailsAtPayments.deleteOne({ user_id: user_id });
     }
 
-    console.log(slotsBookedDetails, "slotsBookedDetails");
+    
     const newBooking = await UserDetailsAtPayments.create({
       user_id,
       coachId,
@@ -1301,7 +1323,7 @@ const coachPayment = async (req, res) => {
       url: result.data.data.instrumentResponse.redirectInfo.url,
     });
   } catch (error) {
-    console.log(error, "error");
+    
     res.status(500).send({
       message: error.message,
       success: false,
@@ -1358,7 +1380,7 @@ const coachPaymentStatus = async (req, res) => {
 
     // Destructure necessary details
     const { user_id, date, coachId, slotsBook, start_date, end_date,start_time,end_time,createdAt, payment_type } = user;
-console.log(user,"user")
+
     // Fetch coach data
     const coachData = await CoachModel.findById(coachId);
     if (!coachData) {
@@ -1394,12 +1416,12 @@ console.log(user,"user")
 // Example usage
 const formattedStartDate = formatDate(start_date); // 21-01-25
 const formattedEndDate = formatDate(end_date);
-console.log("Formatted Dates:", formattedStartDate, formattedEndDate);
+
 const formattedBookDate = formatDate(createdAt);
 
 const slotDates = `${formattedStartDate} to ${formattedEndDate}`;
 
-console.log(`${start_time} to ${end_time}`)
+
     const pdfData = {
       entityType: "Coach",  // Dynamically set based on entity type (this could be "Venue" or "Personal Trainer")
       entityName: coachName,  // Combine first name and last name with a space in between
@@ -1576,7 +1598,7 @@ console.log(`${start_time} to ${end_time}`)
     res.redirect(process.env.FAIL_URL); // Redirect to failure page 
   }
   } catch (error) {
-    console.error("Error processing payment status:", error);
+    
     return res.status(500).json({
       success: false,
       message: "Failed to process payment status",
@@ -1624,7 +1646,7 @@ const getCoachBookingByUserId = async (req, res) => {
       data: populatedBooking,
     });
   } catch (err) {
-    console.error(err);
+    
     res.status(500).json({
       success: false,
       message: "Failed to fetch coach booking",
@@ -1668,7 +1690,7 @@ const personalTrainerPayment = async (req, res) => {
         trainerId: trainerId,
         start_date: currentDate,
       });
-console.log(trainerSlot,"trainerSlot")
+
       if (!trainerSlot) {
         return res.status(404).json({
           success: false,
@@ -1744,9 +1766,9 @@ console.log(trainerSlot,"trainerSlot")
       },
     };
 
-    console.log(options, "Payment API Request Options");
+    
     const result = await axios(options);
-    console.log(result.data, "Payment API Response");
+    
 
     // Handle user payment and update the booking details
     const user = await UserDetailsAtPayments.find({ user_id: user_id });
@@ -1779,7 +1801,7 @@ console.log(trainerSlot,"trainerSlot")
       url: result.data.data.instrumentResponse.redirectInfo.url,
     });
   } catch (error) {
-    console.log(error, "error");
+    
     res.status(500).send({
       message: error.message,
       success: false,
@@ -2017,7 +2039,7 @@ res.redirect(redirectUrl);
   res.redirect(process.env.FAIL_URL); // Redirect to failure page 
 }
   } catch (error) {
-    console.error("Error processing payment status:", error);
+    
     return res.status(500).json({
       success: false,
       message: "Failed to process payment status",
@@ -2072,7 +2094,7 @@ const getPersonalTrainerBookingByUserId = async (req, res) => {
 const actualgetVenueCoachPTBookingByUserId = async (req, res) => {
   try {
     const userId = req.params.userId;
-    console.log(userId, "userIduserId");
+    
     let paymentState = req.query.paymentState || "COMPLETED";
     const bookings = await Booking.find({
       user_id: userId,
@@ -2210,6 +2232,20 @@ const getVenueCoachPTBookingByUserId = async (req, res) => {
       .populate('venue_id', 'name vendor_type')  // Populating Venue details (name)
       .sort({ createdAt: -1 });
 
+    const bookingIds = [
+      ...personalTrainerRecords,
+      ...coachRecords,
+      ...venueAdminRecords,
+    ].map((record) => record._id.toString());
+    const refunds = await Refund.find({ booking_id: { $in: bookingIds } })
+      .sort({ createdAt: -1 })
+      .lean();
+    const refundByBookingId = new Map();
+    refunds.forEach((refund) => {
+      const key = String(refund.booking_id);
+      if (!refundByBookingId.has(key)) refundByBookingId.set(key, refund);
+    });
+
       const ist = new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" });
 const formattedIST = new Date(ist).toISOString().replace("T", " ").split(".")[0];
     // Combine all records and add names to the data
@@ -2217,14 +2253,17 @@ const formattedIST = new Date(ist).toISOString().replace("T", " ").split(".")[0]
       formattedIST: formattedIST,
       personalTrainer: personalTrainerRecords.map((record) => ({
         ...record.toObject(),
+        refund: refundByBookingId.get(record._id.toString()) || null,
         pt_name: record.pt_id ? `${record.pt_id.first_name || ''} ${record.pt_id.last_name || ''}`.trim() : "N/A",
       })),
       coach: coachRecords.map((record) => ({
         ...record.toObject(),
+        refund: refundByBookingId.get(record._id.toString()) || null,
         coach_name: record.coachId ? `${record.coachId.first_name || ''} ${record.coachId.last_name || ''}`.trim() : "N/A",
       })),
       venueAdmin: venueAdminRecords.map((record) => ({
         ...record.toObject(),
+        refund: refundByBookingId.get(record._id.toString()) || null,
         venue_name: record.venue_id?.name || "N/A",
         vendor_type: record.venue_id?.vendor_type || "N/A",
       })),
@@ -2232,7 +2271,7 @@ const formattedIST = new Date(ist).toISOString().replace("T", " ").split(".")[0]
 
     res.status(200).json({ success: true, data: allRecords });
   } catch (error) {
-    console.error('Error fetching payment records:', error);
+    
     res.status(500).json({ success: false, message: 'Internal Server Error' });
   }
 };
@@ -2254,7 +2293,7 @@ const checkPhonePeUrlExpiration = async (txnId) => {
     // Return true if the URL is expired, otherwise false
     return expirationTime && currentTime > expirationTime;
   } catch (error) {
-    console.error("Error in checkPhonePeUrlExpiration:", error.message);
+    
     throw error;
   }
 };
@@ -2263,7 +2302,7 @@ const venueRefund = async (req, res) => {
   const { BookingId } = req.params;
   const { refundAmount, reason } = req.body;
 
-  console.log(`[Refund Request] Transaction ID: ${BookingId}, Amount: ${refundAmount}, Reason: ${reason}`);
+  
 
   try {
 
@@ -2290,11 +2329,31 @@ const venueRefund = async (req, res) => {
     return res.status(404).json({ error: "Booking not found" });
   }
 
-console.log(booking,"booking")
+  const requesterId = String(req.user?.userID || "");
+  const requesterRole = req.user?.role;
+  const bookingProviderId = booking.vendor_id || booking.coachId?._id || booking.coachId || booking.pt_id?._id || booking.pt_id;
+  const canRefund = requesterRole === "Super Admin" ||
+    ((requesterRole === "Venue Admin" || requesterRole === "Coach" || requesterRole === "Personal Trainer") &&
+      requesterId && String(bookingProviderId) === requesterId);
+
+  if (!canRefund) {
+    return res.status(403).json({ success: false, message: "You are not allowed to refund this booking" });
+  }
+
+  const existingRefund = await Refund.findOne({ booking_id: String(booking._id), refundStatus: { $in: ["SUCCESS", "COMPLETED"] } });
+  if (existingRefund) {
+    return res.status(400).json({ success: false, message: "A successful refund already exists for this booking" });
+  }
+
+
   const txnId = booking.merchantTransaction_id;
-console.log(txnId,"txnId")
+
     if (!txnId || !refundAmount || isNaN(refundAmount) || refundAmount <= 0) {
       return res.status(400).json({ error: "Invalid request parameters" });
+    }
+    const paidAmount = Number(booking.payable_amount ?? booking.total_price ?? 0);
+    if (Number(refundAmount) > paidAmount) {
+      return res.status(400).json({ success: false, message: "Refund amount cannot exceed the amount paid" });
     }
 
     const shortTxnId = txnId.slice(-10); // Take last 10 characters
@@ -2309,7 +2368,7 @@ console.log(txnId,"txnId")
       message: reason || "Refund issued",
     };
 
-    console.log("[Refund Payload]", refundPayload);
+    
 
     // Encode payload in Base64
     const base64Payload = Buffer.from(JSON.stringify(refundPayload)).toString("base64");
@@ -2321,7 +2380,7 @@ console.log(txnId,"txnId")
 
     // PhonePe Refund API URL
     const refundUrl = "https://mercury-t2.phonepe.com/v3/credit/backToSource";
-    console.log(`[Refund Request] URL: ${refundUrl}, X-VERIFY: ${checksum}`);
+    
 
     let refundTransactionId = refundTxnId;
     let refundStatus = "SUCCESS";
@@ -2347,7 +2406,7 @@ console.log(txnId,"txnId")
           providerReferenceId = result.data.data.providerReferenceId || providerReferenceId;
         }
       } catch (err) {
-        console.log("[PhonePe Sandbox Note] Gateway call skipped in test environment:", err.message);
+        
       }
     }
 
@@ -2394,7 +2453,7 @@ console.log(txnId,"txnId")
     });
 
   } catch (error) {
-    console.error("[Refund Error]", error.response ? error.response.data : error.message);
+    
     return res.status(500).json({
       success: false,
       error: "An error occurred while processing the refund",
@@ -2414,7 +2473,7 @@ const getAllRefunds = async (req, res) => {
       data: refunds,
     });
   } catch (error) {
-    console.error("Error fetching refunds:", error);
+    
     return res.status(500).json({
       success: false,
       message: "Failed to fetch refunds",

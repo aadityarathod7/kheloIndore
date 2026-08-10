@@ -21,7 +21,7 @@ exports.AddCategory = async (req, res) => {
       .status(200)
       .json({ msg: "Category successfully saved", category: newCategory });
   } catch (error) {
-    console.log(error);
+    
     res.status(500).json({
       success: false,
       message: error.message,
@@ -68,7 +68,7 @@ exports.FetchCategory = async (req, res) => {
     });
     res.status(200).json({ categories });
   } catch (error) {
-    console.log(error);
+    
     res.status(500).json({ msg: "Unable to find categories" });
   }
 };
@@ -82,7 +82,7 @@ exports.getSingleCategory = async (req, res) => {
     }
     res.status(200).json({ category });
   } catch (error) {
-    console.log(error);
+    
     res.status(500).json({ msg: "Unable to find the category" });
   }
 };
@@ -114,7 +114,7 @@ exports.UpdateCategory = async (req, res) => {
      return res.status(200)
       .json({ msg: "Category successfully Updated", data: updateCategory });
   } catch (error) {
-    console.log(error);
+    
     res.status(500).json({ msg: "Unable to update the category" });
   }
 };
@@ -137,7 +137,7 @@ exports.DeleteCategory = async (req, res) => {
       category: deletedCategory,
     });
   } catch (error) {
-    console.log(error);
+    
     res.status(500).json({ msg: "Unable to deactivate the category" });
   }
 };

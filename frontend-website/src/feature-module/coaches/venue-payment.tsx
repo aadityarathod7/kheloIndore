@@ -39,8 +39,8 @@ const VenuePayment = () => {
         const response = await axios.get(`${API_URL}/venue/individual/${id}`);
         const venueData = response.data.venue;
         setVenueData(venueData);
-      } catch (error) {
-        console.error("Error fetching venues:", error);
+      } catch {
+        // The request failure is handled by the surrounding UI state.
       }
     };
     fetchVenueId();

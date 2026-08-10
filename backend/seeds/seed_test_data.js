@@ -20,8 +20,8 @@ const MONGO_URI = process.env.DATABASE_URL || "mongodb://127.0.0.1:27017/KheloIn
 
 mongoose
   .connect(MONGO_URI)
-  .then(() => console.log("✅ MongoDB connected"))
-  .catch((err) => { console.error("❌ MongoDB error:", err.message); process.exit(1); });
+  .then(() => undefined)
+  .catch((err) => {  process.exit(1); });
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const timeToday = (h, m = 0) => {
@@ -35,7 +35,7 @@ const timeToday = (h, m = 0) => {
 async function seedVenue() {
   const existing = await Venue1.findOne({ name: "Khelo Indore Premier Turf" });
   if (existing) {
-    console.log("⏭  Venue already seeded — ID:", existing._id.toString());
+    
     return existing;
   }
 
@@ -122,7 +122,7 @@ Book your slot online in seconds and get instant confirmation!`,
     ],
   });
 
-  console.log("✅ Venue seeded — ID:", venue._id.toString());
+  
   return venue;
 }
 
@@ -133,7 +133,7 @@ async function seedCoach() {
   if (existing) {
     existing.is_admin_access = 1;
     await existing.save();
-    console.log("⏭  Coach updated & seeded — ID:", existing._id.toString());
+    
     return existing;
   }
 
@@ -215,7 +215,7 @@ and offers individual, group, and advanced performance sessions.`,
     profile_picture: [{ src: "/assets/img/profiles/avatar-coach-01.jpg" }],
   });
 
-  console.log("✅ Coach seeded — ID:", coach._id.toString());
+  
   return coach;
 }
 
@@ -226,7 +226,7 @@ async function seedTrainer() {
   if (existing) {
     existing.is_admin_access = 1;
     await existing.save();
-    console.log("⏭  Trainer updated & seeded — ID:", existing._id.toString());
+    
     return existing;
   }
 
@@ -312,7 +312,7 @@ plans tailored to individual goals.`,
     ],
   });
 
-  console.log("✅ Trainer seeded — ID:", trainer._id.toString());
+  
   return trainer;
 }
 
@@ -386,7 +386,7 @@ async function seedAdditionalProfiles() {
     Coach.bulkWrite(coachOperations),
     Trainer.bulkWrite(trainerOperations),
   ]);
-  console.log(`Demo profiles ready: ${coachResult.upsertedCount || 0} coaches and ${trainerResult.upsertedCount || 0} trainers added.`);
+  
 }
 
 const CoachSlot = require("../models/CoachSlotsModel");
@@ -417,7 +417,7 @@ async function seedCoachSlots(coachId) {
       status: true
     });
   }
-  console.log("✅ Coach Slots seeded");
+  
 }
 
 async function seedTrainerSlots(trainerId) {
@@ -445,13 +445,13 @@ async function seedTrainerSlots(trainerId) {
       status: true
     });
   }
-  console.log("✅ Trainer Slots seeded");
+  
 }
 
 // ── Run All ───────────────────────────────────────────────────────────────────
 
 async function main() {
-  console.log("\n🌱 Starting Khelo Indore test data seed...\n");
+  
 
   if (process.argv.includes("--profiles-only")) {
     await seedCoach();
@@ -469,23 +469,23 @@ async function main() {
   await seedCoachSlots(coach._id);
   await seedTrainerSlots(trainer._id);
 
-  console.log("\n══════════════════════════════════════════");
-  console.log("✅  SEED COMPLETE — Use these IDs to test:");
-  console.log("══════════════════════════════════════════");
-  console.log(`🏟  Venue   (cricket-turf): ${venue._id}`);
-  console.log(`   URL: http://localhost:3000/sports-venue/cricket-turf/khelo-indore-premier-turf/${venue._id}`);
-  console.log(`\n🏏  Coach  : ${coach._id}`);
-  console.log(`   URL: http://localhost:3000/coaches/cricket/${coach.first_name.toLowerCase()}-${coach.last_name.toLowerCase()}/${coach._id}`);
-  console.log(`\n💪  Trainer: ${trainer._id}`);
-  console.log(`   URL: http://localhost:3000/personal-training/fitness/${trainer.first_name.toLowerCase()}-${trainer.last_name.toLowerCase()}/${trainer._id}`);
-  console.log("══════════════════════════════════════════\n");
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
 
   await mongoose.disconnect();
   process.exit(0);
 }
 
 main().catch((err) => {
-  console.error("❌ Seed failed:", err);
+  
   mongoose.disconnect();
   process.exit(1);
 });

@@ -47,6 +47,23 @@
 }
 
 /* Typography */
+.admin-page-content, .admin-page-content * { min-width: 0; }
+.admin-shell { max-width: 100%; overflow-x: clip; }
+.admin-page-content img, .admin-page-content svg, .admin-page-content canvas { max-width: 100%; }
+.admin-page-content .table-responsive, .admin-page-content .table-container, .admin-page-content .ant-table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.admin-page-content .ant-table { min-width: 680px; }
+.admin-page-content button, .admin-page-content .ant-btn, .admin-page-content input, .admin-page-content select { min-height: 40px; }
+.admin-page-content button:focus-visible, .admin-page-content .ant-btn:focus-visible, .admin-page-content input:focus-visible, .admin-page-content select:focus-visible, .admin-page-content a:focus-visible { outline: 3px solid #34d399; outline-offset: 2px; }
+@media (max-width: 768px) {
+  .admin-page-content { overflow-x: hidden; }
+  .admin-page-content .ant-modal, .ant-modal { max-width: calc(100vw - 24px); margin: 12px auto; }
+  .admin-page-content .row { margin-right: 0; margin-left: 0; }
+  .admin-page-content .card, .admin-page-content .ant-card { border-radius: 12px; }
+  .admin-page-content .form-control, .admin-page-content .form-select, .admin-page-content .ant-input, .admin-page-content .ant-select { width: 100%; max-width: 100%; }
+  .admin-page-content .ant-pagination { display: flex; flex-wrap: wrap; gap: 6px; }
+  .admin-page-content .fc { min-width: 620px; }
+  .admin-page-content .fc-scroller, .admin-page-content .fc-view-harness { overflow-x: auto; }
+}
 .title {
   font-size: 28px;
   font-family: 'Inter', sans-serif !important;

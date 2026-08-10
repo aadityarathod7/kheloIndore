@@ -92,7 +92,7 @@ const AddPersonalTrainer = () => {
         `${API_URL}/super-admin/add-user`,
         formData
       );
-      console.log(response);
+      
       Swal.fire({
         icon: "success",
         title: "Success!",
@@ -101,7 +101,7 @@ const AddPersonalTrainer = () => {
         navigate('/personal-training');
       });
     } catch (error) {
-      console.error("Error:", error);
+      
       setApiError(error.response.data.message)
     }
   };

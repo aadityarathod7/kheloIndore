@@ -62,7 +62,7 @@ const UpdateVenueAdmin = () => {
       }
       Swal.close();
     } catch (error) {
-      console.error("Error fetching user data:", error);
+      
       Swal.close();
     }
   };
@@ -74,7 +74,7 @@ const UpdateVenueAdmin = () => {
     }
   }, [_id]);
 
-  console.log(adminData, "adminData")
+  
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -118,7 +118,7 @@ const UpdateVenueAdmin = () => {
       });
       navigate("/venue-admin");
     } catch (error) {
-      console.error("Error updating user:", error);
+      
       setApiError(error.response?.data?.message || "Failed to update Venue admin")
     }
   };
@@ -146,7 +146,7 @@ const UpdateVenueAdmin = () => {
         Swal.fire("Error", "Failed to update admin access.", "error");
       }
     } catch (error) {
-      console.error("Error updating admin access:", error);
+      
       Swal.fire("Error", "An error occurred while updating admin access.", "error");
     }
   };

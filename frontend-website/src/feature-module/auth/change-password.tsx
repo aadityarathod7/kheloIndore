@@ -72,10 +72,10 @@ const ChangePassword = () => {
         email: email
       });
 
-      console.log("Response: ", response);
+      
 
       if (response.data.token) {
-        console.log('Email sent successfully.');
+        
         localStorage.setItem("PasswordToken", response.data.token);
         setShowOtp(true)
         setShowEmail(false)
@@ -89,7 +89,7 @@ const ChangePassword = () => {
       }
     } catch (error: any) {
       setLoader(false)
-      console.error('Error submitting email:', error);
+      
       const errorMessage =
         error.response && error.response.data && error.response.data.message
           ? error.response.data.message
@@ -119,10 +119,10 @@ const ChangePassword = () => {
           },
         })
 
-      console.log("Response: ", response);
+      
 
       if (response.data) {
-        console.log('OTP verified successfully');
+        
         setShowOtp(false)
         setShowPasswordField(true)
         setLoader(false)
@@ -135,7 +135,7 @@ const ChangePassword = () => {
       }
     } catch (error: any) {
       setLoader(false)
-      console.error('Error submitting otp:', error);
+      
       const errorMessage =
         error.response && error.response.data && error.response.data.message
           ? error.response.data.message
@@ -185,10 +185,10 @@ const ChangePassword = () => {
           },
         })
 
-      console.log("Response: ", response);
+      
 
       if (response.data) {
-        console.log('OTP verified successfully');
+        
         setEmail("")
         setOtp("")
         setNewPassword("")
@@ -212,7 +212,7 @@ const ChangePassword = () => {
       }
     } catch (error: any) {
       setLoader(false)
-      console.error('Error submitting email:', error);
+      
       const errorMessage =
         error.response && error.response.data && error.response.data.message
           ? error.response.data.message

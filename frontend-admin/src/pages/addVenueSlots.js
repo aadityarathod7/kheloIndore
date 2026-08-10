@@ -8,17 +8,49 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { API_URL } from '../utils/ApiUrl';
 import axios from 'axios';
 import Swal from 'sweetalert2';
+import './addVenueSlots.css';
+
+const parseSlotDate = (value) => {
+    if (!value) return null;
+    const dateOnly = String(value).match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (dateOnly) {
+        const [, year, month, day] = dateOnly;
+        const parsed = new Date(Number(year), Number(month) - 1, Number(day));
+        return Number.isNaN(parsed.getTime()) ? null : parsed;
+    }
+    const parsed = new Date(value);
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
+};
+
+const applyTime = (date, time) => {
+    const match = String(time || '').match(/^(\d{1,2}):(\d{2})$/);
+    if (!match) return null;
+    const hours = Number(match[1]);
+    const minutes = Number(match[2]);
+    if (hours > 23 || minutes > 59) return null;
+    const result = new Date(date);
+    result.setHours(hours, minutes, 0, 0);
+    return result;
+};
+
+const halfHourTimes = Array.from({ length: 48 }, (_, index) => {
+    const hours = String(Math.floor(index / 2)).padStart(2, '0');
+    const minutes = index % 2 === 0 ? '00' : '30';
+    return `${hours}:${minutes}`;
+});
 
 export default function AddVenueSlots() {
+    const today = new Date().toLocaleDateString('en-CA');
     const [venueName, setVenueName] = useState("");
     const [slots, setSlots] = useState([]);
     const [showModal, setShowModal] = useState(false);
     const [selectedEvent, setSelectedEvent] = useState(null);
     const [newPrice, setNewPrice] = useState('');
     const [formData, setFormData] = useState({
-        dateFrom: "",
-        dateTo: "",
+        dateFrom: today,
+        dateTo: today,
         startTime: "",
+        endTime: "",
         price: "",
         available: true,
     });
@@ -30,6 +62,7 @@ export default function AddVenueSlots() {
         startTime: "",
         endTime: "",
         isBooked: false,
+        isOfflineBlocked: false,
         price: "",
         _id: slotId,
     });
@@ -44,7 +77,7 @@ export default function AddVenueSlots() {
                 setVenueName(response.data.venue.name);
             }
         } catch (error) {
-            console.error("Error fetching venue details:", error);
+            
         }
     };
 
@@ -63,12 +96,12 @@ export default function AddVenueSlots() {
             });
             if (response.ok) {
                 const data = await response.json();
-                setSlots(data.data);
+                setSlots(Array.isArray(data.data) ? data.data : []);
             } else {
-                console.error("Response not ok:", response.status, response.statusText);
+                
             }
         } catch (error) {
-            console.error("Error fetching slots:", error);
+            
         }
     };
     useEffect(() => {
@@ -77,47 +110,50 @@ export default function AddVenueSlots() {
 
 
     const mapSlotsToEvents = () => {
-        return slots.map(slot => {
-            return slot.slots.map(innerSlot => {
-                const slotDate = new Date(slot.date);
-                const eventStartTime = new Date(slotDate);
-                eventStartTime.setHours(innerSlot.startTime.split(":")[0]);
-                eventStartTime.setMinutes(innerSlot.startTime.split(":")[1] || 0);
+        return slots.flatMap((slot) => {
+            const slotDate = parseSlotDate(slot?.date);
+            if (!slotDate || !Array.isArray(slot?.slots)) return [];
 
-                const eventEndTime = new Date(slotDate);
-                eventEndTime.setHours(innerSlot.endTime.split(":")[0]);
-                eventEndTime.setMinutes(innerSlot.endTime.split(":")[1] || 0);
+            return slot.slots.flatMap((innerSlot) => {
+                const eventStartTime = applyTime(slotDate, innerSlot?.startTime);
+                const eventEndTime = applyTime(slotDate, innerSlot?.endTime);
+                if (!eventStartTime || !eventEndTime || eventEndTime <= eventStartTime) {
+                    
+                    return [];
+                }
 
-                return {
+                return [{
                     title: innerSlot.isBooked ? `Booked - ₹ ${innerSlot.price}` : `₹ ${innerSlot.price}`,
                     start: eventStartTime.toISOString(),
                     end: eventEndTime.toISOString(),
                     description: `Price: ₹${innerSlot.price} | ${innerSlot.isBooked ? 'Booked' : 'Available'}`,
-                    backgroundColor: innerSlot.isBooked ? 'black' : 'gray',
+                    backgroundColor: innerSlot.isOfflineBlocked ? '#dc2626' : (innerSlot.isBooked ? '#475569' : '#097e52'),
                     textColor: 'white',
                     extendedProps: {
                         price: innerSlot.price,
                         isBooked: innerSlot.isBooked,
+                        isOfflineBlocked: innerSlot.isOfflineBlocked,
                         id: innerSlot._id,
                         date_id: slot._id
                     }
-                };
+                }];
             });
-        }).flat();
+        });
     };
 
 
     const handleDateClick = (info) => {
         const clickedDate = new Date(info.dateStr);
-        console.log(clickedDate)
+        
         const formattedDate = `${clickedDate.getFullYear()}-${(clickedDate.getMonth() + 1).toString().padStart(2, '0')}-${clickedDate.getDate().toString().padStart(2, '0')}`;
-        console.log(formattedDate)
+        
 
         setFormData({
             ...formData,
             dateFrom: formattedDate,
             dateTo: formattedDate,
             startTime: info.dateStr.split('T')[1]?.slice(0, 5),
+            endTime: info.dateStr.split('T')[1] ? calculateEndTime(info.dateStr.split('T')[1].slice(0, 5)) : "",
             price: '',
         });
         setShowModal(true);
@@ -131,6 +167,9 @@ export default function AddVenueSlots() {
             [name]: value
         }));
     };
+    const handleQuickDateChange = (e) => {
+        setFormData((prev) => ({ ...prev, dateFrom: e.target.value, dateTo: e.target.value }));
+    };
     const handleUpdateChange = (e) => {
         const { name, value } = e.target;
         setUpdateFormData(prev => ({
@@ -142,32 +181,38 @@ export default function AddVenueSlots() {
 
     const calculateEndTime = (startTime) => {
         const startDate = new Date(`2023-01-01T${startTime}:00`);
-        startDate.setHours(startDate.getHours() + 1);
+        startDate.setMinutes(startDate.getMinutes() + 30);
         const hours = startDate.getHours().toString().padStart(2, '0');
         const minutes = startDate.getMinutes().toString().padStart(2, '0');
         return `${hours}:${minutes}`;
     };
 
 
-    const handleAddSlot = async () => {
-        const { dateFrom, dateTo, startTime, price } = formData;
+    const handleAddSlot = async (offlineBlocked = false) => {
+        const { dateFrom, dateTo, startTime, endTime, price } = formData;
 
-        const startDate = new Date(dateFrom);
-        const endDate = new Date(dateTo);
+        const startDate = parseSlotDate(dateFrom);
+        const endDate = parseSlotDate(dateTo);
+
+        const startDateTime = applyTime(startDate, startTime);
+        const endDateTime = applyTime(startDate, endTime);
+        if (!startDate || !endDate || !startDateTime || !endDateTime || endDateTime <= startDateTime || startDate > endDate || price === "" || Number(price) < 0) {
+            Swal.fire({ icon: "error", title: "Invalid slot details", text: "Choose a date, start time, later end time, and valid price." });
+            return;
+        }
 
         const newSlots = [];
 
 
         while (startDate <= endDate) {
-            const slotEndTime = calculateEndTime(startTime);
-
             const newSlot = {
                 date: startDate.toISOString().split('T')[0],
                 slots: [{
                     startTime,
-                    endTime: slotEndTime,
+                    endTime,
                     price,
-                    isBooked: false,
+                    isBooked: offlineBlocked,
+                    isOfflineBlocked: offlineBlocked,
                 }]
             };
             newSlots.push(newSlot);
@@ -190,15 +235,11 @@ export default function AddVenueSlots() {
                 }
             });
             if (response.data) {
-                Swal.fire({
-                    icon: "success",
-                    title: "Success!",
-                    text: "Slot added successfully",
-                })
+                Swal.fire({ icon: "success", title: offlineBlocked ? "Offline slot blocked" : "Slot added", timer: 1400, showConfirmButton: false })
                 fetchVenueSlots();
             }
         } catch (error) {
-            console.error("Error adding slot:", error);
+            
             Swal.fire({
                 icon: "error",
                 title: "Oops...",
@@ -208,18 +249,11 @@ export default function AddVenueSlots() {
 
         setShowModal(false);
 
-        setFormData({
-            dateFrom: "",
-            dateTo: "",
-            startTime: "",
-            price: "",
-            available: true,
-        });
+        setFormData((prev) => ({ ...prev, price: "" }));
     };
 
 
     const handleEventClick = (info) => {
-        // console.log('event click', info.event._def.extendedProps.isBooked);
         setSlotId(info.event._def.extendedProps.id)
         setUpdateFormData((prevData) => ({
             ...prevData,
@@ -229,15 +263,10 @@ export default function AddVenueSlots() {
         const event = info.event;
         setSelectedEvent(event);
         setNewPrice(event.extendedProps.price);
-        if (info.event._def.extendedProps.isBooked) {
-            setShowModal(false)
-        } else {
-            setShowModal(true);
-        }
+        setShowModal(true);
     };
 
     useEffect(() => {
-        // console.log(slotId, "slotId-=-=-=-")
 
         const fetchSlotById = async () => {
             try {
@@ -250,16 +279,16 @@ export default function AddVenueSlots() {
                     }
                 );
                 const slotData = response?.data?.data?.slot
-                // console.log(slotData, "response-=-=response");
                 setUpdateFormData((prevData) => ({
                     ...prevData,
                     startTime: slotData.startTime,
                     endTime: slotData.endTime,
                     isBooked: slotData.isBooked,
+                    isOfflineBlocked: Boolean(slotData.isOfflineBlocked),
                     price: slotData.price,
                 }));
             } catch (error) {
-                console.error("Error fetching slot:", error);
+                
             }
         };
 
@@ -269,19 +298,14 @@ export default function AddVenueSlots() {
 
     }, [slotId])
 
-    // console.log(selectedEvent, "selectedEvent-=-=-=-")
-    // console.log(showModal, "showModal-=-=-=-")
 
     const handleCloseModal = () => {
         setShowModal(false);
     };
 
-    // console.log(dateId,"date id-=-=-=-=-=")
-    // console.log(updateFormData, "update form data-=-=-=-")
 
     const handleSave = async () => {
         const payload = { slotsToUpdate: [updateFormData] };
-        // console.log(payload);
 
         try {
             // Make the PUT request using axios
@@ -296,11 +320,28 @@ export default function AddVenueSlots() {
                 }
             );
 
-            console.log("Successfully updated:", response.data);
+            
             setShowModal(false);
             fetchVenueSlots();
         } catch (error) {
-            console.error("Error updating slots:", error);
+            
+        }
+    };
+
+    const handleOfflineBlockToggle = async () => {
+        const isOfflineBlocked = !updateFormData.isOfflineBlocked;
+        try {
+            // Keep isBooked in sync for legacy availability queries which only
+            // understand this flag. isOfflineBlocked preserves the reason.
+            await axios.put(`${API_URL}/slot/update-add/${dateId}`, { slotsToUpdate: [{ ...updateFormData, isOfflineBlocked, isBooked: isOfflineBlocked }] }, {
+                headers: { Authorization: `Bearer ${localStorage.getItem("token")}`, 'Content-Type': 'application/json' },
+            });
+            setShowModal(false);
+            fetchVenueSlots();
+            Swal.fire({ icon: 'success', title: isOfflineBlocked ? 'Slot blocked' : 'Slot available', text: isOfflineBlocked ? 'Reserved for an offline booking.' : 'Customers can book this slot online.', timer: 1600, showConfirmButton: false });
+        } catch (error) {
+            
+            Swal.fire({ icon: 'error', title: 'Could not update slot', text: 'Please try again.' });
         }
     };
 
@@ -331,7 +372,7 @@ export default function AddVenueSlots() {
 
                 // Perform the API request and store the response
                 const response = await axios.put(`${API_URL}/slot/delete-by-slotid/${slotId}`, {});
-                console.log(response?.data.success)
+                
                 if (response?.data.success) {
                     Swal.close();
                     Swal.fire({
@@ -365,16 +406,37 @@ export default function AddVenueSlots() {
 
 
     return (
-        <div>
-            <div className="d-flex mb-4">
-                <h3 className="mb-0 title" style={{ marginRight: '30%' }}>Add Slots</h3>
-                <h1 className="mb-0 title">{venueName}</h1>
+        <div className="venue-slots-page">
+            <div className="venue-slots-header">
+                <div>
+                    <h3 className="mb-1 title">Manage slots</h3>
+                    <p className="venue-slots-help">{venueName || 'Loading venue...'}</p>
+                </div>
+                <div className="slot-legend"><span><i className="legend-available" />Available</span><span><i className="legend-booked" />Booked</span><span><i className="legend-blocked" />Offline block</span></div>
             </div>
 
-            <Container>
+            <p className="slot-action-hint">Click an empty 30-minute time to add a slot. Click an existing slot to change its price or block it for an offline booking.</p>
+
+            <Form className="quick-slot-form" onSubmit={(e) => { e.preventDefault(); handleAddSlot(false); }}>
+                <strong>Quick add</strong>
+                <Form.Control type="date" value={formData.dateFrom} onChange={handleQuickDateChange} required />
+                <Form.Select value={formData.startTime} onChange={(e) => setFormData((prev) => ({ ...prev, startTime: e.target.value, endTime: calculateEndTime(e.target.value) }))} required>
+                    <option value="">Start time</option>
+                    {halfHourTimes.map((time) => <option key={time} value={time}>{time}</option>)}
+                </Form.Select>
+                <Form.Select value={formData.endTime} onChange={(e) => setFormData((prev) => ({ ...prev, endTime: e.target.value }))} required aria-label="End time">
+                    <option value="">End time</option>
+                    {halfHourTimes.map((time) => <option key={time} value={time}>{time}</option>)}
+                </Form.Select>
+                <Form.Control type="number" min="0" placeholder="Price (₹)" value={formData.price} onChange={(e) => setFormData((prev) => ({ ...prev, price: e.target.value }))} required />
+                <Button variant="success" type="submit">Add Available</Button>
+                <Button variant="outline-danger" type="button" onClick={() => handleAddSlot(true)}>Block Offline</Button>
+            </Form>
+
+            <Container fluid className="venue-calendar-card">
                 <FullCalendar
                     plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-                    initialView="timeGridWeek"
+                    initialView="timeGridDay"
                     events={mapSlotsToEvents()}
                     eventClick={handleEventClick}
                     dateClick={handleDateClick}
@@ -384,17 +446,20 @@ export default function AddVenueSlots() {
                         right: 'dayGridMonth,timeGridWeek,timeGridDay',
                     }}
                     editable={true}
-                    slotDuration="01:00:00"
+                    slotDuration="00:30:00"
+                    slotLabelInterval="00:30:00"
+                    snapDuration="00:30:00"
                     allDaySlot={false}
                     eventContent={(arg) => {
                         const { event } = arg;
                         const startTime = event.start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                         const endTime = event.end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                        const slotLabel = event.extendedProps.isOfflineBlocked ? 'Offline blocked' : (event.extendedProps.isBooked ? 'Booked online' : event.title);
 
                         return {
                             html: `
                                 <div style="font-size: 12px; font-weight: bold;">
-                                    <div>${event.title}</div>
+                                    <div>${slotLabel}</div>
                                     <div>${startTime} - ${endTime}</div>
                                 </div>
                             `,
@@ -412,11 +477,11 @@ export default function AddVenueSlots() {
                 />
             </Container>
 
-            <Modal show={showModal} onHide={handleCloseModal}>
+            <Modal show={showModal} onHide={handleCloseModal} centered>
                 {
                     slotId ? (<>
                         <Modal.Header closeButton>
-                            <Modal.Title>{'Edit Slot Price'}</Modal.Title>
+                            <Modal.Title>Manage slot</Modal.Title>
                         </Modal.Header>
                         <Modal.Body>
                             <Form>
@@ -449,16 +514,23 @@ export default function AddVenueSlots() {
                                         onChange={handleUpdateChange}
                                     />
                                 </Form.Group>
+                                <div className={`offline-block-status ${updateFormData.isOfflineBlocked ? 'is-blocked' : ''}`}>
+                                    <strong>{updateFormData.isOfflineBlocked ? 'Blocked for offline booking' : (updateFormData.isBooked ? 'Already booked online' : 'Available online')}</strong>
+                                    <span>{updateFormData.isOfflineBlocked ? 'Customers cannot book this slot online.' : (updateFormData.isBooked ? 'This slot cannot be changed while its online booking is active.' : 'Reserve it instantly for a walk-in or phone booking.')}</span>
+                                </div>
                             </Form>
                         </Modal.Body>
                         <Modal.Footer>
-                            <Button variant="primary" type='button' onClick={handleDelete}>
+                            <Button variant="outline-danger" type='button' onClick={handleDelete}>
                                 Delete
                             </Button>
                             <Button variant="secondary" onClick={handleCloseModal}>
                                 Close
                             </Button>
-                            <Button variant="primary" type='button' onClick={handleSave}>
+                            {(!updateFormData.isBooked || updateFormData.isOfflineBlocked) && <Button variant={updateFormData.isOfflineBlocked ? "outline-success" : "danger"} type='button' onClick={handleOfflineBlockToggle}>
+                                {updateFormData.isOfflineBlocked ? 'Make Available' : 'Block for Offline Booking'}
+                            </Button>}
+                            <Button variant="primary" type='button' onClick={handleSave} disabled={updateFormData.isBooked}>
                                 Save Changes
                             </Button>
                         </Modal.Footer>
@@ -497,6 +569,17 @@ export default function AddVenueSlots() {
                                             disabled={currentView !== 'dayGridMonth'}
                                         />
                                     </Form.Group>
+                                    <Form.Group controlId="formEndTime">
+                                        <Form.Label>End Time</Form.Label>
+                                        <Form.Select
+                                            name="endTime"
+                                            value={formData.endTime}
+                                            onChange={handleFormChange}
+                                        >
+                                            <option value="">Select end time</option>
+                                            {halfHourTimes.map((time) => <option key={time} value={time}>{time}</option>)}
+                                        </Form.Select>
+                                    </Form.Group>
                                     <Form.Group controlId="formPrice">
                                         <Form.Label>Price</Form.Label>
                                         <Form.Control
@@ -512,7 +595,7 @@ export default function AddVenueSlots() {
                                 <Button variant="secondary" onClick={handleCloseModal}>
                                     Close
                                 </Button>
-                                <Button variant="primary" type='button' onClick={handleAddSlot} disabled={!formData.price}>
+                                <Button variant="primary" type='button' onClick={() => handleAddSlot(false)} disabled={!formData.price || !formData.startTime || !formData.endTime}>
                                     Add Slot
                                 </Button>
                             </Modal.Footer>

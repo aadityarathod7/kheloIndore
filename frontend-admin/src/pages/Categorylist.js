@@ -46,12 +46,12 @@ function Categorylist() {
       if (response.ok) {
         setData(result.categories);
       } else {
-        console.error('Failed to fetch data:', result.error);
+        
       }
 
       setLoading(false);
     } catch (error) {
-      console.error('Error fetching data:', error);
+      
       setLoading(false);
     }
   };
@@ -109,7 +109,7 @@ function Categorylist() {
   
 
   const handlePdf = async (row) => {
-    console.log('Info clicked for row:', row);
+    
     try {
       // Fetch detail data
       const detailResponse = await fetch(`${API_URL}/category/fetch-ind/${row._id}`);
@@ -118,10 +118,10 @@ function Categorylist() {
         setDetailData(detailResult.data);
         setPdfContent(generatePdfContent(detailResult.data));
       } else {
-        console.error('Failed to fetch detail data:', detailResult.error);
+        
       }
     } catch (error) {
-      console.error('Error fetching detail data:', error);
+      
     }
   };
 
@@ -129,7 +129,7 @@ function Categorylist() {
 
 
   const handleInfo = async (row) => {
-    console.log('Info clicked for row:', row);
+    
     try {
       // Fetch detail data
       const detailResponse = await fetch(`${API_URL}/category/fetch-ind/${row._id}`);
@@ -137,16 +137,16 @@ function Categorylist() {
       if (detailResponse.ok) {
         setDetailData(detailResult.data);
       } else {
-        console.error('Failed to fetch detail data:', detailResult.error);
+        
       }
     } catch (error) {
-      console.error('Error fetching detail data:', error);
+      
     }
   };
 
 
   const handleEdit = async (row) => {
-    console.log('Edit clicked for row:', row);
+    
     try {
       const response = await fetch(`${API_URL}/category/update/${row._id}`, {
         method: 'GET',
@@ -160,13 +160,13 @@ function Categorylist() {
         })
       });
       if (response.ok) {
-        console.log('Category name updated successfully');
+        
       } else {
         const responseData = await response.json();
-        console.error('Failed to update category name:', responseData.message || 'Unknown error');
+        
       }
     } catch (error) {
-      console.error('Error updating category name:', error);
+      
     }
   };
 
@@ -185,11 +185,11 @@ function Categorylist() {
         Swal.fire('Deactivated!', 'Category has been Deactivated.', 'success');
         fetchData();
       } else {
-        console.error('Failed to delete category:', response.statusText);
+        
         Swal.fire('Error', 'Failed to delete category.', 'error');
       }
     } catch (error) {
-      console.error('Error deleting category:', error);
+      
       Swal.fire('Error', 'An error occurred while deleting the category.', 'error');
     }
   };

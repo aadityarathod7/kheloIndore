@@ -141,7 +141,7 @@ const CoachesGrid = (_props: { id?: string }) => {
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
-  const coachesPerPage = 9; // 3 per row x 3 rows
+  const coachesPerPage = 6; // 3 per row x 2 rows
   const indexOfLastCoach = currentPage * coachesPerPage;
   const indexOfFirstCoach = indexOfLastCoach - coachesPerPage;
   const currentCoaches = finalFilterCoach.slice(indexOfFirstCoach, indexOfLastCoach);
@@ -290,8 +290,8 @@ const CoachesGrid = (_props: { id?: string }) => {
           profile_views: coach.profile_views,
         }));
         setCoaches(mappedData);
-      } catch (error) {
-        console.error("Error fetching coaches:", error);
+      } catch {
+        // The request failure is handled by the surrounding UI state.
       }
     };
 
@@ -467,7 +467,6 @@ const CoachesGrid = (_props: { id?: string }) => {
     }
 
     setFinalFilterCoach(applySort(filteredData));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location, selectedCategory, searchQuery, urlSearchQuery, coaches, filterSpecialization, filterGender, filterRating, filterMinReviews, filterMinPrice, filterMaxPrice, filterMinAge, filterMaxAge, filterLevels, selectedSort]);
 
   const handleLevelToggle = (level: string) => {

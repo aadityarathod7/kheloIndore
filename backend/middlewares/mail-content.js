@@ -1501,7 +1501,7 @@ exports.bookingRejectionTemplate = (
 exports.bookingRejectionTemplate1 = (
   user, venueName, rejection_message,userRole 
 ) => {
-  console.log(user, venueName, rejection_message,userRole ,"user, venueName, rejection_message,userRole ")
+  
   const mailcontent = `
     <!DOCTYPE html>
 <html lang="en">

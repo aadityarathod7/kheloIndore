@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
@@ -16,9 +16,11 @@ import {
 } from "react-icons/fa";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { Outlet } from "react-router-dom";
-import { Layout, ConfigProvider, theme } from "antd";
-import { useEffect, useRef } from "react";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Layout, ConfigProvider } from "antd";
+import logoImage from "../Khelo Indore Logo/logo.png";
+import Userlogo from "../Khelo Indore Logo/dashboard_user.jpg";
+import "../../src/MainLayout.css";
 
 // Auto-logout after 15 minutes of inactivity
 const useAutoLogout = () => {
@@ -46,13 +48,6 @@ const useAutoLogout = () => {
     };
   }, []);
 };
-import { useNavigate, useLocation } from "react-router-dom";
-import logoImage from "../Khelo Indore Logo/logo.png";
-import Userlogo from "../Khelo Indore Logo/dashboard_user.jpg";
-import "../../src/MainLayout.css";
-import axios from "axios";
-import Swal from "sweetalert2";
-
 const { Header, Content } = Layout;
 
 const SIDEBAR_W = 240;
@@ -61,11 +56,15 @@ const SIDEBAR_COLLAPSED_W = 72;
 /* ── Sidebar menu definition ─────────────────────────────── */
 const buildMenu = (role) => {
   const items = [];
+  if (["Venue Admin", "Coach", "Personal Trainer"].includes(role)) {
+    items.push({ key: "dashboard", icon: <AiOutlineDashboard />, label: "Dashboard" });
+  }
   if (role === "Super Admin") {
     items.push(
       { key: "dashboard", icon: <AiOutlineDashboard />, label: "Dashboard" },
       { key: "enquiries", icon: <FaQuestionCircle />, label: "Enquiries" },
       { key: "blog", icon: <FaBlog />, label: "Blog" },
+      { key: "events", icon: <FaCalendarAlt />, label: "Events" },
       { key: "users", icon: <RiUserLine />, label: "Users" }
     );
   }
@@ -226,8 +225,8 @@ const S = {
 
 const MainLayout = () => {
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [hoveredKey, setHoveredKey] = useState(null);
-  const { token: { colorBgContainer } } = theme.useToken();
   const navigate = useNavigate();
   const location = useLocation();
   // Auto-logout after 15 minutes of inactivity
@@ -236,12 +235,26 @@ const MainLayout = () => {
     location.pathname.split("/").filter(Boolean).pop() || "dashboard";
   const role = localStorage.getItem("role");
   const menuItems = buildMenu(role);
+  const isMobile = typeof window !== "undefined" && window.innerWidth <= 768;
+
+  useEffect(() => {
+    const closeOnDesktop = () => {
+      if (window.innerWidth > 768) setMobileMenuOpen(false);
+    };
+    window.addEventListener("resize", closeOnDesktop);
+    return () => window.removeEventListener("resize", closeOnDesktop);
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("id");
     localStorage.removeItem("role");
     navigate("/");
+  };
+
+  const navigateTo = (key) => {
+    navigate(key);
+    setMobileMenuOpen(false);
   };
 
   return (
@@ -251,9 +264,20 @@ const MainLayout = () => {
         components: { Layout: { bodyBg: "#F8FAFC", headerBg: "#ffffff" } },
       }}
     >
-      <div style={{ display: "flex", minHeight: "100vh" }}>
+      <div className="admin-shell" style={{ display: "flex", minHeight: "100vh" }}>
         {/* ── Custom Sidebar ──────────────────────────────── */}
-        <aside style={S.sidebar(collapsed)}>
+        {mobileMenuOpen && (
+          <button
+            className="admin-mobile-backdrop"
+            aria-label="Close navigation menu"
+            onClick={() => setMobileMenuOpen(false)}
+          />
+        )}
+        <aside
+          className={`admin-sidebar${mobileMenuOpen ? " is-mobile-open" : ""}`}
+          aria-label="Admin navigation"
+          style={S.sidebar(collapsed)}
+        >
           {/* Logo */}
           <div style={S.logoArea}>
             {collapsed ? (
@@ -286,7 +310,8 @@ const MainLayout = () => {
               const active = currentKey === item.key;
               const hovered = hoveredKey === item.key && !active;
               return (
-                <div
+                <button
+                  type="button"
                   key={item.key}
                   style={{
                     ...S.navItem(active, collapsed),
@@ -297,21 +322,22 @@ const MainLayout = () => {
                       : "transparent",
                     color: hovered ? "#097e52" : active ? "#fff" : "#475569",
                   }}
-                  onClick={() => navigate(item.key)}
+                  onClick={() => navigateTo(item.key)}
                   onMouseEnter={() => setHoveredKey(item.key)}
                   onMouseLeave={() => setHoveredKey(null)}
                   title={collapsed ? item.label : ""}
                 >
                   <span style={S.navIcon(active || hovered)}>{item.icon}</span>
                   {!collapsed && <span style={S.navLabel}>{item.label}</span>}
-                </div>
+                </button>
               );
             })}
 
             <div style={S.divider} />
 
             {/* Logout button inside nav */}
-            <div
+            <button
+              type="button"
               style={{
                 ...S.navItem(false, collapsed),
                 color: "#EF4444",
@@ -332,7 +358,7 @@ const MainLayout = () => {
                 <LogoutOutlined />
               </span>
               {!collapsed && <span style={S.navLabel}>Sign Out</span>}
-            </div>
+            </button>
           </nav>
 
           {/* User info at bottom */}
@@ -349,6 +375,7 @@ const MainLayout = () => {
 
         {/* ── Main Content ────────────────────────────────── */}
         <Layout
+          className="admin-main-layout"
           style={{
             marginLeft: collapsed ? SIDEBAR_COLLAPSED_W : SIDEBAR_W,
             transition: "margin-left 0.25s ease",
@@ -357,6 +384,7 @@ const MainLayout = () => {
         >
           {/* Top Header */}
           <Header
+            className="admin-topbar"
             style={{
               background: "#fff",
               padding: "0 24px",
@@ -374,7 +402,9 @@ const MainLayout = () => {
             <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
               {/* Collapse toggle */}
               <button
-                onClick={() => setCollapsed(!collapsed)}
+                aria-label={isMobile ? (mobileMenuOpen ? "Close navigation menu" : "Open navigation menu") : (collapsed ? "Expand navigation" : "Collapse navigation")}
+                aria-expanded={isMobile ? mobileMenuOpen : !collapsed}
+                onClick={() => isMobile ? setMobileMenuOpen(!mobileMenuOpen) : setCollapsed(!collapsed)}
                 style={{
                   background: "none",
                   border: "none",
@@ -413,6 +443,7 @@ const MainLayout = () => {
 
           {/* Page Content */}
           <Content
+            className="admin-page-content"
             style={{
               margin: "24px",
               padding: 24,

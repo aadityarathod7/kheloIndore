@@ -1,23 +1,41 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import ImageWithBasePath from "../../core/data/img/ImageWithBasePath";
 import { all_routes } from "../router/all_routes";
 import axios from "axios";
 import { API_URL, IMG_URL } from "../../ApiUrl";
 import { jwtDecode } from "jwt-decode";
 import Swal from "sweetalert2";
-import Select from "react-select";
+import Select, { type SingleValue, type StylesConfig } from "react-select";
 
-interface UserData {
+interface ProfileImage {
+  src?: string;
+}
+
+interface ProfileData {
   email: string;
   first_name: string;
   last_name: string;
-  mobile: number;
-  profile_image: any;
+  mobile: string;
+  address: string;
+  state: string;
+  city: string;
+  zipcode: string;
+  user_info: string;
+  profile_image: ProfileImage[];
 }
 
 interface JwtPayload {
-  userID: number;
+  userID: string | number;
+}
+
+interface SelectOption {
+  value: string;
+  label: string;
+}
+
+interface UploadResponse {
+  status: boolean;
+  file_data: string;
 }
 
 const UserProfile = () => {
@@ -26,10 +44,10 @@ const UserProfile = () => {
   const location = useLocation();
   const isFirstTime = location.state?.firstTime || localStorage.getItem("profileCompleted") === "false";
   const [userDataId, setUserDataId] = useState<JwtPayload | null>(null);
-  const [uploadedFileUrl, setUploadedFileUrl] = useState<any>(null);
+  const [uploadedFileUrl, setUploadedFileUrl] = useState<string | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [userId, setUserId] = useState<number | null>(null);
-  const [userData, setUserData] = useState<any>({
+  const [userId, setUserId] = useState<string | null>(null);
+  const [userData, setUserData] = useState<ProfileData>({
     first_name: "",
     last_name: "",
     email: "",
@@ -42,9 +60,9 @@ const UserProfile = () => {
     profile_image: [],
   });
 
-  const handleInputChange = (e: any) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setUserData((prevData: any) => ({
+    setUserData((prevData) => ({
       ...prevData,
       [name]: value,
     }));
@@ -62,22 +80,21 @@ const UserProfile = () => {
   }, []);
 
   useEffect(() => {
-    const user_id: any = userDataId?.userID;
-    setUserId(user_id);
+    setUserId(userDataId ? String(userDataId.userID) : null);
   }, [userDataId]);
 
   useEffect(() => {
     const fetchUser = async () => {
       if (!userId) return;
       try {
-        const response = await axios.get(
+        const response = await axios.get<{ data?: ProfileData }>(
           `${API_URL}/user/fetch-user-by-id/${userId}`
         );
         if (response.data?.data) {
           setUserData(response.data.data);
         }
-      } catch (error) {
-        console.error("Error fetching user data:", error);
+      } catch {
+        // Keep the current form values when the profile cannot be loaded.
       }
     };
     fetchUser();
@@ -124,7 +141,7 @@ const UserProfile = () => {
     formData.append("uploadFile", file);
 
     try {
-      const response: any = await axios.post(
+      const response = await axios.post<UploadResponse>(
         `${API_URL}/upload-file?types=user`,
         formData
       );
@@ -158,7 +175,6 @@ const UserProfile = () => {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
 
   const handleSaveChange = async () => {
     if (!userData.first_name?.trim() || !userData.last_name?.trim() || !userData.email?.trim()) {
@@ -203,7 +219,7 @@ const UserProfile = () => {
         navigate("/");
       });
     } catch (err) {
-      console.error("Error:", err);
+      
       Swal.fire({
         icon: "error",
         title: "Update Failed",
@@ -265,22 +281,22 @@ const UserProfile = () => {
     { value: "Jaipur", label: "Jaipur" },
   ];
 
-  const handleSelectChange = (selectedOption: any) => {
-    setUserData((prevData: any) => ({
+  const handleSelectChange = (selectedOption: SingleValue<SelectOption>) => {
+    setUserData((prevData) => ({
       ...prevData,
       state: selectedOption ? selectedOption.value : "",
     }));
   };
 
-  const handleCitySelectChange = (selectedOption: any) => {
-    setUserData((prevData: any) => ({
+  const handleCitySelectChange = (selectedOption: SingleValue<SelectOption>) => {
+    setUserData((prevData) => ({
       ...prevData,
       city: selectedOption ? selectedOption.value : "",
     }));
   };
 
-  const customSelectStyles = {
-    control: (base: any, state: any) => ({
+  const customSelectStyles: StylesConfig<SelectOption, false> = {
+    control: (base, state) => ({
       ...base,
       minHeight: "38px",
       borderRadius: "8px",
@@ -293,26 +309,26 @@ const UserProfile = () => {
         borderColor: "#22C55E",
       },
     }),
-    valueContainer: (base: any) => ({
+    valueContainer: (base) => ({
       ...base,
       padding: "0 6px",
     }),
-    input: (base: any) => ({
+    input: (base) => ({
       ...base,
       margin: 0,
       padding: 0,
     }),
-    placeholder: (base: any) => ({
+    placeholder: (base) => ({
       ...base,
       color: "#94A3B8",
       fontSize: "13px",
     }),
-    singleValue: (base: any) => ({
+    singleValue: (base) => ({
       ...base,
       color: "#0F172A",
       fontSize: "13px",
     }),
-    option: (base: any, state: any) => ({
+    option: (base, state) => ({
       ...base,
       fontSize: "13px",
       backgroundColor: state.isSelected
@@ -678,7 +694,6 @@ const UserProfile = () => {
                 <div className="mt-4 pt-3 border-top d-flex align-items-center justify-content-between">
                   <div>
                     {error && <span className="text-danger font-weight-bold" style={{ fontSize: "13px" }}>{error}</span>}
-                    {success && <span className="text-success font-weight-bold" style={{ fontSize: "13px" }}>{success}</span>}
                   </div>
                   <button
                     type="button"

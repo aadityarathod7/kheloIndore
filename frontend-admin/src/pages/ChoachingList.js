@@ -63,12 +63,12 @@ function Coachlist() {
         setData(result.data);
 
       } else {
-        console.error('Failed to fetch data:', result.error);
+        
       }
 
       setLoading(false);
     } catch (error) {
-      console.error('Error fetching data:', error);
+      
       setLoading(false);
     }
   };
@@ -85,7 +85,7 @@ function Coachlist() {
 
       setCsvData(formattedData);
     } else {
-      console.error('Data is not an array:', data);
+      
     }
   };
 
@@ -136,7 +136,7 @@ function Coachlist() {
       });
       fetchData();
     } catch (error) {
-      console.error("Error updating the coach:", error);
+      
     }
   }
 
@@ -152,10 +152,10 @@ function Coachlist() {
         setDetailData(detailResult.data);
         setPdfContent(generatePdfContent(detailResult.data));
       } else {
-        console.error('Failed to fetch detail data:', detailResult.error);
+        
       }
     } catch (error) {
-      console.error('Error fetching detail data:', error);
+      
     }
   };
 
@@ -168,10 +168,10 @@ function Coachlist() {
       if (detailResponse.ok) {
         setDetailData(detailResult.data);
       } else {
-        console.error('Failed to fetch detail data:', detailResult.error);
+        
       }
     } catch (error) {
-      console.error('Error fetching detail data:', error);
+      
     }
   };
 
@@ -189,10 +189,10 @@ function Coachlist() {
       if (response.ok) {
       } else {
         const responseData = await response.json();
-        console.error('Failed to update category name:', responseData.message || 'Unknown error');
+        
       }
     } catch (error) {
-      console.error('Error updating category name:', error);
+      
     }
   };
 
@@ -211,11 +211,11 @@ function Coachlist() {
         Swal.fire('Deactivated!', 'Coach Profile has been Deactivated.', 'success');
         fetchData();
       } else {
-        console.error('Failed to delete category:', response.statusText);
+        
         Swal.fire('Error', 'Failed to delete category.', 'error');
       }
     } catch (error) {
-      console.error('Error deleting category:', error);
+      
       Swal.fire('Error', 'An error occurred while deleting the category.', 'error');
     }
   };
@@ -267,9 +267,9 @@ function Coachlist() {
       }
 
       const data = await response.json();
-      console.log(data);
+      
     } catch (error) {
-      console.error('Error updating status:', error);
+      
     }
   };
 
@@ -287,7 +287,7 @@ function Coachlist() {
       if (result.isConfirmed) {
         updateStatus(status, coachId);
       } else {
-        console.log('Action canceled');
+        
       }
     });
   };
@@ -322,7 +322,7 @@ function Coachlist() {
           Swal.fire("Error", `Failed to update Coach admin access.`, "error");
         }
       } catch (error) {
-        console.error(`Error updating Coach admin access:`, error);
+        
         Swal.fire("Error", `An error occurred while updating Coach admin access.`, "error");
       }
     } else {
@@ -332,7 +332,7 @@ function Coachlist() {
   };
 
 
-  console.log(data, "data")
+  
 
 
 

@@ -45,7 +45,7 @@ const VenueAdminCRM = () => {
           : res.data?.venues || res.data?.data || [];
         setVenues(data);
       } catch (error) {
-        console.error("Error fetching venues:", error);
+        
       }
     };
     fetchVenues();
@@ -65,7 +65,7 @@ const VenueAdminCRM = () => {
         const data = res.data?.slots || res.data?.data || [];
         setSlots(data);
       } catch (error) {
-        console.error("Error fetching slots:", error);
+        
       } finally {
         setLoadingSlots(false);
       }

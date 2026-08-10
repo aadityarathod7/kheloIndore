@@ -72,6 +72,57 @@
   vertical-align: middle !important;
 }
 
+/* Keep data-heavy admin tables readable. They scroll horizontally instead of
+   compressing long names, dates, and slot ranges into one character per line. */
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.table-container .custom-table {
+  min-width: 1280px;
+  width: 100%;
+  table-layout: auto;
+}
+.table-container .custom-table th,
+.table-container .custom-table td {
+  white-space: nowrap;
+}
+.admin-bookings-table .admin-booking-user,
+.admin-bookings-table .admin-booking-venue {
+  min-width: 190px;
+  max-width: 280px;
+  white-space: normal !important;
+  line-height: 1.45;
+  font-weight: 600;
+}
+.admin-bookings-table .admin-booking-slots {
+  min-width: 220px;
+  max-width: 300px;
+  white-space: normal !important;
+  line-height: 1.55;
+  color: #475569 !important;
+}
+.admin-bookings-table .admin-booking-status {
+  min-width: 120px;
+}
+.admin-bookings-table .admin-booking-actions {
+  min-width: 125px;
+}
+.admin-bookings-table .edit_icon,
+.admin-bookings-table .delete_icon {
+  margin-top: 8px;
+  margin-right: 12px;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  .table-container .custom-table {
+    min-width: 1100px;
+  }
+}
+
 /* ── Action Buttons ─────────────────────────────────────── */
 .btn-edit,
 .btn-action-edit {

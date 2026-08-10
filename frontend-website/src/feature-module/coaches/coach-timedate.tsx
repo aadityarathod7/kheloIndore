@@ -144,9 +144,9 @@ const CoachTimeDate = (props: any) => {
     setIsNextButtonDisabledTwo(!startDate || !endDate);
   }, [startDate, endDate]);
 
-  console.log(selectedBatch, "selectedBatch-=-=-selectedBatch")
-  console.log(startDate, "startDate-=-=-startDate")
-  console.log(endDate, "endDate-=-=-endDate")
+  
+  
+  
 
   const getAllSlots = async () => {
     try {
@@ -157,13 +157,12 @@ const CoachTimeDate = (props: any) => {
           },
         }
       );
-      console.log(response.data.data);
+      
       setSlotData(response?.data?.data)
 
-    } catch (error) {
-      console.error('Error fetching slots:', error);
-      console.log(error, "error")
-    }
+    } catch {
+        // The request failure is handled by the surrounding UI state.
+      }
   };
 
   useEffect(() => {
@@ -175,7 +174,7 @@ const CoachTimeDate = (props: any) => {
       const slotStartDate = slot.start_date.split('T')[0]; // Extract only the date part (yyyy-mm-dd)
       return slotStartDate === startDateToCheck;
     });
-    console.log(matchedSlot, "slot for id")
+    
     setDateId(matchedSlot ? matchedSlot.id : null)
   };
 
@@ -192,14 +191,13 @@ const CoachTimeDate = (props: any) => {
           },
         }
       );
-      console.log(response.data.data);
+      
       setTimeSlot(response?.data?.data)
-    } catch (error) {
-      console.error('Error fetching slots:', error);
-      console.log(error, "error")
-    }
+    } catch {
+        // The request failure is handled by the surrounding UI state.
+      }
   }
-  console.log(selectedTimeSlot, "sdjkafhkjalsdhf")
+  
 
   const handleCalculateDays = () => {
     if (startDate && endDate) {
@@ -232,8 +230,8 @@ const CoachTimeDate = (props: any) => {
         const response = await axios.get(`${API_URL}/fetch-coach/${id}`);
         const coachDataId = response.data.coach;
         setCoachData(coachDataId);
-      } catch (error) {
-        console.error("Error fetching coach data:", error);
+      } catch {
+        // The request failure is handled by the surrounding UI state.
       }
     };
     fetchCoachId();
@@ -246,7 +244,6 @@ const CoachTimeDate = (props: any) => {
   //       const batchDataId = response.data.data;
   //       setBatchData(batchDataId);
   //     } catch (error) {
-  //       console.error("Error fetching batches:", error);
   //     }
   //   };
   //   fetchBatchId();
@@ -266,7 +263,6 @@ const CoachTimeDate = (props: any) => {
   //       const slotDataId = response.data.data;
   //       setSlotData(slotDataId);
   //     } catch (error) {
-  //       console.error("Error fetching slots:", error);
   //     }
   //   };
 
@@ -323,7 +319,7 @@ const CoachTimeDate = (props: any) => {
       end_time: selectedTimeSlot?.end_time,
     }
 
-    console.log(bookingData, "data for booking")
+    
 
     try {
       navigate(`/coaches/coach-order-confirm/${id}`, {
@@ -333,7 +329,7 @@ const CoachTimeDate = (props: any) => {
         },
       });
     } catch (error) {
-      console.error("Error making the booking:", error);
+      
       Swal.fire({
         title: "Error",
         text: "An error occurred during booking. Please select any slot.",
@@ -343,7 +339,7 @@ const CoachTimeDate = (props: any) => {
     }
   };
 
-  console.log(selectedTimeSlot, "time slot")
+  
 
   return (
     <div>

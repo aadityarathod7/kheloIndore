@@ -101,6 +101,25 @@ const ALLOWED_ORIGINS = new Set([
   "https://qa.kheloindore.in",
 ]);
 
+// During local development, allow browsers on the same private LAN (for
+// example a phone viewing http://192.168.x.x:3000). Production still uses the
+// explicit allow-list above.
+const isPrivateLanOrigin = (origin) => {
+  if (process.env.NODE_ENV === "production") return false;
+
+  try {
+    const { protocol, hostname } = new URL(origin);
+    if (protocol !== "http:") return false;
+    return (
+      /^10\./.test(hostname) ||
+      /^192\.168\./.test(hostname) ||
+      /^172\.(1[6-9]|2\d|3[01])\./.test(hostname)
+    );
+  } catch {
+    return false;
+  }
+};
+
 // Allow extending the origin list via env without a code deploy
 // (comma-separated, e.g. CORS_ORIGINS=https://admin.kheloindore.in,https://staging.kheloindore.in)
 if (process.env.CORS_ORIGINS) {
@@ -112,7 +131,7 @@ if (process.env.CORS_ORIGINS) {
 
 const corsOptions = (req, callback) => {
   const origin = req.headers.origin;
-  if (!origin || ALLOWED_ORIGINS.has(origin)) {
+  if (!origin || ALLOWED_ORIGINS.has(origin) || isPrivateLanOrigin(origin)) {
     callback(null, { origin: origin ? true : false, credentials: true });
   } else {
     // Disallow unknown origins (no CORS headers returned -> browser blocks)

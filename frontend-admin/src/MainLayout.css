@@ -75,3 +75,202 @@
 @media (max-width: 768px) {
   .sidelogo { height: 56px; }
 }
+
+/* Shared responsive admin shell */
+.admin-shell {
+  min-width: 0;
+  background: #f4f7fb;
+  color: #172033;
+}
+
+.admin-main-layout {
+  min-width: 0;
+  min-height: 100vh;
+}
+
+.admin-topbar {
+  min-width: 0;
+}
+
+.admin-page-content {
+  width: auto;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: visible;
+}
+
+.admin-page-content .title,
+.admin-page-content h1,
+.admin-page-content h2,
+.admin-page-content h3 {
+  color: #14213a;
+  letter-spacing: -0.025em;
+}
+
+.admin-page-content .title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: clamp(22px, 2vw, 28px);
+  font-weight: 750;
+  margin-bottom: 22px !important;
+}
+
+.admin-page-content .cnt,
+.admin-page-content .list-page-wrapper {
+  min-width: 0;
+}
+
+.admin-page-content .table-container,
+.admin-page-content .table-responsive {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  border: 1px solid #e5ebf2;
+  border-radius: 14px;
+  background: #ffffff;
+  -webkit-overflow-scrolling: touch;
+}
+
+.admin-page-content .table-container > .table,
+.admin-page-content .table-responsive > .table {
+  margin-bottom: 0;
+}
+
+.admin-page-content .table {
+  min-width: 900px;
+  table-layout: auto;
+  color: #26344d;
+  font-size: 14px;
+}
+
+.admin-page-content .table thead th {
+  padding: 14px 16px;
+  background: #f0f7f3;
+  color: #39506f;
+  border-bottom: 1px solid #dce8e1;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.admin-page-content .table tbody td {
+  padding: 15px 16px;
+  border-color: #edf1f5;
+  vertical-align: middle;
+  white-space: normal;
+  line-height: 1.45;
+}
+
+.admin-page-content .table tbody tr:hover {
+  background: #f8fcf9;
+}
+
+.admin-page-content .form-control,
+.admin-page-content .form-select,
+.admin-page-content .ant-input,
+.admin-page-content .ant-select-selector {
+  min-height: 42px;
+  border-radius: 10px !important;
+  border-color: #dce4ed !important;
+  box-shadow: none !important;
+}
+
+.admin-page-content .form-control:focus,
+.admin-page-content .form-select:focus,
+.admin-page-content .ant-input:focus,
+.admin-page-content .ant-input-focused {
+  border-color: #14a44d !important;
+  box-shadow: 0 0 0 3px rgba(20, 164, 77, .12) !important;
+}
+
+.admin-page-content .btn,
+.admin-page-content .down-button,
+.admin-page-content .ant-btn {
+  border-radius: 9px;
+  font-weight: 700;
+}
+
+.admin-page-content .btn-success,
+.admin-page-content .down-button {
+  background: #0b8f4b;
+  border-color: #0b8f4b;
+}
+
+.admin-page-content .btn-danger {
+  background: #dc3545;
+  border-color: #dc3545;
+}
+
+.admin-page-content .ant-pagination {
+  margin-top: 20px;
+}
+
+.admin-page-content .ant-pagination-item-active {
+  border-color: #0b8f4b;
+}
+
+.admin-page-content .ant-pagination-item-active a {
+  color: #0b8f4b;
+}
+
+@media (max-width: 768px) {
+  .admin-main-layout {
+    margin-left: 0 !important;
+  }
+
+  .admin-sidebar {
+    width: min(280px, calc(100vw - 40px)) !important;
+    transform: translateX(-105%);
+    transition: transform .25s ease, width .25s ease !important;
+    box-shadow: 10px 0 28px rgba(15, 23, 42, .2);
+  }
+
+  .admin-sidebar.is-mobile-open { transform: translateX(0); }
+
+  .admin-mobile-backdrop {
+    position: fixed;
+    z-index: 99;
+    inset: 0;
+    width: 100%;
+    min-height: 100vh;
+    border: 0;
+    background: rgba(15, 23, 42, .42);
+  }
+
+  .admin-topbar {
+    padding: 0 14px !important;
+  }
+
+  .admin-page-content {
+    margin: 12px !important;
+    padding: 16px !important;
+    min-height: calc(100vh - 88px) !important;
+    border-radius: 12px !important;
+  }
+
+  .admin-page-content .title {
+    font-size: 22px;
+    margin-bottom: 16px !important;
+  }
+
+  .admin-page-content .table {
+    min-width: 760px;
+  }
+}
+
+.admin-sidebar button {
+  width: 100%;
+  border: 0;
+  text-align: left;
+}
+
+.admin-sidebar button:focus-visible,
+.admin-topbar button:focus-visible {
+  outline: 3px solid #34d399;
+  outline-offset: -3px;
+}

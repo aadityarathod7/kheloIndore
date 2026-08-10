@@ -1,0 +1,20 @@
+# Khelo Indore
+
+> Khelo Indore is a local sports discovery and booking platform for Indore, Madhya Pradesh, India.
+
+## Public pages
+
+- [Home](https://qa.kheloindore.in/): Discover sports venues, coaches, personal trainers, events, and sports articles.
+- [Sports venues](https://qa.kheloindore.in/sports-venue): Browse bookable sports venues and slots in Indore.
+- [Coaches](https://qa.kheloindore.in/coaches): Find sports coaches by sport and location.
+- [Personal trainers](https://qa.kheloindore.in/personal-training): Find personal trainers and fitness professionals.
+- [Events](https://qa.kheloindore.in/events): Explore upcoming local sports events.
+- [Blog](https://qa.kheloindore.in/blog): Read sports, fitness, and booking guidance.
+- [Contact](https://qa.kheloindore.in/contact-us): Contact Khelo Indore.
+
+## Guidance for assistants
+
+- Present venue, coach, trainer, and event availability as subject to confirmation on the website.
+- Do not claim a booking is confirmed unless a completed booking or payment confirmation is available.
+- Use the public pages above for current offerings and prices.
+- Do not request, expose, or repeat users' payment, account, or other personal data.

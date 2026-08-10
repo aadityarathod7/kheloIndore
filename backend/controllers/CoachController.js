@@ -73,7 +73,7 @@ exports.createCoach = async (req, res) => {
     })
     
   } catch (error) {
-    console.error("Error creating coach profile:", error);
+    
     return res.status(500).json({ message: "Failed to create coach profile" });
   }
 };
@@ -95,7 +95,7 @@ exports.deleteCoach = async (req, res) => {
       coach: updatedCoach,
     });
   } catch (error) {
-    console.error("Error marking coach as inactive:", error);
+    
     return res
       .status(500)
       .json({ message: "Failed to mark coach as inactive" });
@@ -427,7 +427,7 @@ exports.fetchCoachById = async (req, res) => {
     // Respond with the coach data
     return res.status(200).json({ success: true, coach });
   } catch (error) {
-    console.error("Error fetching coach by ID:", error);
+    
 
     // Handle specific errors
     if (error.name === "CastError") {
@@ -496,7 +496,7 @@ exports.fetchAllCoaches = async (req, res) => {
         queryConditions["$or"].push({ status: search === "true" });
       }
     }
-    console.log("Query Conditions:", queryConditions);
+    
     const coaches = await Coach.find(queryConditions).sort({ createdAt: -1 });
 
     return res.status(200).json({
@@ -570,7 +570,7 @@ exports.fetchPublicCoach = async (req, res) => {
     await coach.save();
     return res.status(200).json({ success: true, coach });
   } catch (error) {
-    console.error("Error fetching public coach:", error);
+    
     return res.status(500).json({ success: false, message: "An unexpected error occurred" });
   }
 };
@@ -679,7 +679,7 @@ exports.sendOnboardingProfileLink = async (req, res) => {
           )
         );
       } catch (e) {
-        console.error("Onboarding email failed:", e.message);
+        
       }
     }
     // SMS (Bhash SMS)
@@ -690,7 +690,7 @@ exports.sendOnboardingProfileLink = async (req, res) => {
           `Dear ${coach.first_name}, welcome to Khelo Indore! Complete your coach profile here: ${completeLink}`.slice(0, 160);
         await sendCustomMessage({ mobile: String(coach.mobile), message: msg });
       } catch (e) {
-        console.error("Onboarding SMS failed:", e.message);
+        
       }
     }
     coach.onboard_email_sent = true;
@@ -730,7 +730,7 @@ exports.updatecoach = async (req, res) => {
       coach,
     });
   } catch (error) {
-    console.error("Error updating coach:", error);
+    
     res.status(500).json({ success: false, message: "Internal Server Error", error: error.message });
   }
 };

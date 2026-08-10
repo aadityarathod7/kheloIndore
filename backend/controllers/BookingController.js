@@ -75,7 +75,7 @@ exports.addManualBooking = async (req, res) => {
       const slotID = slot._id.toString();
       if (slotsBooked.includes(slotID)) {
         total_price += slot.price || 0;
-        if (slot.isBooked) {
+        if (slot.isBooked || slot.isOfflineBlocked) {
           return res.status(400).json({
             success: false,
             message: `The Slot ${slot.startTime} to ${slot.endTime} is Already Booked, Book another Slot`,
@@ -131,7 +131,7 @@ exports.addManualBooking = async (req, res) => {
       data: populatedBooking,
     });
   } catch (error) {
-    console.error(error);
+    
     return res.status(500).json({ success: false, message: "Failed to add manual booking", error: error.message });
   }
 };
@@ -179,7 +179,7 @@ if(slots1.length===0){
 
    if (slotsBooked.includes(slotID)) {
     total_price+=slot.price;
-     if (slot.isBooked) {
+     if (slot.isBooked || slot.isOfflineBlocked) {
        return res.status(400).json({
          success: false,
          message: `The Slot ${slot.startTime} to ${slot.endTime} is Already Booked, Book another Slot->>>`,
@@ -212,7 +212,7 @@ if(slots1.length===0){
     for (let slot of slotsArray) {
       const slotID = slot._id.toString();
       if (slotsBooked.includes(slotID)) {
-        if (slot.isBooked) {
+        if (slot.isBooked || slot.isOfflineBlocked) {
           return res.status(400).json({
             success: false,
             message: `The Slot ${slot.startTime} to ${slot.endTime} is Already Booked, Book another Slot`,
@@ -248,7 +248,7 @@ if(slots1.length===0){
     });
 
   } catch (error) {
-    console.error(error);
+    
     res.status(500).json({
       success: false,
       message: "Failed to add booking",
@@ -360,7 +360,7 @@ const slotsArray = slots[0].slots;
     });
   }
   } catch (error) {
-    console.error(error);
+    
     res
       .status(500)
       .json({
@@ -505,7 +505,7 @@ exports.getBookings = async (req, res) => {
       });
     }
   } catch (error) {
-    console.error(error);
+    
     res.status(500).json({
       success: false,
       message: "Failed to fetch bookings",
@@ -562,7 +562,7 @@ const slotsArray = slots[0].slots;
     res.status(200).json({ success: true, data: bookingData });
 
   } catch (error) {
-    console.error(error);
+    
     res
       .status(500)
       .json({
@@ -618,7 +618,7 @@ exports.workingbookingVerifyStatusById = async (req, res) => {
   try {
     const bookingId = req.params.bookingId;
       const verifyStatus = parseInt(req.params.verifyStatus);
-    console.log(verifyStatus)
+    
     const userRole = req.user.role;
 
     // Validate user role
@@ -642,20 +642,20 @@ exports.workingbookingVerifyStatusById = async (req, res) => {
     }
 
     const user = booking.user_id; 
-    console.log(user,"user")
+    
     const venue = booking.venue_id; 
-console.log(venue,"venue")
+
 const slotsBooked = booking.slotsBooked
 const formattedSlotsBooked = slotsBooked.map(id => {
     if (ObjectId.isValid(id)) {
       return new ObjectId(id);
     } else {
-      console.log(`Invalid ObjectId: ${id}`);
+      
       return null;
     }
   }).filter(id => id !== null); // Filter out invalid ObjectIds
   
-  console.log(formattedSlotsBooked,"391"); // Ensure it's correctly formatted
+   // Ensure it's correctly formatted
   
   // Fetch the document and slot details
   const slotsDetails = await Slot.aggregate([
@@ -682,9 +682,9 @@ const formattedSlotsBooked = slotsBooked.map(id => {
   // Check if you have the details
   if (slotsDetails.length > 0 && slotsDetails[0].slots.length > 0) {
     const slot = slotsDetails[0].slots[0]; // Get the first matching slot
-    console.log("Slot Details:", slot); // This will print the details of the slot
+     // This will print the details of the slot
   } else {
-    console.log("No slot found with the specified _id.");
+    
   }
   
   const allSlotDetails = slotsDetails.flatMap(document => 
@@ -693,7 +693,7 @@ const formattedSlotsBooked = slotsBooked.map(id => {
       endTime: slot.endTime
     }))
   );
-console.log(allSlotDetails,"allSlotDetails")
+
   
 const formattedSlotTimes = allSlotDetails
 .map(slot => `${slot.startTime} - ${slot.endTime}`)
@@ -786,7 +786,7 @@ const formattedSlotTimes = allSlotDetails
       });
     }
   } catch (error) {
-    console.error("Error in bookingVerifyStatusById:", error);
+    
     return res.status(500).json({
       success: false,
       message: "Internal server error.",
@@ -798,7 +798,7 @@ exports.actualbookingVerifyStatusById = async (req, res) => {
   try {
     let bookingId = req.params.bookingId;
     const verifyStatus = parseInt(req.params.verifyStatus);
-    console.log(verifyStatus);
+    
     const userRole = req.user.role;
 
     // Validate user role
@@ -822,9 +822,9 @@ exports.actualbookingVerifyStatusById = async (req, res) => {
     }
 
     const user = booking.user_id;
-    console.log(user, "user");
+    
     const venue = booking.venue_id;
-    console.log(venue, "venue");
+    
 
     // Format the slots
     const slotsBooked = booking.slotsBooked;
@@ -832,12 +832,12 @@ exports.actualbookingVerifyStatusById = async (req, res) => {
       if (ObjectId.isValid(id)) {
         return new ObjectId(id);
       } else {
-        console.log(`Invalid ObjectId: ${id}`);
+        
         return null;
       }
     }).filter(id => id !== null); // Filter out invalid ObjectIds
 
-    console.log(formattedSlotsBooked, "391"); // Ensure it's correctly formatted
+     // Ensure it's correctly formatted
 
     // Fetch the document and slot details
     const slotsDetails = await Slot.aggregate([
@@ -864,9 +864,9 @@ exports.actualbookingVerifyStatusById = async (req, res) => {
     // Check if you have the details
     if (slotsDetails.length > 0 && slotsDetails[0].slots.length > 0) {
       const slot = slotsDetails[0].slots[0]; // Get the first matching slot
-      console.log("Slot Details:", slot); // This will print the details of the slot
+       // This will print the details of the slot
     } else {
-      console.log("No slot found with the specified _id.");
+      
     }
 
     const allSlotDetails = slotsDetails.flatMap(document => 
@@ -875,7 +875,7 @@ exports.actualbookingVerifyStatusById = async (req, res) => {
         endTime: slot.endTime
       }))
     );
-    console.log(allSlotDetails, "allSlotDetails");
+    
 
     const formattedSlotTimes = allSlotDetails
       .map(slot => `${slot.startTime} - ${slot.endTime}`)
@@ -978,7 +978,7 @@ exports.actualbookingVerifyStatusById = async (req, res) => {
       });
     }
   } catch (error) {
-    console.error("Error in bookingVerifyStatusById:", error);
+    
     return res.status(500).json({
       success: false,
       message: "Internal server error.",
@@ -1133,7 +1133,7 @@ exports.shubhbookingVerifyStatusById = async (req, res) => {
       });
     }
   } catch (error) {
-    console.error("Error in bookingVerifyStatusById:", error);
+    
     return res.status(500).json({
       success: false,
       message: "Internal server error.",
@@ -1148,7 +1148,7 @@ exports.bookingVerifyStatusById = async (req, res) => {
     const parsedVerifyStatus = parseInt(verifyStatus); // Ensure verifyStatus is an integer
     const userRole = req.user.role;
     const userId = req.user.userID; // Extract user ID
-console.log(userRole,"userRole",userId ,"userId")
+
     // Validate user role
     if (!["Super Admin", "Venue Admin", "Coach", "Personal Trainer"].includes(userRole)) {
       return res.status(403).json({
@@ -1167,12 +1167,12 @@ console.log(userRole,"userRole",userId ,"userId")
 
     // Convert bookingId to ObjectId type (using 'new' keyword)
     const bookingObjectId = new mongoose.Types.ObjectId(bookingId);
-    console.log("Booking ID to ObjectId:", bookingObjectId);
+    
 
     // Fetch booking details based on user role
     let booking;
     if (userRole === "Super Admin") {
-      console.log("Super Admin: Fetching all bookings");
+      
       // Super Admin can query all bookings (from all models)
       booking = await Booking.findById(bookingObjectId)
         .populate("user_id", "first_name last_name email mobile")
@@ -1181,14 +1181,14 @@ console.log(userRole,"userRole",userId ,"userId")
 
       if (!booking) {
         // If not found in the Booking model, check in CoachBooking or PersonalTrainerBooking
-        console.log("Booking not found in Booking, checking CoachBooking...");
+        
         booking = await CoachBooking.findById(bookingObjectId)
           .populate("userId", "first_name role last_name email mobile")
           .populate("coachId", "first_name role email last_name")
           .select("startDate endDate start_time end_time total_price verification_status cancellation_status slotsBook pdf_url paymentStatus paymentState");;
 
         if (!booking) {
-          console.log("Booking not found in CoachBooking, checking PersonalTrainerBooking...");
+          
           booking = await PersonalTrainerBooking.findById(bookingObjectId)
             .populate("user_id", "first_name role last_name email mobile")
             .populate("pt_id", "first_name role email last_name")
@@ -1208,7 +1208,7 @@ console.log(userRole,"userRole",userId ,"userId")
         .populate("coachId", "first_name role email last_name")
         .select("startDate endDate start_time end_time total_price verification_status cancellation_status slotsBook pdf_url paymentStatus paymentState");;
     } else if (userRole === "Personal Trainer") {
-      console.log("Personal Trainer: Checking booking for pt_id", userId);
+      
       // Personal Trainer can update bookings where the personal trainer is assigned
       booking = await PersonalTrainerBooking.findOne({
         _id: bookingObjectId,
@@ -1218,7 +1218,7 @@ console.log(userRole,"userRole",userId ,"userId")
         .populate("pt_id", "first_name role email last_name")
         .select("startDate endDate start_time end_time total_price cancellation_status verification_status slotsBooked pdf_url"); // ;
     }
-console.log(booking,"booking")
+
     // If the booking is not found or the user is not authorized to update, return an error
     if (!booking) {
       return res.status(404).json({
@@ -1229,7 +1229,7 @@ console.log(booking,"booking")
 
     const user = booking.user_id || booking.userId;
     const venue = booking.venue_id || booking.coach_id || booking.pt_id;
-console.log(booking,"booking")
+
     // Validate `verifyStatus` and update the booking
     if (![0, 1, 2].includes(parsedVerifyStatus)) {
       return res.status(400).json({
@@ -1284,11 +1284,11 @@ else if (booking.pt_id?.first_name && booking.pt_id?.last_name) {
 const venueAddress = venue?.address || "N/A";
 
 // Ensure the slot time is formatted correctly
-console.log(booking.date,"booking.date")
+
 // const formattedSlotDate = new Date(booking.startDate).toLocaleDateString() ||new Date(booking.date).toLocaleDateString() ||"N/A";
 // const formattedSlotTimes = `${booking.start_time} - ${booking.end_time}` || booking.slot_time || "N/A";
 const formattedTotalPrice = `${booking.total_price || "N/A"}`;
-console.log(formattedSlotDate,"formattedSlotDate")
+
     // Logic based on verifyStatus
     if (parsedVerifyStatus === 1) {
       // // Approval Logic
@@ -1390,7 +1390,7 @@ console.log(formattedSlotDate,"formattedSlotDate")
       });
     }
   } catch (error) {
-    console.error("Error in bookingVerifyStatusById:", error);
+    
     return res.status(500).json({
       success: false,
       message: "Internal server error.",
@@ -1497,7 +1497,7 @@ exports.getBookingsNotification = async (req, res) => {
       data: allNotifications,
     });
   } catch (error) {
-    console.error(error);
+    
     return res.status(500).json({
       success: false,
       message: "Failed to fetch notifications",
@@ -1550,7 +1550,7 @@ exports.updateNotificationStatus = async (req, res) => {
       message: `Notification with ID ${id} in ${type} updated successfully.`,
     });
   } catch (error) {
-    console.error(error);
+    
     return res.status(500).json({
       success: false,
       message: "Failed to update the notification.",
@@ -1585,7 +1585,7 @@ exports.cancelBookingForVenue = async (req, res) => {
     try {
       refundResult = await processBookingRefund({ booking, reason: "User cancelled venue booking" });
     } catch (refundErr) {
-      console.error("Refund processing failed:", refundErr.message);
+      
     }
 
     // Update the cancellation status
@@ -1649,7 +1649,7 @@ exports.cancelBookingForVenue = async (req, res) => {
       html,
     });
 
-    console.log("Booking canceled, slots updated, and email sent successfully:", booking);
+    
 
     return res.status(200).json({
       success: true,
@@ -1658,7 +1658,7 @@ exports.cancelBookingForVenue = async (req, res) => {
       refund: refundResult,
     });
   } catch (error) {
-    console.error("Error canceling booking:", error);
+    
     return res.status(500).json({ success: false, message: "Internal Server Error", error: error.message });
   }
 };
@@ -1690,7 +1690,7 @@ exports.cancelBookingForPersonalTrainer = async (req, res) => {
     try {
       refundResult = await processBookingRefund({ booking, reason: "User cancelled personal trainer booking" });
     } catch (refundErr) {
-      console.error("Refund processing failed:", refundErr.message);
+      
     }
 
     // Update the cancellation status
@@ -1753,7 +1753,7 @@ exports.cancelBookingForPersonalTrainer = async (req, res) => {
       html,
     });
 
-    console.log("Booking canceled, slots updated, and email sent successfully:", booking);
+    
 
     return res.status(200).json({
       success: true,
@@ -1763,7 +1763,7 @@ exports.cancelBookingForPersonalTrainer = async (req, res) => {
     });
 
   } catch (error) {
-    console.error("Error canceling booking:", error);
+    
     return res.status(500).json({ success: false, message: "Internal Server Error", error: error.message });
   }
 };
@@ -1795,7 +1795,7 @@ exports.cancelBookingForCoach = async (req, res) => {
     try {
       refundResult = await processBookingRefund({ booking, reason: "User cancelled coach booking" });
     } catch (refundErr) {
-      console.error("Refund processing failed:", refundErr.message);
+      
     }
 
     // Update the cancellation status
@@ -1864,7 +1864,7 @@ exports.cancelBookingForCoach = async (req, res) => {
       html,
     });
 
-    console.log("Booking canceled, slots updated, and email sent successfully:", booking);
+    
 
     return res.status(200).json({
       success: true,
@@ -1874,11 +1874,10 @@ exports.cancelBookingForCoach = async (req, res) => {
     });
 
   } catch (error) {
-    console.error("Error canceling booking:", error);
+    
     return res.status(500).json({ success: false, message: "Internal Server Error", error: error.message });
   }
 };
-
 
 
 

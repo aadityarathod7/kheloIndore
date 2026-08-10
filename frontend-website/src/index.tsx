@@ -28,6 +28,4 @@ if (rootElement) {
       </Provider>
     </React.StrictMode>
   );
-} else {
-  console.error("Element with id 'root' not found.");
 }

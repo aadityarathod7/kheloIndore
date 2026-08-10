@@ -75,7 +75,6 @@ export const all_routes = {
   userDashboard: "/user/user-dashboard",
   userInvoice: "/user/user-invoice",
   userBookings: "/user/user-bookings",
-  userChat: "/user/user-chat",
   userCoaches: "/user/user-coaches",
   userProfile: "/user/user-profile",
   userSettingPassword: "/user/user-setting-password",

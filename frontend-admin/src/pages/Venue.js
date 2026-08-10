@@ -168,7 +168,6 @@ const AddVenue = () => {
   //     );
   //     return response;
   //   } catch (error) {
-  //     console.error("API Error:", error);
   //     Swal.fire({
   //       icon: "error",
   //       title: "Oops...",
@@ -207,7 +206,6 @@ const AddVenue = () => {
   //       throw new Error("File upload failed");
   //     }
   //   } catch (error) {
-  //     console.error("API Error:", error);
   //     Swal.fire({
   //       icon: "error",
   //       title: "Oops...",
@@ -244,7 +242,7 @@ const AddVenue = () => {
         throw new Error("File upload failed");
       }
     } catch (error) {
-      console.error("API Error:", error);
+      
       Swal.fire({
         icon: "error",
         title: "Oops...",
@@ -302,7 +300,7 @@ const AddVenue = () => {
       const response = await axios.get(`${API_URL}/get/venue/role/list`);
       setVenueOwnerData(response.data.data);
     } catch (error) {
-      console.error("Error fetching categories:", error);
+      
     }
   };
 
@@ -331,7 +329,7 @@ const AddVenue = () => {
 
       setCategories(response.data.categories);
     } catch (error) {
-      console.error("Error fetching categories:", error);
+      
     }
   };
 
@@ -340,7 +338,7 @@ const AddVenue = () => {
       const response = await axios.get(`${API_URL}/near-by/get`);
       setNearbyLoc(response.data.loc);
     } catch (error) {
-      console.error("Error fetching nearby locations:", error);
+      
     }
   };
 
@@ -349,7 +347,7 @@ const AddVenue = () => {
       const response = await axios.get(`${API_URL}/vendor/get`);
       setVendor(response.data.vendors);
     } catch (error) {
-      console.error("Error fetching vendor type:", error);
+      
     }
   };
 
@@ -902,8 +900,8 @@ const AddVenue = () => {
         }
       }
     } catch (error) {
-      console.error("Error:", error.response || error.message || error);
-      console.log("Error:", error.response);
+      
+      
       Swal.fire({
         icon: "error",
         title: "Oops...",

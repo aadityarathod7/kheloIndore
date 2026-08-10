@@ -80,7 +80,6 @@ import Testimonials from "../pages/testimonials";
 import TestimonialsCarousel from "../pages/testimonials-carousel";
 import UserBookings from "../user/user-bookings";
 import CoachBooking from "../coaches/coach-booking";
-import CoachChat from "../coaches/coaches-chat";
 import Faq from "../pages/faq";
 import ForgotPassword from "../auth/forgot-password";
 import Gallery from "../pages/gallery";
@@ -88,7 +87,6 @@ import Invoice from "../coaches/invoice";
 import LessonOrderConfirm from "../coaches/lessonOrderconfirm";
 import LessonPayment from "../coaches/lesson-payment";
 import LessonPersonalinfo from "../coaches/lessonPersonalinfo";
-import UserChat from "../user/user-chat";
 import UserCoaches from "../user/user-coaches";
 import UserWallet from "../user/user-wallet";
 import VenueDetails from "../coaches/venue-details";
@@ -518,7 +516,7 @@ const publicRoutes = [
   },
   {
     path: routes.coachChat,
-    element: <CoachChat />,
+    element: <Navigate to="/" replace />,
     route: Route,
   },
   {
@@ -551,12 +549,6 @@ const publicRoutes = [
     path: routes.lessonPersonalinfo,
     element: <LessonPersonalinfo />,
     route: Route,
-  },
-  {
-    path: routes.userChat,
-    element: <UserChat />,
-    route: Route,
-    isProtected: true,
   },
   {
     path: routes.userCoaches,

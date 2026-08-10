@@ -119,7 +119,7 @@ const ContactUs = () => {
       setInput({ ...initialState });
       setError(null);
     } catch (error) {
-      console.error("Error:", error);
+      
       Swal.fire("Please check all the fields are filled properly");
       setError("Unable to submit your request right now. Please try again later.");
     }

@@ -77,7 +77,7 @@ const UpdatepersonalTrainer  = () => {
       const response = await axios.get(`${API_URL}/category/fetch`);
       setCategories(response.data.categories || []);
     } catch (error) {
-      console.error("Error fetching categories:", error);
+      
     }
   };
   const handleLevelToggle = (level) => {
@@ -113,12 +113,13 @@ const UpdatepersonalTrainer  = () => {
     });
   };
 
-  console.log(formData);
+  
 
   const [errors, setErrors] = useState({});
   const UpdatepersonalTrainerID = useParams();
+  const navigate = useNavigate();
 
-  console.log(UpdatepersonalTrainerID._id, "id of coach");
+  
 
   const handleEditorChange = (content, name) => {
     setFormData((prevFormData) => ({ ...prevFormData, [name]: content }));
@@ -173,9 +174,9 @@ const UpdatepersonalTrainer  = () => {
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
-    console.log("hiiiiii");
+    
     let validationErrors = {};
-    console.log(validationErrors, "validation");
+    
     
     if (!formData.full_name.trim()) {
       validationErrors.full_name = "Full Name is required";
@@ -234,14 +235,14 @@ const UpdatepersonalTrainer  = () => {
       validationErrors.price = "Price is required";
     }
 
-    console.log(validationErrors, "validation");
-    console.log(validationErrors, "-=-=-=-=-=-=-=");
+    
+    
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       return;
     }
 
-    console.log("Form submitted successfully:", formData);
+    
     try {
       const response = await axios.put(
         `${API_URL}/updatePersonalTrainer/${UpdatepersonalTrainerID._id}`,
@@ -252,7 +253,7 @@ const UpdatepersonalTrainer  = () => {
           },
         }
       );
-      console.log("Update response:", response.data);
+      
       Swal.fire({
         icon: "success",
         title: "PersonalTrainer Updated!",
@@ -260,7 +261,7 @@ const UpdatepersonalTrainer  = () => {
       });
       navigate(`/personal-training/slots-add/${UpdatepersonalTrainerID._id}`);
     } catch (error) {
-      console.error("Error updating the PersonalTrainer:", error);
+      
     }
   };
 
@@ -276,7 +277,7 @@ const UpdatepersonalTrainer  = () => {
         `${API_URL}/upload-file?types=coach`,
         formData
       );
-      console.log(type, "type");
+      
 
       if (type === "profile") {
         setFormData((prevFormData) => ({
@@ -295,7 +296,7 @@ const UpdatepersonalTrainer  = () => {
         }));
       }
     } catch (error) {
-      console.error("Error uploading the image", error);
+      
     }
   };
 
@@ -316,7 +317,7 @@ const UpdatepersonalTrainer  = () => {
           uploaded.push(response.data.file_data[0]);
         }
       } catch (error) {
-        console.error("Error uploading the video", error);
+        
       }
     }
 
@@ -355,7 +356,7 @@ const UpdatepersonalTrainer  = () => {
   const getCoachData = async () => {
     try {
       const response = await axios.get(`${API_URL}/PersonalTraining/fetch/${UpdatepersonalTrainerID._id}`);
-      console.log(response.data.personalTrainer, "response of api");
+      
       setFormData({
         full_name:
           response.data.personalTrainer.full_name ||
@@ -401,7 +402,7 @@ const UpdatepersonalTrainer  = () => {
         videos: response.data.personalTrainer.videos || [],
       });
     } catch (error) {
-      console.error("Error fetching PersonalTrainer data:", error);
+      
     }
   };
 

@@ -34,7 +34,7 @@ function VenueList() {
 
 
   const userRole = localStorage.getItem('role');
-  console.log(isModalVisible, 'visible popup');
+  
   useEffect(() => {
     if (userRole == "Super Admin") {
       setIsSuperAdmin("Super Admin");
@@ -85,12 +85,12 @@ function VenueList() {
       if (response.ok) {
         setRecords(result.venue); // Update to setRecords(result.venue)
       } else {
-        console.error('Failed to fetch data:', result.error);
+        
       }
 
       setLoading(false);
     } catch (error) {
-      console.error('Error fetching data:', error);
+      
       setLoading(false);
     }
   };
@@ -123,10 +123,10 @@ function VenueList() {
         setDetailData(detailResult.data);
         setPdfContent(generatePdfContent(detailResult.data));
       } else {
-        console.error('Failed to fetch detail data:', detailResult.error);
+        
       }
     } catch (error) {
-      console.error('Error fetching detail data:', error);
+      
     }
   };
 
@@ -182,12 +182,12 @@ function VenueList() {
       const detailResult = await detailResponse.json();
       if (detailResponse.ok) {
         setDetailData(detailResult.data);
-        console.log(detailData, 'detaildata here');
+        
       } else {
-        console.error('Failed to fetch detail data:', detailResult.error);
+        
       }
     } catch (error) {
-      console.error('Error fetching detail data:', error);
+      
     }
   };
 
@@ -215,10 +215,10 @@ function VenueList() {
       if (response.ok) {
       } else {
         const responseData = await response.json();
-        console.error('Failed to update category name:', responseData.message || 'Unknown error');
+        
       }
     } catch (error) {
-      console.error('Error updating category name:', error);
+      
     }
   };
 
@@ -237,11 +237,11 @@ function VenueList() {
         Swal.fire('Deactivated!', 'Venue has been Deactivated.', 'success');
         fetchData();
       } else {
-        console.error('Failed to delete venue:', response.statusText);
+        
         Swal.fire('Error', 'Failed to delete venue.', 'error');
       }
     } catch (error) {
-      console.error('Error deleting venue:', error);
+      
       Swal.fire('Error', 'An error occurred while deleting the venue.', 'error');
     }
   };
@@ -265,7 +265,7 @@ function VenueList() {
 
   const currentVenues = filteredData
     ?.filter((row) => {
-      console.log(row.status, "Debugging log");
+      
       return row?.name?.toLowerCase()?.includes(searchText?.toLowerCase()) &&
         (searchQuery === '' ||
           (searchQuery === 'active' && row.status === true) ||
@@ -274,7 +274,7 @@ function VenueList() {
     })
     .slice(indexOfFirstItem, indexOfLastItem);
 
-  console.log(currentVenues)
+  
 
 
 
@@ -307,11 +307,11 @@ function VenueList() {
 
       const data = await response.json();
       fetchData();
-      console.log(data);
+      
       setLoading(false);
     } catch (error) {
       setLoading(false);
-      console.error('Error updating status:', error);
+      
     }
   };
 
@@ -330,7 +330,7 @@ function VenueList() {
       if (result.isConfirmed) {
         updateStatus(status, venueId);
       } else {
-        console.log('Action canceled');
+        
       }
     });
   };
@@ -362,7 +362,7 @@ function VenueList() {
         });
       }
     } catch (error) {
-      console.error("Error:", error);
+      
       Swal.fire({
         icon: "error",
         title: "Oops...",
@@ -514,7 +514,7 @@ function VenueList() {
                         {
                           venue.status ?
                             <Tooltip title={`Deactivate`} arrow>
-                              {console.log(venue.status)}
+                              {undefined}
                               <DeleteOutlined
                                 className="delete_icon"
                                 onClick={() => handleDelete(venue)}

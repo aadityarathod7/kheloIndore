@@ -24,14 +24,10 @@ export default function ViewVenueSlots() {
                     const data = await response.json();
                     setSlots(data.data);
                 } else {
-                    console.error(
-                        "Response not ok:",
-                        response.status,
-                        response.statusText
-                    );
+                    
                 }
             } catch (error) {
-                console.error("Error fetching slots:", error);
+                
             }
         };
 
@@ -63,7 +59,7 @@ export default function ViewVenueSlots() {
 
     const handleSave = async () => {
         const payload = { slotsToUpdate: updatedSlots };
-        console.log(payload);
+        
     
         try {
             // Make the PUT request using axios
@@ -79,9 +75,9 @@ export default function ViewVenueSlots() {
             );
     
             // Handle the response
-            console.log("Successfully updated:", response.data);
+            
         } catch (error) {
-            console.error("Error updating slots:", error);
+            
         }
     
         // After updating, reset state and fetch the updated slots

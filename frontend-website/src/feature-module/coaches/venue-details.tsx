@@ -201,7 +201,7 @@ const VenueDetails = () => {
         setVenueData(venueData);
         setLoading(false)
       } catch (error) {
-        console.error("Error fetching venues:", error);
+        
         setLoading(false)
       }
     };
@@ -253,9 +253,9 @@ const VenueDetails = () => {
 
   const handleBookNow = async (e:any) => {
     e.preventDefault();
-    console.log("click -=-=-=-")
+    
     const token = localStorage.getItem("token");
-    console.log(token, "token")
+    
     if (token) {
       navigate(`/sports-venue/venue-timedate/${id}`);
     } else {
@@ -278,27 +278,6 @@ const VenueDetails = () => {
   }
 
   // Opens (or starts) a real chat with the venue owner
-  const handleMessageOwner = async (e: any) => {
-    e.preventDefault();
-    const token = localStorage.getItem("token");
-    if (!token) {
-      Swal.fire({
-        title: "Please Log In",
-        text: "Log in to send a message to the venue owner.",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonText: "OK",
-        cancelButtonText: "Cancel",
-      }).then((result) => {
-        if (result.isConfirmed) {
-          navigate("/login", { state: { URL: location.pathname } });
-        }
-      });
-      return;
-    }
-    navigate(`/user/user-chat?peerType=Venue&peerId=${id}`);
-  };
-
 
   return (
     <>
@@ -1083,13 +1062,6 @@ const VenueDetails = () => {
                         onClick={handleBookNow}
                       >
                         <i className="fas fa-calendar-check" /> Book Now
-                      </button>
-                      <button
-                        type="button"
-                        className="pro-btn-secondary"
-                        onClick={handleMessageOwner}
-                      >
-                        <i className="fas fa-comment-dots" /> Message Owner
                       </button>
                     </div>
                   </div>

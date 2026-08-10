@@ -24,10 +24,10 @@ export default function VenueSlots() {
                     const data = await response.json(); // Parse the JSON data
                     setSlots(data.data)
                 } else {
-                    console.error("Response not ok:", response.status, response.statusText);
+                    
                 }
             } catch (error) {
-                console.error("Error fetching coaches:", error);
+                
             }
         };
 

@@ -78,7 +78,7 @@ async function seedVenueSlots() {
   }));
 
   await Slot.insertMany(docs);
-  console.log(`✅ Venue slots seeded — ${docs.length} days × ${docs[0].slots.length} slots each`);
+  
 }
 
 // ── Coach Slots (CoachSlot model) ─────────────────────────────────────────────
@@ -145,7 +145,7 @@ async function seedCoachSlots() {
   }));
 
   await CoachSlot.insertMany(docs);
-  console.log(`✅ Coach slots seeded — ${docs.length} packages (Monthly / Quarterly / Annually)`);
+  
 }
 
 // ── Trainer Slots (PersonalTrainerSlot model) ─────────────────────────────────
@@ -213,13 +213,13 @@ async function seedTrainerSlots() {
   }));
 
   await PersonalTrainerSlot.insertMany(docs);
-  console.log(`✅ Trainer slots seeded — ${docs.length} packages (Monthly / Quarterly / Annually)`);
+  
 }
 
 // ── Run ───────────────────────────────────────────────────────────────────────
 mongoose.connect(MONGO_URI)
   .then(() => {
-    console.log("✅ MongoDB connected\n🌱 Seeding slots...\n");
+    
     return Promise.all([
       seedVenueSlots(),
       seedCoachSlots(),
@@ -227,18 +227,18 @@ mongoose.connect(MONGO_URI)
     ]);
   })
   .then(() => {
-    console.log("\n══════════════════════════════════════════");
-    console.log("✅  SLOT SEED COMPLETE");
-    console.log("══════════════════════════════════════════");
-    console.log("🏟  Venue  — 30 days × 17 hourly slots (6am–11pm) @ ₹800/hr");
-    console.log("🏏  Coach  — Monthly / Quarterly / Annually packages");
-    console.log("💪  Trainer — Monthly / Quarterly / Annually packages");
-    console.log("══════════════════════════════════════════\n");
+    
+    
+    
+    
+    
+    
+    
     return mongoose.disconnect();
   })
   .then(() => process.exit(0))
   .catch((err) => {
-    console.error("❌ Slot seed failed:", err);
+    
     mongoose.disconnect();
     process.exit(1);
   });

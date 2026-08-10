@@ -42,27 +42,26 @@ const VenueOrderConfirm = () => {
     data,
   } = state || {};
   const { id } = useParams<{ id: string }>();
-  const selectedTimeSlots = selectedSlots
-    ? selectedSlots.filter((slot: any) => slot.isChecked)
-    : [];
-  const [slotIds, setSlotIds] = useState([]);
-  const [slotITime, setSlotTime] = useState([]);
-  const [formattedDate, setFormattedDate] = useState([]);
+  // Derive these values directly from route state. Keeping the derived array
+  // in component state caused a new array on every render and an infinite
+  // setState/useEffect loop.
+  const selectedTimeSlots = useMemo(
+    () => (selectedSlots ? selectedSlots.filter((slot: any) => slot.isChecked) : []),
+    [selectedSlots]
+  );
+  const slotIds = useMemo(
+    () => selectedTimeSlots.map((slot: any) => slot.slot_id || slot._id),
+    [selectedTimeSlots]
+  );
+  const formattedDate = useMemo(() => {
+    if (!selectedDate) return "";
+    const localDate = new Date(selectedDate);
+    return Number.isNaN(localDate.getTime()) ? "" : localDate.toLocaleDateString("en-CA");
+  }, [selectedDate]);
   const totalPrice = selectedTimeSlots.reduce(
     (total: number, slot: any) => total + (slot.price || 0),
     0
   );
-
-  useEffect(() => {
-    const slotId = selectedTimeSlots.map((slot: any) => slot.slot_id || slot._id);
-    setSlotIds(slotId);
-  }, [selectedTimeSlots]);
-
-  useEffect(() => {
-    const localDate = new Date(selectedDate);
-    const formattedDate = localDate.toLocaleDateString("en-CA");
-    setFormattedDate(formattedDate);
-  }, [selectedDate]);
 
   // Decode user ID from token as a fallback
   const token = localStorage.getItem("token");
@@ -71,23 +70,43 @@ const VenueOrderConfirm = () => {
     try {
       const decoded: any = jwtDecode(token);
       userIdFromToken = decoded?.userID || decoded?.id || "";
-    } catch (err) {
-      console.error("Token decode error:", err);
-    }
+    } catch {
+        // The request failure is handled by the surrounding UI state.
+      }
   }
 
-  const bookingData = data;
+  const bookingData = data || {};
   const venueId = bookingData?.venue_id || id;
   const userId = bookingData?.user_id || userIdFromToken;
-  const slotId = bookingData?.slotsBooked || slotIds;
+  // The previous page may pass pre-calculated slot ids. Prefer those values so
+  // the confirmation screen also works after navigation/HMR reloads.
+  const slotId = useMemo(() => {
+    const suppliedSlots = Array.isArray(bookingData?.slotsBooked)
+      ? bookingData.slotsBooked
+      : [];
+    // Selected slots contain database IDs. Prefer them over legacy route
+    // state, which previously stored only the displayed start time.
+    const sourceSlots = slotIds.length > 0 ? slotIds : suppliedSlots;
+
+    return sourceSlots
+      .map((slot: any) =>
+        typeof slot === "string" ? slot : slot?.slot_id || slot?._id || slot?.id
+      )
+      .filter(Boolean);
+  }, [bookingData?.slotsBooked, slotIds]);
   const date = bookingData?.date || formattedDate;
-  const total_Price = bookingData?.totalPrice || totalPrice;
+  const total_Price = useMemo(() => {
+    const suppliedTotal = Number(bookingData?.totalPrice ?? bookingData?.total_price);
+    return Number.isFinite(suppliedTotal) && suppliedTotal > 0
+      ? suppliedTotal
+      : totalPrice;
+  }, [bookingData?.totalPrice, bookingData?.total_price, totalPrice]);
 
   // Payment type selection (Partial 50% advance / Full payment)
   const [paymentType, setPaymentType] = useState<"partial" | "full">("full");
   const [acceptedPolicy, setAcceptedPolicy] = useState(false);
   const payableAmount =
-    paymentType === "partial" ? Math.round((totalPrice || 0) * 0.5) : totalPrice || 0;
+    paymentType === "partial" ? Math.round((total_Price || 0) * 0.5) : total_Price || 0;
 
   //   const openNewWindow = () => {
   //     window.open('https://mercury-uat.phonepe.com/transact/simulator?token=3GobA5RNrRCwUWUccUBeyTBSCransuCxvBXLOIZMWZVrgKGdyyuZJ', '_blank');
@@ -99,14 +118,23 @@ const VenueOrderConfirm = () => {
         const response = await axios.get(`${API_URL}/venue/individual/${id}`);
         const venueData = response.data.venue;
         setVenueData(venueData);
-      } catch (error) {
-        console.error("Error fetching venues:", error);
+      } catch {
+        // The request failure is handled by the surrounding UI state.
       }
     };
     fetchVenueId();
   }, [id]);
 
   const handleSubmit = async () => {
+    if (!slotId.length || total_Price <= 0) {
+      Swal.fire({
+        icon: "warning",
+        title: "Select a valid slot",
+        text: "Please return to the venue page and select an available time slot before paying.",
+      });
+      return;
+    }
+
     if (!acceptedPolicy) {
       Swal.fire({
         icon: "warning",
@@ -121,18 +149,18 @@ const VenueOrderConfirm = () => {
         user_id: userId,
         venue_id: venueId,
         date: date,
-        slotsBooked: slotIds,
-        total_price: totalPrice,
+        slotsBooked: slotId,
+        total_price: total_Price,
         payment_type: paymentType,
       });
 
       if (response && response.data && response.data.url) {
         window.location.href = response.data.url;
       } else {
-        console.error("The response does not contain a URL");
+        // No alternative action is needed here.
       }
     } catch (error: any) {
-      console.error("An error occurred while processing the payment:", error);
+      
       const errMsg = error?.response?.data?.message || "An error occurred while processing the payment";
       Swal.fire({
         icon: "error",
@@ -419,7 +447,7 @@ const VenueOrderConfirm = () => {
                           <span className="text-muted" style={{ fontSize: "11px" }}>Pay the full amount now. Refundable (75%) if cancelled at least 4 hours before the booking.</span>
                         </div>
                       </div>
-                      <strong className="text-success" style={{ fontSize: "15px" }}>₹{totalPrice || "0"}</strong>
+                      <strong className="text-success" style={{ fontSize: "15px" }}>₹{total_Price || "0"}</strong>
                     </label>
 
                     <label
@@ -439,7 +467,7 @@ const VenueOrderConfirm = () => {
                           <span className="text-muted" style={{ fontSize: "11px" }}>Pay 50% now to confirm your booking. <strong>Non-refundable.</strong></span>
                         </div>
                       </div>
-                      <strong className="text-success" style={{ fontSize: "15px" }}>₹{Math.round((totalPrice || 0) * 0.5)}</strong>
+                      <strong className="text-success" style={{ fontSize: "15px" }}>₹{Math.round((total_Price || 0) * 0.5)}</strong>
                     </label>
                   </div>
                 </div>
@@ -516,7 +544,7 @@ const VenueOrderConfirm = () => {
 
                   <div className="d-flex align-items-center justify-content-between pt-2">
                     <span className="fw-bold text-dark" style={{ fontSize: "14px" }}>Total Price</span>
-                    <span className="fw-extrabold text-success" style={{ fontSize: "18px", fontWeight: "800" }}>₹{totalPrice || "0"}</span>
+                    <span className="fw-extrabold text-success" style={{ fontSize: "18px", fontWeight: "800" }}>₹{total_Price || "0"}</span>
                   </div>
 
                 </div>

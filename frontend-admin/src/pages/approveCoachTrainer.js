@@ -54,7 +54,7 @@ export default function ApproveCoachTrainer() {
             }
             Swal.close();
         } catch (error) {
-            console.error("Error fetching user data:", error);
+            
             Swal.close();
         }
     };
@@ -91,7 +91,7 @@ export default function ApproveCoachTrainer() {
                 Swal.fire("Error", `Failed to update ${role} admin access.`, "error");
             }
         } catch (error) {
-            console.error(`Error updating ${role} admin access:`, error);
+            
             Swal.fire("Error", `An error occurred while updating ${role} admin access.`, "error");
         }
     };

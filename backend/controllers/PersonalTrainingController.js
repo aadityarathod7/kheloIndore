@@ -64,7 +64,7 @@ exports.createPersonalTrainer = async (req, res) => {
       })
     }
   } catch (error) {
-    console.error("Error creating Personal Trainer profile:", error);
+    
     return res
       .status(500)
       .json({ message: "Failed to create Personal Trainer profile" });
@@ -96,7 +96,7 @@ exports.deletePersonalTrainer = async (req, res) => {
       personalTrainer: updatedPersonalTrainer,
     });
   } catch (error) {
-    console.error("Error marking Personal Trainer as inactive:", error);
+    
     return res
       .status(500)
       .json({ message: "Failed to mark Personal Trainer as inactive" });
@@ -280,11 +280,11 @@ exports.workingfetchAllPersonalTrainers = async (req, res) => {
     }
 
     if (req.user.role == "Super Admin") {
-      console.log("Query Params:", req.query); // Log query parameters to check
+       // Log query parameters to check
       const personalTrainers = await PersonalTrainer.find({ role: "Personal Trainer" })
         .sort({ createdAt: -1 });  // Sort by created date
 
-      console.log("Found Trainers:", personalTrainers); // Log the result to check
+       // Log the result to check
 
       return res.status(200).json({
         success: true,
@@ -406,7 +406,7 @@ exports.fetchPersonalTrainerById = async (req, res) => {
     // Respond with the personal trainer data
     return res.status(200).json({ success: true, personalTrainer });
   } catch (error) {
-    console.error("Error fetching personal trainer by ID:", error);
+    
 
     // Handle specific errors
     if (error.name === "CastError") {
@@ -615,7 +615,7 @@ exports.sendTrainerOnboardingProfileLink = async (req, res) => {
           )
         );
       } catch (e) {
-        console.error("Onboarding email failed:", e.message);
+        
       }
     }
     if (trainer.mobile) {
@@ -625,7 +625,7 @@ exports.sendTrainerOnboardingProfileLink = async (req, res) => {
           `Dear ${trainer.first_name}, welcome to Khelo Indore! Complete your trainer profile here: ${completeLink}`.slice(0, 160);
         await sendCustomMessage({ mobile: String(trainer.mobile), message: msg });
       } catch (e) {
-        console.error("Onboarding SMS failed:", e.message);
+        
       }
     }
     trainer.onboard_email_sent = true;
@@ -669,7 +669,7 @@ exports.updatePersonalTrainers = async (req, res) => {
       trainer,
     });
   } catch (error) {
-    console.error("Error updating personal trainer:", error);
+    
     res.status(500).json({ success: false, message: "Internal Server Error", error: error.message });
   }
 };

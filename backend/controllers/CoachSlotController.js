@@ -16,7 +16,7 @@ exports.actualcreateCoachSlot = async (req, res) => {
         batchDate: batchDateObj,
         'slots.startTime': slot.startTime
       });
-      console.log(existingSlot, "existingSlot"); 
+       
       if (existingSlot) {
         return res.json({
           status:400,
@@ -42,7 +42,7 @@ exports.actualcreateCoachSlot = async (req, res) => {
     });
 
   } catch (error) {
-    console.error(error);
+    
     res.status(500).json({
       success: false,
       message: "Failed to create coach slot",
@@ -155,7 +155,7 @@ exports.createCoachSlot = async (req, res) => {
       data: savedSlots,
     });
   } catch (error) {
-    console.error("Error creating coach slots:", error);
+    
     res.status(500).json({
       success: false,
       message: "Failed to create coach slots",
@@ -180,7 +180,7 @@ exports.actualgetAllCoachesSlotsByCoachId = async(req,res)=>{
       // data: coachSlotData,
     });
   } catch (error) {
-    console.log(error);
+    
     
   }
 }
@@ -228,7 +228,7 @@ exports.getAllCoachesSlotsByCoachId = async (req, res) => {
       data: formattedSlots,
     });
   } catch (error) {
-    console.error("Error fetching coach slots:", error);
+    
     res.status(500).json({
       success: false,
       message: "Failed to retrieve coach slots",
@@ -257,7 +257,7 @@ const slotId = req.params.slotId
         },
       }
     );
-    console.log(updatedSlot,"updatedSlotupdatedSlot");
+    
     
 // return
     if (updatedSlot.nModified === 0) {
@@ -273,7 +273,7 @@ const slotId = req.params.slotId
       data: updatedSlot,
     });
   } catch (error) {
-    console.error(error);
+    
     res.status(500).json({
       success: false,
       message: "Failed to update slot",
@@ -311,7 +311,7 @@ exports.updateCoachSlotByIdNew = async (req, res) => {
       data: slot,
     });
   } catch (error) {
-    console.error(error);
+    
     res.status(500).json({
       success: false,
       message: "Failed to update slot",
@@ -338,7 +338,7 @@ exports.deleteCoachBatch = async (req, res) => {
       message: "Batch deleted successfully",
     });
   } catch (error) {
-    console.error(error);
+    
     res.status(500).json({
       success: false,
       message: "Failed to update slot",
@@ -366,7 +366,7 @@ exports.getCoachBatchSlots = async (req, res) => {
       data: slots,
     });
   } catch (error) {
-    console.error(error);
+    
     res.status(500).json({
       success: false,
       message: "Failed to retrieve coach slots",
@@ -440,7 +440,7 @@ exports.updateSlot = async (req, res) => {
       data: updatedSlot,
     });
   } catch (error) {
-    console.error(error);
+    
     res.status(500).json({
       success: false,
       message: "Failed to update slot",
@@ -469,7 +469,7 @@ exports.deleteCoachSlot = async (req, res) => {
       data: deletedSlot,
     });
   } catch (error) {
-    console.error(error);
+    
     res.status(500).json({
       success: false,
       message: "Failed to delete coach slot",
@@ -509,7 +509,7 @@ exports.fetchCoachSlotByDateId = async (req, res) => {
       data: coachSlot,
     });
   } catch (error) {
-    console.error("Error fetching coach slot by ID:", error);
+    
 
     // Handle specific errors like invalid ObjectId
     if (error.name === "CastError") {
@@ -626,7 +626,7 @@ exports.updateCoachSlotBooking = async (req, res) => {
       data: updatedSlots,
     });
   } catch (error) {
-    console.error("Error updating coach slot booking:", error);
+    
     res.status(500).json({
       success: false,
       message: "Failed to update coach slot booking",
@@ -705,7 +705,7 @@ exports.updateCoachSlotBooking = async (req, res) => {
       message: `${deletedCount} slots deleted successfully`,
     });
   } catch (error) {
-    console.error("Error deleting slots:", error);
+    
     return res.status(500).json({
       success: false,
       message: "Internal Server Error",

@@ -24,13 +24,13 @@ exports.mail = async (req, res) => {
         subject: subject,
         html: html,
       });
-      console.log("Email sent successfully to:", recipientEmail);
+      
     } catch (mailErr) {
-      console.error("Failed to send email via SMTP (this error is bypassed for local development):", mailErr.message);
-      console.log("======== LOCAL DEVELOPMENT MAIL LOG ========");
-      console.log("To:", recipientEmail);
-      console.log("Subject:", subject);
-      console.log("============================================");
+      
+      
+      
+      
+      
     }
 
     return res.status(200).json({
@@ -41,7 +41,7 @@ exports.mail = async (req, res) => {
       ...(resData.deliveryChannels && { deliveryChannels: resData.deliveryChannels }),
     });
   } catch (err) {
-    console.error("General Mailer Error:", err);
+    
     return res.status(500).json({
       success: false,
       message: "Internal Server Error in Mailer",

@@ -92,7 +92,7 @@ const AddVenueAdmin = () => {
         formData
       );
      
-      console.log(response);
+      
    
       // Check if response indicates success
       if (response.data.success) {
@@ -113,7 +113,7 @@ const AddVenueAdmin = () => {
       }
      
     } catch (error) {
-      console.error("Error:", error);
+      
    
       // Handle error from the API or network issues
       const errorMessage = error?.response?.data?.message || "An error occurred while adding the Venue Admin.";

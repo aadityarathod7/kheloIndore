@@ -47,7 +47,7 @@ const UpdateEvent = () => {
       const response = await axios.get(`${API_URL}/near-by/get`);
       setNearbyLoc(response.data.loc);
     } catch (error) {
-      console.error("Error fetching nearby locations:", error);
+      
     }
   };
 
@@ -93,7 +93,7 @@ const UpdateEvent = () => {
       );
       return response.data.filePaths;
     } catch (error) {
-      console.error("API Error:", error);
+      
       return null;
     }
   };
@@ -135,7 +135,7 @@ const UpdateEvent = () => {
         setPreviousImages(images);
       })
       .catch((error) => {
-        console.error("Error fetching event data:", error);
+        
       });
   }, [_id]);
 
@@ -178,7 +178,7 @@ const UpdateEvent = () => {
       });
       navigate("/events");
     } catch (error) {
-      console.error("Error updating event:", error);
+      
       Swal.fire({
         icon: "error",
         title: "Error",

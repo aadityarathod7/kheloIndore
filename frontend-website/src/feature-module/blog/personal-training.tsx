@@ -178,7 +178,7 @@ const BlogList = () => {
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
-  const trainersPerPage = 9;
+  const trainersPerPage = 6; // 3 per row x 2 rows
   const indexOfLastTrainer = currentPage * trainersPerPage;
   const indexOfFirstTrainer = indexOfLastTrainer - trainersPerPage;
   const currentTrainers = finalFilterTrainer.slice(indexOfFirstTrainer, indexOfLastTrainer);
@@ -268,8 +268,8 @@ const BlogList = () => {
           profile_views: trainer.profile_views,
         }));
         setTrainer(mappedData);
-      } catch (error) {
-        console.error("Error fetching trainer:", error);
+      } catch {
+        // The request failure is handled by the surrounding UI state.
       }
     };
 

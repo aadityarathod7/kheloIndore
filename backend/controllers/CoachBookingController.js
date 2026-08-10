@@ -134,7 +134,7 @@ exports.bookCoach = async (req, res) => {
       slot:mySlot
     });
   } catch (error) {
-    console.error(error);
+    
     res.status(500).json({
       success: false,
       message: "Failed to add coach booking",
@@ -237,7 +237,7 @@ const regex = new RegExp(searchQuery, 'i');
        });
     }
    } catch (err) {
-     console.error(err);
+     
      return res.json({
       status:500,
        success: false,
@@ -327,7 +327,7 @@ const regex = new RegExp(searchQuery, 'i');
       data: populatedBooking,
     });
   } catch (err) {
-    console.error(err);
+    
     return res.status(500).json({
       status: 500,
       success: false,
@@ -419,7 +419,7 @@ exports.fetchCoachBooking = async (req, res) => {
       data: populatedBooking,
     });
   } catch (err) {
-    console.error(err);
+    
     return res.status(500).json({
       status: 500,
       success: false,

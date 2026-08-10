@@ -53,7 +53,7 @@ const BlogListSidebarLeft = () => {
         setVenues(mappedData);
         setLoading(false);
       } catch (error) {
-        console.error("Error fetching venues:", error);
+        
         setLoading(false);
       }
     };

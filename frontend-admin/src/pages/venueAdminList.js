@@ -46,7 +46,7 @@ export default function VenueAdminList() {
             setVenueAdmin(response.data.data);
             setLoading(false);
         } catch (error) {
-            console.error("Error fetching venue admin:", error);
+            
             setLoading(false);
         }
     };
@@ -83,12 +83,12 @@ export default function VenueAdminList() {
                 fetchVenueAdmin();
             } else {
                 setLoading(false)
-                console.error("Failed to delete User:", response.statusText);
+                
                 Swal.fire("Error", "Failed to delete User.", "error");
             }
         } catch (error) {
             setLoading(false)
-            console.error("Error deleting User:", error);
+            
             Swal.fire("Error", "An error occurred while deleting the User.", "error");
         }
     };
@@ -161,7 +161,7 @@ export default function VenueAdminList() {
             }
         } catch (error) {
             setLoading(false)
-            console.error("Error updating admin access:", error);
+            
             Swal.fire(
                 "Error",
                 "An error occurred while updating admin access.",
@@ -185,7 +185,7 @@ export default function VenueAdminList() {
             });
             fetchVenueAdmin();
         } catch (error) {
-            console.error("Error updating user:", error);
+            
         }
     }
 

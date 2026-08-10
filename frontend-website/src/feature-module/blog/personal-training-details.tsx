@@ -169,9 +169,9 @@ const PersonalTrainingDetails = (props: any) => {
       await navigator.clipboard.writeText(link);
       setShareCopied(true);
       setTimeout(() => setShareCopied(false), 2000);
-    } catch (error) {
-      console.error("Error generating share link:", error);
-    }
+    } catch {
+        // The request failure is handled by the surrounding UI state.
+      }
   };
 
   const openSection = (id: string) => {
@@ -198,8 +198,8 @@ const PersonalTrainingDetails = (props: any) => {
         );
         const trainerDataId = response.data.personalTrainer;
         setTrainerData(trainerDataId);
-      } catch (error) {
-        console.error("Error fetching coaches:", error);
+      } catch {
+        // The request failure is handled by the surrounding UI state.
       }
     };
     fetchTrainerId();
@@ -247,10 +247,13 @@ const PersonalTrainingDetails = (props: any) => {
     const element = document.getElementById(id);
 
     if (element) {
-      element.scrollIntoView({
+      const header = document.querySelector<HTMLElement>(".header");
+      const headerHeight = header?.getBoundingClientRect().height ?? 80;
+      const targetTop = element.getBoundingClientRect().top + window.scrollY - headerHeight - 20;
+
+      window.scrollTo({
+        top: Math.max(0, targetTop),
         behavior: "smooth",
-        block: "start",
-        inline: "nearest",
       });
     }
   };
@@ -271,18 +274,8 @@ const PersonalTrainingDetails = (props: any) => {
     }
   }
 
-  // Opens (or starts) a real chat with the trainer
-  const handleChat = (Id: any) => {
-    const token = localStorage.getItem('token')
-    if (token) {
-      navigate(`/user/user-chat?peerType=Personal Trainer&peerId=${Id}`);
-    } else {
-      navigate("/login", { state: { URL: location.pathname } })
-    }
-  }
-
   return (
-    <div className="venue-coach-details coach-detail top-margin" style={{ backgroundColor: "#F8FAFC" }}>
+    <div className="venue-coach-details coach-detail top-margin ki-provider-detail ki-trainer-detail" style={{ backgroundColor: "#F8FAFC" }}>
       {/* Hero Section */}
       <div className="hero-booking-section" style={{ background: "linear-gradient(135deg, #F0FDF4 0%, #ECFDF5 100%)", paddingTop: "110px", paddingBottom: "40px", position: "relative", overflow: "hidden", borderBottom: "1px solid #E5E7EB" }}>
         {/* Blended Background Turf Graphics */}
@@ -311,10 +304,10 @@ const PersonalTrainingDetails = (props: any) => {
                 <button
                   onClick={() => setIsShareOpen(true)}
                   type="button"
-                  className="btn rounded-pill d-inline-flex align-items-center px-3 py-2 shadow-sm"
+                  className="btn profile-share-button rounded-pill d-inline-flex align-items-center px-3 py-2 shadow-sm"
                   style={{ fontSize: "13px", fontWeight: "600", border: "1px solid #22C55E", color: "#22C55E", backgroundColor: "#fff" }}
                 >
-                  <i className="feather-share-2 me-1" /> Share Profile
+                  <i className="feather-share-2" /> <span>Share Profile</span>
                 </button>
               </div>
             </div>
@@ -522,10 +515,73 @@ const PersonalTrainingDetails = (props: any) => {
         .availability-badge i {
           color: #16A34A !important;
         }
+        .coach-info {
+          background: linear-gradient(135deg, #FFFFFF 0%, #F7FCF8 100%) !important;
+          border: 1px solid #DCEDE0 !important;
+          border-radius: 20px !important;
+          padding: 28px !important;
+          box-shadow: 0 12px 34px rgba(22, 101, 52, 0.08) !important;
+        }
+        .coach-info .profile-pic img {
+          width: 160px !important;
+          height: 160px !important;
+          object-fit: cover !important;
+          border-radius: 16px !important;
+          border: 3px solid #FFFFFF !important;
+          box-shadow: 0 8px 20px rgba(15, 34, 45, 0.14) !important;
+        }
+        .coach-info .info { padding-left: 28px !important; }
+        .coach-info .info h3 { font-size: 28px !important; color: #0F172A !important; letter-spacing: -0.5px !important; }
+        .verified-trainer-badge { display: inline-flex !important; align-items: center !important; margin-left: 8px !important; color: #22C55E !important; font-size: 20px !important; }
+        .verified-trainer-badge i { color: #22C55E !important; }
+        .profile-share-button { min-width: 154px !important; min-height: 44px !important; justify-content: center !important; gap: 8px !important; background: #FFFFFF !important; color: #15803D !important; border: 1px solid #22C55E !important; font-size: 13px !important; font-weight: 700 !important; line-height: 1 !important; }
+        .profile-share-button:hover { background: #F0FDF4 !important; color: #166534 !important; transform: translateY(-1px); }
+        .profile-share-button i, .profile-share-button span { display: inline-block !important; color: #16A34A !important; font-size: 13px !important; visibility: visible !important; opacity: 1 !important; }
+        .book-coach { border: 1px solid #DCEDE0 !important; border-radius: 20px !important; padding: 24px !important; box-shadow: 0 12px 34px rgba(15, 34, 45, 0.08) !important; }
+        .book-coach > h4 { font-size: 22px !important; color: #0F172A !important; padding-bottom: 16px !important; margin-bottom: 18px !important; }
+        .book-coach .dull-bg { background: linear-gradient(135deg, #ECFDF3 0%, #F7FFF9 100%) !important; border: 1px solid #D1FAE5 !important; border-radius: 16px !important; padding: 20px !important; }
+        @media (max-width: 767px) { .coach-info { padding: 20px !important; } .coach-info .info { padding: 18px 0 0 !important; } .coach-info .profile-pic img { width: 112px !important; height: 112px !important; } }
         .experience-years {
           color: #16A34A !important;
           font-size: 16px !important;
         }
+        /* Premium trainer profile layout */
+        .ki-provider-detail { background: #f6f9f7 !important; }
+        .ki-provider-detail .hero-booking-section { background: linear-gradient(120deg, #f8fffa 0%, #e9f8ee 58%, #dff4e7 100%) !important; border-bottom: 0 !important; }
+        .ki-provider-detail .hero-artwork-blend { opacity: .3 !important; }
+        .ki-provider-detail .content { padding: 8px 0 64px !important; }
+        .ki-provider-detail .coach-info { position: relative; overflow: hidden; border: 1px solid #d8eadc !important; border-radius: 24px !important; box-shadow: 0 18px 45px rgba(18, 66, 36, .08) !important; }
+        .ki-provider-detail .coach-info::after { content: ""; position: absolute; top: 0; right: 0; width: 180px; height: 5px; border-radius: 0 24px 0 14px; background: linear-gradient(90deg, #22c55e, #86efac); }
+        .ki-provider-detail .coach-info .profile-pic, .ki-provider-detail .coach-info .profile-pic img { border-radius: 20px !important; }
+        .ki-provider-detail .coach-info .profile-pic img { border: 4px solid #fff !important; box-shadow: 0 14px 28px rgba(15, 55, 31, .16) !important; }
+        .ki-provider-detail .coach-info .info h3 { font-size: clamp(26px, 3vw, 34px) !important; letter-spacing: -1px !important; }
+        .ki-provider-detail .profile-share-button { min-width: 0 !important; min-height: 46px !important; padding: 0 17px !important; border: 1px solid #b9e7c8 !important; border-radius: 12px !important; background: #fff !important; color: #138a42 !important; box-shadow: 0 5px 14px rgba(21, 102, 52, .09) !important; font-size: 14px !important; font-weight: 750 !important; transition: background .2s ease, border-color .2s ease, transform .2s ease !important; }
+        .ki-provider-detail .profile-share-button i, .ki-provider-detail .profile-share-button span { display: inline-flex !important; align-items: center; justify-content: center; color: #138a42 !important; }
+        .ki-provider-detail .profile-share-button i { width: 18px; height: 18px; margin-right: 8px; font-size: 17px !important; }
+        .ki-provider-detail .profile-share-button:hover, .ki-provider-detail .profile-share-button:focus-visible { background: #effcf3 !important; border-color: #21ae58 !important; color: #087534 !important; transform: translateY(-1px); outline: none; }
+        .ki-provider-detail .coach-quick-meta > p { display: inline-flex !important; align-items: center; padding: 8px 12px; margin-bottom: 12px !important; border-radius: 10px; background: #f3faf5; color: #486356 !important; }
+        .ki-provider-detail .meta-chip { min-height: 40px; padding: 8px 13px !important; border: 1px solid #d9f2e1 !important; border-radius: 999px !important; background: #f7fff9 !important; font-weight: 650 !important; }
+        .ki-provider-detail .venue-options { position: sticky; top: 76px; z-index: 8; padding: 10px !important; border: 1px solid #e0ebe3 !important; border-radius: 16px !important; box-shadow: 0 10px 24px rgba(15, 42, 27, .06) !important; }
+        .ki-provider-detail .venue-options ul { display: flex !important; gap: 6px; overflow-x: auto; scrollbar-width: thin; padding: 0 !important; }
+        .ki-provider-detail .venue-options li { flex: 0 0 auto; margin: 0 !important; }
+        .ki-provider-detail .venue-options li a { display: block; padding: 10px 14px !important; border-radius: 10px !important; font-size: 14px; font-weight: 700; white-space: nowrap; }
+        .ki-provider-detail .venue-options li.active a { color: #fff !important; background: #159947 !important; box-shadow: 0 5px 12px rgba(21, 153, 71, .2); }
+        .ki-provider-detail .accordion-item { overflow: hidden; border: 1px solid #e0e9e3 !important; border-radius: 16px !important; box-shadow: 0 7px 18px rgba(15, 42, 27, .035) !important; }
+        .ki-provider-detail .accordion-button { min-height: 68px; padding: 18px 22px !important; background: #fff !important; color: #14271b !important; font-weight: 750 !important; box-shadow: none !important; }
+        .ki-provider-detail .accordion-button:not(.collapsed) { background: linear-gradient(90deg, #effcf3, #fff) !important; color: #11873e !important; }
+        .ki-provider-detail .accordion-body { padding: 8px 22px 22px !important; color: #52665a !important; line-height: 1.7; }
+        .ki-provider-detail .coach-details-grid { display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 28px; }
+        .ki-provider-detail .coach-details-grid .cdg-item { padding: 14px 0 !important; border-bottom: 1px dashed #dce7df !important; }
+        .ki-provider-detail .coach-details-grid .cdg-label { color: #6a7c70 !important; font-size: 13px !important; }
+        .ki-provider-detail .coach-details-grid .cdg-value { color: #1c3223 !important; font-size: 15px !important; }
+        .ki-provider-detail .stickybar { position: sticky; top: 100px; }
+        .ki-provider-detail .book-coach { overflow: hidden; border: 1px solid #d7eadc !important; border-radius: 22px !important; background: #fff !important; box-shadow: 0 18px 40px rgba(15, 66, 33, .1) !important; }
+        .ki-provider-detail .book-coach > h4 { font-size: 23px !important; }
+        .ki-provider-detail .book-coach .dull-bg { background: linear-gradient(135deg, #e8fff0, #f8fffa) !important; }
+        .ki-provider-detail .book-coach .btn-secondary { min-height: 56px; border-radius: 12px !important; background: linear-gradient(135deg, #17b957, #159447) !important; border-color: #159447 !important; font-size: 17px; font-weight: 750; box-shadow: 0 9px 18px rgba(21, 148, 71, .2); }
+        .ki-provider-detail .book-coach .btn-outline-success { min-height: 44px; border-radius: 12px !important; }
+        @media (max-width: 991px) { .ki-provider-detail .venue-options { top: 66px; } .ki-provider-detail .stickybar { position: static; } }
+        @media (max-width: 575px) { .ki-provider-detail .hero-booking-section { padding-top: 84px !important; padding-bottom: 28px !important; } .ki-provider-detail .hero-booking-section h1 { font-size: 34px !important; } .ki-provider-detail .profile-share-button { width: 100%; justify-content: center; } .ki-provider-detail .coach-info { padding: 20px !important; border-radius: 18px !important; } .ki-provider-detail .coach-details-grid { grid-template-columns: 1fr; } .ki-provider-detail .accordion-button { min-height: 58px; padding: 15px 17px !important; } .ki-provider-detail .accordion-body { padding: 5px 17px 18px !important; } }
       `}} />
       {/* Page Content */}
       <div className="content">
@@ -554,8 +610,8 @@ const PersonalTrainingDetails = (props: any) => {
                   <div className="d-sm-flex justify-content-between align-items-start">
                     <h3 className="d-flex align-items-center justify-content-start mb-0">
                       {trainerName}
-                      <span className="d-flex justify-content-center align-items-center">
-                        <i className="fas fa-check-double" />
+                      <span className="verified-trainer-badge" title="Verified trainer" aria-label="Verified trainer">
+                        <i className="fas fa-circle-check" />
                       </span>
                     </h3>
                     {/* <Link to="#">
@@ -655,32 +711,32 @@ const PersonalTrainingDetails = (props: any) => {
               <div className="venue-options white-bg mb-4">
                 <ul className="clearfix">
                   <li className={activeSection === "short-bio" ? "active" : ""}>
-                    <Link onClick={() => openSection("short-bio")} to={""}>
+                    <Link onClick={(event) => { event.preventDefault(); openSection("short-bio"); }} to="#short-bio">
                       Trainer Details
                     </Link>
                   </li>
                   <li className={activeSection === "bio" ? "active" : ""}>
-                    <Link onClick={() => openSection("bio")} to={""}>
+                    <Link onClick={(event) => { event.preventDefault(); openSection("bio"); }} to="#bio">
                       Bio
                     </Link>
                   </li>
                   <li className={activeSection === "experience" ? "active" : ""}>
-                    <Link onClick={() => openSection("experience")} to={""}>
+                    <Link onClick={(event) => { event.preventDefault(); openSection("experience"); }} to="#experience">
                       Experience
                     </Link>
                   </li>
                   <li className={activeSection === "specialization" ? "active" : ""}>
-                    <Link onClick={() => openSection("specialization")} to={""}>
+                    <Link onClick={(event) => { event.preventDefault(); openSection("specialization"); }} to="#specialization">
                       Specializations
                     </Link>
                   </li>
                   <li className={activeSection === "availability" ? "active" : ""}>
-                    <Link onClick={() => openSection("availability")} to={""}>
+                    <Link onClick={(event) => { event.preventDefault(); openSection("availability"); }} to="#availability">
                       Availability
                     </Link>
                   </li>
                   <li className={activeSection === "rules" ? "active" : ""}>
-                    <Link onClick={() => openSection("rules")} to={""}>
+                    <Link onClick={(event) => { event.preventDefault(); openSection("rules"); }} to="#rules">
                       Policies & Rules
                     </Link>
                   </li>
@@ -1559,14 +1615,6 @@ const PersonalTrainingDetails = (props: any) => {
                     >
                       <i className="feather-calendar" />
                       Book Now
-                    </button>
-                    <button
-                      onClick={() => handleChat(id)}
-                      className="btn d-inline-flex justify-content-center align-items-center"
-                      style={{ background: "linear-gradient(135deg, #22C55E 0%, #16A34A 100%)", color: "#FFFFFF", fontWeight: "600", border: "none", borderRadius: "8px" }}
-                    >
-                      <i className="feather-message-circle" />
-                      Message Trainer
                     </button>
                   </div>
                   {/* Response time + profile views + share */}

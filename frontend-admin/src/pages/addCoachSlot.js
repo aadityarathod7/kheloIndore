@@ -77,7 +77,7 @@ export default function AddCoachTrainerSlot() {
             end_time,
         };
 
-        console.log("Slot added:", newSlot);
+        
         try {
             const loadingSwal = Swal.fire({
                 title: "Adding slot...",
@@ -106,7 +106,7 @@ export default function AddCoachTrainerSlot() {
                 })
             }
         } catch (error) {
-            console.error("Error:", error);
+            
             Swal.fire({
                 icon: "error",
                 title: "Error",
@@ -151,7 +151,7 @@ export default function AddCoachTrainerSlot() {
             end_time,
         };
 
-        console.log("Slot added:", newSlot);
+        
         try {
             const loadingSwal = Swal.fire({
                 title: "Adding slot...",
@@ -180,8 +180,8 @@ export default function AddCoachTrainerSlot() {
                 })
             }
         } catch (error) {
-            console.error("Error:", error);
-            console.log(error?.response?.data?.message)
+            
+            
             Swal.fire({
                 icon: "error",
                 title: "Error",
@@ -219,9 +219,9 @@ export default function AddCoachTrainerSlot() {
                 }));
             }).flat();
             setEvents(transformedEvents);
-            console.log(response);
+            
         } catch (error) {
-            console.error('Error fetching slots:', error);
+            
         }
     };
 

@@ -30,7 +30,7 @@ const getSenderEmail = () => {
 };
 
 const sendEmail = async (email, mailcontent, attachedFiles) => {
-  console.log(email, "attachedFiles6")
+  
   const transporter = createMailTransporter();
   var mailOptions = {
     from: `"KheloIndore" <${getSenderEmail()}>`,
@@ -42,9 +42,9 @@ const sendEmail = async (email, mailcontent, attachedFiles) => {
 
   transporter.sendMail(mailOptions, function (err, result) {
     if (err) {
-      console.log(err);
+      
     }
-    console.log('Email has been sent on your email id');
+    
   })
 }
 
@@ -59,9 +59,9 @@ const sendEmailForSwap = async (email, subject, mailcontent, attachedFiles) => {
 
   transporter.sendMail(mailOptions, function (err, result) {
     if (err) {
-      console.log(err);
+      
     }
-    console.log('Email has been sent on your email id');
+    
   })
 }
 
@@ -76,9 +76,9 @@ const superAdminAddUsersendEmail = async (email, mailcontent) => {
 
   transporter.sendMail(mailOptions, function (err, result) {
     if (err) {
-      console.log(err);
+      
     }
-    console.log('Email has been sent on your email id');
+    
   })
 }
 
@@ -92,9 +92,9 @@ const sendVenuAdminConfirmation = async ({ senderEmail, senderName, recipientEma
       html: html,
     };
     const info = await transporter.sendMail(mailOptions);
-    console.log('Email sent: ' + info.response);
+    
   } catch (error) {
-    console.error('Error sending email:', error);
+    
   }
 };
 
@@ -108,9 +108,9 @@ const sendVenueConfirnation = async ({ senderEmail, senderName, recipientEmail, 
       html: html,
     };
     const info = await transporter.sendMail(mailOptions);
-    console.log('Email sent: ' + info.response);
+    
   } catch (error) {
-    console.error('Error sending email:', error);
+    
   }
 };
 
@@ -124,9 +124,9 @@ const sendVenueAddBySuperadmin = async ({ senderEmail, senderName, recipientEmai
       html: html,
     };
     const info = await transporter.sendMail(mailOptions);
-    console.log('Email sent: ' + info.response);
+    
   } catch (error) {
-    console.error('Error sending email:', error);
+    
   }
 };
 
@@ -137,8 +137,8 @@ const sendBookingRequestEmail = async ({
   attachmentInvoices
 }) => {
   try {
-    console.log("Sending email to:", recipientEmail); 
-    console.log(attachmentInvoices, "attachmentInvoices")
+     
+    
     if (!recipientEmail) {
       throw new Error("No recipient email provided");
     }
@@ -152,9 +152,9 @@ const sendBookingRequestEmail = async ({
     };
 
     const info = await transporter.sendMail(mailOptions);
-    console.log("Email sent: " + info.response);
+    
   } catch (error) {
-    console.error("Error sending email:", error.message);
+    
   }
 };
 
@@ -175,9 +175,9 @@ const sendBookingEmailToApprovalToVenueAdmin = async ({
     };
 
     const info = await transporter.sendMail(mailOptions);
-    console.log("Email sent: " + info.response);
+    
   } catch (error) {
-    console.error("Error sending email:", error.message);
+    
   }
 };
 
@@ -194,9 +194,9 @@ const sendBookingEmailToApprovalToSuperAdmin = async ({
       html: mailcontent,
     }
     const info = await transporter.sendMail(mailOptions);
-    console.log("Email sent: " + info.response);
+    
   } catch (error) {
-    console.error("Error sending email:", error.message);
+    
   }
 };
 
@@ -211,9 +211,9 @@ const generateResetPasswordMailContent = async (email, html) => {
     };
 
     const result = await transporter.sendMail(mailOptions);
-    console.log(`Email successfully sent to ${email}:`, result);
+    
   } catch (error) {
-    console.error("Error sending email:", error.message);
+    
   }
 };
 
@@ -228,9 +228,9 @@ const sendEmailConfirm = async ({ senderEmail, senderName, recipientEmail, subje
     };
 
     const info = await transporter.sendMail(mailOptions);
-    console.log('Email sent: ' + info.response);
+    
   } catch (error) {
-    console.error('Error sending email:', error);
+    
   }
 };
 
@@ -246,12 +246,12 @@ const cancellationEmail = async ({ recipientEmail, subject, html }) => {
 
     transporter.sendMail(mailOptions, function (err, result) {
       if (err) {
-        console.log(err);
+        
       }
-      console.log('Email has been sent on your email id');
+      
     })
   } catch (error) {
-    console.error('Error sending email:', error);
+    
   }
 };
 

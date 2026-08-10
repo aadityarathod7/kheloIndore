@@ -46,33 +46,33 @@ const resolveRedirect = (url) => {
 
 async function run() {
   try {
-    console.log('Connecting to database:', dbUrl);
+    
     await mongoose.connect(dbUrl);
-    console.log('Connected!');
+    
 
     const venues = await Venue.find({});
-    console.log(`Found ${venues.length} venues total.`);
+    
 
     let count = 0;
     for (const venue of venues) {
       const original = venue.google_location;
       if (original && (original.includes("maps.app.goo.gl") || original.includes("share.google"))) {
-        console.log(`Resolving short link for venue "${venue.name || venue._id}": ${original}`);
+        
         const resolved = await resolveRedirect(original);
         if (resolved !== original) {
           venue.google_location = resolved;
           await venue.save();
-          console.log(`Updated to: ${resolved}`);
+          
           count++;
         } else {
-          console.log(`Could not resolve redirect, left unchanged.`);
+          
         }
       }
     }
 
-    console.log(`Migration finished. Updated ${count} venues.`);
+    
   } catch (err) {
-    console.error('Migration failed:', err);
+    
   } finally {
     await mongoose.disconnect();
   }

@@ -32,7 +32,7 @@ exports.createActivity = async (req, res) => {
       activity: newActivity,
     });
   } catch (error) {
-    console.log(error);
+    
     return res.status(500).json({
       success: false,
       message: error.message,
@@ -48,7 +48,7 @@ const activities = await Activity.find({ status: true }).sort({
 });
     res.status(200).json({ success: true, activities });
   } catch (error) {
-    console.log(error);
+    
     res.status(500).json({ success: false, msg: "Unable to find activities" });
   }
 };
@@ -76,7 +76,7 @@ exports.updateActivity = async (req, res) => {
     }
     res.status(200).json({ success: true, msg: "Activity successfully updated", activity });
   } catch (error) {
-    console.log(error);
+    
     res.status(500).json({ success: false, msg: "Unable to update the activity" });
   }
 };
@@ -101,7 +101,7 @@ exports.deleteActivity = async (req, res) => {
       activity: deletedActivity,
     });
   } catch (error) {
-    console.log(error);
+    
     res
       .status(500)
       .json({ success: false, msg: "Unable to delete the activity" });

@@ -21,9 +21,13 @@ const Booking = require("../models/BookingModel");
 const CoachBooking = require("../models/CoachBookingModel");
 const PersonalTrainerBooking = require("../models/PersonalTrainerBookingModel");
 const blogModel = require('../models/BlogModel');
+const Event = require('../models/EventModel');
 //signup By SuperADmin
 exports.signupBySuperAdmin = async (req, res) => {
   try {
+    if (req.user?.role !== "Super Admin") {
+      return res.status(403).json({ success: false, message: "Access denied." });
+    }
     const { first_name, last_name, role, mobile, email, password } = req.body;
 
     // Validation
@@ -132,7 +136,7 @@ exports.signupBySuperAdmin = async (req, res) => {
           const msg = `Dear ${first_name}, welcome to Khelo Indore! Complete your ${role === "Coach" ? "coach" : "trainer"} profile here: ${completeLink}`.slice(0, 160);
           await sendCustomMessage({ mobile: String(mobile), message: msg });
         } catch (smsErr) {
-          console.error("Onboarding SMS failed:", smsErr.message);
+          
         }
         if (role === "Coach") {
           await Coach.findByIdAndUpdate(newUser._id, { profile_completion_token: completionToken });
@@ -140,7 +144,7 @@ exports.signupBySuperAdmin = async (req, res) => {
           await PersonalTrainer.findByIdAndUpdate(newUser._id, { profile_completion_token: completionToken });
         }
       } catch (onboardErr) {
-        console.error("Onboarding notification failed:", onboardErr.message);
+        
       }
     }
 
@@ -158,7 +162,7 @@ exports.signupBySuperAdmin = async (req, res) => {
       },
     });
   } catch (err) {
-    console.error(err);
+    
     return res.status(500).json({
       success: false,
       message: err.message,
@@ -378,7 +382,7 @@ exports.signup = async (req, res, next) => {
       const delivery = await sendOtp({ mobile, otp });
       req.body.mail.resData.deliveryChannels = delivery.delivered;
     } catch (deliveryError) {
-      console.error("BhashSMS OTP delivery failed:", deliveryError.message);
+      
       return res.status(502).json({
         success: false,
         message: "Unable to send OTP right now. Please try again.",
@@ -388,7 +392,7 @@ exports.signup = async (req, res, next) => {
     // Retain the existing email notification after BhashSMS delivery.
     next();
   } catch (err) {
-    console.error("Error in signup verification:", err.message);
+    
     return res.status(500).json({
       success: false,
       message: "Error in storing data of signup!",
@@ -554,7 +558,7 @@ exports.signupVerifyOTP = async (req, res, next) => {
     // Call next middleware for email sending
     next();
   } catch (err) {
-    console.error("Error in signup verification:", err);
+    
     return res.status(400).json({
       success: false,
       message: err.message,
@@ -632,7 +636,7 @@ exports.loginWithPassword = async (req, res) => {
       userId: user._id,
     });
   } catch (error) {
-    console.error("Error during login: ", error);
+    
     res.status(500).json({
       success: false,
       message: "An unexpected error occurred during login. Please try again later.",
@@ -723,7 +727,7 @@ exports.loginUserWithMobile = async (req, res) => {
     try {
       delivery = await sendOtp({ mobile, otp });
     } catch (deliveryError) {
-      console.error("BhashSMS OTP delivery failed:", deliveryError.message);
+      
       return res.status(502).json({
         success: false,
         message: "Unable to send OTP right now. Please try again.",
@@ -737,7 +741,7 @@ exports.loginUserWithMobile = async (req, res) => {
       deliveryChannels: delivery.delivered,
     });
   } catch (err) {
-    console.log(err.message);
+    
     return res.status(500).json({
       success: false,
       message: "Error in login",
@@ -846,7 +850,7 @@ exports.loginCheckOTP = async (req, res) => {
       },
     });
   } catch (err) {
-    console.error(err.message);
+    
     return res.status(500).json({
       success: false,
       message: "Error during login.",
@@ -923,7 +927,7 @@ exports.getAllUsers = async (req, res) => {
       totalUsers: totalUsers,
     });
   } catch (error) {
-    console.error(error);
+    
     res.status(500).json({
       success: false,
       msg: "Internal Server Error",
@@ -996,7 +1000,7 @@ exports.createAdmin = async (req, res) => {
       message: `saved in database successfully`,
     });
   } catch (err) {
-    console.log(err);
+    
     return res.status(500).json({
       success: false,
       message: `error in storing data of signup! please select the valid role`,
@@ -1015,7 +1019,7 @@ exports.getAdmin = async (req, res) => {
 
     return res.status(200).json({ success: true, data: admins });
   } catch (error) {
-    console.error(error);
+    
     return res
       .status(500)
       .json({ success: false, message: "Internal Server Error." });
@@ -1034,7 +1038,7 @@ exports.getAdminById = async (req, res) => {
 
     return res.status(200).json({ success: true, data: admin });
   } catch (error) {
-    console.error(error);
+    
     return res
       .status(500)
       .json({ success: false, message: "Error while fetching admin details." });
@@ -1152,7 +1156,7 @@ exports.UpdateUser = async (req, res) => {
       data: updated_user,
     });
   } catch (err) {
-    console.log(err.message);
+    
     return res.status(500).json({
       success: false,
       message: "Something went wrong!",
@@ -1181,7 +1185,7 @@ exports.aadashboardCount = async (req, res) => {
       eventCount: eventCount,
     });
   } catch (error) {
-    console.error("Error fetching user count:", error);
+    
     return res.status(500).json({ message: "Failed to fetch user count" });
   }
 };
@@ -1198,13 +1202,8 @@ exports.dashboardCount = async (req, res) => {
       pt_id: { $exists: true, $ne: null },
       user_id: { $exists: true, $ne: null },
     });
-    const blogCount = await blogModel.countDocuments()
-    .countDocuments({
-      blog_title: { $exists: true, $ne: null },
-    });
-
-    const [userCount, coachCount, venueAdminCount, personalTrainerCount, venueCount, 
-      bookingCount, coachBookingCount] = await Promise.all([
+    const [userCount, coachCount, venueAdminCount, personalTrainerCount, venueCount,
+      bookingCount, coachBookingCount, blogCount, eventCount] = await Promise.all([
       User.countDocuments({ role: "User" }), // Count users with role "User"
       Coach.countDocuments(), // Count coaches from Coach schema
       User.countDocuments({ role: "Venue Admin" }), // Count venue admins from User schema
@@ -1213,7 +1212,8 @@ exports.dashboardCount = async (req, res) => {
       Booking.countDocuments(), // Count all bookings
       CoachBooking.countDocuments(), // Count all coach bookings
       PersonalTrainerBooking.countDocuments(), // Count all personal trainer bookings
-      blogModel.countDocuments()
+      blogModel.countDocuments({ blog_title: { $exists: true, $ne: null } }),
+      Event.countDocuments(),
     ]);
 
     return res.status(200).json({
@@ -1224,6 +1224,7 @@ exports.dashboardCount = async (req, res) => {
       personalTrainerCount,
       venueCount,
       blogCount,
+      eventCount,
       totalBookingCount: bookingCount + coachBookingCount + personalTrainerBookingCount,
       bookingDetails: {
         generalBookings: bookingCount,
@@ -1233,7 +1234,7 @@ exports.dashboardCount = async (req, res) => {
     },
     });
   } catch (error) {
-    console.error("Error fetching dashboard counts:", error);
+    
     return res.status(500).json({
       success: false,
       message: "Failed to fetch dashboard counts",
@@ -1272,7 +1273,7 @@ exports.getUsersCountPerMonth = async (req, res) => {
 
     return res.json(response);
   } catch (error) {
-    console.error("Error:", error);
+    
     return res.status(500).json({ message: "Failed to fetch data" });
   }
 };
@@ -1388,7 +1389,7 @@ if (!Array.isArray(req.files.uploadFile) || req.files.uploadFile.length === 0) {
       message: "Files uploaded successfully",
     });
   } catch (error) {
-    console.error(error);
+    
     res.status(500).json({
       status: false,
       message: "Internal server error",
@@ -1428,7 +1429,7 @@ exports.searchUsers = async (req, res) => {
 
     res.status(200).json(users);
   } catch (error) {
-    console.error(error);
+    
     res
       .status(500)
       .json({ msg: "Error searching for users", error: error.message });
@@ -1477,7 +1478,7 @@ exports.codeAndCocktailsEmail = async (req, res) => {
       message: 'Thank you'
     })
   } catch (error) {
-    console.log(error);
+    
     return res.status(500).json({
       success: false, 
       message: error.message
@@ -1552,7 +1553,7 @@ exports.updateProfileSettting = async (req, res) => {
       data: updated_user,
     });
   } catch (err) {
-    console.error("Error updating user:", err.message);
+    
     return res.status(500).json({
       success: false,
       message: "Something went wrong!",
@@ -1705,7 +1706,7 @@ exports.updateAdminStatus = async (req, res) => {
 `;
 
     // Send the email
-    console.log("Sending email to:", userToSendCredentials.email);
+    
     await mail.sendVenuAdminConfirmation({
       senderEmail: process.env.SMTP_USER, // Use configured email as sender
       senderName: "Admin KheloIndore",
@@ -1731,7 +1732,7 @@ exports.updateAdminStatus = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Error updating admin status:", error.message);
+    
     res.status(500).json({
       success: false,
       message: "Failed to update admin access.",
@@ -1953,7 +1954,7 @@ exports.forgotPassword = async (req, res) => {
       token, // Send the token to the client for further verification
     });
   } catch (error) {
-    console.error("Error sending OTP:", error);
+    
     res.status(500).json({success: false, message: "Internal server error" });
   }
 };
@@ -1989,7 +1990,7 @@ exports.verifyOtp = async (req, res) => {
     // OTP validation success, you can proceed to reset password or any other operation
     res.status(200).json({success: true, message: "OTP verified successfully" });
   } catch (error) {
-    console.error("Error verifying OTP:", error);
+    
     res.status(500).json({success: false, message: "Internal server error" });
   }
 };
@@ -2035,8 +2036,7 @@ exports.resetPassword = async (req, res) => {
 
     res.status(200).json({ success: true,message: "Password reset successfully" });
   } catch (error) {
-    console.error("Error resetting password:", error);
+    
     res.status(500).json({success: false, message: "Internal server error. Please try again later." });
   }
 };
-

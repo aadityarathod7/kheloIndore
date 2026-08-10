@@ -20,7 +20,7 @@ export default function Blog() {
       setBlogs(response.data.data); // Update this to match the "data" array from the API response
       setLoading(false);
     } catch (error) {
-      console.error("Error fetching blogs:", error);
+      
       setLoading(false);
     }
   };
@@ -44,7 +44,7 @@ export default function Blog() {
       })
 
     } catch (error) {
-      console.error("Error deleting blog:", error);
+      
     }
   };
 
@@ -83,7 +83,7 @@ export default function Blog() {
         throw new Error(response.data.message || "Failed to update blog.");
       }
     } catch (error) {
-      console.error("Error updating blog:", error);
+      
       Swal.fire({
         icon: "error",
         title: "Error",

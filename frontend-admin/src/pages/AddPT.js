@@ -210,7 +210,7 @@ const AddPT = () => {
       const response = await axios.get(`${API_URL}/category/fetch`);
       setCategories(response.data.categories);
     } catch (error) {
-      console.error("Error fetching categories:", error);
+      
     }
   };
 
@@ -219,7 +219,7 @@ const AddPT = () => {
       const response = await axios.get(`${API_URL}/near-by/get`);
       setNearbyLoc(response.data.loc);
     } catch (error) {
-      console.error("Error fetching nearby locations:", error);
+      
     }
   };
 
@@ -241,7 +241,7 @@ const AddPT = () => {
       );
       return response;
     } catch (error) {
-      console.error("API Error:", error);
+      
       return null;
     }
   };
@@ -290,7 +290,7 @@ const AddPT = () => {
         });
       }
     } catch (error) {
-      console.error("Error:", error);
+      
       Swal.fire({
         icon: "error",
         title: "Oops...",

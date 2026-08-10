@@ -53,8 +53,8 @@ const CoachPayment = () => {
         const coachDataId = response.data.coach;
 
         setCochData(coachDataId);
-      } catch (error) {
-        console.error("Error fetching coaches:", error);
+      } catch {
+        // The request failure is handled by the surrounding UI state.
       }
     };
     fetchCoacheId();

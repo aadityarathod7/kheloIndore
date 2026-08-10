@@ -24,7 +24,7 @@ const UpdateUsers = () => {
     city: "",
     stateId: "",
   });
-  console.log(formData.state, 'dkfjdkjf')
+  
  
   const [errors, setErrors] = useState({});
   const [countryid] = useState(101);
@@ -46,7 +46,7 @@ const UpdateUsers = () => {
       .get(`${API_URL}/user/fetch-user-by-id/${_id}`)
       .then((res) => {
         const { data } = res.data;
-        console.log(data, "ddata-=-=-=-=")
+        
         setFormData({
           first_name: data.first_name,
           last_name: data.last_name,
@@ -65,12 +65,12 @@ const UpdateUsers = () => {
         Swal.close();
       })
       .catch((error) => {
-        console.error("Error fetching user data:", error);
+        
         Swal.close();
       });
   }, [_id]);
  
-  console.log(stateid)
+  
  
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -118,7 +118,7 @@ const UpdateUsers = () => {
       });
       navigate("/users");
     } catch (error) {
-      console.error("Error updating user:", error);
+      
       setApiError(error.response?.data?.message || "Failed to update user")
     }
   };

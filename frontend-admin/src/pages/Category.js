@@ -33,7 +33,7 @@ function Category() {
       });
       setParentCategories(response.data.data);
     } catch (error) {
-      console.error("Error fetching parent categories:", error);
+      
     }
   };
 
@@ -69,10 +69,10 @@ function Category() {
           "Content-Type": "multipart/form-data",
         },
       });
-      console.log("Upload response:", response); // Debug: Check the response
+       // Debug: Check the response
       return response;
     } catch (error) {
-      console.error("Upload API Error:", error);
+      
       return null;
     }
   };
@@ -106,7 +106,7 @@ function Category() {
     }
   
     try {
-      console.log("Uploading images:", input.images);  // Debugging line
+        // Debugging line
   
       const uploadResponses = await uploadImage(input.images);
       if (uploadResponses && uploadResponses.data && uploadResponses.data.file_data) {
@@ -119,7 +119,7 @@ function Category() {
           formData.append("images", file);
         });
   
-        console.log("Submitting category with data:", formData);  // Debugging line
+          // Debugging line
   
         const response = await axios.post(
           `${API_URL}/category/create`,
@@ -151,10 +151,7 @@ function Category() {
         });
       }
     } catch (error) {
-      console.error(
-        "Error:",
-        error.response ? error.response.data : error.message
-      );
+      
       Swal.fire({
         title: "Error!",
         text: "Failed to add category",

@@ -56,14 +56,14 @@ const run = async () => {
       ok = prices.every((p, i) => i === 0 || prices[i - 1] >= p);
     }
     if (ok) pass++;
-    console.log(`${ok ? "PASS" : "FAIL"}  ${label.padEnd(32)} -> ${arr.length} venues${first.name ? ` | first: ${first.name}` : ""}`);
+    
   }
-  console.log(`\n${pass}/${cases.length} passed`);
+  
   await mongoose.disconnect();
   process.exit(pass === cases.length ? 0 : 1);
 };
 
 run().catch((e) => {
-  console.error("ERR", e.message);
+  
   process.exit(1);
 });

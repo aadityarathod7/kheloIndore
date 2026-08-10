@@ -44,12 +44,6 @@ const UserProfileOtherSetting = () => {
                     </Link>
                   </li>
                   <li>
-                    <Link to={routes.userChat}>
-                      <ImageWithBasePath src="assets/img/icons/chat-icon.svg" alt="Icon" />
-                      <span>Chat</span>
-                    </Link>
-                  </li>
-                  <li>
                     <Link to={routes.userInvoice}>
                       <ImageWithBasePath src="assets/img/icons/invoice-icon.svg" alt="Icon" />
                       <span>Invoices</span>

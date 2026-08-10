@@ -1,313 +1,143 @@
-import React, { useState, useEffect } from "react";
-import ImageWithBasePath from "../../core/data/img/ImageWithBasePath";
-import { all_routes } from "../router/all_routes";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Link, useParams } from "react-router-dom";
 import { API_URL, IMG_URL } from "../../ApiUrl";
-import Slider from "react-slick";
 
 interface EventData {
   event_name: string;
-  location: any;
+  location: string;
   description: string;
-  start_date: number;
-  end_date: number;
+  start_date: string;
+  end_date: string;
   terms_and_conditions: string;
-  _id: number;
-  price: number;
-  organized_by: string;
-  images: string[];
+  price?: number;
+  organized_by?: string;
+  category?: string;
+  images?: { src?: string; alt?: string }[];
 }
 
-const EventDetails = (_props: { id: any }) => {
-  const route = all_routes;
+const imageUrl = (src?: string) =>
+  src && /^https?:\/\//i.test(src) ? src : src ? `${IMG_URL}${src}` : "/assets/img/no-img.png";
+
+const EventDetails = () => {
   const [eventData, setEventData] = useState<EventData>();
+  const [shareCopied, setShareCopied] = useState(false);
   const { id } = useParams<{ id: string }>();
 
   useEffect(() => {
-    window.scrollTo(0, 0)
-  }, [])
+    window.scrollTo(0, 0);
+    axios
+      .get(`${API_URL}/event/get/${id}`)
+      .then(({ data }) => setEventData(data.data))
+      .catch(() => setEventData(undefined));
+  }, [id]);
 
-  useEffect(() => {
-    // Fetch event data from API
-    const fetchEventsId = async () => {
-      try {
-        const response = await axios.get(`${API_URL}/event/get/${id}`);
-        const eventData = response.data.data;
-        setEventData(eventData);
-      } catch (error) {
-        console.error("Error fetching events:", error);
+  if (!eventData) return <main className="pt-5 mt-5 text-center">Loading event…</main>;
+
+  const start = new Date(eventData.start_date);
+  const end = new Date(eventData.end_date);
+  const eventDate = start.toLocaleDateString("en-IN", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+  const duration = Math.max(1, Math.ceil((end.getTime() - start.getTime()) / 3600000));
+
+  const shareEvent = async () => {
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: eventData.event_name, url: window.location.href });
+        return;
       }
-    };
-
-    fetchEventsId();
-  }, []);
-
+      await navigator.clipboard.writeText(window.location.href);
+      setShareCopied(true);
+      window.setTimeout(() => setShareCopied(false), 1800);
+    } catch {
+      // Sharing can be dismissed by the user or blocked by the browser.
+    }
+  };
 
   return (
-    <>
-      <div className="main-wrapper event-details-page top-margin">
-        {/* Breadcrumb */}
-        <div className="breadcrumb breadcrumb-list mb-0">
-          <span className="primary-right-round" />
-          <div className="container">
-            <h1 className="text-white">Event Details</h1>
-            <ul>
-              <li>
-                <Link to={route.home}>Home</Link>
-              </li>
-              <li>Event Details</li>
-            </ul>
+    <main className="ki-event-detail" style={{ background: "#f7faf8", minHeight: "100vh" }}>
+      <style>{`
+        .ki-event-detail { color: #17222d; }
+        .ki-event-detail .hero-booking-section { min-height: 292px; background: linear-gradient(120deg, #f8fffa 0%, #e9f8ee 58%, #dff4e7 100%) !important; }
+        .ki-event-detail .hero-artwork-blend { opacity: .28; }
+        .ki-event-detail .event-detail-title { color: #102219 !important; font-size: clamp(32px, 4vw, 48px); letter-spacing: -1.3px; }
+        .ki-event-detail .event-info-card, .ki-event-detail .event-content-card { border-color: #dce9df !important; box-shadow: 0 15px 36px rgba(20, 64, 36, .08) !important; }
+        .ki-event-detail .event-content-card h2 { color: #17222d !important; font-weight: 800; }
+        .ki-event-detail .event-content-card p { color: #52665a !important; }
+        .ki-event-detail .event-category { background: #eaf9ee !important; color: #15803d !important; border: 1px solid #b8ecc7; }
+        .ki-event-detail .event-image { min-height: 300px; max-height: 520px; object-fit: cover; }
+        .ki-event-detail .event-book-button { min-height: 54px; background: linear-gradient(135deg, #20bf55, #159447) !important; border: 1px solid #159447 !important; color: #fff !important; box-shadow: 0 8px 18px rgba(32,191,85,.22); font-weight: 750; border-radius: 12px; }
+        .ki-event-detail .event-share-button { min-height: 42px; color: #15803d !important; background: #fff !important; border-color: #b9e7c8 !important; border-radius: 11px !important; font-weight: 700; }
+        .ki-event-detail .event-facts { display: grid; gap: 12px; }
+        .ki-event-detail .event-fact { display: grid; grid-template-columns: 32px 1fr; align-items: start; padding: 12px; background: #f8fcf9; border-radius: 12px; }
+        .ki-event-detail .event-fact i { color: #159447; font-size: 18px; padding-top: 2px; }
+        @media (max-width: 991px) { .ki-event-detail .event-info-card { position: static !important; } }
+        @media (max-width: 575px) { .ki-event-detail .hero-booking-section { min-height: 0; padding-top: 88px !important; padding-bottom: 32px !important; } .ki-event-detail .event-image { min-height: 210px; } }
+      `}</style>
+
+      <section className="hero-booking-section position-relative overflow-hidden" style={{ paddingTop: "110px", paddingBottom: "46px" }}>
+        <div className="hero-artwork-blend position-absolute" style={{ right: "-60px", top: 0, bottom: 0, width: "55%", backgroundImage: "url('/assets/img/bg/banner-illustration.png')", backgroundSize: "cover", backgroundPosition: "left center", backgroundRepeat: "no-repeat", maskImage: "linear-gradient(to left, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%)", WebkitMaskImage: "linear-gradient(to left, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%)" }} />
+        <div className="container position-relative" style={{ zIndex: 1 }}>
+          <span className="d-block mb-2" style={{ color: "#159447", fontSize: 13, fontWeight: 800, letterSpacing: "1.5px" }}>SPORTS EVENT</span>
+          <h1 className="event-detail-title fw-bold mb-3">{eventData.event_name}</h1>
+          <div className="d-flex align-items-center flex-wrap gap-3">
+            <div className="d-inline-flex align-items-center bg-white px-3 py-2 rounded-pill shadow-sm" style={{ fontSize: 13, border: "1px solid #dce9df" }}>
+              <Link to="/" className="text-decoration-none text-secondary"><i className="feather-home me-1" />Home</Link>
+              <i className="feather-chevron-right mx-2" style={{ fontSize: 12 }} />
+              <Link to="/events" className="text-decoration-none text-secondary">Events</Link>
+              <i className="feather-chevron-right mx-2" style={{ fontSize: 12 }} />
+              <span className="text-success fw-semibold">Details</span>
+            </div>
+            <button type="button" onClick={shareEvent} className="event-share-button btn d-inline-flex align-items-center gap-2 px-3">
+              <i className={shareCopied ? "feather-check" : "feather-share-2"} />{shareCopied ? "Link copied" : "Share event"}
+            </button>
           </div>
         </div>
-        {/* /Breadcrumb */}
-        {/* Page Content */}
-        <div className="content">
-          <section className="detail-info">
-            <div className="container">
-              <div className="row">
-                <div className="col-12 col-sm-12 offset-md-1 col-md-10 col-lg-10">
-                  <div className="wrapper">
-                    <div className="banner">
-                      <div className="text-center">
-                        <ImageWithBasePath
-                          src="assets/img/events/banner-01.jpg"
-                          className="img-fluid"
-                          alt="Banner"
-                        />
-                      </div>
-                      <div className="white-bg info d-lg-flex justify-content-between align-items-center">
-                        <div className="description">
-                          <h6>{eventData?.event_name}</h6>
-                        </div>
-                        <div className="d-flex align-items-center time">
-                          <i className="feather-clock d-flex justify-content-center align-items-center" />
-                          <div className="text">
-                            <h6>
-                              {/* {eventData?.start_date} <br /> To{" "}
-                              {eventData?.end_date} */}
-                               {new Date(eventData?.start_date).toLocaleDateString("en-IN")} <br/> To{" "} <br/>
-                               {new Date(eventData?.end_date).toLocaleDateString("en-IN")}{" "}
-                            </h6>
-                            {/* <span>08:00 AM</span> */}
-                          </div>
-                        </div>
-                        <div className="d-flex align-items-center address">
-                          <i className="feather-map-pin d-flex justify-content-center align-items-center" />
-                          <div className="text">
-                            <h6>
-                              {/* 66 Broklyn Golden Street <br /> New York, USA */}
-                              {eventData?.location}
-                            </h6>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="seat-booking">
-                      <div className="row">
-                        <div className="col-12 col-sm-12 col-md-6 col-lg-6">
-                          <h3>{eventData?.event_name}</h3>
-                          <p>{eventData?.description}</p>
-                          <p>
-                            {" "}
-                            Price: &nbsp;
-                            {eventData?.price}
-                          </p>
-                          <p>
-                            {" "}
-                            Location: &nbsp;
-                            {eventData?.location}
-                          </p>
-                          <p>
-                            {" "}
-                            Organized by: &nbsp;
-                            {eventData?.organized_by}
-                          </p>
-                          <p>
-                            {" "}
-                            Terms and Conditions: &nbsp;
-                            {eventData?.terms_and_conditions}
-                          </p>
-                          <button type="button" className="btn btn-primary">
-                            Book A Seat
-                          </button>
-                        </div>
-                        <div className="col-12 col-sm-12 col-md-6 col-lg-6">
-                          <div className="google-maps">
-                            <iframe
-                              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2967.8862835683544!2d-73.98256668525309!3d41.93829486962529!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89dd0ee3286615b7%3A0x42bfa96cc2ce4381!2s132%20Kingston%20St%2C%20Kingston%2C%20NY%2012401%2C%20USA!5e0!3m2!1sen!2sin!4v1670922579281!5m2!1sen!2sin"
-                              height={600}
-                              style={{ border: 0 }}
-                              allowFullScreen={true}
-                              loading="lazy"
-                              referrerPolicy="no-referrer-when-downgrade"
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+      </section>
+
+      <div className="container">
+        <div className="row g-4 align-items-start" style={{ marginTop: "-26px", position: "relative", zIndex: 2, paddingBottom: 64 }}>
+          <section className="col-lg-8">
+            <div className="bg-dark rounded-4 overflow-hidden shadow-sm">
+              <img src={imageUrl(eventData.images?.[0]?.src)} alt={eventData.images?.[0]?.alt || eventData.event_name} className="event-image w-100" />
+            </div>
+            <div className="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-3">
+              <span className="event-category badge px-3 py-2">{eventData.category || "Sports"}</span>
+              <span className="text-muted small"><i className="feather-users text-success me-2" />Open for registrations</span>
+            </div>
+            <article className="event-content-card bg-white border rounded-4 p-4 p-md-5 mt-4">
+              <h2 className="h3 mb-3">About the Event</h2>
+              <p className="mb-4" style={{ lineHeight: 1.8, whiteSpace: "pre-line" }}>{eventData.description || "Event details will be shared by the organiser shortly."}</p>
+              <div className="pt-4" style={{ borderTop: "1px dashed #dce7df" }}>
+                <h2 className="h5 mb-2">Terms & Conditions</h2>
+                <p className="mb-0">{eventData.terms_and_conditions || "Please contact the organiser for event terms and conditions."}</p>
               </div>
-            </div>
+            </article>
           </section>
-          <section>
-            <div className="gallery-heading">
-              <h2 className="row justify-content-center">Sneak Peek into the Excitement Ahead</h2>
-            </div>
-            <div className="row event-img">
-              {eventData?.images.map((data,index)=>(
-                <ImageWithBasePath
-                key={index}
-                src={`${IMG_URL}${data.src}`}
-                className="col-md-4 col-lg-4 img-fluid event-img-data"
-                alt="Banner"
-                />
-              ))}
-            </div>
-          </section>
-          {/* <section className="section event-booking">
-            <div className="container">
-              <div className="row">
-                <div className="col-12 offset-sm-12 offset-md-2 col-md-8 col-lg-8">
-                  <div className="text-center mb-40">
-                    <h3>Book an Event</h3>
-                    <p>
-                      Hi, we are always open for cooperation and suggestions,{" "}
-                      <br /> contact us in one of the ways below
-                    </p>
-                  </div>
-                  <form>
-                    <div className="card">
-                      <h3 className="border-bottom">Enter Details</h3>
-                      <div className="mb-10">
-                        <label htmlFor="name" className="form-label">
-                          Name
-                        </label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          id="name"
-                          placeholder="Enter Name"
-                        />
-                      </div>
-                      <div className="mb-10">
-                        <label htmlFor="email" className="form-label">
-                          Email
-                        </label>
-                        <input
-                          type="email"
-                          className="form-control"
-                          id="email"
-                          placeholder="Enter Email Address"
-                        />
-                      </div>
-                      <div className="mb-10">
-                        <label htmlFor="name" className="form-label">
-                          Phone Number
-                        </label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          id="phonenumber"
-                          placeholder="Enter Phone Number"
-                        />
-                      </div>
-                      <div className="mb-10">
-                        <label htmlFor="name" className="form-label">
-                          Your Address
-                        </label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          id="address"
-                          placeholder="Enter Address"
-                        />
-                      </div>
-                      <div>
-                        <label htmlFor="comments" className="form-label">
-                          Comments
-                        </label>
-                        <textarea
-                          className="form-control"
-                          id="comments"
-                          rows={3}
-                          placeholder="Enter Comments"
-                          defaultValue={""}
-                        />
-                      </div>
-                      <div className="d-flex align-items-center justify-content-center">
-                        <Link
-                          to={route.cagedetails}
-                          className="btn btn-secondary btn-icon"
-                        >
-                          Pay Now
-                          <i className="feather-arrow-right-circle ms-1" />
-                        </Link>
-                      </div>
-                    </div>
-                  </form>
-                </div>
+
+          <aside className="col-lg-4">
+            <div className="event-info-card bg-white border rounded-4 p-4" style={{ position: "sticky", top: 110 }}>
+              <h2 className="h4 fw-bold mb-4">Event information</h2>
+              <div className="event-facts">
+                <div className="event-fact"><i className="feather-calendar" /><div><strong className="d-block">Date</strong><span>{eventDate}</span></div></div>
+                <div className="event-fact"><i className="feather-clock" /><div><strong className="d-block">Starts at</strong><span>{start.toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit" })}</span></div></div>
+                <div className="event-fact"><i className="feather-hourglass" /><div><strong className="d-block">Duration</strong><span>{duration} hours</span></div></div>
+                <div className="event-fact"><i className="feather-map-pin" /><div><strong className="d-block">Location</strong><span>{eventData.location || "Location to be announced"}</span></div></div>
               </div>
-            </div>
-          </section> */}
-          <section className="section">
-            <div className="container">
-              <h3 className="mb-40 text-center">Events Sponsor</h3>
-              {/* Testimonials Slide */}
-              <div className="brand-slider-group">
-                <div className="owl-carousel testimonial-brand-slider owl-theme">
-                  <div className="brand-logos">
-                    <ImageWithBasePath
-                      src="/assets/img/testimonial-icon-01.svg"
-                      alt="Icon"
-                    />
-                  </div>
-                  <div className="brand-logos">
-                    <ImageWithBasePath
-                      src="/assets/img/testimonial-icon-04.svg"
-                      alt="Icon"
-                    />
-                  </div>
-                  <div className="brand-logos">
-                    <ImageWithBasePath
-                      src="/assets/img/testimonial-icon-03.svg"
-                      alt="Icon"
-                    />
-                  </div>
-                  <div className="brand-logos">
-                    <ImageWithBasePath
-                      src="/assets/img/testimonial-icon-04.svg"
-                      alt="Icon"
-                    />
-                  </div>
-                  <div className="brand-logos">
-                    <ImageWithBasePath
-                      src="/assets/img/testimonial-icon-05.svg"
-                      alt="Icon"
-                    />
-                  </div>
-                  <div className="brand-logos">
-                    <ImageWithBasePath
-                      src="/assets/img/testimonial-icon-03.svg"
-                      alt="Icon"
-                    />
-                  </div>
-                  <div className="brand-logos">
-                    <ImageWithBasePath
-                      src="/assets/img/testimonial-icon-04.svg"
-                      alt="Icon"
-                    />
-                  </div>
-                </div>
+              <div className="mt-4 pt-4" style={{ borderTop: "1px dashed #dce7df" }}>
+                <div className="d-flex align-items-center justify-content-between mb-3"><div><span className="d-block text-muted small">Starts from</span><strong className="d-block fs-4">₹{eventData.price || 0}</strong></div><span className="event-category badge px-2 py-1">Available</span></div>
+                <button type="button" className="event-book-button btn w-100"><i className="feather-calendar me-2" />Book Now</button>
               </div>
-              {/* /Testimonials Slide */}
+              {eventData.organized_by && <p className="small text-muted mt-4 mb-0">Organised by <strong>{eventData.organized_by}</strong></p>}
             </div>
-          </section>
+          </aside>
         </div>
-        {/* /Page Content */}
       </div>
-    </>
+    </main>
   );
 };
 

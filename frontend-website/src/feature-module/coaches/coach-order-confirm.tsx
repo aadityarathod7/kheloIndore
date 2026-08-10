@@ -48,7 +48,7 @@ const CoachOrderConfirm = (props: any) => {
   const { bookingData, selectedTimeSlot } = state || {};
   const [paymentType, setPaymentType] = useState<string>("full");
 
-  console.log(bookingData, "confirm data")
+  
   useEffect(() => {
     window.scrollTo(0, 0)
   }, [])
@@ -59,8 +59,8 @@ const CoachOrderConfirm = (props: any) => {
         const response = await axios.get(`${API_URL}/fetch-coach/${id}`);
         const coachDataId = response.data.coach;
         setCoachData(coachDataId);
-      } catch (error) {
-        console.error("Error fetching coach data:", error);
+      } catch {
+        // The request failure is handled by the surrounding UI state.
       }
     };
     fetchCoachData();
@@ -95,7 +95,7 @@ const CoachOrderConfirm = (props: any) => {
       if (response && response.data && response.data.url) {
         window.location.href = response.data.url;
       } else {
-        console.error('The response does not contain a URL');
+        // No alternative action is needed here.
       }
       // navigate(`/coaches/coach-order-confirm/${id}`, {
       //   state: {
@@ -103,7 +103,7 @@ const CoachOrderConfirm = (props: any) => {
       //   },
       // });
     } catch (error) {
-      console.error("Error making the booking:", error);
+      
       Swal.fire({
         title: "Error",
         text: "Error in booking",

@@ -69,7 +69,7 @@ exports.signupBySuperAdmin = async (req, res) => {
       message: "User registered successfully by Super Admin",
     });
   } catch (err) {
-    console.log(err);
+    
     return res.status(500).json({
       success: false,
       message: err.message,
@@ -199,7 +199,7 @@ exports.signup = async (req, res, next) => {
         message: `The User with this ${duplicateKey} already exists. Try to login`,
       });
     }
-    console.log(err);
+    
     return res.status(500).json({
       success: false,
       message: "Error in storing data of signup!",
@@ -286,7 +286,7 @@ exports.signupVerifyOTP = async (req, res, next) => {
 
     // Return success response
   } catch (err) {
-    console.error("Error in signup verification:", err);
+    
     return res.status(400).json({
       success: false,
       message: err.message,
@@ -411,7 +411,7 @@ exports.loginUserWithMobile = async (req, res) => {
       token,
     });
   } catch (err) {
-    console.log(err.message);
+    
     return res.status(500).json({
       success: false,
       message: "Error in login",
@@ -493,7 +493,7 @@ exports.loginCheckOTP = async (req, res) => {
       token,
     });
   } catch (err) {
-    console.log(err.message);
+    
     return res.status(500).json({
       success: false,
       message: "Error in login-otp",
@@ -542,7 +542,7 @@ exports.getAllUsers = async (req, res) => {
       totalUsers: totalUsers,
     });
   } catch (error) {
-    console.error(error);
+    
     res.status(500).json({
       success: false,
       msg: "Internal Server Error",
@@ -615,7 +615,7 @@ exports.createAdmin = async (req, res) => {
       message: `saved in database successfully`,
     });
   } catch (err) {
-    console.log(err);
+    
     return res.status(500).json({
       success: false,
       message: `error in storing data of signup! please select the valid role`,
@@ -634,7 +634,7 @@ exports.getAdmin = async (req, res) => {
 
     return res.status(200).json({ success: true, data: admins });
   } catch (error) {
-    console.error(error);
+    
     return res
       .status(500)
       .json({ success: false, message: "Internal Server Error." });
@@ -653,7 +653,7 @@ exports.getAdminById = async (req, res) => {
 
     return res.status(200).json({ success: true, data: admin });
   } catch (error) {
-    console.error(error);
+    
     return res
       .status(500)
       .json({ success: false, message: "Error while fetching admin details." });
@@ -758,7 +758,7 @@ exports.UpdateUser = async (req, res) => {
       data: updated_user,
     });
   } catch (err) {
-    console.log(err.message);
+    
     return res.status(500).json({
       success: false,
       message: "Something went wrong!",
@@ -779,7 +779,7 @@ exports.dashboardCount = async (req, res) => {
       eventCount: eventCount,
     });
   } catch (error) {
-    console.error("Error fetching user count:", error);
+    
     return res.status(500).json({ message: "Failed to fetch user count" });
   }
 };
@@ -814,7 +814,7 @@ exports.getUsersCountPerMonth = async (req, res) => {
 
     return res.json(response);
   } catch (error) {
-    console.error("Error:", error);
+    
     return res.status(500).json({ message: "Failed to fetch data" });
   }
 };
@@ -895,7 +895,7 @@ exports.uploadFile = async (req, res) => {
       message: "Files uploaded successfully",
     });
   } catch (error) {
-    console.error(error);
+    
     res.status(500).json({
       status: false,
       message: "Internal server error",
@@ -935,7 +935,7 @@ exports.searchUsers = async (req, res) => {
 
     res.status(200).json(users);
   } catch (error) {
-    console.error(error);
+    
     res
       .status(500)
       .json({ msg: "Error searching for users", error: error.message });

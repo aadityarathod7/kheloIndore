@@ -77,7 +77,7 @@ export default function AddTrainerSlots() {
             end_time,
         };
 
-        console.log("Slot added:", newSlot);
+        
         try {
             let response = await axios.post(`${API_URL}/pt/slots/add/${id._id}`, newSlot);
             if (response.data.success) {
@@ -96,7 +96,7 @@ export default function AddTrainerSlots() {
                 })
             }
         } catch (error) {
-            console.error("Error:", error);
+            
             Swal.fire({
                 icon: "error",
                 title: "Error",
@@ -140,7 +140,7 @@ export default function AddTrainerSlots() {
             end_time,
         };
 
-        console.log("Slot added:", newSlot);
+        
         try {
             const loadingSwal = Swal.fire({
                 title: "Adding slot...",
@@ -169,8 +169,8 @@ export default function AddTrainerSlots() {
                 })
             }
         } catch (error) {
-            console.error("Error:", error);
-            console.log(error?.response?.data?.message)
+            
+            
             Swal.fire({
                 icon: "error",
                 title: "Error",
@@ -208,12 +208,12 @@ export default function AddTrainerSlots() {
                 }));
             }).flat();
             setEvents(transformedEvents);
-            console.log(response);
+            
         } catch (error) {
-            console.error('Error fetching slots:', error);
+            
         }
     };
-    console.log(events, "events-=-=-=-=-=-=-")
+    
 
     useEffect(() => {
         getAllSlots()

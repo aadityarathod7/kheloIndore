@@ -150,10 +150,10 @@ route.post("/user/reset-password", otpLimiter, resetPassword);
 route.post("/admin/signup",signup);
 
 // Super Admin
-route.post("/super-admin/add-user", signupBySuperAdmin);
+route.post("/super-admin/add-user", auth, signupBySuperAdmin);
 route.get("/dashboard/count",auth, dashboardCount);
 route.get("/users-count-per-month", getUsersCountPerMonth);
-route.put("/super-admin/update-user/:id", UpdateUser);
+route.put("/super-admin/update-user/:id", auth, UpdateUser);
 route.put("/super-admin/update-admin-status",auth,updateAdminStatus);
 route.get("/super-admin/user-list",auth,userlist)
 route.get("/super-admin/venuadmin-list",auth,venueAdminlist)
@@ -303,6 +303,7 @@ route.get("/dashboard/analytics/download",auth, downloadAnalyticsReport);
 //Images
 route.post(
   "/upload-file",
+  auth,
   imageUpload.fields([ 
     {
       name: "uploadFile", 
@@ -313,10 +314,10 @@ route.post(
 );
 // for venue slot
 const {createSlots,fetchSlots, getAllSlotsByVenueId, getSlotsBySlotID,updateSlotBySlotID,getSlotById,deleteSlotBySlotID}= require("../controllers/SlotController");
-route.post("/slot/add/:id", createSlots);
+route.post("/slot/add/:id", auth, createSlots);
 route.get("/slot/get/:slot_id",auth,getSlotById)
-route.put("/slot/update-add/:id", updateSlotBySlotID);
-route.put("/slot/delete-by-slotid/:id",deleteSlotBySlotID);
+route.put("/slot/update-add/:id", auth, updateSlotBySlotID);
+route.put("/slot/delete-by-slotid/:id",auth,deleteSlotBySlotID);
 route.get("/venue/fetch-slot/:id", fetchSlots);
 route.get("/venue/fetch-all-slot/:venueId", getAllSlotsByVenueId);
 route.get("/get/venue/fetch-slot/:id", getSlotsBySlotID);
@@ -334,7 +335,7 @@ const {
 } = require('../controllers/BookingController');
 // for venue
 route.post("/booking/add", addBooking);
-route.post("/booking/manual/add", addManualBooking);
+route.post("/booking/manual/add", auth, addManualBooking);
 route.get("/booking/get",auth, getBookings); // for admin 
 route.get("/get/booking/:vendor_id",auth, getBookingByVendorId); // for admin 
 route.get("/booking/notification",auth, getBookingsNotification ); 
@@ -350,10 +351,12 @@ route.get("/dashboard/amountReviews",auth, getMoneyReviews);
 route.get("/user-growth-graph",auth,userGrowthGraph);
 
 // Provider Earnings Dashboard APIs
-const { getEarningsSummary, getMonthlyEarnings, getRecentBookings } = require("../controllers/EarningsController");
+const { getEarningsSummary, getMonthlyEarnings, getRecentBookings, getVendorSettlements, recordVendorPayout } = require("../controllers/EarningsController");
 route.get("/earnings/summary", auth, getEarningsSummary);
 route.get("/earnings/monthly", auth, getMonthlyEarnings);
 route.get("/earnings/recent-bookings", auth, getRecentBookings);
+route.get("/earnings/vendor-settlements", auth, getVendorSettlements);
+route.post("/earnings/vendor-payouts", auth, recordVendorPayout);
 const {
   addLoaction,
   getLoaction,
@@ -421,7 +424,7 @@ route.post('/personalTrainer/payment', personalTrainerPayment);
 route.post('/get/personalTrainer/payment/status/:txnId', personalTrainerPaymentStatus);
 route.get('/get/personalTrainerBooking/by/:userId', getPersonalTrainerBookingByUserId);
 
-route.post('/refund/:BookingId',venueRefund);
+route.post('/refund/:BookingId', auth, venueRefund);
 route.get('/getrefund',getAllRefunds);
 //  all booing in one API by userID
 route.get('/get/venue-coach-pt-booking/:userId',getVenueCoachPTBookingByUserId)
@@ -435,22 +438,6 @@ route.post("/web/PersonalTraining/share/:id", generateTrainerShareLink);
 route.get("/web/PersonalTraining/shared/:token", fetchSharedTrainer);
 route.put("/web/PersonalTraining/complete-profile/:id", completeTrainerProfile);
 route.post("/web/PersonalTraining/onboarding/:id", sendTrainerOnboardingProfileLink);
-//Chat (real-time messaging between users, coaches, trainers & venue owners)
-const {
-  startConversation,
-  getConversations,
-  getMessages,
-  sendMessage,
-  markRead,
-  getUnreadCount,
-} = require('../controllers/ChatController');
-route.post("/chat/start", auth, startConversation);
-route.get("/chat/conversations", auth, getConversations);
-route.get("/chat/conversation/:id/messages", auth, getMessages);
-route.post("/chat/conversation/:id/message", auth, sendMessage);
-route.post("/chat/conversation/:id/read", auth, markRead);
-route.get("/chat/unread-count", auth, getUnreadCount);
-
 //  booking verify by admin and super admin
 route.put("/verify/booking/status/:bookingId/:verifyStatus",auth,bookingVerifyStatusById)
 // route.put("/verify/booking/status",auth,bookingVerifyStatusById)

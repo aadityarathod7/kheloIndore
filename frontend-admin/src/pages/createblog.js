@@ -4,8 +4,7 @@ import { FiUpload } from "react-icons/fi";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
-import ReactQuill from "react-quill";
-import "react-quill/dist/quill.snow.css";
+import { Editor } from "@tinymce/tinymce-react";
 import slugify from "slugify"; // Import slugify
 import { API_URL } from "../utils/ApiUrl";
 
@@ -23,6 +22,8 @@ export default function Createblog() {
     author: "",
     canonical_url: "",
     slug_url: "",
+    blog_image_alt: "",
+    status: "active",
   });
 
   const fileInputRef = useRef(null);
@@ -40,9 +41,6 @@ export default function Createblog() {
     // Validation checks
     let validationErrors = {};
     if (!formData.blog_title) validationErrors.blog_title = "Title is required.";
-    else if (!/^https?:\/\/[^\s/$.?#].[^\s]*$/i.test(formData.canonical_url)) {
-      validationErrors.canonical_url = "Canonical URL must be a valid URL.";
-    }
     if (!formData.meta_description) validationErrors.meta_description = "Description is required.";
     if (!formData.blog_image) validationErrors.blog_image = "Image is required.";
 
@@ -61,6 +59,9 @@ export default function Createblog() {
       canonical_url: formData.canonical_url,
       slug_url: formData.slug_url,
       author: formData.author,
+      meta_keywords: formData.meta_keywords.split(",").map((keyword) => keyword.trim()).filter(Boolean),
+      blog_image_alt: formData.blog_image_alt,
+      status: formData.status,
     };
 
     try {
@@ -79,7 +80,7 @@ export default function Createblog() {
         navigate(`/blog`);
       });
     } catch (error) {
-      console.error("Error creating blog:", error);
+      
       Swal.fire({
         icon: "error",
         title: "Error",
@@ -113,16 +114,16 @@ export default function Createblog() {
         // Step 2: Extract the 'src' from the response
         const imageSrc = response.data.file_data[0]?.src;
         if (imageSrc) {
-          console.log("Uploaded image path:", imageSrc);
+          
           setFormData((prev) => ({
             ...prev,
             blog_image: imageSrc, // Update the state with the uploaded image URL
           }));
         } else {
-          console.error("Image upload failed, src is undefined.");
+          
         }
       } catch (error) {
-        console.error("Image upload failed", error);
+        
       }
     }
   };
@@ -136,7 +137,8 @@ export default function Createblog() {
       setFormData((prev) => ({
         ...prev,
         [name]: value,
-        slug_url: slug, // Set the slug_url field
+        slug_url: slug,
+        canonical_url: prev.canonical_url || `/blog/${slug}`,
       }));
     } else {
       setFormData({
@@ -193,10 +195,10 @@ export default function Createblog() {
             </Col>
             <Col md={4}>
               <Form.Group>
-                <Form.Label>Canonical URL</Form.Label>
+                <Form.Label>Canonical URL <small className="text-muted">(defaults to slug)</small></Form.Label>
                 <Form.Control
                   type="text"
-                  placeholder="Enter URL"
+                  placeholder="/blog/my-blog-slug"
                   name="canonical_url"
                   isInvalid={!!errors.canonical_url}
                   value={formData.canonical_url}
@@ -215,27 +217,11 @@ export default function Createblog() {
                 <Form.Label>
                   Meta Description<span style={{ color: "red" }}>*</span>
                 </Form.Label>
-                <ReactQuill
+                <Editor
                   value={formData.meta_description}
-                  onChange={(value) => setFormData({ ...formData, meta_description: value })}
+                  onEditorChange={(value) => setFormData({ ...formData, meta_description: value })}
                   placeholder="Enter Meta Description"
-                  theme="snow"
-                  modules={{
-                    toolbar: [
-                      [{ header: "1" }, { header: "2" }, { font: [] }],
-                      [{ list: "ordered" }, { list: "bullet" }],
-                      ["bold", "italic", "underline"],
-                      ["link"],
-                      [{ align: [] }],
-                      ["image"],
-                      ["blockquote", "code-block"],
-                    ],
-                  }}
-                  style={{
-                    height: "100px",
-                    backgroundColor: "#ffffff",
-                    borderColor: "#cccccc",
-                  }}
+                  init={{ height: 180, menubar: false, plugins: "lists link image code", toolbar: "undo redo | blocks | bold italic | bullist numlist | link image | code" }}
                 />
               </Form.Group>
 
@@ -294,6 +280,15 @@ export default function Createblog() {
                     </div>
                   )}
 
+                  <Form.Label className="mt-2">Image alt text</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="blog_image_alt"
+                    value={formData.blog_image_alt}
+                    onChange={handleChange}
+                    placeholder="Describe the blog image"
+                  />
+
                   <Form.Label>Author</Form.Label>
                   <Form.Control
                     type="text"
@@ -333,27 +328,11 @@ export default function Createblog() {
                 <Form.Label>
                   Description
                 </Form.Label>
-                <ReactQuill
+                <Editor
                   value={formData.blog_description}
-                  onChange={(value) => setFormData({ ...formData, blog_description: value })}
+                  onEditorChange={(value) => setFormData({ ...formData, blog_description: value })}
                   placeholder="Enter description here"
-                  theme="snow"
-                  modules={{
-                    toolbar: [
-                      [{ header: "1" }, { header: "2" }, { font: [] }],
-                      [{ list: "ordered" }, { list: "bullet" }],
-                      ["bold", "italic", "underline"],
-                      ["link"],
-                      [{ align: [] }],
-                      ["image"],
-                      ["blockquote", "code-block"],
-                    ],
-                  }}
-                  style={{
-                    height: "100px",
-                    backgroundColor: "#ffffff",
-                    borderColor: "#cccccc",
-                  }}
+                  init={{ height: 360, menubar: false, plugins: "lists link image code", toolbar: "undo redo | blocks | bold italic | alignleft aligncenter alignright | bullist numlist | link image | code", block_formats: "Paragraph=p; Heading 2=h2; Heading 3=h3; Heading 4=h4" }}
                 />
               </Form.Group>
 
@@ -365,6 +344,15 @@ export default function Createblog() {
               )}
             </Col>
           </Row>
+
+          <Form.Check
+            className="mb-3"
+            type="switch"
+            id="blog-status"
+            label="Active (visible on the website)"
+            checked={formData.status === "active"}
+            onChange={(e) => setFormData({ ...formData, status: e.target.checked ? "active" : "inactive" })}
+          />
 
           <Button
             variant="primary"

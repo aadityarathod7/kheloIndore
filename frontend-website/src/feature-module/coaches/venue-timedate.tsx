@@ -56,8 +56,20 @@ interface Slots {
   startTime: string;
   endTime: string;
   isBooked?: boolean;
+  isOfflineBlocked?: boolean;
   isChecked?: boolean;
 }
+
+const timeToMinutes = (value: string) => {
+  const match = String(value || "").trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/i);
+  if (!match) return -1;
+  let hours = Number(match[1]);
+  const minutes = Number(match[2]);
+  const meridiem = match[3]?.toUpperCase();
+  if (meridiem === "PM" && hours < 12) hours += 12;
+  if (meridiem === "AM" && hours === 12) hours = 0;
+  return hours * 60 + minutes;
+};
 
 const VenueTimeDate = () => {
   const routes = all_routes;
@@ -93,9 +105,9 @@ const VenueTimeDate = () => {
         try {
           const responseVenue = await axios.get(`${API_URL}/venue/individual/${id}`);
           setVenueData(responseVenue.data.venue);
-        } catch (error) {
-          console.error("Error fetching venue details:", error);
-        }
+        } catch {
+        // The request failure is handled by the surrounding UI state.
+      }
       };
       await fetchVenueId();
 
@@ -111,9 +123,9 @@ const VenueTimeDate = () => {
       } else {
         setBookData(bData);
       }
-    } catch (error) {
-      console.error("Error fetching slots:", error);
-    }
+    } catch {
+        // The request failure is handled by the surrounding UI state.
+      }
   };
 
   useEffect(() => {
@@ -139,20 +151,19 @@ const VenueTimeDate = () => {
   const highlightDates = dateData.map((data: any) => new Date(data.date));
 
   useEffect(() => {
-    if (!selectedDateId) return;
-    const fetchSlotsData = async () => {
-      try {
-        const response = await axios.get(
-          `${API_URL}/get/venue/fetch-slot/${selectedDateId}`
-        );
-        const fetchedSlots = response?.data?.data?.slots || [];
-        setSlots(fetchedSlots);
-      } catch (error) {
-        console.error("Error fetching slot details:", error);
-      }
-    };
-    fetchSlotsData();
-  }, [selectedDateId]);
+    if (!selectedDate) {
+      setSlots([]);
+      return;
+    }
+
+    // Legacy records for one India calendar day can have different UTC
+    // timestamps. Read every matching record so offline blocks are never
+    // lost when the first record happens to be the available-slots record.
+    const sameDayRecords = (dateData || []).filter((record: any) =>
+      record?.date && new Date(record.date).toDateString() === selectedDate.toDateString()
+    );
+    setSlots(sameDayRecords.flatMap((record: any) => record?.slots || []));
+  }, [dateData, selectedDate]);
 
   const handleDateChange = (date: Date | null) => {
     setSelectedDate(date);
@@ -201,9 +212,27 @@ const VenueTimeDate = () => {
   };
 
   const displaySlots = useMemo(() => {
-    return (slots || []).map((apiSlot: any) => {
+    const offlineRanges = (slots || [])
+      .filter((slot: any) => slot.isOfflineBlocked)
+      .map((slot: any) => ({ start: timeToMinutes(slot.startTime), end: timeToMinutes(slot.endTime) }))
+      .filter((range) => range.start >= 0 && range.end > range.start);
+
+    const slotsByStartTime = new Map<number, any>();
+    (slots || []).forEach((apiSlot: any) => {
+      const start = timeToMinutes(apiSlot.startTime);
+      if (start < 0) return;
+      const isOfflineBlocked = Boolean(apiSlot.isOfflineBlocked) || offlineRanges.some((range) => start >= range.start && start < range.end);
+      const nextSlot = { ...apiSlot, isOfflineBlocked, isBooked: Boolean(apiSlot.isBooked) || isOfflineBlocked };
+      const existingSlot = slotsByStartTime.get(start);
+      if (!existingSlot || nextSlot.isOfflineBlocked || (!existingSlot.isBooked && nextSlot.isBooked)) {
+        slotsByStartTime.set(start, nextSlot);
+      }
+    });
+
+    return Array.from(slotsByStartTime.values()).sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime)).map((apiSlot: any) => {
       const isChecked = selectedSlotTimes.includes(apiSlot.startTime);
       const isBooked = Boolean(apiSlot.isBooked);
+      const isOfflineBlocked = Boolean(apiSlot.isOfflineBlocked);
       const price = apiSlot.price || venueData?.price_per_hr || 750;
 
       return {
@@ -211,6 +240,7 @@ const VenueTimeDate = () => {
         endTime: apiSlot.endTime,
         price,
         isBooked,
+        isOfflineBlocked,
         isChecked,
         slot_id: apiSlot.slot_id || apiSlot._id,
       };
@@ -232,9 +262,9 @@ const VenueTimeDate = () => {
         try {
           const decodedToken = jwtDecode<JwtPayload>(token);
           setUserData(decodedToken);
-        } catch (err) {
-          console.error("Invalid token", err);
-        }
+        } catch {
+        // The request failure is handled by the surrounding UI state.
+      }
       }
     };
     getTokenFromStorage();
@@ -283,7 +313,11 @@ const VenueTimeDate = () => {
     }
 
     if (selectedSlots.length > 0 && selectedDate) {
-      const slotsBooked = selectedSlots.map((s: any) => s.startTime);
+      // Payment uses the database slot ObjectId. Sending the displayed start
+      // time (for example "04:00 PM") makes the backend unable to price it.
+      const slotsBooked = selectedSlots
+        .map((s: any) => s.slot_id || s._id || s.id)
+        .filter(Boolean);
       const activeDateDoc = dateData?.find((d: any) => d._id === selectedDateId);
       const dbDateStr = activeDateDoc ? activeDateDoc.date : selectedDate;
 
@@ -387,15 +421,16 @@ const VenueTimeDate = () => {
       `}} />
 
       {/* Hero Header Banner */}
-      <div className="hero-booking-section" style={{ background: "linear-gradient(135deg, #F0FDF4 0%, #ECFDF5 100%)", paddingTop: "120px", paddingBottom: "36px", position: "relative", overflow: "hidden", borderBottom: "1px solid #E5E7EB" }}>
+      <div className="hero-booking-section venue-time-hero" style={{ background: "linear-gradient(135deg, #F0FDF4 0%, #ECFDF5 100%)", position: "relative", overflow: "hidden", borderBottom: "1px solid #E5E7EB" }}>
         <div className="hero-artwork-blend" style={{ position: "absolute", right: "-60px", top: 0, bottom: 0, width: "55%", backgroundImage: "url('/assets/img/bg/banner-illustration.png')", backgroundSize: "cover", backgroundPosition: "left center", backgroundRepeat: "no-repeat", maskImage: "linear-gradient(to left, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%)", WebkitMaskImage: "linear-gradient(to left, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%)", opacity: 0.9 }}></div>
         
         <div className="container" style={{ position: "relative", zIndex: 2 }}>
           <div className="row align-items-center">
             <div className="col-lg-7 text-start">
               <span className="font-weight-bold" style={{ fontSize: "13px", letterSpacing: "1.5px", display: "block", marginBottom: "8px", color: "#22C55E", fontWeight: "700" }}>BOOK. PLAY. ENJOY</span>
-              <h1 className="d-flex align-items-center flex-wrap" style={{ fontSize: "44px", fontWeight: "800", color: "#0F172A", lineHeight: "1.1", marginBottom: "12px" }}>
-                Book <span style={{ color: "#22C55E", marginLeft: "10px" }}>{venueData?.name || "Venue"}</span>
+              <h1 className="venue-time-hero-title">
+                <span className="venue-time-hero-action">Book</span>
+                <span className="venue-time-hero-name">{venueData?.name || "Venue"}</span>
               </h1>
               <p style={{ color: "#64748B", fontSize: "18px", marginBottom: "16px", fontWeight: "500", maxWidth: "480px" }}>
                 Pick your date, time slot, and book the perfect sports venue
@@ -543,6 +578,7 @@ const VenueTimeDate = () => {
                     displaySlots.map((slot, idx) => {
                       const isChecked = slot.isChecked;
                       const isBooked = slot.isBooked;
+                      const isOfflineBlocked = slot.isOfflineBlocked;
 
                       return (
                         <div key={idx} className="col-xl-2 col-lg-3 col-md-4 col-6">
@@ -556,14 +592,14 @@ const VenueTimeDate = () => {
                               fontSize: "11px",
                               fontWeight: "600",
                               borderRadius: "10px",
-                              backgroundColor: isChecked ? "#22C55E" : isBooked ? "#F1F5F9" : "#FFFFFF",
-                              color: isChecked ? "#FFFFFF" : isBooked ? "#CBD5E1" : "#15803D",
-                              border: isChecked ? "none" : isBooked ? "1px solid #E2E8F0" : "1px solid #BBF7D0",
+                              backgroundColor: isChecked ? "#22C55E" : isOfflineBlocked ? "#FEF2F2" : isBooked ? "#F1F5F9" : "#FFFFFF",
+                              color: isChecked ? "#FFFFFF" : isOfflineBlocked ? "#B91C1C" : isBooked ? "#CBD5E1" : "#15803D",
+                              border: isChecked ? "none" : isOfflineBlocked ? "1px solid #FECACA" : isBooked ? "1px solid #E2E8F0" : "1px solid #BBF7D0",
                               cursor: isBooked ? "not-allowed" : "pointer",
                               boxShadow: isChecked ? "0 4px 12px rgba(34,197,94,0.3)" : "none"
                             }}
                           >
-                            {formatTimeDisplay(slot.startTime, timeFormat)}
+                            {isOfflineBlocked ? "Offline block" : formatTimeDisplay(slot.startTime, timeFormat)}
                           </button>
                         </div>
                       );

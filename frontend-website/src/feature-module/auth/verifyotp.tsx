@@ -81,7 +81,7 @@ useEffect(()=>{
       }
     } catch (error) {
       setLoader(false)
-      console.error('Error verifying OTP:', error);
+      
       Swal.fire('Error!', 'Failed to verify OTP. Please try again.', 'error');
     }
   };

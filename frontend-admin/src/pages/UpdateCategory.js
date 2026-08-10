@@ -50,7 +50,7 @@ function Category() {
           setFilePreview(category.images);
         }
       } catch (error) {
-        console.error('Error fetching category:', error);
+        
       }
     };
   
@@ -62,7 +62,7 @@ function Category() {
       const response = await axios.get(`${API_URL}/parent-category/fetch`);
       setParentCategories(response.data.data);
     } catch (error) {
-      console.error("Error fetching parent categories:", error);
+      
     }
   };
 
@@ -107,7 +107,7 @@ function Category() {
       );
       return response;
     } catch (error) {
-      console.error("API Error:", error);
+      
       return null;
     }
   };
@@ -168,7 +168,7 @@ function Category() {
           navigate("/categories");
         });
       } catch (error) {
-        console.error("Error:", error.response ? error.response.data : error.message);
+        
         Swal.fire({
           title: "Error!",
           text: "Failed to update category",

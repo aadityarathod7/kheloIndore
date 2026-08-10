@@ -22,7 +22,7 @@ const AddEvent = () => {
     status: true,
   });
 
-  console.log(formData, "DATA");
+  
   const [errors, setErrors] = useState({});
   const [loc, setNearbyLoc] = useState([]);
   const fileInputRef = useRef(null);
@@ -51,17 +51,16 @@ const AddEvent = () => {
   const fetchNearbyLocations = async () => {
     try {
       const response = await axios.get(`${API_URL}/near-by/get`);
-      console.log(response.data, "<------------------response.data.loc");
+      
       setNearbyLoc(response.data.loc);
-      // console.log(response.loc.location, "<----------------- loc.location");
     } catch (error) {
-      console.error("Error fetching nearby locations:", error);
+      
     }
   };
 
   const handleFileInputChange = (e) => {
     const files = Array.from(e.target.files);
-    console.log("Files selected: ", files); // Logging the selected files
+     // Logging the selected files
     setFormData((prevState) => ({
       ...prevState,
       images: [...prevState.images, ...files],
@@ -82,7 +81,7 @@ const AddEvent = () => {
         formDataForUpload.append("types", "events-media");
         formDataForUpload.append("uploadFile", file);
       });
-      console.log("Uploading images...");
+      
       const response = await axios.post(
         `${API_URL}/upload-file`,
         formDataForUpload,
@@ -92,10 +91,10 @@ const AddEvent = () => {
           },
         }
       );
-      console.log("Upload response: ", response);
+      
       return response;
     } catch (error) {
-      console.error("API Error:", error);
+      
       return null;
     }
   };
@@ -127,7 +126,7 @@ const AddEvent = () => {
       const uploadResponses = await uploadImage(formData.images);
       if (uploadResponses) {
         const images = uploadResponses.data.file_data;
-        console.log("Uploaded image URLs: ", images);
+        
         const response = await axios.post(
           `${API_URL}/event/create`,
           {
@@ -140,7 +139,7 @@ const AddEvent = () => {
             },
           }
         );
-        console.log("Event creation response: ", response);
+        
         Swal.fire({
           icon: "success",
           title: "Success!",
@@ -150,7 +149,7 @@ const AddEvent = () => {
         });
       }
     } catch (error) {
-      console.error("Error:", error);
+      
       const errorMessage =
       error.response && error.response.data && error.response.data.message
         ? error.response.data.message

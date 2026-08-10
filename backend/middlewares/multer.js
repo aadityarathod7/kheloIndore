@@ -29,7 +29,6 @@ const ALLOWED_MIME_TYPES = {
   "image/webp": "webp",
   "image/gif": "gif",
   "image/bmp": "bmp",
-  "image/svg+xml": "svg",
   "application/pdf": "pdf",
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "docx",
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": "xlsx",

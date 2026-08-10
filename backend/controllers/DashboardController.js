@@ -128,14 +128,14 @@ exports.userGrowthGraph = async (req, res) => {
 
     res.json({ success: true, data: formattedData });
   } catch (error) {
-    console.error("Error fetching user growth:", error);
+    
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
 
 exports.totalrevenue = async (req, res) => {
   try {
-    console.log("Fetching total revenue...");
+    
 
     // Fetch total revenue from all collections where status is approved
     const [venueRevenue, coachRevenue, trainerRevenue] = await Promise.all([
@@ -168,7 +168,7 @@ exports.totalrevenue = async (req, res) => {
     });
 
   } catch (error) {
-    console.error("Error fetching total revenue:", error);
+    
     res.status(500).json({ success: false, message: "Server Error", error });
   }
 };
@@ -348,7 +348,7 @@ exports.getMoneyReviews = async (req, res) => {
     // Return the data as JSON response
     return res.json({ data: formattedData });
   } catch (error) {
-    console.error("Error fetching booking data:", error.message);
+    
     return res.status(500).json({ error: "Failed to fetch booking data" });
   }
 };

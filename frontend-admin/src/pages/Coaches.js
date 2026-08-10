@@ -39,7 +39,7 @@ const Coaches = () => {
   });
   const navigate = useNavigate();
 
-  console.log(formData);
+  
 
   const [errors, setErrors] = useState({});
   const coachId = useParams();
@@ -50,11 +50,11 @@ const Coaches = () => {
       const response = await axios.get(`${API_URL}/category/fetch`);
       setCategories(response.data.categories || []);
     } catch (error) {
-      console.error("Error fetching categories:", error);
+      
     }
   };
 
-  console.log(coachId._id, "id of coach");
+  
 
   const handleEditorChange = (content, name) => {
     setFormData(prevData => ({ ...prevData, [name]: content }));
@@ -109,9 +109,9 @@ const Coaches = () => {
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
-    console.log("hiiiiii");
+    
     let validationErrors = {};
-    console.log(validationErrors, "validation");
+    
 
     if (!formData.full_name.trim()) {
       validationErrors.full_name = "Full Name is required";
@@ -174,13 +174,13 @@ const Coaches = () => {
       validationErrors.identity_Proof = "Identity proof is required";
     }
 
-    console.log(validationErrors, "-=-=-=-=-=-=-=");
+    
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       return;
     }
 
-    console.log("Form submitted successfully:", formData);
+    
     try {
       const response = await axios.put(
         `${API_URL}/update/coach/${coachId._id}`,
@@ -191,7 +191,7 @@ const Coaches = () => {
           },
         }
       );
-      console.log("Update response:", response.data);
+      
       Swal.fire({
         icon: "success",
         title: "Coach Updated!",
@@ -199,7 +199,7 @@ const Coaches = () => {
       });
       navigate(`/coaches/slots-add/${coachId._id}`);
     } catch (error) {
-      console.error("Error updating the coach:", error);
+      
     }
   };
 
@@ -215,7 +215,7 @@ const Coaches = () => {
         `${API_URL}/upload-file?types=coach`,
         formData
       );
-      console.log(type, "type");
+      
 
       if (type === "profile") {
         setFormData((prevFormData) => ({
@@ -234,7 +234,7 @@ const Coaches = () => {
         }));
       }
     } catch (error) {
-      console.error("Error uploading the image", error);
+      
     }
   };
 
@@ -255,7 +255,7 @@ const Coaches = () => {
           uploaded.push(response.data.file_data[0]);
         }
       } catch (error) {
-        console.error("Error uploading the video", error);
+        
       }
     }
 
@@ -294,7 +294,7 @@ const Coaches = () => {
   const getCoachData = async () => {
     try {
       const response = await axios.get(`${API_URL}/fetch-coach/${coachId._id}`);
-      console.log(response.data.coach, "response of api");
+      
       setFormData({
         full_name:
           response.data.coach.full_name ||
@@ -326,7 +326,7 @@ const Coaches = () => {
         videos: response.data.coach.videos || [],
       });
     } catch (error) {
-      console.error("Error fetching coach data:", error);
+      
     }
   };
 

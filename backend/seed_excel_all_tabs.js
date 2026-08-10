@@ -58,12 +58,52 @@ const timeToday = (h, m = 0) => {
   return d;
 };
 
+const SEED_DAYS = 30;
+
+const formatTime = (hour, minute) => {
+  const suffix = hour >= 12 ? "PM" : "AM";
+  const twelveHour = hour % 12 || 12;
+  return `${String(twelveHour).padStart(2, "0")}:${String(minute).padStart(2, "0")} ${suffix}`;
+};
+
+// A venue price is hourly in the admin form. Each generated slot is 30 minutes,
+// so its booking price is half the hourly rate.
+const createHalfHourSlots = (hourlyPrice, startHour = 6, endHour = 22) => {
+  const halfHourPrice = Math.max(1, Math.round(Number(hourlyPrice || 0) / 2));
+  const slots = [];
+
+  for (let minutes = startHour * 60; minutes < endHour * 60; minutes += 30) {
+    const endMinutes = minutes + 30;
+    slots.push({
+      startTime: formatTime(Math.floor(minutes / 60), minutes % 60),
+      endTime: formatTime(Math.floor(endMinutes / 60), endMinutes % 60),
+      price: halfHourPrice,
+      isBooked: false,
+    });
+  }
+
+  return slots;
+};
+
+const createHalfHourProviderSlots = (hourlyPrice, startHour = 6, endHour = 20) =>
+  createHalfHourSlots(hourlyPrice, startHour, endHour).map((slot) => ({
+    start_time: slot.startTime,
+    end_time: slot.endTime,
+    price: slot.price,
+    isBooked: false,
+  }));
+
+const asNumber = (value, fallback) => {
+  const parsed = Number(String(value ?? "").replace(/[^0-9.]/g, ""));
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+};
+
 async function seedCoach() {
   const existing = await Coach.findOne({ email: "rahul.sharma.coach@kheloindore.in" });
   if (existing) {
     existing.is_admin_access = 1;
     await existing.save();
-    console.log("⏭  Coach updated & seeded — ID:", existing._id.toString());
+    
     return existing;
   }
 
@@ -133,7 +173,7 @@ async function seedCoach() {
     profile_picture: [{ src: "/assets/img/profiles/avatar-coach-01.jpg" }],
   });
 
-  console.log("✅ Coach seeded — ID:", coach._id.toString());
+  
   return coach;
 }
 
@@ -142,7 +182,7 @@ async function seedTrainer() {
   if (existing) {
     existing.is_admin_access = 1;
     await existing.save();
-    console.log("⏭  Trainer updated & seeded — ID:", existing._id.toString());
+    
     return existing;
   }
 
@@ -214,7 +254,7 @@ async function seedTrainer() {
     ],
   });
 
-  console.log("✅ Trainer seeded — ID:", trainer._id.toString());
+  
   return trainer;
 }
 
@@ -288,11 +328,11 @@ async function seedAdditionalProfiles() {
     Coach.bulkWrite(coachOperations),
     PT.bulkWrite(trainerOperations),
   ]);
-  console.log(`Demo profiles ready: ${coachResult.upsertedCount || 0} coaches and ${trainerResult.upsertedCount || 0} trainers added.`);
+  
 }
 
 async function seedAllSlots() {
-  console.log("Seeding slots for all coaches and personal trainers...");
+  
   const coaches = await Coach.find({});
   const trainers = await PT.find({});
 
@@ -315,11 +355,7 @@ async function seedAllSlots() {
         coachId,
         start_date: new Date(dateString),
         end_date: end,
-        slots: [
-          { start_time: "06:00 AM", end_time: "07:00 AM", price: coach.price || 1500, isBooked: false },
-          { start_time: "07:00 AM", end_time: "08:00 AM", price: coach.price || 1500, isBooked: false },
-          { start_time: "05:00 PM", end_time: "06:00 PM", price: coach.price || 1500, isBooked: false }
-        ],
+        slots: createHalfHourProviderSlots(coach.price || 1500, 6, 20),
         status: true
       });
     }
@@ -327,7 +363,7 @@ async function seedAllSlots() {
 
   if (coachSlotDocs.length > 0) {
     await CoachSlot.insertMany(coachSlotDocs);
-    console.log(`✅ Seeded ${coachSlotDocs.length} Coach Slots across ${coaches.length} Coaches`);
+    
   }
 
   // 2. Seed Personal Trainer Slots
@@ -346,11 +382,7 @@ async function seedAllSlots() {
         trainerId,
         start_date: new Date(dateString),
         end_date: end,
-        slots: [
-          { start_time: "06:00 AM", end_time: "07:00 AM", price: trainer.price || 1200, isBooked: false },
-          { start_time: "07:00 AM", end_time: "08:00 AM", price: trainer.price || 1200, isBooked: false },
-          { start_time: "06:00 PM", end_time: "07:00 PM", price: trainer.price || 1200, isBooked: false }
-        ],
+        slots: createHalfHourProviderSlots(trainer.price || 1200, 6, 21),
         status: true
       });
     }
@@ -358,16 +390,16 @@ async function seedAllSlots() {
 
   if (trainerSlotDocs.length > 0) {
     await PTSlot.insertMany(trainerSlotDocs);
-    console.log(`✅ Seeded ${trainerSlotDocs.length} Personal Trainer Slots across ${trainers.length} Trainers`);
+    
   }
 }
 
 async function seedExcelAllTabs() {
-  console.log('Connecting to database...');
+  
   await mongoose.connect(process.env.DATABASE_URL);
-  console.log('Connected!');
+  
 
-  console.log('1. WIPING ALL OLD COLLECTIONS...');
+  
   await Venue.deleteMany({});
   await Slot.deleteMany({});
   await Coach.deleteMany({});
@@ -390,7 +422,7 @@ async function seedExcelAllTabs() {
   await db.collection('enquiries').deleteMany({});
   await db.collection('nearbylocations').deleteMany({});
 
-  console.log('2. Preserving Super Admin & cleaning non-superadmin users...');
+  
   const users = await User.find({});
   for (let u of users) {
     if (u.mobile !== 9999999999 && u.email !== 'iamsuperadmin@gmail.com') {
@@ -400,7 +432,7 @@ async function seedExcelAllTabs() {
 
   const filePath = path.join(__dirname, 'Khelo Indore Venue Data 2026.xlsx');
   if (!fs.existsSync(filePath)) {
-    console.error('Excel file not found at:', filePath);
+    
     process.exit(1);
   }
 
@@ -427,7 +459,7 @@ async function seedExcelAllTabs() {
       createdCategories.add(cleanCategoryName);
     }
 
-    console.log(`Processing Tab: '${cleanCategoryName}' (${rawRows.length} rows)`);
+    
 
     for (let rawRow of rawRows) {
       const row = {};
@@ -469,8 +501,10 @@ async function seedExcelAllTabs() {
         });
       }
 
-      let price = 1000;
-      if (venueSize.toLowerCase().includes('lakh')) price = 3000;
+      let price = asNumber(
+        row['Price Per Hour'] || row['Price per Hour'] || row['Hourly Rate'] || row['Price'],
+        venueSize.toLowerCase().includes('lakh') ? 3000 : 1000
+      );
 
       const venueImage = getCategoryImage(cleanCategoryName, sportsType);
 
@@ -489,31 +523,34 @@ async function seedExcelAllTabs() {
         status: true,
         verification_status: 1,
         google_location: String(mapLocation).trim(),
-        images: [venueImage]
+        images: [venueImage],
+        amenities: ['Parking', 'Drinking Water', 'Changing Room', 'First Aid'],
+        facilities: ['Lighting', 'Security', 'Seating', 'Equipment Storage'],
+        gameType: String(sportsType).trim(),
+        capacity: asNumber(row['Capacity'] || row['Venue Capacity'], venueSize.toLowerCase().includes('large') ? 50 : 20),
+        package_type: ['Hourly', 'Half-hour'],
+        open_at: timeToday(6, 0),
+        close_at: timeToday(22, 0),
+        other_contact_number: contactNumber,
+        emailId: `venue.${mobileNum}@kheloindore.com`,
+        policiesAndRules: 'Booking is subject to availability. Partial payments are non-refundable. Full-payment cancellations made at least 4 hours before the booking receive a 75% refund.',
+        additionalNotes: `Seeded from the ${cleanCategoryName} Excel tab.`,
+        categories: [cleanCategoryName, String(sportsType).trim()],
+        sports_details: [{ sport: String(sportsType).trim(), size: venueSize, price_per_hr: price }],
+        videos: [],
       });
-
-      const standardSlots = [
-        { startTime: '06:00 AM', endTime: '07:00 AM', price: price, isBooked: false },
-        { startTime: '07:00 AM', endTime: '08:00 AM', price: price, isBooked: false },
-        { startTime: '08:00 AM', endTime: '09:00 AM', price: price, isBooked: false },
-        { startTime: '04:00 PM', endTime: '05:00 PM', price: price, isBooked: false },
-        { startTime: '05:00 PM', endTime: '06:00 PM', price: price, isBooked: false },
-        { startTime: '06:00 PM', endTime: '07:00 PM', price: price, isBooked: false },
-        { startTime: '07:00 PM', endTime: '08:00 PM', price: price, isBooked: false },
-        { startTime: '08:00 PM', endTime: '09:00 PM', price: price, isBooked: false }
-      ];
 
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
-      for (let d = 0; d < 4; d++) {
+      for (let d = 0; d < SEED_DAYS; d++) {
         const slotDate = new Date(today);
         slotDate.setDate(today.getDate() + d);
 
         await Slot.create({
           venue_id: venueObj._id,
           date: slotDate,
-          slots: standardSlots
+          slots: createHalfHourSlots(price, 6, 22)
         });
       }
 
@@ -528,7 +565,7 @@ async function seedExcelAllTabs() {
     }
   }
 
-  console.log(`\n3. Seeding ${uniqueLocations.size} unique locations...`);
+  
   for (let locName of uniqueLocations) {
     await NearbyLocation.create({
       area_name: locName,
@@ -541,23 +578,23 @@ async function seedExcelAllTabs() {
     JSON.stringify(ownerLogins, null, 2)
   );
 
-  console.log('\n4. Seeding Coaches and Personal Trainers...');
+  
   await seedCoach();
   await seedTrainer();
   await seedAdditionalProfiles();
   await seedAllSlots();
 
-  console.log('\n======================================================');
-  console.log('COMPLETE WIPE & SEED SUCCESSFUL!');
-  console.log(`Imported ${totalImported} Real Indore Venues across ${createdCategories.size} Categories`);
-  console.log(`Default Owner Password: ${defaultPassword}`);
-  console.log('Saved owner credentials to: backend/venue_logins_summary.json');
-  console.log('======================================================\n');
+  
+  
+  
+  
+  
+  
 
   await mongoose.disconnect();
 }
 
 seedExcelAllTabs().catch(err => {
-  console.error(err);
+  
   process.exit(1);
 });

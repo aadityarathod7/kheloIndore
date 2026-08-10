@@ -10,6 +10,9 @@ const blogSchema  = new mongoose.Schema(
         // }, 
         slug_url:{
             type: String,
+            required: true,
+            unique: true,
+            trim: true,
         },
         blog_title: {
             type: String,
@@ -22,6 +25,10 @@ const blogSchema  = new mongoose.Schema(
         blog_image: {
             type: String,
             // required: true
+        },
+        blog_image_alt: {
+            type: String,
+            default: ""
         },
         meta_keywords: {
             type: [String],

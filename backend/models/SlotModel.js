@@ -12,6 +12,7 @@ const SlotSchema = new mongoose.Schema({
       endTime: { type: String, required: true },
       price: { type: Number, required: true },
       isBooked: { type: Boolean, default: false },
+      isOfflineBlocked: { type: Boolean, default: false },
     },
   ],
 });

@@ -82,7 +82,7 @@ const superAdminDatabase = await SuperAdmin.create({
    return res.status(200).json({ message: "New Venue successfully saved", venue: newVenueDB2 });
 
   } catch (error) {
-    console.log(error);
+    
     res.status(500).json({
       success: false,
       message: error.message,
@@ -103,7 +103,7 @@ exports.fetchVenue = async (req, res) => {
       });
     }
   } catch (error) {
-    console.log(error);
+    
     res.status(500).json({ error: error.message });
   }
 };
@@ -121,7 +121,7 @@ exports.SingleVenue = async (req, res) => {
       });
     }
   } catch (error) {
-    console.log(error);
+    
     res.status(500).json({ message: "Unable to find the Venue" });
   }
 };
@@ -157,7 +157,7 @@ exports.updateVenue = async (req, res) => {
     }
     res.status(200).json({ message: "Venue successfully updated", data:venue });
   } catch (error) {
-    console.log(error);
+    
     res.status(500).json({ message: "Unable to update the venue" });
   }
 };
@@ -177,7 +177,7 @@ exports.deleteVenue = async (req, res) => {
       .status(200)
       .json({ message: "Venue successfully Deactivated", venue: deletedVenue });
   } catch (error) {
-    console.log(error);
+    
     res.status(500).json({ message: "Unable to delete the Venue" });
   }
 };
@@ -374,7 +374,7 @@ exports.addVenue = async (req, res) => {
       venue: newVenueDB,      
     });
   } catch (error) {
-    console.error(error);
+    
     return res.status(500).json({
       status: 500,
       success: false,
@@ -439,7 +439,7 @@ exports.getVenueNew = async (req, res) => {
     }
    
   } catch (error) {
-    console.log(error);
+    
     return res.status(500).json({
       success: false,
       message: error.message,
@@ -460,7 +460,7 @@ exports.getVenueById = async (req, res) => {
       });
     }
   } catch (error) {
-    console.log(error);
+    
     res.status(500).json({ message: "Unable to find the Venue" });
   }
 };
@@ -552,7 +552,7 @@ exports.getVenueByAdminId = async(req,res)=>{
       venue:data
     })
   }catch(error){
- console.log(error);
+ 
  return res.status(500).json({ success: false, message: error.message });
   }
 }
@@ -594,7 +594,7 @@ exports.getVendors = async (req, res) => {
           });
 
     } catch (error) {
-        console.error(error);
+        
         return res.status(500).json({
            success: false,
             message: error.message
@@ -614,7 +614,7 @@ exports.getVenueRoleList = async(req,res)=>{
     //    message: "User Id not found" })
     //     }
     const venueRole = await User.find({role:"Venue Admin"}).sort({createdAt:-1})
-    console.log(venueRole.length,"venueRole");
+    
     if(venueRole.length > 0){
       return res.json({
         status:200,
@@ -631,7 +631,7 @@ exports.getVenueRoleList = async(req,res)=>{
     
     
   } catch (error) {
-    console.log(error);
+    
     return res.json({
       status:500,
       success:false,
@@ -832,7 +832,7 @@ exports.getVenue = async (req, res) => {
       .status(200)
       .json({ message: "New Venue successfully retrieved", venue: newVenueDB });
   } catch (error) {
-    console.log(error);
+    
     return res.status(500).json({
       success: false,
       message: error.message,
@@ -847,7 +847,7 @@ exports.actualvenueVerifyBySuperAdmin = async(req,res)=>{
     const id = req.params.venueId
     const verifyStatus = req.params.verifyStatus
     const user = req.user.userID
-    console.log(id,verifyStatus,user)
+    
     if(req.user.role =='Super Admin'){
       const verifyVenue = await Venue1.findByIdAndUpdate(id, {
       verification_status: verifyStatus,
@@ -1033,7 +1033,7 @@ exports.venueVerifyBySuperAdmin = async (req, res) => {
       verification_status: verifyVenue.verification_status,
     });
   } catch (error) {
-    console.error("Error in venueVerifyBySuperAdmin:", error);
+    
     return res.status(500).json({
       status: 500,
       success: false,
@@ -1066,7 +1066,7 @@ exports.toggleVenueStatus = async (req, res) => {
       data: venue,
     });
   } catch (error) {
-    console.error("Error toggling venue status:", error.message);
+    
     res.status(500).json({ 
       success: false, 
       message: "Unable to toggle venue status", 

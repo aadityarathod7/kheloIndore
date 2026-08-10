@@ -11,7 +11,7 @@ require("dotenv").config();
 
 const checkAndSendBookingEmail = async () => {
   try {
-    console.log("Running cron job to check booking status...");
+    
 
     // Fetch the latest booking from each collection and populate necessary fields
     const latestBooking = await Booking.findOne({
@@ -46,7 +46,7 @@ const checkAndSendBookingEmail = async () => {
 
     // If no bookings found, exit function
     if (allBookings.length === 0) {
-      console.log("No pending bookings found.");
+      
       return;
     }
 
@@ -61,8 +61,8 @@ const checkAndSendBookingEmail = async () => {
         const venue = booking.venue_id || booking.coachId || booking.pt_id;
 
         // Log populated user and venue details
-        console.log('Booking Details:', booking);
-        console.log('Venue Details:', venue);
+        
+        
 
         const role = booking.coachId
           ? "Coach"
@@ -112,11 +112,11 @@ const checkAndSendBookingEmail = async () => {
         // Update the booking document to prevent duplicate emails
         await booking.updateOne({ isMailSent: true });
 
-        console.log(`Email sent for booking at ${venueName} (${role}).`);
+        
       }
     }
   } catch (error) {
-    console.error("Error in cron job for booking verification:", error);
+    
   }
 };
 
@@ -126,4 +126,4 @@ cron.schedule("* * * * *", checkAndSendBookingEmail, {
   timezone: "Asia/Kolkata", // Change as per your timezone
 });
 
-console.log("Cron job scheduled for checking pending bookings.");
+

@@ -3,6 +3,25 @@ const Admin = require("../models/AdminModel");
 const path = require("path");
 const blogModel = require('../models/BlogModel');
 
+const createSlug = (value = '') => value
+  .toString()
+  .trim()
+  .toLowerCase()
+  .replace(/[^a-z0-9]+/g, '-')
+  .replace(/(^-|-$)/g, '');
+
+const normalizeBlogFields = (body = {}) => {
+  const slug_url = createSlug(body.slug_url || body.blog_title);
+  return {
+    ...body,
+    slug_url,
+    canonical_url: body.canonical_url?.trim() || slug_url,
+    blog_image_alt: body.blog_image_alt?.trim() || body.blog_title?.trim() || '',
+    meta_title: body.meta_title?.trim() || body.blog_title?.trim() || '',
+    status: body.status === 'inactive' ? 'inactive' : 'active',
+  };
+};
+
 exports.createBlog = async (req, res) => {
     const {
         blog_title,
@@ -12,7 +31,9 @@ exports.createBlog = async (req, res) => {
         meta_keywords,
         meta_title,
         meta_description,
-        canonical_url
+        canonical_url,
+        blog_image_alt,
+        status
     } = req.body;
 
     if (!blog_title) {
@@ -28,7 +49,13 @@ exports.createBlog = async (req, res) => {
         });
     }
     try {
-        const blogData = await blogModel.findOne({ blog_title: blog_title });
+        const normalizedData = normalizeBlogFields({
+            blog_title, slug_url, blog_description, blog_image, meta_keywords,
+            meta_title, meta_description, canonical_url, blog_image_alt, status
+        });
+        const blogData = await blogModel.findOne({
+            $or: [{ blog_title: blog_title }, { slug_url: normalizedData.slug_url }]
+        });
         if (blogData) {
             return res.status(400).json({
                 success: false,
@@ -36,16 +63,7 @@ exports.createBlog = async (req, res) => {
             });
         }
 
-        const newData = new blogModel({
-            blog_title,
-            slug_url,
-            blog_description,
-            blog_image,
-            meta_keywords,
-            meta_title,
-            meta_description,
-            canonical_url
-        });
+        const newData = new blogModel(normalizedData);
 
         const savedData = await newData.save();
         return res.status(200).json({
@@ -54,7 +72,7 @@ exports.createBlog = async (req, res) => {
             data: savedData
         });
     } catch (error) {
-        console.error(error);
+        
         return res.status(500).json({
             success: false,
             message: error.message
@@ -82,7 +100,6 @@ exports.createBlog = async (req, res) => {
 //             data: blogData
 //         });
 //     } catch (error) {
-//         console.log({ error });
 //         return res.status(500).json({
 //             status: false,
 //             message: error.message
@@ -92,7 +109,7 @@ exports.createBlog = async (req, res) => {
 
 exports.getBlogById = async (req, res) => {
     try {
-      const { id, slug_url } = req.query; // Fetch `id` or `slug_url` from the query
+      const { id, slug_url, public: isPublic } = req.query; // Fetch `id` or `slug_url` from the query
   
       if (!id && !slug_url) {
         return res.status(400).json({
@@ -102,9 +119,11 @@ exports.getBlogById = async (req, res) => {
       }
   
       // Query the database by `_id` or `slug_url`
-      const blogData = await blogModel.findOne({
+      const query = {
         $or: [{ _id: id }, { slug_url: slug_url }],
-      });
+      };
+      if (isPublic === 'true') query.status = 'active';
+      const blogData = await blogModel.findOne(query);
   
       if (!blogData) {
         return res.status(404).json({
@@ -118,7 +137,7 @@ exports.getBlogById = async (req, res) => {
         data: blogData,
       });
     } catch (error) {
-      console.error('Error fetching blog:', error);
+      
       return res.status(500).json({
         success: false,
         message: error.message,
@@ -143,7 +162,7 @@ exports.getAllBlog = async (req, res) => {
             count: totalCount
         });
     } catch (error) {
-        console.log({ error });
+        
         return res.status(500).json({
             status: false,
             message: error.message
@@ -165,7 +184,7 @@ exports.getAllActiveBlog = async (req, res) => {
             data: blogData
         });
     } catch (error) {
-        console.log({ error });
+        
         return res.status(500).json({
             status: false,
             message: error.message
@@ -201,7 +220,6 @@ exports.getAllActiveBlog = async (req, res) => {
 //             data: updatedBlog
 //         });
 //     } catch (error) {
-//         console.log(error);
 //         return res.status(500).json({
 //             status: false,
 //             message: error.message
@@ -233,10 +251,18 @@ exports.updateBlog = async (req, res) => {
         });
       }
   
+      const normalizedData = normalizeBlogFields(req.body);
+      if (normalizedData.slug_url !== blogData.slug_url) {
+        const existingSlug = await blogModel.findOne({ slug_url: normalizedData.slug_url, _id: { $ne: blogData._id } });
+        if (existingSlug) {
+          return res.status(400).json({ success: false, message: 'Blog slug already exists.' });
+        }
+      }
+
       // Update the blog
       const updatedBlog = await blogModel.findOneAndUpdate(
         { _id: blogData._id }, // Use the blog's `_id` for updating
-        req.body,
+        { ...normalizedData, updated_at: new Date() },
         { new: true } // Return the updated document
       );
   
@@ -245,7 +271,7 @@ exports.updateBlog = async (req, res) => {
         data: updatedBlog,
       });
     } catch (error) {
-      console.error('Error updating blog:', error);
+      
       return res.status(500).json({
         success: false,
         message: error.message,
@@ -285,7 +311,7 @@ exports.deleteBlog = async (req, res) => {
             data: updatedBlog
         });
     } catch (error) {
-        console.error('Error changing blog status:', error.message);
+        
         return res.status(500).json({
             success: false,
             message: 'Internal server error. Please try again later.',

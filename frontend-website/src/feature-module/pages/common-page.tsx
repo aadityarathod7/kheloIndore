@@ -88,9 +88,9 @@ export default function CommonPage() {
                 }));
                 setTrainer(mappedData);
 
-            } catch (error) {
-                console.error("Error fetching trainer:", error);
-            }
+            } catch {
+        // The request failure is handled by the surrounding UI state.
+      }
         };
 
         fetchTrainer();
@@ -118,9 +118,9 @@ export default function CommonPage() {
                     near_by_location: coach.near_by_location,
                 }));
                 setCoaches(mappedData);
-            } catch (error) {
-                console.error("Error fetching coaches:", error);
-            }
+            } catch {
+        // The request failure is handled by the surrounding UI state.
+      }
         };
 
         fetchCoaches();
@@ -147,9 +147,9 @@ export default function CommonPage() {
                     // profile: coach.profile
                 }));
                 setVenues(mappedData);
-            } catch (error) {
-                console.error("Error fetching venues:", error);
-            }
+            } catch {
+        // The request failure is handled by the surrounding UI state.
+      }
         };
 
         fetchVenues();

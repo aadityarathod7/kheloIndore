@@ -8,7 +8,7 @@ exports.actualcreateSlots = async (req, res) => {
   try {
     const { dateFrom, dateTo, slots } = req.body;
     const venue_id = req.params.id;
-    console.log(req.body, "req.bodyreq.body");
+    
 
     for (
       let currentDate = new Date(dateFrom);
@@ -22,7 +22,7 @@ exports.actualcreateSlots = async (req, res) => {
       });
 
       if (existingSlots) {
-        console.log(`Slots already exist for venue ${venue_id} on ${currentDate.toISOString()}`);
+        
 
         // Iterate through the slots provided in the request body
         for (let slot of slots) {
@@ -32,27 +32,36 @@ exports.actualcreateSlots = async (req, res) => {
               existingSlot.startTime === slot.startTime && existingSlot.endTime === slot.endTime
           );
 
-          // If the slot does not exist, add it to the existingSlots
-          if (!slotExists) {
+          // An offline block may target a slot that already exists. In that
+          // case reserve the existing slot instead of silently skipping it.
+          if (slotExists && slot.isOfflineBlocked) {
+            const existingSlot = existingSlots.slots.find(
+              (item) => item.startTime === slot.startTime && item.endTime === slot.endTime
+            );
+            existingSlot.isBooked = true;
+            existingSlot.isOfflineBlocked = true;
+          } else if (!slotExists) {
             existingSlots.slots.push({
               startTime: slot.startTime,
               endTime: slot.endTime,
               price: slot.price,
-              isBooked: false,
+              isBooked: Boolean(slot.isBooked),
+              isOfflineBlocked: Boolean(slot.isOfflineBlocked),
             });
           }
         }
 
         // Save the updated slots back to the database
         await existingSlots.save();
-        console.log(`Slots updated for venue ${venue_id} on ${currentDate.toISOString()}`);
+        
       } else {
         // If no slots exist for the date, create new slots
         const slotArray = slots.map((slot) => ({
           startTime: slot.startTime,
           endTime: slot.endTime,
           price: slot.price,
-          isBooked: false,
+          isBooked: Boolean(slot.isBooked),
+          isOfflineBlocked: Boolean(slot.isOfflineBlocked),
         }));
 
         const newSlots = await Slot.create({
@@ -60,13 +69,13 @@ exports.actualcreateSlots = async (req, res) => {
           date: currentDate,
           slots: slotArray,
         });
-        console.log(`New slots created for venue ${venue_id} on ${currentDate.toISOString()}`);
+        
       }
     }
 
     return res.status(200).json({ message: "Slots created/updated successfully" });
   } catch (error) {
-    console.error("Error creating or updating slots:", error);
+    
     return res.status(500).json({ message: error.message });
   }
 };
@@ -74,7 +83,7 @@ exports.createSlots = async (req, res) => {
   try {
     const { dateFrom, dateTo, slots } = req.body;
     const venue_id = req.params.id;
-    console.log(req.body, "req.bodyreq.body");
+    
 
     for (
       let currentDate = new Date(dateFrom);
@@ -92,7 +101,7 @@ exports.createSlots = async (req, res) => {
       });
 
       if (existingSlots) {
-        console.log(`Slots already exist for venue ${venue_id} on ${normalizedDate.toISOString()}`);
+        
 
         // Iterate through the slots provided in the request body
         for (let slot of slots) {
@@ -102,27 +111,36 @@ exports.createSlots = async (req, res) => {
               existingSlot.startTime === slot.startTime && existingSlot.endTime === slot.endTime
           );
 
-          // If the slot does not exist, add it to the existingSlots
-          if (!slotExists) {
+          // An offline block may target a slot that already exists. In that
+          // case reserve the existing slot instead of silently skipping it.
+          if (slotExists && slot.isOfflineBlocked) {
+            const existingSlot = existingSlots.slots.find(
+              (item) => item.startTime === slot.startTime && item.endTime === slot.endTime
+            );
+            existingSlot.isBooked = true;
+            existingSlot.isOfflineBlocked = true;
+          } else if (!slotExists) {
             existingSlots.slots.push({
               startTime: slot.startTime,
               endTime: slot.endTime,
               price: slot.price,
-              isBooked: false,
+              isBooked: Boolean(slot.isBooked),
+              isOfflineBlocked: Boolean(slot.isOfflineBlocked),
             });
           }
         }
 
         // Save the updated slots back to the database
         await existingSlots.save();
-        console.log(`Slots updated for venue ${venue_id} on ${normalizedDate.toISOString()}`);
+        
       } else {
         // If no slots exist for the date, create new slots
         const slotArray = slots.map((slot) => ({
           startTime: slot.startTime,
           endTime: slot.endTime,
           price: slot.price,
-          isBooked: false,
+          isBooked: Boolean(slot.isBooked),
+          isOfflineBlocked: Boolean(slot.isOfflineBlocked),
         }));
 
         const newSlots = await Slot.create({
@@ -130,13 +148,13 @@ exports.createSlots = async (req, res) => {
           date: normalizedDate,
           slots: slotArray,
         });
-        console.log(`New slots created for venue ${venue_id} on ${normalizedDate.toISOString()}`);
+        
       }
     }
 
     return res.status(200).json({ message: "Slots created/updated successfully" });
   } catch (error) {
-    console.error("Error creating or updating slots:", error);
+    
     return res.status(500).json({ message: error.message });
   }
 };
@@ -188,7 +206,7 @@ exports.fetchSlots = async (req, res) => {
       data: slotAvailable,
     });
   } catch (err) {
-    console.error("Error:", err);
+    
     return res.status(500).json({ error:err.message });
   }
 };
@@ -211,7 +229,7 @@ exports.actualgetAllSlotsByVenueId = async (req, res) => {
       data: slotAvailable
         });
   } catch (err) {
-    console.error("Error:", err);
+    
     return res.status(500).json({ error:err.message });
   }
 };
@@ -241,7 +259,7 @@ exports.getAllSlotsByVenueId = async (req, res) => {
       data: filteredSlots
     });
   } catch (err) {
-    console.error("Error:", err);
+    
     return res.status(500).json({ error: err.message });
   }
 };
@@ -263,7 +281,7 @@ exports.getSlotsBySlotID = async (req, res) => {
       data: slot,
         });
   } catch (err) {
-    console.error("Error:", err);
+    
     return res.status(500).json({ error:err.message });
   }
 };
@@ -288,14 +306,14 @@ exports.updateSlotBySlotID= async (req, res) => {
       // Find the slot in the array and update it
       const slotIndex = slot.slots.findIndex(s => s._id.toString() === slotData._id);
       if (slotIndex !== -1) {
-        slot.slots[slotIndex] = {
-          ...slot.slots[slotIndex],
-          ...slotData // Update the slot with new data
-        };
+        // Update the embedded Mongoose document directly so newly added
+        // fields such as isOfflineBlocked are reliably persisted.
+        Object.assign(slot.slots[slotIndex], slotData);
       }
     }
 
     // Save the updated slot back to the database
+    slot.markModified("slots");
     await slot.save();
 
     return res.status(200).json({
@@ -304,7 +322,7 @@ exports.updateSlotBySlotID= async (req, res) => {
       data: slot
     });
   } catch (error) {
-    console.error("Error:", error);
+    
     return res.status(500).json({ success: false, message: "Server error", error: error.message });
   }
 };
@@ -328,7 +346,8 @@ exports.getSlotById = async (req, res) => {
           startTime: "$slots.startTime",
           endTime: "$slots.endTime",
           price: "$slots.price",
-          isBooked: "$slots.isBooked"
+          isBooked: "$slots.isBooked",
+          isOfflineBlocked: "$slots.isOfflineBlocked"
         }
       }
     ]);
@@ -345,7 +364,7 @@ exports.getSlotById = async (req, res) => {
       });
     }
   } catch (error) {
-    console.error("Error fetching slot details:", error);
+    
     return res.status(500).json({
       message: "Internal server error",
       error: error.message
@@ -356,7 +375,7 @@ exports.getSlotById = async (req, res) => {
 exports.deleteSlotBySlotID = async (req, res) => {
   try {
     const { id } = req.params; // Get slot ID from request params
-    console.log("Slot ID:", id); // Log slotId to see its format
+     // Log slotId to see its format
 
     // Check if the slotId is a valid ObjectId
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -395,8 +414,7 @@ exports.deleteSlotBySlotID = async (req, res) => {
     });
 
   } catch (error) {
-    console.error("Error deleting slot:", error);
+    
     return res.status(500).json({ success: false, message: "Internal Server Error", error: error.message });
   }
 };
-

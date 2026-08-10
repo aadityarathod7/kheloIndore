@@ -210,7 +210,7 @@ exports.startConversation = async (req, res) => {
       messages,
     });
   } catch (error) {
-    console.error("Error starting conversation:", error.message);
+    
     return res
       .status(500)
       .json({ success: false, message: "Failed to start conversation" });
@@ -275,7 +275,7 @@ exports.getConversations = async (req, res) => {
 
     return res.json({ success: true, conversations: result });
   } catch (error) {
-    console.error("Error fetching conversations:", error.message);
+    
     return res
       .status(500)
       .json({ success: false, message: "Failed to fetch conversations" });
@@ -324,7 +324,7 @@ exports.getMessages = async (req, res) => {
       })),
     });
   } catch (error) {
-    console.error("Error fetching messages:", error.message);
+    
     return res
       .status(500)
       .json({ success: false, message: "Failed to fetch messages" });
@@ -387,7 +387,7 @@ exports.sendMessage = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Error sending message:", error.message);
+    
     return res
       .status(500)
       .json({ success: false, message: "Failed to send message" });
@@ -429,7 +429,7 @@ exports.markRead = async (req, res) => {
 
     return res.json({ success: true, message: "Conversation marked as read" });
   } catch (error) {
-    console.error("Error marking read:", error.message);
+    
     return res
       .status(500)
       .json({ success: false, message: "Failed to mark conversation as read" });
@@ -473,7 +473,7 @@ exports.getUnreadCount = async (req, res) => {
 
     return res.json({ success: true, total });
   } catch (error) {
-    console.error("Error fetching unread count:", error.message);
+    
     return res.json({ success: true, total: 0 });
   }
 };

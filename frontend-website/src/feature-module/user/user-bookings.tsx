@@ -73,12 +73,29 @@ const UserBookings = () => {
   }, [token]);
   const user_id = userDataId?.userID
   const convertTo12HourFormat = (time: any) => {
-    const [hours, minutes] = time.split(":");
+    if (typeof time !== "string") return "";
+    const normalized = time.trim().replace(/\s+/g, " ");
+    // Slot records already use 12-hour strings such as "10:30 AM".
+    if (/\b(AM|PM)\b/i.test(normalized)) return normalized;
+
+    const [hours, minutes] = normalized.split(":");
+    if (!hours || !minutes) return normalized;
     const hour = parseInt(hours, 10);
     const suffix = hour >= 12 ? "PM" : "AM";
     const formattedHour = hour % 12 || 12;
     const formattedMinutes = minutes.padStart(2, '0');
     return `${formattedHour}:${formattedMinutes} ${suffix}`;
+  };
+
+  const getBookingStatus = (booking: any) => {
+    const refundStatus = String(booking?.refund?.refundStatus || "").toUpperCase();
+    if (refundStatus === "SUCCESS" || refundStatus === "COMPLETED") return "Refunded";
+    if (refundStatus === "PENDING") return "Refund Pending";
+    if (booking?.cancellation_status === 1) return "Cancelled";
+    if (booking?.verification_status === 1) return "Approved";
+    if (booking?.verification_status === 2) return "Rejected";
+    if (["COMPLETED", "SUCCESS"].includes(String(booking?.paymentState || "").toUpperCase())) return "Completed";
+    return booking?.paymentState || "Pending";
   };
 
   const fetchBookings = async () => {
@@ -94,9 +111,9 @@ const UserBookings = () => {
       const booking = response.data;
       setBookingData(booking);
       setCurrentTime(booking.data.formattedIST);
-    } catch (error) {
-      console.error("Error fetching slots:", error);
-    }
+    } catch {
+        // The request failure is handled by the surrounding UI state.
+      }
   };
 
   useEffect(() => {
@@ -120,13 +137,8 @@ const UserBookings = () => {
       pdfUrl: booking?.pdf_url,
       cancellation_status: booking?.cancellation_status,
       createdAt: booking?.createdAt,
-      status: booking?.cancellation_status === 1
-        ? 'Cancelled'
-        : booking?.verification_status === 1
-          ? 'Approved'
-          : booking?.verification_status === 2
-            ? 'Rejected'
-            : booking?.paymentState
+      refund: booking?.refund,
+      status: getBookingStatus(booking)
     }));
     setTrainerBookingData(transformed);
 
@@ -143,13 +155,8 @@ const UserBookings = () => {
       id: booking?._id,
       cancellation_status: booking?.cancellation_status,
       createdAt: booking?.createdAt,
-      status: booking?.cancellation_status === 1
-        ? 'Cancelled'
-        : booking?.verification_status === 1
-          ? 'Approved'
-          : booking?.verification_status === 2
-            ? 'Rejected'
-            : booking?.paymentState
+      refund: booking?.refund,
+      status: getBookingStatus(booking)
     }));
     setVenueBookingData(transformedVenue);
 
@@ -168,13 +175,8 @@ const UserBookings = () => {
       cancellation_status: booking?.cancellation_status,
       id: booking?._id,
       createdAt: booking?.createdAt,
-      status: booking?.cancellation_status === 1
-        ? 'Cancelled'
-        : booking?.verification_status === 1
-          ? 'Approved'
-          : booking?.verification_status === 2
-            ? 'Rejected'
-            : booking?.paymentState
+      refund: booking?.refund,
+      status: getBookingStatus(booking)
     }));
     setCoachBookingData(transformedCoach);
 
@@ -228,7 +230,7 @@ const UserBookings = () => {
         Swal.fire('Cancelled!', 'Your booking has been cancelled.', 'success');
       } catch (error) {
         fetchBookings();
-        console.error('Error canceling booking:', error);
+        
         swalLoading.close();
         Swal.fire('Error', 'There was an error cancelling your booking.', 'error');
       }
@@ -276,7 +278,7 @@ const UserBookings = () => {
         Swal.fire('Cancelled!', 'Your booking has been cancelled.', 'success');
       } catch (error) {
         fetchBookings();
-        console.error('Error canceling booking:', error);
+        
         swalLoading.close();
         Swal.fire('Error', 'There was an error cancelling your booking.', 'error');
       }
@@ -323,7 +325,7 @@ const UserBookings = () => {
         Swal.fire('Cancelled!', 'Your booking has been cancelled.', 'success');
       } catch (error) {
         fetchBookings();
-        console.error('Error canceling booking:', error);
+        
         swalLoading.close(); // Close the loader
         Swal.fire('Error', 'There was an error cancelling your booking.', 'error');
       }
@@ -435,7 +437,7 @@ const UserBookings = () => {
           <div className="row">
             <div className="col-sm-12">
               <div className="court-tab-content">
-                <div className="card card-tableset">
+                <div className="card card-tableset ki-bookings-card">
                   <div className="card-body">
                     <div className="coache-head-blk">
                       <div className="row align-items-center">
@@ -539,11 +541,11 @@ const UserBookings = () => {
                             </Link>
                           </div>
                         ) : (
-                          <div className="table-responsive table-datatble">
-                            <table className="table datatable">
+                          <div className="table-responsive table-datatble ki-bookings-table-wrap">
+                            <table className="table datatable ki-bookings-table ki-venue-bookings-table">
                               <thead className="thead-light">
                                 <tr>
-                                  <th>Venue Name</th>
+                                  <th style={{ color: "#1E293B" }}>Venue Name</th>
                                   <th>Venue Type</th>
                                   <th>Date &amp; Time</th>
                                   <th>Payment</th>
@@ -581,14 +583,14 @@ const UserBookings = () => {
                                         <AiFillFilePdf size={24} color="#E53E3E" />
                                       </a>
                                     </td>
-                                    <td>
-                                      <span className={`ki-badge ${bookingData?.status === "Approved" ? "confirmed" : bookingData?.status === "Pending" ? "pending" : "cancelled"}`}>
+                                    <td className="ki-booking-status-cell">
+                                      <span className={`ki-badge ${["Approved", "Completed", "Refunded"].includes(bookingData?.status) ? "confirmed" : bookingData?.status === "Pending" || bookingData?.status === "Refund Pending" ? "pending" : "cancelled"}`}>
                                         {bookingData?.status}
                                       </span>
                                     </td>
-                                    <td>
+                                    <td className="ki-booking-action-cell">
                                       {bookingData?.status === 'Rejected' ? "" : bookingData?.cancellation_status === 1 ? (
-                                        <span className="pay-dark fs-16 btn btn-secondary" style={{ pointerEvents: "none", opacity: 0.6 }}>Cancelled</span>
+                                        <span className="btn" style={{ pointerEvents: "none", color: "#64748B", background: "#F1F5F9", border: "1px solid #CBD5E1", opacity: 1, fontWeight: 600 }}>Cancelled</span>
                                       ) : (new Date() - new Date(bookingData.createdAt)) / (1000 * 60 * 60) < 2 ? (
                                         <span className="pay-dark fs-16 btn btn-primary" onClick={() => cancelVenueBooking(bookingData)}>Cancel</span>
                                       ) : ""}
@@ -628,8 +630,8 @@ const UserBookings = () => {
                             </Link>
                           </div>
                         ) : (
-                          <div className="table-responsive table-datatble">
-                            <table className="table datatable">
+                          <div className="table-responsive table-datatble ki-bookings-table-wrap">
+                            <table className="table datatable ki-bookings-table ki-provider-bookings-table">
                               <thead className="thead-light">
                                 <tr>
                                   <th>Coach Name</th>
@@ -644,7 +646,7 @@ const UserBookings = () => {
                               <tbody>
                                 {coachBookingData.map((bookingData, index) => (
                                   <tr key={index}>
-                                    <td>
+                                    <td className="ki-booking-action-cell">
                                       <h2 className="table-avatar">
                                         <span className="table-head-name flex-grow-1">
                                           <Link to="#" data-bs-toggle="modal" data-bs-target="#profile-coach">
@@ -668,13 +670,13 @@ const UserBookings = () => {
                                       </a>
                                     </td>
                                     <td>
-                                      <span className={`ki-badge ${bookingData?.status === "Approved" ? "confirmed" : bookingData?.status === "Pending" ? "pending" : "cancelled"}`}>
+                                      <span className={`ki-badge ${["Approved", "Completed", "Refunded"].includes(bookingData?.status) ? "confirmed" : bookingData?.status === "Pending" || bookingData?.status === "Refund Pending" ? "pending" : "cancelled"}`}>
                                         {bookingData?.status}
                                       </span>
                                     </td>
                                     <td>
                                       {bookingData?.status === 'Rejected' ? "" : bookingData?.cancellation_status === 1 ? (
-                                        <span className="pay-dark fs-16 btn btn-secondary" style={{ pointerEvents: "none", opacity: 0.6 }}>Cancelled</span>
+                                        <span className="btn" style={{ pointerEvents: "none", color: "#64748B", background: "#F1F5F9", border: "1px solid #CBD5E1", opacity: 1, fontWeight: 600 }}>Cancelled</span>
                                       ) : (new Date() - new Date(bookingData.createdAt)) / (1000 * 60 * 60) < 2 ? (
                                         <span className="pay-dark fs-16 btn btn-primary" onClick={() => cancelCoachBooking(bookingData)}>Cancel</span>
                                       ) : ""}
@@ -714,8 +716,8 @@ const UserBookings = () => {
                             </Link>
                           </div>
                         ) : (
-                          <div className="table-responsive table-datatble">
-                            <table className="table datatable">
+                          <div className="table-responsive table-datatble ki-bookings-table-wrap">
+                            <table className="table datatable ki-bookings-table ki-provider-bookings-table">
                               <thead className="thead-light">
                                 <tr>
                                   <th>Trainer Name</th>
@@ -754,13 +756,13 @@ const UserBookings = () => {
                                       </a>
                                     </td>
                                     <td>
-                                      <span className={`ki-badge ${bookingData?.status === "Approved" ? "confirmed" : bookingData?.status === "Pending" ? "pending" : "cancelled"}`}>
+                                      <span className={`ki-badge ${["Approved", "Completed", "Refunded"].includes(bookingData?.status) ? "confirmed" : bookingData?.status === "Pending" || bookingData?.status === "Refund Pending" ? "pending" : "cancelled"}`}>
                                         {bookingData?.status}
                                       </span>
                                     </td>
                                     <td>
                                       {bookingData?.status === 'Rejected' ? "" : bookingData?.cancellation_status === 1 ? (
-                                        <span className="pay-dark fs-16 btn btn-secondary" style={{ pointerEvents: "none", opacity: 0.6 }}>Cancelled</span>
+                                        <span className="btn" style={{ pointerEvents: "none", color: "#64748B", background: "#F1F5F9", border: "1px solid #CBD5E1", opacity: 1, fontWeight: 600 }}>Cancelled</span>
                                       ) : (new Date() - new Date(bookingData.createdAt)) / (1000 * 60 * 60) < 2 ? (
                                         <span className="pay-dark fs-16 btn btn-primary" onClick={() => cancelTrainerBooking(bookingData)}>Cancel</span>
                                       ) : ""}

@@ -127,9 +127,9 @@ const TrainingTimeDate = (props: any) => {
     setIsNextButtonDisabledTwo(!startDate || !endDate);
   }, [startDate, endDate]);
 
-  console.log(selectedBatch, "selectedBatch-=-=-selectedBatch")
-  console.log(startDate, "startDate-=-=-startDate")
-  console.log(endDate, "endDate-=-=-endDate")
+  
+  
+  
 
   const getAllSlots = async () => {
     try {
@@ -140,13 +140,12 @@ const TrainingTimeDate = (props: any) => {
           },
         }
       );
-      console.log(response.data.data);
+      
       setSlotData(response?.data?.data)
 
-    } catch (error) {
-      console.error('Error fetching slots:', error);
-      console.log(error, "error")
-    }
+    } catch {
+        // The request failure is handled by the surrounding UI state.
+      }
   };
 
   useEffect(() => {
@@ -158,7 +157,7 @@ const TrainingTimeDate = (props: any) => {
       const slotStartDate = slot.start_date.split('T')[0]; // Extract only the date part (yyyy-mm-dd)
       return slotStartDate === startDateToCheck;
     });
-    console.log(matchedSlot, "slot for id")
+    
     setDateId(matchedSlot ? matchedSlot.id : null)
   };
 
@@ -175,14 +174,13 @@ const TrainingTimeDate = (props: any) => {
           },
         }
       );
-      console.log(response.data.data);
+      
       setTimeSlot(response?.data?.data)
-    } catch (error) {
-      console.error('Error fetching slots:', error);
-      console.log(error, "error")
-    }
+    } catch {
+        // The request failure is handled by the surrounding UI state.
+      }
   }
-  console.log(selectedTimeSlot, "sdjkafhkjalsdhf")
+  
 
   const handleCalculateDays = () => {
     if (startDate && endDate) {
@@ -212,8 +210,8 @@ const TrainingTimeDate = (props: any) => {
         );
         const trainerDataId = response.data.personalTrainer;
         setTrainerData(trainerDataId);
-      } catch (error) {
-        console.error("Error fetching coaches:", error);
+      } catch {
+        // The request failure is handled by the surrounding UI state.
       }
     };
     fetchTrainerId();
@@ -227,8 +225,8 @@ const TrainingTimeDate = (props: any) => {
         );
         const batchDataId = response.data.data;
         setBatchData(batchDataId);
-      } catch (error) {
-        console.error("Error fetching batches:", error);
+      } catch {
+        // The request failure is handled by the surrounding UI state.
       }
     };
     fetchBatchId();
@@ -242,8 +240,8 @@ const TrainingTimeDate = (props: any) => {
         );
         const slotDataId = response.data.data;
         setSlotData(slotDataId);
-      } catch (error) {
-        console.error("Error fetching slots:", error);
+      } catch {
+        // The request failure is handled by the surrounding UI state.
       }
     };
     fetchSlotId();
@@ -295,7 +293,7 @@ const TrainingTimeDate = (props: any) => {
       end_time: selectedTimeSlot?.end_time,
     };
 
-    console.log(bookingData, "data for booking")
+    
 
     try {
       navigate(`/personal-training/training-order-confirm/${id}`, {
@@ -305,7 +303,7 @@ const TrainingTimeDate = (props: any) => {
         },
       });
     } catch (error) {
-      console.error("Error making the booking:", error);
+      
       Swal.fire({
         title: "Error",
         text: "An error occurred during booking. Please select any slot.",

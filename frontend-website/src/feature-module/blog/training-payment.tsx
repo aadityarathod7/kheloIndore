@@ -39,8 +39,8 @@ const TrainingPayment = (props: any) => {
         );
         const trainerDataId = response.data.personalTrainer;
         setTrainerData(trainerDataId);
-      } catch (error) {
-        console.error("Error fetching coaches:", error);
+      } catch {
+        // The request failure is handled by the surrounding UI state.
       }
     };
     fetchTrainerId();

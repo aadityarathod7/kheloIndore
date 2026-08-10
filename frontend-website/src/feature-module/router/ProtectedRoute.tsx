@@ -9,7 +9,21 @@ interface ProtectedRouteProps {
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const token = localStorage.getItem("token");
 
-  if (!token) {
+  let isValidSession = false;
+  try {
+    const encodedPayload = token?.split(".")[1];
+    const payload = encodedPayload
+      ? JSON.parse(atob(encodedPayload.replace(/-/g, "+").replace(/_/g, "/")))
+      : null;
+    isValidSession = Boolean(payload?.exp && payload.exp * 1000 > Date.now());
+  } catch {
+    isValidSession = false;
+  }
+
+  if (!isValidSession) {
+    localStorage.removeItem("token");
+    localStorage.removeItem("id");
+    localStorage.removeItem("role");
     return <Navigate to={all_routes.login} replace />;
   }
 

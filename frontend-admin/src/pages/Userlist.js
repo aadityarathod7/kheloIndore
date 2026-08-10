@@ -53,7 +53,7 @@ function Userlist() {
       setUserData(response?.data?.data);
       setLoading(false);
     } catch (error) {
-      console.error("Error fetching user data:", error);
+      
       setLoading(false);
     }
   };
@@ -119,7 +119,7 @@ function Userlist() {
         fetchUserData();
       }
     } catch (error) {
-      console.error("Error deleting user:", error);
+      
     }
   };
 
@@ -140,7 +140,7 @@ function Userlist() {
         fetchUserData();
       }
     } catch (error) {
-      console.error("Error updating user:", error);
+      
     }
   }
 

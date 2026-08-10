@@ -83,7 +83,7 @@ exports.createPTBooking = async (req, res) => {
       data: newBooking,
     });
   } catch (err) {
-    console.error(err);
+    
     return res.status(500).json({
       success: false,
       message: "Error booking slot",
@@ -161,7 +161,7 @@ exports.wgetPTBooking = async (req, res) => {
       data: populatedBooking,
     });
   } catch (error) {
-    console.error("Error fetching PT booking:", error);
+    
 
     res.status(500).json({
       success: false,
@@ -257,7 +257,7 @@ exports.getPTBooking = async (req, res) => {
       data: populatedBooking,
     });
   } catch (error) {
-    console.error("Error fetching PT booking:", error);
+    
 
     res.status(500).json({
       success: false,
@@ -364,7 +364,7 @@ exports.cancelPtSlotBooking = async (req, res) => {
       data: updatedSlots,
     });
   } catch (error) {
-    console.error("Error updating coach slot booking:", error);
+    
     res.status(500).json({
       success: false,
       message: "Failed to update coach slot booking",

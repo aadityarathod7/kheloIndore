@@ -42,10 +42,10 @@ let failed = 0;
 function assert(name, cond) {
   if (cond) {
     passed++;
-    console.log(`  ✓ ${name}`);
+    
   } else {
     failed++;
-    console.log(`  ✗ FAIL: ${name}`);
+    
   }
 }
 
@@ -76,7 +76,7 @@ async function main() {
   });
 
   // 1. Start a conversation (user -> coach)
-  console.log("\n[startConversation]");
+  
   const res1 = mockRes();
   await chat.startConversation(
     reqFor(user._id, "User", { peerRole: "Coach", peerRef: coach._id.toString() }),
@@ -97,7 +97,7 @@ async function main() {
   assert("no duplicate conversation rows", dupCount === 1);
 
   // 3. Send messages from both sides
-  console.log("\n[sendMessage]");
+  
   const res3 = mockRes();
   await chat.sendMessage(reqFor(user._id, "User", { text: "Hello coach!" }, { id: convId }), res3);
   assert("user message sent", res3.body.success === true && res3.body.message.text === "Hello coach!");
@@ -110,7 +110,7 @@ async function main() {
   assert("coach message sent", res4.body.success === true && res4.body.message.text === "Hi there!");
 
   // 4. Coach lists conversations -> should see the thread with unread = 1 (his own read=false doesn't count)
-  console.log("\n[getConversations as coach]");
+  
   const res5 = mockRes();
   await chat.getConversations(reqFor(coach._id, "Coach"), res5);
   assert("coach sees 1 conversation", res5.body.conversations.length === 1);
@@ -118,7 +118,7 @@ async function main() {
   assert("peer resolves to user", convForCoach.peer && convForCoach.peer.name === "Test User");
 
   // 5. Unread count for coach (1 unread: the user's message)
-  console.log("\n[getUnreadCount]");
+  
   const res6 = mockRes();
   await chat.getUnreadCount(reqFor(coach._id, "Coach"), res6);
   assert("coach unread count = 1", res6.body.total === 1);
@@ -133,7 +133,7 @@ async function main() {
   assert("unread count = 0 after read", res8.body.total === 0);
 
   // 7. Get messages with isMine flags
-  console.log("\n[getMessages]");
+  
   const res9 = mockRes();
   await chat.getMessages(reqFor(coach._id, "Coach", {}, { id: convId }), res9);
   const msgs = res9.body.messages;
@@ -148,7 +148,7 @@ async function main() {
   );
 
   // 8. User lists conversations -> peer is the coach
-  console.log("\n[getConversations as user]");
+  
   const res10 = mockRes();
   await chat.getConversations(reqFor(user._id, "User"), res10);
   assert("user sees 1 conversation", res10.body.conversations.length === 1);
@@ -161,7 +161,7 @@ async function main() {
   assert("missing peer rejected (400)", res11.statusCode === 400);
 
   // 10. Authorization: an unrelated user cannot read/send to this conversation
-  console.log("\n[authorization]");
+  
   const stranger = await User.create({
     first_name: "Evil",
     last_name: "Stranger",
@@ -188,14 +188,14 @@ async function main() {
   const msgCount = await Message.countDocuments({ conversation: convId });
   assert("no message leaked to stranger", msgCount === 2);
 
-  console.log(`\nRESULT: ${passed} passed, ${failed} failed`);
+  
   await mongoose.connection.dropDatabase();
   await mongoose.disconnect();
   process.exit(failed ? 1 : 0);
 }
 
 main().catch(async (e) => {
-  console.error("E2E error:", e);
+  
   try {
     await mongoose.connection.dropDatabase();
   } catch (_) {}

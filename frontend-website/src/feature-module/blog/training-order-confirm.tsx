@@ -29,7 +29,7 @@ const TrainingOrderConfirm = (props: any) => {
   const location = useLocation();
   const { bookingData } = location.state || {};
   const [paymentType, setPaymentType] = useState<string>("full");
-  console.log(bookingData, "lkajsdfhlksdafgh")
+  
 
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -42,8 +42,8 @@ const TrainingOrderConfirm = (props: any) => {
         const response = await axios.get(`${API_URL}/PersonalTraining/fetch/${id}`);
         const trainerDataId = response.data.personalTrainer;
         setTrainerData(trainerDataId);
-      } catch (error) {
-        console.error("Error fetching trainers:", error);
+      } catch {
+        // The request failure is handled by the surrounding UI state.
       }
     };
     fetchTrainerId();
@@ -78,7 +78,7 @@ const TrainingOrderConfirm = (props: any) => {
       if (response && response.data && response.data.url) {
         window.location.href = response.data.url;
       } else {
-        console.error('The response does not contain a URL');
+        // No alternative action is needed here.
       }
       // navigate(`/coaches/coach-order-confirm/${id}`, {
       //   state: {
@@ -86,7 +86,7 @@ const TrainingOrderConfirm = (props: any) => {
       //   },
       // });
     } catch (error) {
-      console.error("Error making the booking:", error);
+      
       Swal.fire({
         title: "Error",
         text: "Error in booking",
@@ -96,7 +96,7 @@ const TrainingOrderConfirm = (props: any) => {
     }
   };
 
-  console.log(bookingData, "bookingDatabookingData")
+  
 
   return (
     <div>

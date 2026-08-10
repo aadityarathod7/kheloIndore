@@ -4,7 +4,6 @@ import AOS from "aos";
 import "aos/dist/aos.css";
 import ImageWithBasePath from "../../core/data/img/ImageWithBasePath";
 import { all_routes } from "../router/all_routes";
-import { fetchUnreadCount } from "../../utils/chat";
 
 const Footer = () => {
   const routes = all_routes;
@@ -15,33 +14,6 @@ const Footer = () => {
   // Re-evaluated on every route change so the bottom nav reflects login/logout
   // without requiring a full page reload.
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(Boolean(localStorage.getItem("token")));
-  const [unreadChatCount, setUnreadChatCount] = useState(0);
-
-  // Live unread message badge: initial fetch + poll + cross-tab event sync
-  useEffect(() => {
-    if (!isLoggedIn) {
-      setUnreadChatCount(0);
-      return;
-    }
-    let cancelled = false;
-    const tick = () => {
-      fetchUnreadCount().then((n) => {
-        if (!cancelled) setUnreadChatCount(n);
-      });
-    };
-    tick();
-    const onUnread = (e: Event) => {
-      if (!cancelled) setUnreadChatCount((e as CustomEvent).detail || 0);
-    };
-    window.addEventListener("ki-chat-unread", onUnread);
-    const timer = window.setInterval(tick, 15000);
-    return () => {
-      cancelled = true;
-      window.removeEventListener("ki-chat-unread", onUnread);
-      window.clearInterval(timer);
-    };
-  }, [isLoggedIn]);
-
   const sports = [
     "Cricket Turfs", "Badminton Courts", "Football Grounds", "Swimming Pools", "Pickleball Courts", "Tennis Courts",
     "Basketball Courts", "Table Tennis", "Volleyball", "Squash Courts", "Box Cricket", "Kabaddi", "Hockey", "Running", "Cycling", "Gym & Fitness",
@@ -77,6 +49,20 @@ const Footer = () => {
                 <p className="footer-desc">
                   Your home for booking the best turfs, courts, pools, coaches and trainers across Indore.
                 </p>
+                <address className="footer-contact-details">
+                  <div className="footer-contact-item">
+                    <i className="feather-map-pin" aria-hidden="true" />
+                    <span>366/4, Samajwad Nagar, Indore,<br />Madhya Pradesh, India – 452002</span>
+                  </div>
+                  <div className="footer-contact-item">
+                    <i className="feather-phone" aria-hidden="true" />
+                    <a href="tel:+917898880731">+91-7898880731</a>
+                  </div>
+                  <div className="footer-contact-item">
+                    <i className="feather-mail" aria-hidden="true" />
+                    <a href="mailto:info@kheloindore.in">info@kheloindore.in</a>
+                  </div>
+                </address>
                 <Link to={routes.contactUs} className="footer-enquiry">
                   <i className="feather-mail" /> Plan your next game
                 </Link>
@@ -220,19 +206,6 @@ const Footer = () => {
         >
           <span className="tab-icon"><i className="feather-calendar" /></span>
           <span className="tab-label">Bookings</span>
-        </Link>
-
-        <Link
-          to={routes.userChat}
-          className={`tab-item d-flex flex-column align-items-center justify-content-center text-decoration-none ${location.pathname.startsWith("/user/user-chat") || location.pathname.includes("chat") ? "active" : ""}`}
-        >
-          <span className="tab-icon">
-            <i className="feather-bell" />
-            {isLoggedIn && unreadChatCount > 0 && (
-              <span className="notif-dot chat-unread-badge">{unreadChatCount > 9 ? "9+" : unreadChatCount}</span>
-            )}
-          </span>
-          <span className="tab-label">Messages</span>
         </Link>
 
         <Link

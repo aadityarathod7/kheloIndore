@@ -9,9 +9,9 @@ exports.auth = async (req, res, next) => {
     const token = req.get("Authorization")?.split(" ")[1];
 
     if (!token) {
-      return res.status(400).json({
+      return res.status(401).json({
         success: false,
-        message: "Provide token in header",
+        message: "Authentication required.",
       });
     }
     try {
@@ -21,16 +21,15 @@ exports.auth = async (req, res, next) => {
 
       next();
     } catch (err) {
-      return res.status(400).json({
+      return res.status(401).json({
         success: false,
-        message: "Invalid or expired token",
+        message: "Your session is invalid or has expired.",
       });
     }
   } catch (err) {
-    return res.json({
-      status:500,
+    return res.status(401).json({
       success: false,
-      message: "Provide token in header",
+      message: "Authentication required.",
     });
   }
 };
@@ -126,5 +125,4 @@ exports.updateAuth = async (req, res, next) => {
     res.status(401).json({ success: false, message: "Unauthorized: Please log in" });
   }
 };
-
 

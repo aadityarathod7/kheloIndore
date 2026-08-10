@@ -15,7 +15,6 @@ import { CButton, CCloseButton } from "@coreui/react";
 import { API_URL, IMG_URL } from "../../ApiUrl";
 import Swal from "sweetalert2";
 import axios from "axios";
-import { fetchUnreadCount } from "../../utils/chat";
 
 interface tokenvalue {
   userID: string;
@@ -186,6 +185,15 @@ const Header = () => {
     comments: "",
   });
 
+  const clearStaleSession = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("token2");
+    localStorage.removeItem("userName");
+    localStorage.removeItem("id");
+    setUserData(null);
+    setFullUserData(null);
+  };
+
   const toggleMenu = () => {
     setIsActive(!isActive);
   };
@@ -212,7 +220,14 @@ const Header = () => {
             }
           }
         } catch (err) {
-          console.error("Error fetching user profile in header:", err);
+          // A database reseed removes old demo users. Clear the browser's old
+          // JWT instead of repeatedly requesting a user that no longer exists.
+          const status = axios.isAxiosError(err) ? err.response?.status : undefined;
+          if (status === 400 || status === 401 || status === 404) {
+            clearStaleSession();
+            return;
+          }
+          
         }
       }
     };
@@ -294,7 +309,7 @@ const Header = () => {
           }
         });
     } catch (error) {
-      console.error("Error:", error);
+      
 
       setError("Error: " + error);
     }
@@ -379,33 +394,6 @@ const Header = () => {
   const [offcanvasOpen, setOffcanvasOpen] = useState(false);
   const [mobileSearchQuery, setMobileSearchQuery] = useState("");
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const [unreadChatCount, setUnreadChatCount] = useState(0);
-
-  // Live unread message badge on the header bell
-  useEffect(() => {
-    if (!loginToken) {
-      setUnreadChatCount(0);
-      return;
-    }
-    let cancelled = false;
-    const tick = () => {
-      fetchUnreadCount().then((n) => {
-        if (!cancelled) setUnreadChatCount(n);
-      });
-    };
-    tick();
-    const onUnread = (e: Event) => {
-      if (!cancelled) setUnreadChatCount((e as CustomEvent).detail || 0);
-    };
-    window.addEventListener("ki-chat-unread", onUnread);
-    const timer = window.setInterval(tick, 20000);
-    return () => {
-      cancelled = true;
-      window.removeEventListener("ki-chat-unread", onUnread);
-      window.clearInterval(timer);
-    };
-  }, [loginToken]);
-
   useEffect(() => {
     const handleDocumentClick = () => {
       setIsProfileOpen(false);
@@ -458,7 +446,7 @@ const Header = () => {
     <>
       <header
         className={`header ${location.pathname === routes.home ? "header-trans" : "header-sticky"
-          } ${isScrolled ? "fixed" : ""}`}
+          } ${isScrolled || location.pathname.startsWith("/events/") ? "fixed" : ""}`}
       >
         <div className="container-fluid">
           <nav className="navbar navbar-expand-lg header-nav">
@@ -814,21 +802,6 @@ const Header = () => {
                 List Your Court
               </Link> */}
               </li>
-
-              {loginToken && (
-                <li className="nav-item d-none d-lg-flex align-items-center me-1">
-                  <Link
-                    to={routes.userChat}
-                    className="ki-header-bell d-inline-flex align-items-center justify-content-center position-relative"
-                    aria-label="Messages"
-                  >
-                    <i className="feather-bell" />
-                    {unreadChatCount > 0 && (
-                      <span className="ki-header-bell-badge">{unreadChatCount > 9 ? "9+" : unreadChatCount}</span>
-                    )}
-                  </Link>
-                </li>
-              )}
 
               <li className="nav-item d-none d-lg-block">
                 {loginToken ? (
