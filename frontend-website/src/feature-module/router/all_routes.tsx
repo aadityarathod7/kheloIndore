@@ -117,6 +117,8 @@ export const all_routes = {
   TrainingOrderConfirm: "/personal-training/training-order-confirm/:id",
   TrainingPayment: "/personal-training/training-payment/:id",
   coachDetail: "/coaches/:type/:name/:id",
+  coachesByCategory: "/coaches/category/:type",
+  personalTrainingByCategory: "/personal-training/category/:type",
   blogDetails: "/blog/venue-details/:id",
   personalTrainingDetails: "/personal-training/trainer/:name/:id",
   eventdetails: "/events/event-details/:id",

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import ImageWithBasePath from "../../core/data/img/ImageWithBasePath";
 import { Dropdown } from "primereact/dropdown";
-import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useSearchParams, useParams } from "react-router-dom";
 import { all_routes } from "../router/all_routes";
 import axios from "axios";
 import { API_URL, IMG_URL } from "../../ApiUrl";
@@ -235,11 +235,18 @@ const BlogList = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { selectedLocationSort, selectedSport } = location.state || {};
+  const { type } = useParams<{ type: string }>();
 
   useEffect(() => {
     setSelectedLocation(selectedLocationSort?.name || "");
-    setSelectedCategory(selectedSport?.name || null);
-  }, [location, selectedLocationSort, selectedSport]);
+    if (type) {
+      let formattedType = type.replace(/-/g, " ");
+      formattedType = formattedType.replace(/\b\w/g, c => c.toUpperCase());
+      setSelectedCategory(formattedType);
+    } else {
+      setSelectedCategory(selectedSport?.name || null);
+    }
+  }, [location, selectedLocationSort, selectedSport, type]);
 
   useEffect(() => {
     const fetchTrainer = async () => {

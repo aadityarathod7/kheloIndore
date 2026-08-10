@@ -23,6 +23,8 @@ import CoachDetails from "../coaches/coach-details";
 import CoachEarning from "../coaches/coach-earning";
 import CoachesGrid from "../coaches/coaches";
 import CoachesGridSidebar from "../coaches/coaches-grid-sidebar";
+import CoachesCategory from "../blog/coaches-category";
+import TrainersCategory from "../blog/trainers-category";
 import CoachesList from "../coaches/coaches-list";
 import CoachesListSidebar from "../coaches/coaches-list-sidebar";
 import CoachesMap from "../coaches/coaches-map";
@@ -131,6 +133,11 @@ const publicRoutes = [
   },
   {
     path: routes.blogList,
+    element: <TrainersCategory />,
+    route: Route,
+  },
+  {
+    path: routes.personalTrainingByCategory,
     element: <BlogList />,
     route: Route,
   },
@@ -211,6 +218,11 @@ const publicRoutes = [
   },
   {
     path: routes.coachesGrid,
+    element: <CoachesCategory />,
+    route: Route,
+  },
+  {
+    path: routes.coachesByCategory,
     element: <CoachesGrid id={undefined} />,
     route: Route,
   },

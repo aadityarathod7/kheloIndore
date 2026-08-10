@@ -1,7 +1,7 @@
 import React, { useState, useEffect, ReactNode } from "react";
 import ImageWithBasePath from "../../core/data/img/ImageWithBasePath";
 import { Dropdown } from "primereact/dropdown";
-import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useSearchParams, useParams } from "react-router-dom";
 import { all_routes } from "../router/all_routes";
 import axios from "axios";
 import { API_URL, IMG_URL } from "../../ApiUrl";
@@ -257,11 +257,18 @@ const CoachesGrid = (_props: { id?: string }) => {
 
   const locationByHome = useLocation();
   const { selectedLocationSort, selectedSport } = locationByHome.state || {};
+  const { type } = useParams<{ type: string }>();
 
   useEffect(() => {
     setLocation(selectedLocationSort?.name || "");
-    setSelectedCategory(selectedSport?.name || null);
-  }, [locationByHome, selectedLocationSort, selectedSport]);
+    if (type) {
+      let formattedType = type.replace(/-/g, " ");
+      formattedType = formattedType.replace(/\b\w/g, c => c.toUpperCase());
+      setSelectedCategory(formattedType);
+    } else {
+      setSelectedCategory(selectedSport?.name || null);
+    }
+  }, [locationByHome, selectedLocationSort, selectedSport, type]);
 
   useEffect(() => {
     const fetchCoaches = async () => {
