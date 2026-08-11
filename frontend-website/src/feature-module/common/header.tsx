@@ -864,7 +864,7 @@ const Header = () => {
                     </div>
                   </div>
                 ) : (
-                  <div className="d-flex align-items-center gap-2">
+                  <div className="d-flex align-items-center gap-3">
                     <Link to={"/login"} className="navbar-register-btn px-4">
                       Login
                     </Link>

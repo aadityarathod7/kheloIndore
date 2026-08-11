@@ -420,8 +420,8 @@ exports.fetchCoachById = async (req, res) => {
     }
 
     // Check if is_admin_access is 1
-    if (coach.is_admin_access !== 1) {
-      return res.status(403).json({ success: false, message: "Access denied. Admin access required." });
+    if (coach.is_admin_access !== 1 || coach.status !== true) {
+      return res.status(403).json({ success: false, message: "Access denied. Coach is not active or approved." });
     }
 
     // Respond with the coach data

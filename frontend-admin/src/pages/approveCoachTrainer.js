@@ -7,7 +7,7 @@ import { API_URL } from "../utils/ApiUrl";
 
 export default function ApproveCoachTrainer() {
     const [apiError, setApiError] = useState("");
-    const { _id } = useParams();
+    const { id: _id } = useParams();
     const navigate = useNavigate();
     const [coachTrainer, setCoachTrainer] = useState({});
     const [formData, setFormData] = useState({

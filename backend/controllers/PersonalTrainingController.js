@@ -500,8 +500,8 @@ exports.fetchPublicTrainer = async (req, res) => {
     if (!trainer) {
       return res.status(404).json({ success: false, message: "Trainer not found" });
     }
-    if (trainer.status !== true) {
-      return res.status(403).json({ success: false, message: "Trainer is not active" });
+    if (trainer.status !== true || trainer.is_admin_access !== 1) {
+      return res.status(403).json({ success: false, message: "Trainer is not active or approved" });
     }
     trainer.profile_views = (trainer.profile_views || 0) + 1;
     await trainer.save();

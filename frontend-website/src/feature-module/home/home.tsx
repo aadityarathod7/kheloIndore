@@ -1861,206 +1861,7 @@ const Home = () => {
       </section> */}
       {/* Group Coaching */}
 
-      {/* Earn Money */}
-      <section className="section earn-money ki-grow-section py-5 position-relative" style={{ overflow: "hidden" }}>
-
-        <div className="container position-relative" style={{ zIndex: 1 }}>
-          {/* Section Heading */}
-          <div className="text-center mb-4 aos" data-aos="fade-up">
-            <div className="d-flex align-items-center justify-content-center gap-3 mb-2">
-              <span style={{ width: "32px", height: "3px", backgroundColor: "#16A34A", borderRadius: "2px" }}></span>
-              <h2 style={{ fontFamily: "Space Grotesk, sans-serif", color: "#0F172A", fontWeight: "700", fontSize: "32px", margin: 0 }}>
-                Grow with <span style={{ color: "#16A34A" }}>Khelo Indore</span>
-              </h2>
-              <span style={{ width: "32px", height: "3px", backgroundColor: "#16A34A", borderRadius: "2px" }}></span>
-            </div>
-            <p className="mb-0" style={{ color: "#64748B", fontSize: "16px", fontWeight: "400" }}>
-              Join our community and take your sports journey to the next level.
-            </p>
-          </div>
-
-          <div className="row justify-content-between align-items-stretch g-4">
-            {/* Left Column (Venues) */}
-            <div className="col-lg-5 col-md-12 d-flex">
-              <div className="ki-grow-option ki-grow-option--venue">
-              <div className="row align-items-center g-4">
-                <div className="col-md-7 text-start">
-                  <div className="d-flex align-items-start mb-3">
-                    <div style={{ width: "56px", height: "56px", borderRadius: "50%", background: "#DCFCE7", color: "#16A34A", display: "flex", alignItems: "center", justifyContent: "center", marginRight: "16px", flexShrink: 0, boxShadow: "0 4px 10px rgba(22, 163, 74, 0.15)" }}>
-                      <i className="fa-solid fa-building" style={{ fontSize: "22px" }} />
-                    </div>
-                    <div>
-                      <h3 style={{ fontSize: "24px", color: "#0F172A", fontFamily: "Space Grotesk, sans-serif", fontWeight: "700", marginBottom: "0", lineHeight: "1.3" }}>
-                        List your <br />
-                        <span style={{ color: "#16A34A" }}>sports venue</span> <br />
-                        with us
-                      </h3>
-                      <div style={{ width: "32px", height: "3px", backgroundColor: "#16A34A", borderRadius: "2px", marginTop: "12px" }} />
-                    </div>
-                  </div>
-                  <p style={{ color: "#64748B", fontSize: "14px", lineHeight: "1.6", marginBottom: "20px" }}>
-                    Earn money renting out your private fields, turf, pool, or gym on Indore&apos;s largest local sports search platform.
-                  </p>
-                  <ul className="list-unstyled mb-0" style={{ paddingLeft: 0 }}>
-                    <li style={{ display: "flex", alignItems: "center", marginBottom: "12px", color: "#334155", fontSize: "14px", fontWeight: "500" }}>
-                      <i className="fa-solid fa-circle-check" style={{ color: "#16A34A", marginRight: "8px", fontSize: "16px" }} />
-                      ₹1,000,000 liability insurance
-                    </li>
-                    <li style={{ display: "flex", alignItems: "center", marginBottom: "12px", color: "#334155", fontSize: "14px", fontWeight: "500" }}>
-                      <i className="fa-solid fa-circle-check" style={{ color: "#16A34A", marginRight: "8px", fontSize: "16px" }} />
-                      Build of Trust with validation
-                    </li>
-                    <li style={{ display: "flex", alignItems: "center", marginBottom: "0", color: "#334155", fontSize: "14px", fontWeight: "500" }}>
-                      <i className="fa-solid fa-circle-check" style={{ color: "#16A34A", marginRight: "8px", fontSize: "16px" }} />
-                      Protected booking environment
-                    </li>
-                  </ul>
-                  <div className="d-block d-md-none mt-4 text-center">
-                    <img className="ki-grow-visual"
-                      src="/images.jpg"
-                      alt="Sports Turf"
-                      style={{ width: "100%", maxWidth: "210px", height: "240px", objectFit: "cover", borderRadius: "24px", boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.05)" }}
-                    />
-                  </div>
-                </div>
-                <div className="col-md-5 d-none d-md-flex justify-content-center justify-content-md-end">
-                  <img className="ki-grow-visual"
-                    src="/images.jpg"
-                    alt="Sports Turf"
-                    style={{ width: "100%", maxWidth: "210px", height: "240px", objectFit: "cover", borderRadius: "24px", boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.05)" }}
-                  />
-                </div>
-              </div>
-              {/* Centered Button below Venues */}
-              <div className="d-flex justify-content-center mt-3 pt-1">
-                <Link
-                  to={routes.contactUs}
-                  className="btn ki-grow-cta ki-grow-cta--venue d-inline-flex align-items-center justify-content-between px-4 py-2.5"
-                  style={{
-                    width: "100%",
-                    maxWidth: "340px",
-                    borderRadius: "12px",
-                    fontSize: "14px",
-                    fontWeight: "600",
-                    color: "#16A34A",
-                    border: "1px solid #16A34A",
-                    backgroundColor: "#FFFFFF",
-                    transition: "all 0.2s",
-                    whiteSpace: "nowrap"
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = "rgba(22, 163, 74, 0.05)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = "#FFFFFF";
-                  }}
-                >
-                  <div className="d-flex align-items-center gap-2">
-                    <i className="fa-solid fa-building" style={{ fontSize: "15px" }} />
-                    <span>List Your Venue</span>
-                  </div>
-                  <i className="fa-solid fa-arrow-right" style={{ fontSize: "13px" }} />
-                </Link>
-              </div>
-              </div>
-            </div>
-
-            {/* Separator Column (Vertical Line & OR Bubble) */}
-            <div className="col-lg-2 d-none d-lg-flex align-items-center justify-content-center position-relative" style={{ minHeight: "260px" }}>
-              <div style={{ position: "absolute", top: "5%", bottom: "5%", width: "1px", backgroundColor: "#E2E8F0" }} />
-              <div className="d-flex align-items-center justify-content-center" style={{ width: "42px", height: "42px", borderRadius: "50%", background: "#F1F5F9", border: "1px solid #E2E8E3", color: "#64748B", fontSize: "12px", fontWeight: "700", zIndex: 1, boxShadow: "0 2px 8px rgba(0,0,0,0.03)" }}>
-                OR
-              </div>
-            </div>
-
-            {/* Right Column (Trainers/Coaches) */}
-            <div className="col-lg-5 col-md-12 d-flex">
-              <div className="ki-grow-option ki-grow-option--coach">
-              <div className="row align-items-center g-4">
-                <div className="col-md-7 text-start">
-                  <div className="d-flex align-items-start mb-3">
-                    <div style={{ width: "56px", height: "56px", borderRadius: "50%", background: "#FFEDD5", color: "#EA580C", display: "flex", alignItems: "center", justifyContent: "center", marginRight: "16px", flexShrink: 0, boxShadow: "0 4px 10px rgba(234, 88, 12, 0.15)" }}>
-                      <i className="fa-solid fa-graduation-cap" style={{ fontSize: "22px" }} />
-                    </div>
-                    <div>
-                      <h3 style={{ fontSize: "24px", color: "#0F172A", fontFamily: "Space Grotesk, sans-serif", fontWeight: "700", marginBottom: "0", lineHeight: "1.3" }}>
-                        Are you a <br />
-                        <span style={{ color: "#EA580C" }}>trainer/coach?</span> <br />
-                        Enroll with us
-                      </h3>
-                      <div style={{ width: "32px", height: "3px", backgroundColor: "#EA580C", borderRadius: "2px", marginTop: "12px" }} />
-                    </div>
-                  </div>
-                  <p style={{ color: "#64748B", fontSize: "14px", lineHeight: "1.6", marginBottom: "20px" }}>
-                    Grow your training business, reach local players, schedule sessions, and manage bookings securely.
-                  </p>
-                  <ul className="list-unstyled mb-0" style={{ paddingLeft: 0 }}>
-                    <li style={{ display: "flex", alignItems: "center", marginBottom: "12px", color: "#334155", fontSize: "14px", fontWeight: "500" }}>
-                      <i className="fa-solid fa-circle-check" style={{ color: "#EA580C", marginRight: "8px", fontSize: "16px" }} />
-                      Connect with students in Indore
-                    </li>
-                    <li style={{ display: "flex", alignItems: "center", marginBottom: "12px", color: "#334155", fontSize: "14px", fontWeight: "500" }}>
-                      <i className="fa-solid fa-circle-check" style={{ color: "#EA580C", marginRight: "8px", fontSize: "16px" }} />
-                      Flexible calendar scheduling
-                    </li>
-                    <li style={{ display: "flex", alignItems: "center", marginBottom: "0", color: "#334155", fontSize: "14px", fontWeight: "500" }}>
-                      <i className="fa-solid fa-circle-check" style={{ color: "#EA580C", marginRight: "8px", fontSize: "16px" }} />
-                      Fast, secured online payouts
-                    </li>
-                  </ul>
-                  <div className="d-block d-md-none mt-4 text-center">
-                    <img className="ki-grow-visual"
-                      src="/trainer.png"
-                      alt="Coaching Session"
-                      style={{ width: "100%", maxWidth: "210px", height: "240px", objectFit: "cover", borderRadius: "24px", boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.05)" }}
-                    />
-                  </div>
-                </div>
-                <div className="col-md-5 d-none d-md-flex justify-content-center justify-content-md-end">
-                  <img className="ki-grow-visual"
-                    src="/trainer.png"
-                    alt="Coaching Session"
-                    style={{ width: "100%", maxWidth: "210px", height: "240px", objectFit: "cover", borderRadius: "24px", boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.05)" }}
-                  />
-                </div>
-              </div>
-              {/* Centered Button below Trainers */}
-              <div className="d-flex justify-content-center mt-3 pt-1">
-                <Link
-                  to={routes.contactUs}
-                  className="btn ki-grow-cta ki-grow-cta--coach d-inline-flex align-items-center justify-content-between px-4 py-2.5"
-                  style={{
-                    width: "100%",
-                    maxWidth: "340px",
-                    borderRadius: "12px",
-                    fontSize: "14px",
-                    fontWeight: "600",
-                    color: "#EA580C",
-                    border: "1px solid #EA580C",
-                    backgroundColor: "#FFFFFF",
-                    transition: "all 0.2s",
-                    whiteSpace: "nowrap"
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = "rgba(234, 88, 12, 0.05)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = "#FFFFFF";
-                  }}
-                >
-                  <div className="d-flex align-items-center gap-2">
-                    <i className="fa-solid fa-user" style={{ fontSize: "15px" }} />
-                    <span>Join as a Trainer / Coach</span>
-                  </div>
-                  <i className="fa-solid fa-arrow-right" style={{ fontSize: "13px" }} />
-                </Link>
-              </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-      {/* /Earn Money */}
+      {/* /Earn Money moved to bottom */}
 
 
       {/* /Courts Near */}
@@ -2214,8 +2015,210 @@ const Home = () => {
           </div>
         </div>
       </section>
+
+      {/* Earn Money / Grow with Khelo Indore */}
+      <section className="section earn-money ki-grow-section py-5 position-relative" style={{ overflow: "hidden" }}>
+
+        <div className="container position-relative" style={{ zIndex: 1 }}>
+          {/* Section Heading */}
+          <div className="text-center mb-4 aos" data-aos="fade-up">
+            <div className="d-flex align-items-center justify-content-center gap-3 mb-2">
+              <span style={{ width: "32px", height: "3px", backgroundColor: "#16A34A", borderRadius: "2px" }}></span>
+              <h2 style={{ fontFamily: "Space Grotesk, sans-serif", color: "#0F172A", fontWeight: "700", fontSize: "32px", margin: 0 }}>
+                Grow with <span style={{ color: "#16A34A" }}>Khelo Indore</span>
+              </h2>
+              <span style={{ width: "32px", height: "3px", backgroundColor: "#16A34A", borderRadius: "2px" }}></span>
+            </div>
+            <p className="mb-0" style={{ color: "#64748B", fontSize: "16px", fontWeight: "400" }}>
+              Join our community and take your sports journey to the next level.
+            </p>
+          </div>
+
+          <div className="row justify-content-between align-items-stretch g-4">
+            {/* Left Column (Venues) */}
+            <div className="col-lg-5 col-md-12 d-flex">
+              <div className="ki-grow-option ki-grow-option--venue">
+              <div className="row align-items-center g-4">
+                <div className="col-md-7 text-start">
+                  <div className="d-flex align-items-start mb-3">
+                    <div style={{ width: "56px", height: "56px", borderRadius: "50%", background: "#DCFCE7", color: "#16A34A", display: "flex", alignItems: "center", justifyContent: "center", marginRight: "16px", flexShrink: 0, boxShadow: "0 4px 10px rgba(22, 163, 74, 0.15)" }}>
+                      <i className="fa-solid fa-building" style={{ fontSize: "22px" }} />
+                    </div>
+                    <div>
+                      <h3 style={{ fontSize: "24px", color: "#0F172A", fontFamily: "Space Grotesk, sans-serif", fontWeight: "700", marginBottom: "0", lineHeight: "1.3" }}>
+                        List your <br />
+                        <span style={{ color: "#16A34A" }}>sports venue</span> <br />
+                        with us
+                      </h3>
+                      <div style={{ width: "32px", height: "3px", backgroundColor: "#16A34A", borderRadius: "2px", marginTop: "12px" }} />
+                    </div>
+                  </div>
+                  <p style={{ color: "#64748B", fontSize: "14px", lineHeight: "1.6", marginBottom: "20px" }}>
+                    Earn money renting out your private fields, turf, pool, or gym on Indore&apos;s largest local sports search platform.
+                  </p>
+                  <ul className="list-unstyled mb-0" style={{ paddingLeft: 0 }}>
+                    <li style={{ display: "flex", alignItems: "center", marginBottom: "12px", color: "#334155", fontSize: "14px", fontWeight: "500" }}>
+                      <i className="fa-solid fa-circle-check" style={{ color: "#16A34A", marginRight: "8px", fontSize: "16px" }} />
+                      ₹1,000,000 liability insurance
+                    </li>
+                    <li style={{ display: "flex", alignItems: "center", marginBottom: "12px", color: "#334155", fontSize: "14px", fontWeight: "500" }}>
+                      <i className="fa-solid fa-circle-check" style={{ color: "#16A34A", marginRight: "8px", fontSize: "16px" }} />
+                      Build of Trust with validation
+                    </li>
+                    <li style={{ display: "flex", alignItems: "center", marginBottom: "0", color: "#334155", fontSize: "14px", fontWeight: "500" }}>
+                      <i className="fa-solid fa-circle-check" style={{ color: "#16A34A", marginRight: "8px", fontSize: "16px" }} />
+                      Protected booking environment
+                    </li>
+                  </ul>
+                  <div className="d-block d-md-none mt-4 text-center">
+                    <img className="ki-grow-visual"
+                      src="/images.jpg"
+                      alt="Sports Turf"
+                      style={{ width: "100%", maxWidth: "210px", height: "240px", objectFit: "cover", borderRadius: "24px", boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.05)" }}
+                    />
+                  </div>
+                </div>
+                <div className="col-md-5 d-none d-md-flex justify-content-center justify-content-md-end">
+                  <img className="ki-grow-visual"
+                    src="/images.jpg"
+                    alt="Sports Turf"
+                    style={{ width: "100%", maxWidth: "210px", height: "240px", objectFit: "cover", borderRadius: "24px", boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.05)" }}
+                  />
+                </div>
+              </div>
+              {/* Centered Button below Venues */}
+              <div className="d-flex justify-content-center mt-3 pt-1">
+                <Link
+                  to="/register?role=venue"
+                  className="btn ki-grow-cta ki-grow-cta--venue d-inline-flex align-items-center justify-content-between px-4 py-2.5"
+                  style={{
+                    width: "100%",
+                    maxWidth: "340px",
+                    borderRadius: "12px",
+                    fontSize: "14px",
+                    fontWeight: "600",
+                    color: "#16A34A",
+                    border: "1px solid #16A34A",
+                    backgroundColor: "#FFFFFF",
+                    transition: "all 0.2s",
+                    whiteSpace: "nowrap"
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = "rgba(22, 163, 74, 0.05)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "#FFFFFF";
+                  }}
+                >
+                  <div className="d-flex align-items-center gap-2">
+                    <i className="fa-solid fa-building" style={{ fontSize: "15px" }} />
+                    <span>List Your Venue</span>
+                  </div>
+                  <i className="fa-solid fa-arrow-right" style={{ fontSize: "13px" }} />
+                </Link>
+              </div>
+              </div>
+            </div>
+
+            {/* Separator Column (Vertical Line & OR Bubble) */}
+            <div className="col-lg-2 d-none d-lg-flex align-items-center justify-content-center position-relative" style={{ minHeight: "260px" }}>
+              <div style={{ position: "absolute", top: "5%", bottom: "5%", width: "1px", backgroundColor: "#E2E8F0" }} />
+              <div className="d-flex align-items-center justify-content-center" style={{ width: "42px", height: "42px", borderRadius: "50%", background: "#F1F5F9", border: "1px solid #E2E8E3", color: "#64748B", fontSize: "12px", fontWeight: "700", zIndex: 1, boxShadow: "0 2px 8px rgba(0,0,0,0.03)" }}>
+                OR
+              </div>
+            </div>
+
+            {/* Right Column (Trainers/Coaches) */}
+            <div className="col-lg-5 col-md-12 d-flex">
+              <div className="ki-grow-option ki-grow-option--coach">
+              <div className="row align-items-center g-4">
+                <div className="col-md-7 text-start">
+                  <div className="d-flex align-items-start mb-3">
+                    <div style={{ width: "56px", height: "56px", borderRadius: "50%", background: "#FFEDD5", color: "#EA580C", display: "flex", alignItems: "center", justifyContent: "center", marginRight: "16px", flexShrink: 0, boxShadow: "0 4px 10px rgba(234, 88, 12, 0.15)" }}>
+                      <i className="fa-solid fa-graduation-cap" style={{ fontSize: "22px" }} />
+                    </div>
+                    <div>
+                      <h3 style={{ fontSize: "24px", color: "#0F172A", fontFamily: "Space Grotesk, sans-serif", fontWeight: "700", marginBottom: "0", lineHeight: "1.3" }}>
+                        Are you a <br />
+                        <span style={{ color: "#EA580C" }}>trainer/coach?</span> <br />
+                        Enroll with us
+                      </h3>
+                      <div style={{ width: "32px", height: "3px", backgroundColor: "#EA580C", borderRadius: "2px", marginTop: "12px" }} />
+                    </div>
+                  </div>
+                  <p style={{ color: "#64748B", fontSize: "14px", lineHeight: "1.6", marginBottom: "20px" }}>
+                    Grow your training business, reach local players, schedule sessions, and manage bookings securely.
+                  </p>
+                  <ul className="list-unstyled mb-0" style={{ paddingLeft: 0 }}>
+                    <li style={{ display: "flex", alignItems: "center", marginBottom: "12px", color: "#334155", fontSize: "14px", fontWeight: "500" }}>
+                      <i className="fa-solid fa-circle-check" style={{ color: "#EA580C", marginRight: "8px", fontSize: "16px" }} />
+                      Connect with students in Indore
+                    </li>
+                    <li style={{ display: "flex", alignItems: "center", marginBottom: "12px", color: "#334155", fontSize: "14px", fontWeight: "500" }}>
+                      <i className="fa-solid fa-circle-check" style={{ color: "#EA580C", marginRight: "8px", fontSize: "16px" }} />
+                      Flexible calendar scheduling
+                    </li>
+                    <li style={{ display: "flex", alignItems: "center", marginBottom: "0", color: "#334155", fontSize: "14px", fontWeight: "500" }}>
+                      <i className="fa-solid fa-circle-check" style={{ color: "#EA580C", marginRight: "8px", fontSize: "16px" }} />
+                      Fast, secured online payouts
+                    </li>
+                  </ul>
+                  <div className="d-block d-md-none mt-4 text-center">
+                    <img className="ki-grow-visual"
+                      src="/trainer.png"
+                      alt="Coaching Session"
+                      style={{ width: "100%", maxWidth: "210px", height: "240px", objectFit: "cover", borderRadius: "24px", boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.05)" }}
+                    />
+                  </div>
+                </div>
+                <div className="col-md-5 d-none d-md-flex justify-content-center justify-content-md-end">
+                  <img className="ki-grow-visual"
+                    src="/trainer.png"
+                    alt="Coaching Session"
+                    style={{ width: "100%", maxWidth: "210px", height: "240px", objectFit: "cover", borderRadius: "24px", boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.05)" }}
+                  />
+                </div>
+              </div>
+              {/* Centered Button below Trainers */}
+              <div className="d-flex justify-content-center mt-3 pt-1">
+                <Link
+                  to="/register?role=coach"
+                  className="btn ki-grow-cta ki-grow-cta--coach d-inline-flex align-items-center justify-content-between px-4 py-2.5"
+                  style={{
+                    width: "100%",
+                    maxWidth: "340px",
+                    borderRadius: "12px",
+                    fontSize: "14px",
+                    fontWeight: "600",
+                    color: "#EA580C",
+                    border: "1px solid #EA580C",
+                    backgroundColor: "#FFFFFF",
+                    transition: "all 0.2s",
+                    whiteSpace: "nowrap"
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = "rgba(234, 88, 12, 0.05)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "#FFFFFF";
+                  }}
+                >
+                  <div className="d-flex align-items-center gap-2">
+                    <i className="fa-solid fa-user" style={{ fontSize: "15px" }} />
+                    <span>Join as a Trainer / Coach</span>
+                  </div>
+                  <i className="fa-solid fa-arrow-right" style={{ fontSize: "13px" }} />
+                </Link>
+              </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
     </>
   );
 };
 
 export default Home;
+

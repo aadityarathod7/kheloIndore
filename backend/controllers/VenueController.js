@@ -112,7 +112,14 @@ exports.SingleVenue = async (req, res) => {
   try {
     const id = req.params.id;
     const venue = await Venue1.findById(id);
-    if (venue ) {
+    if (venue) {
+      const vendor = await User.findById(venue.vendor_id);
+      if (!vendor || vendor.status === false || vendor.is_admin_access !== 1) {
+        return res.status(400).json({
+          success: false,
+          message: "The Venue is Not Found",
+        });
+      }
       res.status(200).json({ venue });
     } else {
       return res.status(400).json({
@@ -712,7 +719,16 @@ const computeSlotDateRange = (dateKey) => {
 exports.getVenue = async (req, res) => {
   try {
     const { search, sport, location, grassType, amenities, date, time, sort } = req.query;
-    let queryConditions = { status: true, verification_status: 1 };
+
+    // Filter out venues whose owners are deactivated or unapproved
+    const activeVendors = await User.find({ status: { $ne: false }, is_admin_access: 1 }).select("_id");
+    const activeVendorIds = activeVendors.map((v) => v._id);
+
+    let queryConditions = { 
+      status: true, 
+      verification_status: 1,
+      vendor_id: { $in: activeVendorIds }
+    };
 
     // Add column-specific search conditions dynamically
     const searchFields = ["name", "category", "address", "status"];

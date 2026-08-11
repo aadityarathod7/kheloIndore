@@ -107,6 +107,7 @@ import PaymentSuccess from "../pages/payment-success";
 import PaymentFailed from "../pages/payment-failed";
 import CommonPage from "../pages/common-page";
 import SearchResults from "../pages/search-results";
+import Register from "../auth/register";
 
 const routes = all_routes;
 
@@ -662,7 +663,7 @@ const withoutHeaderRoutes = [
   },
   {
     path: routes.register,
-    element: <Navigate to={routes.login} replace />,
+    element: <Register />,
     route: Route,
   },
   {

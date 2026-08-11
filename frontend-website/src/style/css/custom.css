@@ -80,6 +80,19 @@ ul.nav.header-navbar-rht > li {
   }
 }
 
+@media (min-width: 992px) {
+  .header .header-nav {
+    flex-wrap: nowrap !important;
+  }
+  .header .header-navbar-rht {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    gap: 12px !important;
+  }
+}
+
+
 .btn-white:hover {
   .profile-dropdown {
     color: #097e52;
