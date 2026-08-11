@@ -11,6 +11,15 @@ const Signin = () => {
   const route = all_routes;
   const navigate = useNavigate();
   const location = useLocation();
+
+  const isLocal = 
+    window.location.hostname === "localhost" || 
+    window.location.hostname === "127.0.0.1" || 
+    window.location.hostname.startsWith("192.168.");
+  
+  const adminUrl = isLocal 
+    ? `${window.location.protocol}//${window.location.hostname}:3001/admin`
+    : "/admin";
   const searchParams = new URLSearchParams(location.search);
   const paramRole = searchParams.get("role");
 
@@ -182,6 +191,19 @@ const Signin = () => {
 
   return (
     <div style={{ minHeight: "100vh", background: "#f8fafc", overflow: "hidden" }}>
+      <style>{`
+        .register-input::placeholder {
+          font-size: 13.5px !important;
+          color: #94A3B8 !important;
+          font-weight: 500 !important;
+        }
+        .register-input {
+          font-size: 14px !important;
+          font-weight: 500 !important;
+          color: #0F172A !important;
+          width: 100% !important;
+        }
+      `}</style>
       <div className="container-fluid p-0">
         <div className="row g-0 min-vh-100">
           {/* Left Side: Marketing and Branding Banner */}
@@ -370,6 +392,7 @@ const Signin = () => {
                       type="text"
                       name="first_name"
                       placeholder="First name"
+                      className="register-input"
                       value={input.first_name}
                       onChange={(e) => {
                         if (/^[A-Za-z\s]*$/.test(e.target.value)) handleInputChange(e);
@@ -398,6 +421,7 @@ const Signin = () => {
                       type="text"
                       name="last_name"
                       placeholder="Last name"
+                      className="register-input"
                       value={input.last_name}
                       onChange={(e) => {
                         if (/^[A-Za-z\s]*$/.test(e.target.value)) handleInputChange(e);
@@ -427,11 +451,12 @@ const Signin = () => {
                     type="email"
                     name="email"
                     placeholder="email@example.com"
+                    className="register-input"
                     value={input.email}
                     onChange={handleInputChange}
                     style={{
                       width: "100%",
-                      padding: "12px 16px",
+                      padding: "12px 48px 12px 16px",
                       borderRadius: "10px",
                       border: "1px solid #cbd5e1",
                       fontSize: "14px",
@@ -452,6 +477,7 @@ const Signin = () => {
                     type="text"
                     name="mobile"
                     placeholder="Enter 10-digit mobile number"
+                    className="register-input"
                     value={input.mobile}
                     onChange={(e) => {
                       if (/^\d{0,10}$/.test(e.target.value)) handleInputChange(e);
@@ -480,6 +506,7 @@ const Signin = () => {
                       type={isPasswordVisible ? "text" : "password"}
                       name="password"
                       placeholder="Create password"
+                      className="register-input"
                       value={input.password}
                       onChange={handleInputChange}
                       style={{
@@ -520,6 +547,7 @@ const Signin = () => {
                       type={isConfirmPasswordVisible ? "text" : "password"}
                       name="confirm_password"
                       placeholder="Confirm password"
+                      className="register-input"
                       value={input.confirm_password}
                       onChange={handleInputChange}
                       style={{
@@ -610,9 +638,9 @@ const Signin = () => {
                 <div style={{ textAlign: "center", marginTop: "24px" }}>
                   <span style={{ fontSize: "14px", color: "#64748B" }}>
                     Already have an account?{" "}
-                    <Link to="/login" style={{ color: "#22C55E", fontWeight: "700", textDecoration: "none" }}>
+                    <a href={adminUrl} style={{ color: "#22C55E", fontWeight: "700", textDecoration: "none" }}>
                       Login Now
-                    </Link>
+                    </a>
                   </span>
                 </div>
               </form>
