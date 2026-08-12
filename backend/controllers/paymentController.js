@@ -1217,6 +1217,9 @@ const coachPayment = async (req, res) => {
       });
     }
 
+    const startTimes = Array.isArray(start_time) ? start_time : String(start_time).split(",").map(s => s.trim());
+    const endTimes = Array.isArray(end_time) ? end_time : String(end_time).split(",").map(s => s.trim());
+
     let totalBookedPrice = 0;
     const slotsBookedDetails = [];
 
@@ -1237,14 +1240,19 @@ const coachPayment = async (req, res) => {
 
       // Check availability of the requested time slots for the current date
       let dailyPrice = 0;
-      const availableSlots = coachSlot.slots.filter(
-        (slot) => slot.start_time === start_time && slot.end_time === end_time && !slot.isBooked
-      );
+      const availableSlots = coachSlot.slots.filter((slot) => {
+        for (let i = 0; i < startTimes.length; i++) {
+          if (slot.start_time === startTimes[i] && slot.end_time === endTimes[i] && !slot.isBooked) {
+            return true;
+          }
+        }
+        return false;
+      });
 
-      if (availableSlots.length === 0) {
+      if (availableSlots.length < startTimes.length) {
         return res.status(400).json({
           success: false,
-          message: `The Slot ${start_time} to ${end_time} on ${currentDate.toISOString().split("T")[0]} is already booked.`,
+          message: `Some of the selected slots on ${currentDate.toISOString().split("T")[0]} are already booked.`,
         });
       }
 
@@ -1705,6 +1713,9 @@ const personalTrainerPayment = async (req, res) => {
       });
     }
 
+    const startTimes = Array.isArray(start_time) ? start_time : String(start_time).split(",").map(s => s.trim());
+    const endTimes = Array.isArray(end_time) ? end_time : String(end_time).split(",").map(s => s.trim());
+
     let totalBookedPrice = 0;
     const slotsBookedDetails = [];
 
@@ -1725,14 +1736,19 @@ const personalTrainerPayment = async (req, res) => {
 
       // Check availability of the requested time slots for the current date
       let dailyPrice = 0;
-      const availableSlots = trainerSlot.slots.filter(
-        (slot) => slot.start_time === start_time && slot.end_time === end_time && !slot.isBooked
-      );
+      const availableSlots = trainerSlot.slots.filter((slot) => {
+        for (let i = 0; i < startTimes.length; i++) {
+          if (slot.start_time === startTimes[i] && slot.end_time === endTimes[i] && !slot.isBooked) {
+            return true;
+          }
+        }
+        return false;
+      });
 
-      if (availableSlots.length === 0) {
+      if (availableSlots.length < startTimes.length) {
         return res.status(400).json({
           success: false,
-          message: `The Slot ${start_time} to ${end_time} on ${currentDate.toISOString().split("T")[0]} is already booked.`,
+          message: `Some of the selected slots on ${currentDate.toISOString().split("T")[0]} are already booked.`,
         });
       }
 

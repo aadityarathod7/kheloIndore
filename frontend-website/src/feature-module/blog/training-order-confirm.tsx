@@ -289,7 +289,10 @@ const TrainingOrderConfirm = (props: any) => {
                   <h6>Appointment time</h6>
                   <p>
                     {bookingData
-                      ? `${bookingData.start_time} to ${bookingData.end_time}`
+                      ? bookingData.start_time.split(",").map((st: string, idx: number) => {
+                          const et = bookingData.end_time.split(",")[idx] || "";
+                          return `${st.trim()} to ${et.trim()}`;
+                        }).join(", ")
                       : "N/A"}
                   </p>
                 </li>

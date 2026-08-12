@@ -94,7 +94,9 @@ const UserBookings = () => {
     if (booking?.cancellation_status === 1) return "Cancelled";
     if (booking?.verification_status === 1) return "Approved";
     if (booking?.verification_status === 2) return "Rejected";
-    if (["COMPLETED", "SUCCESS"].includes(String(booking?.paymentState || "").toUpperCase())) return "Completed";
+    if (["COMPLETED", "SUCCESS"].includes(String(booking?.paymentState || "").toUpperCase())) {
+      return "Pending Approval";
+    }
     return booking?.paymentState || "Pending";
   };
 
@@ -197,6 +199,51 @@ const UserBookings = () => {
     const month = (date.getMonth() + 1).toString().padStart(2, "0");
     const year = date.getFullYear();
     return `${day}/${month}/${year}`;
+  };
+
+  const canCancelBooking = (bookingData: any) => {
+    if (bookingData?.cancellation_status === 1 || bookingData?.status === 'Rejected') {
+      return false;
+    }
+    const bDateStr = bookingData.date || bookingData.startDate;
+    if (!bDateStr) return true;
+
+    const bDate = new Date(bDateStr);
+    const today = new Date();
+    const bDateOnly = new Date(bDate.getFullYear(), bDate.getMonth(), bDate.getDate());
+    const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+    if (bDateOnly > todayOnly) return true;
+    if (bDateOnly < todayOnly) return false;
+
+    let startTimeStr = "";
+    if (bookingData?.slots && bookingData.slots.length > 0) {
+      startTimeStr = bookingData.slots[0].startTime;
+    } else if (bookingData?.startTime) {
+      startTimeStr = bookingData.startTime;
+    }
+
+    if (!startTimeStr) return true;
+
+    let hours = 0;
+    let minutes = 0;
+    const match12 = startTimeStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
+    if (match12) {
+      hours = parseInt(match12[1], 10);
+      minutes = parseInt(match12[2], 10);
+      const ampm = match12[3].toUpperCase();
+      if (ampm === "PM" && hours < 12) hours += 12;
+      if (ampm === "AM" && hours === 12) hours = 0;
+    } else {
+      const match24 = startTimeStr.split(":");
+      if (match24.length >= 2) {
+        hours = parseInt(match24[0], 10);
+        minutes = parseInt(match24[1], 10);
+      }
+    }
+
+    const bookingDateTime = new Date(today.getFullYear(), today.getMonth(), today.getDate(), hours, minutes);
+    return bookingDateTime > today;
   };
 
   const verifyCancellationSecurity = async (bookingId: string, bookingType: string): Promise<string | null> => {
@@ -684,12 +731,33 @@ const UserBookings = () => {
                                     </td>
                                     <td>{bookingData?.vendor_type}</td>
                                     <td className="table-date-time">
-                                      <h4>
-                                        Date - {formatDate(bookingData.date)}
-                                        {bookingData?.slots?.map((slotData: any, idx: any) => (
-                                          <span key={idx}>Slot - {convertTo12HourFormat(slotData?.startTime)} - {convertTo12HourFormat(slotData?.endTime)}</span>
-                                        ))}
-                                      </h4>
+                                      <div className="d-flex flex-column gap-2">
+                                        <span className="fw-bold" style={{ fontSize: "14px", color: "#1E293B" }}>
+                                          <i className="fas fa-calendar-alt me-2 text-success" />
+                                          {formatDate(bookingData.date)}
+                                        </span>
+                                        <div className="d-flex flex-wrap gap-1 mt-1">
+                                          {bookingData?.slots?.map((slotData: any, idx: any) => (
+                                            <span 
+                                              key={idx} 
+                                              style={{ 
+                                                fontSize: "11px", 
+                                                fontWeight: "600", 
+                                                backgroundColor: "#F1F5F9", 
+                                                color: "#334155", 
+                                                border: "1px solid #CBD5E1", 
+                                                padding: "4px 8px", 
+                                                borderRadius: "6px",
+                                                display: "inline-flex",
+                                                alignItems: "center"
+                                              }}
+                                            >
+                                              <i className="fas fa-clock me-1.5" style={{ fontSize: "10px", color: "#12AA50" }} />
+                                              {convertTo12HourFormat(slotData?.startTime)} - {convertTo12HourFormat(slotData?.endTime)}
+                                            </span>
+                                          ))}
+                                        </div>
+                                      </div>
                                     </td>
                                     <td>
                                       <span className="pay-dark fs-16">{bookingData?.total_price ? "₹" : ""} {bookingData.total_price}</span>
@@ -700,14 +768,14 @@ const UserBookings = () => {
                                       </a>
                                     </td>
                                     <td className="ki-booking-status-cell">
-                                      <span className={`ki-badge ${["Approved", "Completed", "Refunded"].includes(bookingData?.status) ? "confirmed" : bookingData?.status === "Pending" || bookingData?.status === "Refund Pending" ? "pending" : "cancelled"}`}>
+                                      <span className={`ki-badge ${["Approved", "Completed", "Refunded"].includes(bookingData?.status) ? "confirmed" : bookingData?.status === "Pending" || bookingData?.status === "Refund Pending" || bookingData?.status === "Pending Approval" ? "pending" : "cancelled"}`}>
                                         {bookingData?.status}
                                       </span>
                                     </td>
                                     <td className="ki-booking-action-cell">
                                       {bookingData?.status === 'Rejected' ? "" : bookingData?.cancellation_status === 1 ? (
                                         <span className="btn" style={{ pointerEvents: "none", color: "#64748B", background: "#F1F5F9", border: "1px solid #CBD5E1", opacity: 1, fontWeight: 600 }}>Cancelled</span>
-                                      ) : (new Date() - new Date(bookingData.createdAt)) / (1000 * 60 * 60) < 2 ? (
+                                      ) : canCancelBooking(bookingData) ? (
                                         <span className="pay-dark fs-16 btn btn-primary" onClick={() => cancelVenueBooking(bookingData)}>Cancel</span>
                                       ) : ""}
                                     </td>
@@ -771,11 +839,31 @@ const UserBookings = () => {
                                         </span>
                                       </h2>
                                     </td>
-                                    <td>{formatDate(bookingData.startDate)} - {formatDate(bookingData.endDate)}</td>
+                                    <td>
+                                      <div className="d-flex align-items-center fw-bold" style={{ fontSize: "14px", color: "#1E293B" }}>
+                                        <i className="fas fa-calendar-alt me-2 text-success" />
+                                        {formatDate(bookingData.startDate)} - {formatDate(bookingData.endDate)}
+                                      </div>
+                                    </td>
                                     <td className="table-date-time">
-                                      <h4>
-                                        <span>{bookingData?.startTime && convertTo12HourFormat(bookingData?.startTime)} - {bookingData?.endTime && convertTo12HourFormat(bookingData?.endTime)}</span>
-                                      </h4>
+                                      {bookingData?.startTime ? (
+                                        <span 
+                                          style={{ 
+                                            fontSize: "11px", 
+                                            fontWeight: "600", 
+                                            backgroundColor: "#F1F5F9", 
+                                            color: "#334155", 
+                                            border: "1px solid #CBD5E1", 
+                                            padding: "4px 8px", 
+                                            borderRadius: "6px",
+                                            display: "inline-flex",
+                                            alignItems: "center"
+                                          }}
+                                        >
+                                          <i className="fas fa-clock me-1.5" style={{ fontSize: "10px", color: "#12AA50" }} />
+                                          {convertTo12HourFormat(bookingData.startTime)} - {convertTo12HourFormat(bookingData.endTime)}
+                                        </span>
+                                      ) : "-"}
                                     </td>
                                     <td>
                                       <span className="pay-dark fs-16">{bookingData?.total_price ? "₹" : ""} {bookingData.total_price}</span>
@@ -786,14 +874,14 @@ const UserBookings = () => {
                                       </a>
                                     </td>
                                     <td>
-                                      <span className={`ki-badge ${["Approved", "Completed", "Refunded"].includes(bookingData?.status) ? "confirmed" : bookingData?.status === "Pending" || bookingData?.status === "Refund Pending" ? "pending" : "cancelled"}`}>
+                                      <span className={`ki-badge ${["Approved", "Completed", "Refunded"].includes(bookingData?.status) ? "confirmed" : bookingData?.status === "Pending" || bookingData?.status === "Refund Pending" || bookingData?.status === "Pending Approval" ? "pending" : "cancelled"}`}>
                                         {bookingData?.status}
                                       </span>
                                     </td>
                                     <td>
                                       {bookingData?.status === 'Rejected' ? "" : bookingData?.cancellation_status === 1 ? (
                                         <span className="btn" style={{ pointerEvents: "none", color: "#64748B", background: "#F1F5F9", border: "1px solid #CBD5E1", opacity: 1, fontWeight: 600 }}>Cancelled</span>
-                                      ) : (new Date() - new Date(bookingData.createdAt)) / (1000 * 60 * 60) < 2 ? (
+                                      ) : canCancelBooking(bookingData) ? (
                                         <span className="pay-dark fs-16 btn btn-primary" onClick={() => cancelCoachBooking(bookingData)}>Cancel</span>
                                       ) : ""}
                                     </td>
@@ -857,11 +945,31 @@ const UserBookings = () => {
                                         </span>
                                       </h2>
                                     </td>
-                                    <td>{formatDate(bookingData?.startDate)} - {formatDate(bookingData?.endDate)}</td>
+                                    <td>
+                                      <div className="d-flex align-items-center fw-bold" style={{ fontSize: "14px", color: "#1E293B" }}>
+                                        <i className="fas fa-calendar-alt me-2 text-success" />
+                                        {formatDate(bookingData?.startDate)} - {formatDate(bookingData?.endDate)}
+                                      </div>
+                                    </td>
                                     <td className="table-date-time">
-                                      <h4>
-                                        <span>{bookingData?.startTime && convertTo12HourFormat(bookingData?.startTime)} - {bookingData?.endTime && convertTo12HourFormat(bookingData?.endTime)}</span>
-                                      </h4>
+                                      {bookingData?.startTime ? (
+                                        <span 
+                                          style={{ 
+                                            fontSize: "11px", 
+                                            fontWeight: "600", 
+                                            backgroundColor: "#F1F5F9", 
+                                            color: "#334155", 
+                                            border: "1px solid #CBD5E1", 
+                                            padding: "4px 8px", 
+                                            borderRadius: "6px",
+                                            display: "inline-flex",
+                                            alignItems: "center"
+                                          }}
+                                        >
+                                          <i className="fas fa-clock me-1.5" style={{ fontSize: "10px", color: "#12AA50" }} />
+                                          {convertTo12HourFormat(bookingData.startTime)} - {convertTo12HourFormat(bookingData.endTime)}
+                                        </span>
+                                      ) : "-"}
                                     </td>
                                     <td>
                                       <span className="pay-dark fs-16">{bookingData?.total_price ? "₹" : ""} {bookingData.total_price}</span>
@@ -872,14 +980,14 @@ const UserBookings = () => {
                                       </a>
                                     </td>
                                     <td>
-                                      <span className={`ki-badge ${["Approved", "Completed", "Refunded"].includes(bookingData?.status) ? "confirmed" : bookingData?.status === "Pending" || bookingData?.status === "Refund Pending" ? "pending" : "cancelled"}`}>
+                                      <span className={`ki-badge ${["Approved", "Completed", "Refunded"].includes(bookingData?.status) ? "confirmed" : bookingData?.status === "Pending" || bookingData?.status === "Refund Pending" || bookingData?.status === "Pending Approval" ? "pending" : "cancelled"}`}>
                                         {bookingData?.status}
                                       </span>
                                     </td>
                                     <td>
                                       {bookingData?.status === 'Rejected' ? "" : bookingData?.cancellation_status === 1 ? (
                                         <span className="btn" style={{ pointerEvents: "none", color: "#64748B", background: "#F1F5F9", border: "1px solid #CBD5E1", opacity: 1, fontWeight: 600 }}>Cancelled</span>
-                                      ) : (new Date() - new Date(bookingData.createdAt)) / (1000 * 60 * 60) < 2 ? (
+                                      ) : canCancelBooking(bookingData) ? (
                                         <span className="pay-dark fs-16 btn btn-primary" onClick={() => cancelTrainerBooking(bookingData)}>Cancel</span>
                                       ) : ""}
                                     </td>

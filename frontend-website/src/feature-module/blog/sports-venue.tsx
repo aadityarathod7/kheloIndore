@@ -175,7 +175,7 @@ const BlogListSidebarLeft = () => {
                     <input
                       type="text"
                       className="form-control rounded-pill border-0 shadow px-4 py-3"
-                      placeholder="Search sports categories (e.g. Cricket, Football, Karate...)"
+                      placeholder="Search venues (e.g. Cricket, Football)"
                       style={{ fontSize: "15px", paddingRight: "50px", backgroundColor: "#FFFFFF", border: "1px solid #E2E8F0" }}
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}

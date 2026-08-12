@@ -185,6 +185,9 @@ const UserDashboard = () => {
     if (booking?.cancellation_status === 1) return "Cancelled";
     if (booking?.verification_status === 2) return "Rejected";
     if (booking?.verification_status === 1) return "Approved";
+    if (booking?.paymentState === "COMPLETED") {
+      return "Pending Approval";
+    }
     return booking?.paymentState || "Pending";
   };
 

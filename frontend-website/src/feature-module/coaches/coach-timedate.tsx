@@ -80,7 +80,7 @@ const CoachTimeDate = (props: any) => {
   const [slotData, setSlotData] = useState<any[]>([]);
   const [dateId, setDateId] = useState<any[]>([]);
   const [timeSlot, setTimeSlot] = useState<any[]>([]);
-  const [selectedTimeSlot, setSelectedTimeSlot] = useState<SlotData | null>(null);
+  const [selectedTimeSlots, setSelectedTimeSlots] = useState<SlotData[]>([]);
   const [daysDifference, setDaysDifference] = useState<number>(1);
 
   useEffect(() => {
@@ -303,7 +303,7 @@ const CoachTimeDate = (props: any) => {
       });
       return;
     }
-    if (!selectedTimeSlot || !selectedBatch) {
+    if (selectedTimeSlots.length === 0 || !selectedBatch) {
       Swal.fire({
         title: "Error",
         text: "Please select any slot.",
@@ -318,9 +318,9 @@ const CoachTimeDate = (props: any) => {
       coachId: id,
       start_date: startDate,
       end_date: endDate,
-      start_time: selectedTimeSlot?.start_time,
-      end_time: selectedTimeSlot?.end_time,
-      total_price: selectedTimeSlot ? selectedTimeSlot.price * (daysDifference + 1) : 0,
+      start_time: selectedTimeSlots.map(s => s.start_time).join(","),
+      end_time: selectedTimeSlots.map(s => s.end_time).join(","),
+      total_price: selectedTimeSlots.reduce((sum, s) => sum + s.price, 0) * (daysDifference + 1),
       packageType: selectedBatch,
     }
 
@@ -330,7 +330,8 @@ const CoachTimeDate = (props: any) => {
       navigate(`/coaches/coach-order-confirm/${id}`, {
         state: {
           bookingData,
-          selectedTimeSlot,
+          selectedTimeSlot: selectedTimeSlots[0],
+          selectedTimeSlots,
         },
       });
     } catch (error) {
@@ -724,18 +725,29 @@ const CoachTimeDate = (props: any) => {
                         {timeSlot.slots.map((slot: any) => (
                           <div key={slot.id} className="col-sm-6 col-md-4 mb-3">
                             <div
-                              className={`slot-item ${slot.isBooked ? 'disabled' : ''} ${selectedTimeSlot?._id === slot._id ? 'selected' : ''}`}
-                              onClick={() => !slot.isBooked && setSelectedTimeSlot(slot)}
+                              className={`slot-item ${slot.isBooked ? 'disabled' : ''} ${selectedTimeSlots.some((s) => s._id === slot._id) ? 'selected' : ''}`}
+                              onClick={() => {
+                                if (!slot.isBooked) {
+                                  setSelectedTimeSlots((prev) => {
+                                    const isSelected = prev.some((s) => s._id === slot._id);
+                                    if (isSelected) {
+                                      return prev.filter((s) => s._id !== slot._id);
+                                    } else {
+                                      return [...prev, slot];
+                                    }
+                                  });
+                                }
+                              }}
                               style={{ 
                                 padding: "12px", 
-                                border: selectedTimeSlot?._id === slot._id ? "2px solid #22C55E" : "1px solid #E2E8F0", 
+                                border: selectedTimeSlots.some((s) => s._id === slot._id) ? "2px solid #22C55E" : "1px solid #E2E8F0", 
                                 borderRadius: "12px",
-                                background: selectedTimeSlot?._id === slot._id ? "#F0FDF4" : "#F8FAFC",
+                                background: selectedTimeSlots.some((s) => s._id === slot._id) ? "#F0FDF4" : "#F8FAFC",
                                 cursor: slot.isBooked ? "not-allowed" : "pointer",
                                 opacity: slot.isBooked ? 0.5 : 1
                               }}
                             >
-                              <div style={{ fontWeight: "600", color: selectedTimeSlot?._id === slot._id ? "#16A34A" : "#334155" }}>
+                              <div style={{ fontWeight: "600", color: selectedTimeSlots.some((s) => s._id === slot._id) ? "#16A34A" : "#334155" }}>
                                 <i className="feather-clock me-1"></i> {slot.start_time} - {slot.end_time}
                               </div>
                               <div style={{ fontSize: "14px", color: "#64748B", marginTop: "4px" }}>
@@ -785,8 +797,8 @@ const CoachTimeDate = (props: any) => {
                       <span style={{ color: "#64748B", fontSize: "13px" }}>Time Slot</span>
                       <strong style={{ color: "#0F172A", fontSize: "15px" }}>
                         <i className="feather-clock me-2" style={{ color: "#22C55E" }} />
-                        {selectedTimeSlot
-                          ? `${selectedTimeSlot?.start_time} to ${selectedTimeSlot?.end_time}`
+                        {selectedTimeSlots.length > 0
+                          ? selectedTimeSlots.map(s => `${s.start_time} to ${s.end_time}`).join(", ")
                           : "Select a time slot"}
                       </strong>
                     </li>
@@ -795,7 +807,7 @@ const CoachTimeDate = (props: any) => {
                     <div style={{ background: "#F0FDF4", padding: "16px", borderRadius: "12px", border: "1px solid #DCFCE7", textAlign: "center" }}>
                       <span style={{ display: "block", color: "#166534", fontSize: "14px", fontWeight: "600", marginBottom: "4px" }}>Total Amount</span>
                       <strong style={{ fontSize: "28px", color: "#16A34A", fontWeight: "800" }}>
-                        ₹{selectedTimeSlot ? selectedTimeSlot.price * (daysDifference+1 || 1) : 0}
+                        ₹{selectedTimeSlots.reduce((sum, s) => sum + s.price, 0) * (daysDifference + 1)}
                       </strong>
                     </div>
                   </div>

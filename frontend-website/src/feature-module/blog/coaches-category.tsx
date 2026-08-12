@@ -154,7 +154,7 @@ const CoachesCategory = () => {
                     <input
                       type="text"
                       className="form-control rounded-pill border-0 shadow px-4 py-3"
-                      placeholder="Search coaches categories (e.g. Football, Basketball, Cricket...)"
+                      placeholder="Search coaches (e.g. Football, Cricket)"
                       style={{ fontSize: "15px", paddingRight: "50px", backgroundColor: "#FFFFFF", border: "1px solid #E2E8F0" }}
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}

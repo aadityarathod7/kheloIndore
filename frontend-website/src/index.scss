@@ -659,7 +659,7 @@ div.p-datepicker table td.p-datepicker-today>span:focus {
 
 .ki-bookings-table {
   width: 100% !important;
-  min-width: 1200px !important;
+  min-width: 1150px !important;
   margin: 0 !important;
   table-layout: fixed;
   color: #1c3557;
@@ -761,14 +761,30 @@ div.p-datepicker table td.p-datepicker-today>span:focus {
   }
 }
 
+.ki-bookings-table {
+  width: 100% !important;
+
+  thead th {
+    white-space: nowrap !important;
+    vertical-align: middle !important;
+    font-weight: 700 !important;
+    color: #1E293B !important;
+  }
+
+  tbody td {
+    vertical-align: middle !important;
+    color: #334155 !important;
+  }
+}
+
 .ki-venue-bookings-table {
-  th:nth-child(1), td:nth-child(1) { width: 32%; }
+  th:nth-child(1), td:nth-child(1) { width: 22%; }
   th:nth-child(2), td:nth-child(2) { width: 10%; }
-  th:nth-child(3), td:nth-child(3) { width: 18%; }
+  th:nth-child(3), td:nth-child(3) { width: 22%; }
   th:nth-child(4), td:nth-child(4) { width: 10%; }
-  th:nth-child(5), td:nth-child(5) { width: 6%; text-align: center; }
-  th:nth-child(6), td:nth-child(6) { width: 12%; }
-  th:nth-child(7), td:nth-child(7) { width: 12%; text-align: center; }
+  th:nth-child(5), td:nth-child(5) { width: 8%; text-align: center; }
+  th:nth-child(6), td:nth-child(6) { width: 14%; }
+  th:nth-child(7), td:nth-child(7) { width: 14%; text-align: center; }
 }
 
 .ki-bookings-table .ki-booking-status-cell,
@@ -776,6 +792,7 @@ div.p-datepicker table td.p-datepicker-today>span:focus {
   white-space: nowrap !important;
   word-break: normal;
   overflow: visible;
+  vertical-align: middle !important;
 }
 
 .ki-bookings-table .ki-booking-status-cell .ki-badge {
@@ -807,13 +824,13 @@ div.p-datepicker table td.p-datepicker-today>span:focus {
 }
 
 .ki-provider-bookings-table {
-  th:nth-child(1), td:nth-child(1) { width: 25%; }
-  th:nth-child(2), td:nth-child(2) { width: 17%; }
-  th:nth-child(3), td:nth-child(3) { width: 17%; }
-  th:nth-child(4), td:nth-child(4) { width: 12%; }
-  th:nth-child(5), td:nth-child(5) { width: 9%; text-align: center; }
-  th:nth-child(6), td:nth-child(6) { width: 10%; }
-  th:nth-child(7), td:nth-child(7) { width: 10%; text-align: center; }
+  th:nth-child(1), td:nth-child(1) { width: 22%; }
+  th:nth-child(2), td:nth-child(2) { width: 20%; }
+  th:nth-child(3), td:nth-child(3) { width: 12%; }
+  th:nth-child(4), td:nth-child(4) { width: 10%; }
+  th:nth-child(5), td:nth-child(5) { width: 8%; text-align: center; }
+  th:nth-child(6), td:nth-child(6) { width: 14%; }
+  th:nth-child(7), td:nth-child(7) { width: 14%; text-align: center; }
 }
 
 @media (max-width: 991.98px) {
@@ -938,6 +955,7 @@ div.p-datepicker table td.p-datepicker-today>span:focus {
 .simple-booking-status { display: inline-block; margin-top: 5px; padding: 4px 8px; border-radius: 20px; background: #edf3ee; color: #53705c; font-size: 10px; font-weight: 800; text-transform: uppercase; }
 .simple-booking-status.cancelled, .simple-booking-status.rejected { background: #fff0f0; color: #c74747; }
 .simple-booking-status.approved, .simple-booking-status.completed, .simple-booking-status.success { background: #e5f8ec; color: #078c40; }
+.simple-booking-status.pending, .simple-booking-status.pending-approval { background: #fffbeb; color: #d97706; }
 .simple-dashboard-empty { display: flex; min-height: 235px; align-items: center; justify-content: center; flex-direction: column; gap: 10px; color: #718096; text-align: center; font-size: 14px; }
 .simple-dashboard-empty i { color: #0d9847; font-size: 25px; }
 .simple-dashboard-empty p { max-width: 330px; margin: 0; }
