@@ -9,7 +9,7 @@ import axios from "axios";
 import { API_URL, IMG_URL } from "../../ApiUrl";
 import Swal from 'sweetalert2';
 
-const PARTIAL_PAYMENT_PERCENT = 0.5;
+const PARTIAL_PAYMENT_PERCENT = 0.25;
 
 
 interface CoachData {
@@ -387,9 +387,9 @@ const CoachOrderConfirm = (props: any) => {
                       onChange={() => setPaymentType("partial")}
                     />
                     <span>
-                      <strong style={{ color: "#0F172A" }}>Partial Payment (50% advance)</strong>
+                      <strong style={{ color: "#0F172A" }}>Partial Payment (25% advance)</strong>
                       <br />
-                      <span style={{ fontSize: "12px", color: "#64748B" }}>Pay 50% now and the rest later. Partial payments are non-refundable.</span>
+                      <span style={{ fontSize: "12px", color: "#64748B" }}>Pay 25% now and the rest later. Partial payments are non-refundable.</span>
                     </span>
                   </label>
                 </div>

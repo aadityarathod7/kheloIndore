@@ -222,7 +222,13 @@ const VenueTimeDate = () => {
       const start = timeToMinutes(apiSlot.startTime);
       if (start < 0) return;
       const isOfflineBlocked = Boolean(apiSlot.isOfflineBlocked) || offlineRanges.some((range) => start >= range.start && start < range.end);
-      const nextSlot = { ...apiSlot, isOfflineBlocked, isBooked: Boolean(apiSlot.isBooked) || isOfflineBlocked };
+      
+      const isToday = selectedDate ? (new Date(selectedDate).toDateString() === new Date().toDateString()) : false;
+      const now = new Date();
+      const currentMinutes = now.getHours() * 60 + now.getMinutes();
+      const isPast = isToday && start < currentMinutes;
+
+      const nextSlot = { ...apiSlot, isOfflineBlocked, isBooked: Boolean(apiSlot.isBooked) || isOfflineBlocked || isPast };
       const existingSlot = slotsByStartTime.get(start);
       if (!existingSlot || nextSlot.isOfflineBlocked || (!existingSlot.isBooked && nextSlot.isBooked)) {
         slotsByStartTime.set(start, nextSlot);
@@ -231,7 +237,13 @@ const VenueTimeDate = () => {
 
     return Array.from(slotsByStartTime.values()).sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime)).map((apiSlot: any) => {
       const isChecked = selectedSlotTimes.includes(apiSlot.startTime);
-      const isBooked = Boolean(apiSlot.isBooked);
+      const start = timeToMinutes(apiSlot.startTime);
+      const isToday = selectedDate ? (new Date(selectedDate).toDateString() === new Date().toDateString()) : false;
+      const now = new Date();
+      const currentMinutes = now.getHours() * 60 + now.getMinutes();
+      const isPast = isToday && start < currentMinutes;
+
+      const isBooked = Boolean(apiSlot.isBooked) || isPast;
       const isOfflineBlocked = Boolean(apiSlot.isOfflineBlocked);
       const price = apiSlot.price || venueData?.price_per_hr || 750;
 
@@ -245,7 +257,7 @@ const VenueTimeDate = () => {
         slot_id: apiSlot.slot_id || apiSlot._id,
       };
     });
-  }, [slots, selectedSlotTimes, venueData]);
+  }, [slots, selectedSlotTimes, venueData, selectedDate]);
 
   const selectedSlots = useMemo(() => {
     return displaySlots.filter((slot) => slot.isChecked);
@@ -313,8 +325,38 @@ const VenueTimeDate = () => {
     }
 
     if (selectedSlots.length > 0 && selectedDate) {
-      // Payment uses the database slot ObjectId. Sending the displayed start
-      // time (for example "04:00 PM") makes the backend unable to price it.
+      if (selectedSlots.length < 2) {
+        Swal.fire({
+          title: "Minimum Booking Required",
+          text: "Minimum booking duration is 1 hour (2 consecutive 30-minute slots). Please select another slot.",
+          icon: "warning",
+          confirmButtonText: "OK",
+        });
+        return;
+      }
+
+      // Check if consecutive
+      const sortedSelected = [...selectedSlots].sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime));
+      let isConsecutive = true;
+      for (let i = 1; i < sortedSelected.length; i++) {
+        const prevEnd = timeToMinutes(sortedSelected[i - 1].endTime);
+        const currStart = timeToMinutes(sortedSelected[i].startTime);
+        if (prevEnd !== currStart) {
+          isConsecutive = false;
+          break;
+        }
+      }
+
+      if (!isConsecutive) {
+        Swal.fire({
+          title: "Consecutive Slots Required",
+          text: "The selected time slots must be consecutive. Please adjust your selection.",
+          icon: "warning",
+          confirmButtonText: "OK",
+        });
+        return;
+      }
+
       const slotsBooked = selectedSlots
         .map((s: any) => s.slot_id || s._id || s.id)
         .filter(Boolean);
@@ -586,9 +628,9 @@ const VenueTimeDate = () => {
                             type="button"
                             disabled={isBooked}
                             onClick={() => handleSlotClick(slot.startTime)}
-                            className="btn w-100 py-2 px-1 text-center transition-all"
+                            className="btn w-100 py-1 px-1 text-center transition-all d-flex align-items-center justify-content-center"
                             style={{
-                              height: "38px",
+                              height: "44px",
                               fontSize: "11px",
                               fontWeight: "600",
                               borderRadius: "10px",
@@ -599,7 +641,14 @@ const VenueTimeDate = () => {
                               boxShadow: isChecked ? "0 4px 12px rgba(34,197,94,0.3)" : "none"
                             }}
                           >
-                            {isOfflineBlocked ? "Offline block" : formatTimeDisplay(slot.startTime, timeFormat)}
+                            {isOfflineBlocked ? (
+                              "Offline block"
+                            ) : (
+                              <div className="d-flex flex-column align-items-center justify-content-center" style={{ lineHeight: 1.2 }}>
+                                <span>{formatTimeDisplay(slot.startTime, timeFormat)}</span>
+                                <span style={{ fontSize: "9px", fontWeight: "700", marginTop: "2px", color: isChecked ? "#FFFFFF" : "#16A34A" }}>₹{slot.price}</span>
+                              </div>
+                            )}
                           </button>
                         </div>
                       );

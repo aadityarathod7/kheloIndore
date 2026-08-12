@@ -761,13 +761,15 @@ exports.getVenue = async (req, res) => {
 
     // 1. Sport filter: match vendor_type / category / name
     if (sport && sport !== "all") {
-      const sportTerm = escapeRegex(String(sport).replace(/-/g, " ").replace(/&/g, "and").trim());
-      if (sportTerm) {
+      const cleanSport = String(sport).replace(/&/g, "and").trim();
+      const parts = cleanSport.split(/[\s-]+/).filter(Boolean).map(escapeRegex);
+      if (parts.length > 0) {
+        const flexibleRegex = new RegExp(parts.join("[\\s-]*"), "i");
         addAnd({
           $or: [
-            { vendor_type: new RegExp(sportTerm, "i") },
-            { category: new RegExp(sportTerm, "i") },
-            { name: new RegExp(sportTerm, "i") },
+            { vendor_type: flexibleRegex },
+            { category: flexibleRegex },
+            { name: flexibleRegex },
           ],
         });
       }

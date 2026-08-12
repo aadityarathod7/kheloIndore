@@ -102,11 +102,11 @@ const VenueOrderConfirm = () => {
       : totalPrice;
   }, [bookingData?.totalPrice, bookingData?.total_price, totalPrice]);
 
-  // Payment type selection (Partial 50% advance / Full payment)
+  // Payment type selection (Partial 25% advance / Full payment)
   const [paymentType, setPaymentType] = useState<"partial" | "full">("full");
   const [acceptedPolicy, setAcceptedPolicy] = useState(false);
   const payableAmount =
-    paymentType === "partial" ? Math.round((total_Price || 0) * 0.5) : total_Price || 0;
+    paymentType === "partial" ? Math.round((total_Price || 0) * 0.25) : total_Price || 0;
 
   //   const openNewWindow = () => {
   //     window.open('https://mercury-uat.phonepe.com/transact/simulator?token=3GobA5RNrRCwUWUccUBeyTBSCransuCxvBXLOIZMWZVrgKGdyyuZJ', '_blank');
@@ -206,7 +206,7 @@ const VenueOrderConfirm = () => {
     return `${IMG_URL}${str}`;
   };
 
-  const totalDuration = selectedTimeSlots.length;
+  const totalDuration = selectedTimeSlots.length * 0.5;
 
   return (
     <div style={{ backgroundColor: "#F8FAFC", minHeight: "100vh" }}>
@@ -463,11 +463,11 @@ const VenueOrderConfirm = () => {
                           style={{ accentColor: "#22C55E" }}
                         />
                         <div>
-                          <span className="fw-bold text-dark d-block" style={{ fontSize: "13px" }}>Partial Payment (50% advance)</span>
-                          <span className="text-muted" style={{ fontSize: "11px" }}>Pay 50% now to confirm your booking. <strong>Non-refundable.</strong></span>
+                          <span className="fw-bold text-dark d-block" style={{ fontSize: "13px" }}>Partial Payment (25% advance)</span>
+                          <span className="text-muted" style={{ fontSize: "11px" }}>Pay 25% now to confirm your booking. <strong>Non-refundable.</strong></span>
                         </div>
                       </div>
-                      <strong className="text-success" style={{ fontSize: "15px" }}>₹{Math.round((total_Price || 0) * 0.5)}</strong>
+                      <strong className="text-success" style={{ fontSize: "15px" }}>₹{Math.round((total_Price || 0) * 0.25)}</strong>
                     </label>
                   </div>
                 </div>

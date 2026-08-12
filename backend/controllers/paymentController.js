@@ -154,7 +154,7 @@ const venuePayment = async (req, res) => {
     const merchantTransactionId = `${user_id}-${Date.now()}`;
 
     
-    const expirationTime = new Date().getTime() + 5 * 60 * 1000;
+    const expirationTime = new Date().getTime() + 10 * 60 * 1000;
     // Partial payment = 50% advance; full payment = 100%
     const payableAmount =
       paymentType === "partial"
@@ -868,11 +868,17 @@ const venuePaymentStatus = async (req, res) => {
       fs.mkdirSync(pdfDir, { recursive: true });
     }
 
-    const browser = await puppeteer.launch(getPuppeteerLaunchOptions());
-    const page = await browser.newPage();
-    await page.setContent(html, { waitUntil: "networkidle0" });
-    await page.pdf({ path: invoicePath, format: "A3", printBackground: true });
-    await browser.close();
+    let hasPdf = false;
+    try {
+      const browser = await puppeteer.launch(getPuppeteerLaunchOptions());
+      const page = await browser.newPage();
+      await page.setContent(html, { waitUntil: "networkidle0" });
+      await page.pdf({ path: invoicePath, format: "A3", printBackground: true });
+      await browser.close();
+      hasPdf = true;
+    } catch (pdfError) {
+      console.error("PDF Generation failed in venuePaymentStatus:", pdfError);
+    }
 
  
     // Payment Success Logic
@@ -959,23 +965,28 @@ const venuePaymentStatus = async (req, res) => {
       );
 
       // Send emails
-      await mail.sendBookingRequestEmail({
-        mailcontentuser,
-        recipientEmail: email,
-        venueName,
-        attachmentInvoices: [{ filename, path: invoicePath }],
-      });
+      try {
+        const attachmentInvoices = hasPdf ? [{ filename, path: invoicePath }] : [];
+        await mail.sendBookingRequestEmail({
+          mailcontentuser,
+          recipientEmail: email,
+          venueName,
+          attachmentInvoices,
+        });
 
-      await mail.sendBookingEmailToApprovalToVenueAdmin({
-        mailcontent,
-        venueadminemail,
-        venueName,
-      });
+        await mail.sendBookingEmailToApprovalToVenueAdmin({
+          mailcontent,
+          venueadminemail,
+          venueName,
+        });
 
-      await mail.sendBookingEmailToApprovalToSuperAdmin({
-        mailcontent,
-        subject: `Booking Approval Required for ${venueName}`,
-      });
+        await mail.sendBookingEmailToApprovalToSuperAdmin({
+          mailcontent,
+          subject: `Booking Approval Required for ${venueName}`,
+        });
+      } catch (emailError) {
+        console.error("Email sending failed in venuePaymentStatus:", emailError);
+      }
       res.redirect(process.env.REDIRECT_URL);
   } 
   }else {
@@ -992,7 +1003,11 @@ const venuePaymentStatus = async (req, res) => {
       });
 
       // Send failure email or other actions
-      res.redirect(process.env.FAIL_URL);
+      const categorySlug = (venueData.vendor_type || "venue").replace(/\s+/g, "-").toLowerCase();
+      const nameSlug = (venueData.name || "").replace(/\s+/g, "-").toLowerCase();
+      const idStr = venueData._id.toString();
+      const failedRedirectUrl = `${process.env.REDIRECT_URL}/sports-venue/${categorySlug}/${nameSlug}/${idStr}?payment=failed`;
+      res.redirect(failedRedirectUrl);
     }
   } catch (error) {
     
@@ -1060,8 +1075,8 @@ const getVenueBookingByUserId = async (req, res) => {
   }
 };
 
-// Payment types: partial = 50% advance (non-refundable), full = 100% (cancellation refund rules apply)
-const PARTIAL_PAYMENT_PERCENT = 0.5;
+// Payment types: partial = 25% advance (non-refundable), full = 100% (cancellation refund rules apply)
+const PARTIAL_PAYMENT_PERCENT = 0.25;
 
 // Refund policy:
 //  - Partial payment: non-refundable
@@ -1248,7 +1263,7 @@ const coachPayment = async (req, res) => {
       // Move to the next day
       currentDate.setDate(currentDate.getDate() + 1);
     }
-    const expirationTime = new Date().getTime() + 5 * 60 * 1000;
+    const expirationTime = new Date().getTime() + 10 * 60 * 1000;
     // Proceed to payment if all slots are available
     const merchantTransactionId = `${user_id}-${Date.now()}`;
     // Partial payment = 50% advance; full payment = 100%
@@ -1444,16 +1459,22 @@ const slotDates = `${formattedStartDate} to ${formattedEndDate}`;
     var filename = `${uuidv4()}.pdf`;
     var invoicePath = path.join(__dirname, `../public/pdf/${filename}`);
     var pdfUrl = `/pdf/${filename}`;
-    const browser = await puppeteer.launch(getPuppeteerLaunchOptions());
-        const page = await browser.newPage();
-        await page.setContent(html, { waitUntil: "networkidle0" });
-        await page.pdf({
-          path: invoicePath,
-          formate: "A3",
-          printBackground: true,
-        });
-        await browser.close();
-       const attachedFiles = [{ filename, path: invoicePath }];
+    let hasPdf = false;
+    try {
+      const browser = await puppeteer.launch(getPuppeteerLaunchOptions());
+      const page = await browser.newPage();
+      await page.setContent(html, { waitUntil: "networkidle0" });
+      await page.pdf({
+        path: invoicePath,
+        formate: "A3",
+        printBackground: true,
+      });
+      await browser.close();
+      hasPdf = true;
+    } catch (pdfError) {
+      console.error("PDF Generation failed in coachPaymentStatus:", pdfError);
+    }
+    const attachedFiles = hasPdf ? [{ filename, path: invoicePath }] : [];
           // Create the booking record
 
          
@@ -1555,23 +1576,27 @@ const slotDates = `${formattedStartDate} to ${formattedEndDate}`;
   );
 
   // Send emails
-  await mail.sendBookingRequestEmail({
-    mailcontentuser,
-    recipientEmail,
-    venueName: coachName,
-    attachmentInvoices: attachedFiles,
-  });
+  try {
+    await mail.sendBookingRequestEmail({
+      mailcontentuser,
+      recipientEmail,
+      venueName: coachName,
+      attachmentInvoices: attachedFiles,
+    });
 
-  await mail.sendBookingEmailToApprovalToVenueAdmin({
-    mailcontent,
-    venueadminemail: coachData.email, // Coach Admin's email
-    venueName: coachName,
-    attachmentInvoices:[],
-  });
-  await mail.sendBookingEmailToApprovalToSuperAdmin({
-    mailcontent,
-    subject: `Booking Approval Required for ${coachName}`,
-  });
+    await mail.sendBookingEmailToApprovalToVenueAdmin({
+      mailcontent,
+      venueadminemail: coachData.email, // Coach Admin's email
+      venueName: coachName,
+      attachmentInvoices:[],
+    });
+    await mail.sendBookingEmailToApprovalToSuperAdmin({
+      mailcontent,
+      subject: `Booking Approval Required for ${coachName}`,
+    });
+  } catch (emailError) {
+    console.error("Email sending failed in coachPaymentStatus:", emailError);
+  }
     // Increment user's booking count
     await User.findByIdAndUpdate(user_id, { $inc: { booking_count: 1 } }, { new: true });
 
@@ -1726,7 +1751,7 @@ const personalTrainerPayment = async (req, res) => {
       // Move to the next day
       currentDate.setDate(currentDate.getDate() + 1);
     }
-    const expirationTime = new Date().getTime() + 5 * 60 * 1000;
+    const expirationTime = new Date().getTime() + 10 * 60 * 1000;
     // Proceed to payment if all slots are available
     const merchantTransactionId = `${user_id}-${Date.now()}`;
     // Partial payment = 50% advance; full payment = 100%
@@ -1906,16 +1931,22 @@ const slotDates = `${formattedStartDate} to ${formattedEndDate}`;
     var filename = `${uuidv4()}.pdf`;
     var invoicePath = path.join(__dirname, `../public/pdf/${filename}`);
     var pdfUrl = `/pdf/${filename}`;
-    const browser = await puppeteer.launch(getPuppeteerLaunchOptions());
-        const page = await browser.newPage();
-        await page.setContent(html, { waitUntil: "networkidle0" });
-        await page.pdf({
-          path: invoicePath,
-          formate: "A3",
-          printBackground: true,
-        });
-        await browser.close();
-       const attachedFiles = [{ filename, path: invoicePath }];
+    let hasPdf = false;
+    try {
+      const browser = await puppeteer.launch(getPuppeteerLaunchOptions());
+      const page = await browser.newPage();
+      await page.setContent(html, { waitUntil: "networkidle0" });
+      await page.pdf({
+        path: invoicePath,
+        formate: "A3",
+        printBackground: true,
+      });
+      await browser.close();
+      hasPdf = true;
+    } catch (pdfError) {
+      console.error("PDF Generation failed in personalTrainerPaymentStatus:", pdfError);
+    }
+    const attachedFiles = hasPdf ? [{ filename, path: invoicePath }] : [];
           
         if (result.data.success == true) {
          if (result.data.code == "PAYMENT_SUCCESS") {
@@ -2009,23 +2040,28 @@ const slotDates = `${formattedStartDate} to ${formattedEndDate}`;
     recipientEmail // Recipient Email
   );
 
-  await mail.sendBookingRequestEmail({
-    mailcontentuser,
-    recipientEmail,
-    venueName: trainerName,
-    attachmentInvoices: attachedFiles,
-  });
- 
-  await mail.sendBookingEmailToApprovalToVenueAdmin({
-    mailcontent,
-    venueadminemail: trainerData.email, // Coach Admin's email
-    venueName: trainerName,
-    attachmentInvoices:[],
-  });
-  await mail.sendBookingEmailToApprovalToSuperAdmin({
-    mailcontent,
-    subject: `Booking Approval Required for ${trainerName}`,
-  });
+  // Send emails
+  try {
+    await mail.sendBookingRequestEmail({
+      mailcontentuser,
+      recipientEmail,
+      venueName: trainerName,
+      attachmentInvoices: attachedFiles,
+    });
+
+    await mail.sendBookingEmailToApprovalToVenueAdmin({
+      mailcontent,
+      venueadminemail: trainerData.email, // Coach Admin's email
+      venueName: trainerName,
+      attachmentInvoices:[],
+    });
+    await mail.sendBookingEmailToApprovalToSuperAdmin({
+      mailcontent,
+      subject: `Booking Approval Required for ${trainerName}`,
+    });
+  } catch (emailError) {
+    console.error("Email sending failed in personalTrainerPaymentStatus:", emailError);
+  }
     await User.findByIdAndUpdate(user_id, { $inc: { booking_count: 1 } }, { new: true });
 
     await UserDetailsAtPayments.deleteOne({ user_id });

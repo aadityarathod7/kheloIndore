@@ -96,7 +96,7 @@ const AddPersonalTrainer = () => {
       Swal.fire({
         icon: "success",
         title: "Success!",
-        text: "Personal Trainer added successfully",
+        text: "Trainer added successfully",
       }).then(() => {
         navigate('/personal-training');
       });
@@ -112,7 +112,7 @@ const AddPersonalTrainer = () => {
 
   return (
     <>
-      <h3 className="mb-4 title">Add Personal Trainer</h3>
+      <h3 className="mb-4 title">Add Trainer</h3>
       <Container
         style={{
           maxWidth: "1000px",

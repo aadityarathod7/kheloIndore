@@ -168,7 +168,7 @@ const TrainingPayment = (props: any) => {
               </li> */}
               <li>
                 <h5>
-                  <Link to={`/personal-training/training-timedate/${id}`}>
+                  <Link to={`/trainers/training-timedate/${id}`}>
                     <span>1</span>Time &amp; Date
                   </Link>
                 </h5>
@@ -182,14 +182,14 @@ const TrainingPayment = (props: any) => {
               </li> */}
               <li>
                 <h5>
-                  <Link to={`/personal-training/training-order-confirm/${id}`}>
+                  <Link to={`/trainers/training-order-confirm/${id}`}>
                     <span>2</span>Order Confirmation
                   </Link>
                 </h5>
               </li>
               <li className="active">
                 <h5>
-                  <Link to={`/personal-trainingtra/training-payment/${id}`}>
+                  <Link to={`/trainers/training-payment/${id}`}>
                     <span>3</span>Payment
                   </Link>
                 </h5>

@@ -19,9 +19,10 @@ interface Venues {
   src: string;
   near_by_location: string;
   vendor_type: any;
-  price_per_hr: any;
   google_location: any;
   description: any;
+  gameType?: string;
+  sports_details?: { sport?: string; size?: string; price_per_hr?: number }[];
 }
 
 interface DropdownOption {
@@ -684,6 +685,26 @@ export default function VenueByCategory() {
   const routeState = routeLocation.state as VenueSearchNavigationState | null;
   const categorySelected = thisCategory?.type || "";
 
+  const getVenueSize = (venue: Venues) => {
+    if (Array.isArray(venue.sports_details) && venue.sports_details.length > 0) {
+      const activeSport = (thisCategory?.type || "").replace(/-/g, " ").toLowerCase();
+      const match = venue.sports_details.find(
+        (sd: { sport?: string; size?: string }) => sd && sd.sport && sd.sport.toLowerCase().includes(activeSport)
+      );
+      if (match && match.size) {
+        return match.size;
+      }
+      const firstWithSize = venue.sports_details.find((sd: { sport?: string; size?: string }) => sd && sd.size);
+      if (firstWithSize) {
+        return firstWithSize.size;
+      }
+    }
+    if (venue.gameType && venue.gameType.toLowerCase() !== (thisCategory?.type || "").toLowerCase()) {
+      return venue.gameType;
+    }
+    return "Standard";
+  };
+
   // Filter States
   const [selectedSport, setSelectedSport] = useState<string>(categorySelected ? categorySelected.toLowerCase() : "all");
   const [locationName, setLocationName] = useState<string>(() => routeState?.selectedLocationSort?.name || "");
@@ -692,6 +713,7 @@ export default function VenueByCategory() {
   const [selectedGrassType, setSelectedGrassType] = useState<string>("any");
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState<string>("popular");
+  const [searchQuery, setSearchQuery] = useState<string>("");
 
   useEffect(() => {
     if (categorySelected) {
@@ -748,6 +770,8 @@ export default function VenueByCategory() {
           price_per_hr: venues.price_per_hr,
           google_location: venues.google_location,
           description: venues.description || "",
+          gameType: venues.gameType,
+          sports_details: Array.isArray(venues.sports_details) ? venues.sports_details : [],
         }));
         setVenues(mappedData);
       } catch {
@@ -828,6 +852,14 @@ export default function VenueByCategory() {
   // Unified Filtering & Sorting Engine
   const displayList = useMemo(() => {
     const result = venues.filter((t: any) => {
+      // 0. Name Search Filter
+      if (searchQuery) {
+        const venueName = (t.name || "").toLowerCase();
+        if (!venueName.includes(searchQuery.toLowerCase())) {
+          return false;
+        }
+      }
+
       // 1. Sports Filter
       if (selectedSport && selectedSport !== "all") {
         const vt = (t.vendor_type || "").toLowerCase().replace(/_/g, " ").trim();
@@ -905,17 +937,18 @@ export default function VenueByCategory() {
     }
 
     return result;
-  }, [venues, selectedSport, locationName, selectedGrassType, selectedAmenities, sortBy]);
+  }, [venues, selectedSport, locationName, searchQuery, selectedGrassType, selectedAmenities, sortBy]);
 
   const [currentPage, setCurrentPage] = useState(1);
 
   // Automatically reset to page 1 whenever filter parameters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [selectedSport, locationName, selectedDate, selectedSlot, selectedGrassType, selectedAmenities, sortBy]);
+  }, [selectedSport, locationName, searchQuery, selectedDate, selectedSlot, selectedGrassType, selectedAmenities, sortBy]);
 
   const handleResetFilters = () => {
     setLocationName("");
+    setSearchQuery("");
     setSelectedDate("");
     setSelectedSlot("all");
     setSelectedGrassType("any");
@@ -923,7 +956,7 @@ export default function VenueByCategory() {
     setCurrentPage(1);
   };
 
-  const venuesPerPage = 6; // 6 cards per page (two rows of three cards)
+  const venuesPerPage = 12; // 12 cards per page
   const indexOfLastVenue = currentPage * venuesPerPage;
   const indexOfFirstVenue = indexOfLastVenue - venuesPerPage;
 
@@ -1018,6 +1051,24 @@ export default function VenueByCategory() {
 
                 <hr style={{ borderColor: "#F1F5F9", margin: "0 0 16px 0" }} />
 
+                {/* Filter 0: Search By Name */}
+                <div className="mb-4">
+                  <label className="form-label fw-bold text-dark d-flex align-items-center gap-1 mb-2" style={{ fontSize: "12px", color: "#1E293B", textTransform: "uppercase", letterSpacing: "0.6px" }}>
+                    <i className="feather-search text-success" style={{ fontSize: "13px" }} /> Search Venue
+                  </label>
+                  <div style={{ position: "relative" }}>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="Search by name..."
+                      style={{ fontSize: "13px", paddingLeft: "35px", borderRadius: "10px", height: "38px", border: "1px solid #D1D5DB" }}
+                    />
+                    <i className="feather-search" style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", color: "#64748B", fontSize: "14px" }} />
+                  </div>
+                </div>
+
                 {/* Filter 1: Location */}
                 <div className="mb-4">
                   <label className="form-label fw-bold text-dark d-flex align-items-center gap-1 mb-2" style={{ fontSize: "12px", color: "#1E293B", textTransform: "uppercase", letterSpacing: "0.6px" }}>
@@ -1102,6 +1153,18 @@ export default function VenueByCategory() {
                           <button type="button" className="btn-close btn-close-sm ms-1" style={{ fontSize: "8px" }} onClick={() => setSelectedDate("")} aria-label="Remove" />
                         </span>
                       )}
+                      {selectedSlot && selectedSlot !== "all" && (
+                        <span className="badge rounded-pill d-inline-flex align-items-center ki-filter-badge" style={{ backgroundColor: "#F0FDF4", color: "#15803D", border: "1px solid #BBF7D0", fontSize: "11px", fontWeight: "600", padding: "4px 8px" }}>
+                          <i className="feather-clock me-1" /> {SLOT_OPTIONS.find(o => o.value === selectedSlot)?.shortLabel || selectedSlot}
+                          <button type="button" className="btn-close btn-close-sm ms-1" style={{ fontSize: "8px" }} onClick={() => setSelectedSlot("all")} aria-label="Remove" />
+                        </span>
+                      )}
+                      {selectedGrassType && selectedGrassType !== "any" && (
+                        <span className="badge rounded-pill d-inline-flex align-items-center ki-filter-badge" style={{ backgroundColor: "#F0FDF4", color: "#15803D", border: "1px solid #BBF7D0", fontSize: "11px", fontWeight: "600", padding: "4px 8px" }}>
+                          <i className="feather-layers me-1" /> {GRASS_OPTIONS.find(o => o.value === selectedGrassType)?.label || selectedGrassType}
+                          <button type="button" className="btn-close btn-close-sm ms-1" style={{ fontSize: "8px" }} onClick={() => setSelectedGrassType("any")} aria-label="Remove" />
+                        </span>
+                      )}
                       {selectedAmenities.map((a) => (
                         <span key={a} className="badge rounded-pill d-inline-flex align-items-center ki-filter-badge" style={{ backgroundColor: "#F0FDF4", color: "#15803D", border: "1px solid #BBF7D0", fontSize: "11px", fontWeight: "600", padding: "4px 8px" }}>
                           <i className="feather-check-circle me-1" /> {a}
@@ -1117,14 +1180,26 @@ export default function VenueByCategory() {
             {/* RIGHT COLUMN - Venue Cards Grid */}
             <div className="col-lg-9 col-md-8">
 
-              {/* Mobile Filter Row (visible only on small screens) */}
-              <div className="d-flex d-md-none flex-wrap gap-2 mb-3">
-                <CustomDropdown options={locationOptions} value={locationName} onChange={setLocationName} placeholder="Location" icon="feather-map-pin" />
-                <MiniCalendarDropdown value={selectedDate} onChange={setSelectedDate} />
-                <CustomDropdown options={SLOT_OPTIONS} value={selectedSlot} onChange={setSelectedSlot} placeholder="Time" icon="feather-clock" />
-                <button type="button" className="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1" style={{ fontSize: "12px", borderRadius: "10px" }} onClick={handleResetFilters}>
-                  <i className="feather-refresh-cw" style={{ fontSize: "12px" }} /> Reset
-                </button>
+              <div className="d-flex d-md-none flex-column gap-2 mb-3 w-100">
+                <div style={{ position: "relative", width: "100%" }}>
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search by name..."
+                    className="form-control"
+                    style={{ fontSize: "13px", paddingLeft: "35px", borderRadius: "10px", height: "38px", border: "1px solid #E2E8E3" }}
+                  />
+                  <i className="feather-search" style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", color: "#64748B", fontSize: "14px" }} />
+                </div>
+                <div className="d-flex flex-wrap gap-2 w-100">
+                  <CustomDropdown options={locationOptions} value={locationName} onChange={setLocationName} placeholder="Location" icon="feather-map-pin" />
+                  <MiniCalendarDropdown value={selectedDate} onChange={setSelectedDate} />
+                  <CustomDropdown options={SLOT_OPTIONS} value={selectedSlot} onChange={setSelectedSlot} placeholder="Time" icon="feather-clock" />
+                  <button type="button" className="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1" style={{ fontSize: "12px", borderRadius: "10px" }} onClick={handleResetFilters}>
+                    <i className="feather-refresh-cw" style={{ fontSize: "12px" }} /> Reset
+                  </button>
+                </div>
               </div>
 
               {/* Cards Grid */}
@@ -1182,22 +1257,22 @@ export default function VenueByCategory() {
                       </div>
 
                       {/* Card Content Body */}
-                      <div className="listing-content news-content p-2.5" style={{ background: "#FFFFFF", padding: "10px" }}>
+                      <div className="listing-content news-content p-2.5" style={{ background: "#FFFFFF", padding: "12px" }}>
                         
                         {/* Rating & Standard badge */}
-                        <div className="d-flex align-items-center justify-content-between mb-1" style={{ fontSize: "10px" }}>
+                        <div className="d-flex align-items-center justify-content-between mb-2" style={{ fontSize: "12px" }}>
                           <div className="rating-wrap d-flex align-items-center gap-1">
-                            <i className="fas fa-star text-warning" style={{ fontSize: "9px" }} />
-                            <span style={{ fontSize: "10px", fontWeight: "700", color: "#17222D" }}>4.8</span>
+                            <i className="fas fa-star text-warning" style={{ fontSize: "11px" }} />
+                            <span style={{ fontSize: "12px", fontWeight: "700", color: "#17222D" }}>4.8</span>
                           </div>
-                          <span style={{ fontSize: "9px", color: "#606D76", fontWeight: "600" }}>
-                            <i className="feather-grid me-1" style={{ color: "#3CAB4B", fontSize: "9px" }} />
-                            Standard
+                          <span style={{ fontSize: "12px", color: "#606D76", fontWeight: "600" }}>
+                            <i className="feather-grid me-1" style={{ color: "#3CAB4B", fontSize: "11px" }} />
+                            {getVenueSize(venue)}
                           </span>
                         </div>
 
                         {/* Venue Title */}
-                        <h3 className="listing-title mb-1" style={{ fontSize: "13px", fontWeight: "700", lineHeight: "1.2" }}>
+                        <h3 className="listing-title mb-1.5" style={{ fontSize: "15px", fontWeight: "700", lineHeight: "1.2" }}>
                           <Link
                             to={`/sports-venue/${venue.vendor_type ? venue.vendor_type.replace(/\s+/g, "-").toLowerCase() : "venue"}/${venue.name.replace(/\s+/g, "-").toLowerCase()}/${venue._id}`}
                             className="text-truncate d-block" style={{ color: "#17222D" }}
@@ -1208,8 +1283,8 @@ export default function VenueByCategory() {
                         </h3>
 
                         {/* Location Pin & Map Link */}
-                        <div className="d-flex align-items-center justify-content-between mb-1.5" style={{ fontSize: "11px" }}>
-                          <p className="mb-0 text-truncate" style={{ fontSize: "11px", color: "#606D76" }}>
+                        <div className="d-flex align-items-center justify-content-between mb-2" style={{ fontSize: "12px" }}>
+                          <p className="mb-0 text-truncate" style={{ fontSize: "12px", color: "#606D76" }}>
                             <i className="feather-map-pin me-1" style={{ color: "#3CAB4B" }} />
                             {venue.near_by_location || "Indore"}, Indore
                           </p>
@@ -1220,22 +1295,22 @@ export default function VenueByCategory() {
                               rel="noopener noreferrer"
                               title="Open Google Maps"
                               className="text-success ms-1 flex-shrink-0 d-inline-flex align-items-center"
-                              style={{ fontSize: "10px", fontWeight: "600" }}
+                              style={{ fontSize: "11px", fontWeight: "600" }}
                             >
-                              Map <i className="feather-map-pin ms-0.5" style={{ fontSize: "10px" }} />
+                              Map <i className="feather-map-pin ms-0.5" style={{ fontSize: "11px" }} />
                             </a>
                           )}
                         </div>
 
                         {/* Price & Book Button */}
-                        <div className="d-flex align-items-center justify-content-between pt-1.5" style={{ borderTop: "1px solid #F1F5F9" }}>
-                          <span style={{ fontSize: "13px", fontWeight: "800", color: "#17222D" }}>
-                            {"\u20B9"}{venue.price_per_hr || "750"} <span style={{ fontSize: "9px", fontWeight: "normal", color: "#606D76" }}>/hr</span>
+                        <div className="d-flex align-items-center justify-content-between pt-2" style={{ borderTop: "1px solid #F1F5F9" }}>
+                          <span style={{ fontSize: "16px", fontWeight: "800", color: "#17222D" }}>
+                            {"\u20B9"}{venue.price_per_hr || "750"} <span style={{ fontSize: "11px", fontWeight: "normal", color: "#606D76" }}>/hr</span>
                           </span>
                           <Link 
                             to={`/sports-venue/${venue.vendor_type ? venue.vendor_type.replace(/\s+/g, "-").toLowerCase() : "venue"}/${venue.name.replace(/\s+/g, "-").toLowerCase()}/${venue._id}`}
-                            className="btn btn-primary btn-sm rounded-pill px-2.5 py-0.5"
-                            style={{ fontSize: "10px", fontWeight: "600", backgroundColor: "#22C55E", borderColor: "#22C55E" }}
+                            className="btn btn-primary btn-sm rounded-pill px-3 py-1"
+                            style={{ fontSize: "12px", fontWeight: "600", backgroundColor: "#22C55E", borderColor: "#22C55E" }}
                           >
                             Book Slot
                           </Link>

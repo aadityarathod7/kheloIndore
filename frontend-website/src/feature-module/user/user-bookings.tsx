@@ -124,65 +124,74 @@ const UserBookings = () => {
 
   useEffect(() => {
     const ptData = bookingData?.data?.personalTrainer
-    const transformed = ptData?.map((booking: any) => ({
-      id: booking._id,
-      first_name: booking?.pt_id?.first_name,
-      last_name: booking?.pt_id?.last_name,
-      startDate: booking?.startDate,
-      endDate: booking?.endDate,
-      startTime: booking?.start_time,
-      endTime: booking?.end_time,
-      total_price: booking?.total_price,
-      paymentState: booking?.paymentState,
-      pdfUrl: booking?.pdf_url,
-      cancellation_status: booking?.cancellation_status,
-      createdAt: booking?.createdAt,
-      refund: booking?.refund,
-      status: getBookingStatus(booking)
-    }));
+    const transformed = ptData?.map((b: unknown) => {
+      const booking = b as any;
+      return {
+        id: booking._id,
+        first_name: booking?.pt_id?.first_name,
+        last_name: booking?.pt_id?.last_name,
+        startDate: booking?.startDate,
+        endDate: booking?.endDate,
+        startTime: booking?.start_time,
+        endTime: booking?.end_time,
+        total_price: booking?.total_price,
+        paymentState: booking?.paymentState,
+        pdfUrl: booking?.pdf_url,
+        cancellation_status: booking?.cancellation_status,
+        createdAt: booking?.createdAt,
+        refund: booking?.refund,
+        status: getBookingStatus(booking)
+      };
+    });
     setTrainerBookingData(transformed);
 
     const venueData = bookingData?.data?.venueAdmin
-    const transformedVenue = venueData?.map((booking: any) => ({
-      date: booking?.date,
-      name: booking?.venue_id?.name,
-      vendor_type: booking?.venue_id?.vendor_type,
-      slots: booking?.slot_time,
-      total_price: booking?.total_price,
-      paymentState: booking?.paymentState,
-      verificationStatus: booking?.verification_status,
-      pdfUrl: booking?.pdf_url,
-      id: booking?._id,
-      cancellation_status: booking?.cancellation_status,
-      createdAt: booking?.createdAt,
-      refund: booking?.refund,
-      status: getBookingStatus(booking)
-    }));
+    const transformedVenue = venueData?.map((b: unknown) => {
+      const booking = b as any;
+      return {
+        date: booking?.date,
+        name: booking?.venue_id?.name,
+        vendor_type: booking?.venue_id?.vendor_type,
+        slots: booking?.slot_time,
+        total_price: booking?.total_price,
+        paymentState: booking?.paymentState,
+        verificationStatus: booking?.verification_status,
+        pdfUrl: booking?.pdf_url,
+        id: booking?._id,
+        cancellation_status: booking?.cancellation_status,
+        createdAt: booking?.createdAt,
+        refund: booking?.refund,
+        status: getBookingStatus(booking)
+      };
+    });
     setVenueBookingData(transformedVenue);
 
     const coachData = bookingData?.data?.coach
-    const transformedCoach = coachData?.map((booking: any) => ({
-      startDate: booking?.startDate,
-      endDate: booking?.endDate,
-      first_name: booking?.coachId?.first_name,
-      last_name: booking?.coachId?.last_name,
-      packageType: booking?.packageType,
-      paymentState: booking?.paymentState,
-      total_price: booking?.total_price,
-      startTime: booking?.start_time,
-      endTime: booking?.end_time,
-      pdfUrl: booking?.pdf_url,
-      cancellation_status: booking?.cancellation_status,
-      id: booking?._id,
-      createdAt: booking?.createdAt,
-      refund: booking?.refund,
-      status: getBookingStatus(booking)
-    }));
+    const transformedCoach = coachData?.map((b: unknown) => {
+      const booking = b as any;
+      return {
+        startDate: booking?.startDate,
+        endDate: booking?.endDate,
+        first_name: booking?.coachId?.first_name,
+        last_name: booking?.coachId?.last_name,
+        packageType: booking?.packageType,
+        paymentState: booking?.paymentState,
+        total_price: booking?.total_price,
+        startTime: booking?.start_time,
+        endTime: booking?.end_time,
+        pdfUrl: booking?.pdf_url,
+        cancellation_status: booking?.cancellation_status,
+        id: booking?._id,
+        createdAt: booking?.createdAt,
+        refund: booking?.refund,
+        status: getBookingStatus(booking)
+      };
+    });
     setCoachBookingData(transformedCoach);
 
   }, [bookingData]);
 
-  const formatDate = (dateString: any) => {
+  const formatDate = (dateString: string | Date) => {
     const date = new Date(dateString);
     const day = date.getDate().toString().padStart(2, "0");
     const month = (date.getMonth() + 1).toString().padStart(2, "0");
@@ -190,7 +199,99 @@ const UserBookings = () => {
     return `${day}/${month}/${year}`;
   };
 
-  const cancelVenueBooking = async (bookingData: any) => {
+  const verifyCancellationSecurity = async (bookingId: string, bookingType: string): Promise<string | null> => {
+    // 1. Generate a simple CAPTCHA question (e.g. math question like: 12 + 5 = ?)
+    const num1 = Math.floor(Math.random() * 9) + 1;
+    const num2 = Math.floor(Math.random() * 9) + 1;
+    const captchaAnswer = num1 + num2;
+
+    const { value: userCaptcha } = await Swal.fire({
+      title: 'Security Verification',
+      html: `
+        <div class="mb-3">
+          <label class="form-label fw-bold">Please solve the math puzzle to cancel:</label>
+          <div class="d-flex align-items-center justify-content-center gap-2 mb-2">
+            <span class="fs-4 fw-bold px-3 py-1 bg-light border rounded">${num1} + ${num2} = </span>
+            <input type="number" id="captcha-input" class="form-control text-center" style="width: 80px;" placeholder="?">
+          </div>
+        </div>
+      `,
+      focusConfirm: false,
+      showCancelButton: true,
+      confirmButtonText: 'Verify',
+      preConfirm: () => {
+        const val = (document.getElementById('captcha-input') as HTMLInputElement).value;
+        if (!val) {
+          Swal.showValidationMessage('Please enter the answer');
+          return false;
+        }
+        if (parseInt(val) !== captchaAnswer) {
+          Swal.showValidationMessage('Incorrect answer, please try again');
+          return false;
+        }
+        return true;
+      }
+    });
+
+    if (!userCaptcha) return null;
+
+    // 2. Request OTP from backend
+    const swalSending = Swal.fire({
+      title: 'Requesting OTP...',
+      text: 'Sending SMS verification code to your registered mobile number.',
+      icon: 'info',
+      showConfirmButton: false,
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
+
+    try {
+      await axios.post(
+        `${API_URL}/booking/cancellation/request-otp`,
+        { bookingId, bookingType },
+        {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          },
+        }
+      );
+      swalSending.close();
+    } catch (error) {
+      swalSending.close();
+      const err = error as any;
+      const errMsg = err.response?.data?.message || 'Failed to send verification OTP.';
+      Swal.fire('Error', errMsg, 'error');
+      return null;
+    }
+
+    // 3. Prompt user to enter the SMS OTP
+    const { value: userOtp } = await Swal.fire({
+      title: 'SMS Verification Required',
+      text: 'Enter the 6-digit OTP code sent to your registered mobile number.',
+      input: 'text',
+      inputPlaceholder: 'Enter OTP code',
+      inputAttributes: {
+        maxlength: '6',
+        autocapitalize: 'off',
+        autocorrect: 'off'
+      },
+      showCancelButton: true,
+      confirmButtonText: 'Verify & Cancel Booking',
+      preConfirm: (value) => {
+        if (!value || value.length !== 6) {
+          Swal.showValidationMessage('Please enter a valid 6-digit OTP code');
+          return false;
+        }
+        return value;
+      }
+    });
+
+    return userOtp || null;
+  };
+
+  const cancelVenueBooking = async (bookingData: { id: string }) => {
 
     const { value: confirm } = await Swal.fire({
       title: 'Are you sure?',
@@ -202,6 +303,9 @@ const UserBookings = () => {
     });
 
     if (confirm) {
+      const otp = await verifyCancellationSecurity(bookingData.id, "venue");
+      if (!otp) return;
+
       const swalLoading = Swal.fire({
         title: 'Cancelling...',
         text: 'Please wait while we process your request.',
@@ -214,10 +318,11 @@ const UserBookings = () => {
       });
 
       try {
-        const response = await axios.post(
+        await axios.post(
           `${API_URL}/booking/cancellation/venue`,
           {
             bookingId: bookingData.id,
+            otp,
           },
           {
             headers: {
@@ -230,16 +335,17 @@ const UserBookings = () => {
         Swal.fire('Cancelled!', 'Your booking has been cancelled.', 'success');
       } catch (error) {
         fetchBookings();
-        
         swalLoading.close();
-        Swal.fire('Error', 'There was an error cancelling your booking.', 'error');
+        const err = error as any;
+        const errMsg = err.response?.data?.message || 'There was an error cancelling your booking.';
+        Swal.fire('Error', errMsg, 'error');
       }
     }
   };
 
 
 
-  const cancelCoachBooking = async (bookingData: any) => {
+  const cancelCoachBooking = async (bookingData: { id: string }) => {
     const { value: confirm } = await Swal.fire({
       title: 'Are you sure?',
       text: "Do you really want to cancel this booking?",
@@ -250,6 +356,9 @@ const UserBookings = () => {
     });
 
     if (confirm) {
+      const otp = await verifyCancellationSecurity(bookingData.id, "coach");
+      if (!otp) return;
+
       const swalLoading = Swal.fire({
         title: 'Cancelling...',
         text: 'Please wait while we process your request.',
@@ -262,10 +371,11 @@ const UserBookings = () => {
       });
 
       try {
-        const response = await axios.post(
+        await axios.post(
           `${API_URL}/booking/cancellation/coach`,
           {
             bookingId: bookingData.id,
+            otp,
           },
           {
             headers: {
@@ -278,15 +388,16 @@ const UserBookings = () => {
         Swal.fire('Cancelled!', 'Your booking has been cancelled.', 'success');
       } catch (error) {
         fetchBookings();
-        
         swalLoading.close();
-        Swal.fire('Error', 'There was an error cancelling your booking.', 'error');
+        const err = error as any;
+        const errMsg = err.response?.data?.message || 'There was an error cancelling your booking.';
+        Swal.fire('Error', errMsg, 'error');
       }
     }
   };
 
 
-  const cancelTrainerBooking = async (bookingData: any) => {
+  const cancelTrainerBooking = async (bookingData: { id: string }) => {
     const { value: confirm } = await Swal.fire({
       title: 'Are you sure?',
       text: "Do you really want to cancel this booking?",
@@ -297,6 +408,9 @@ const UserBookings = () => {
     });
 
     if (confirm) {
+      const otp = await verifyCancellationSecurity(bookingData.id, "trainer");
+      if (!otp) return;
+
       const swalLoading = Swal.fire({
         title: 'Cancelling...',
         text: 'Please wait while we process your request.',
@@ -309,10 +423,11 @@ const UserBookings = () => {
       });
 
       try {
-        const response = await axios.post(
+        await axios.post(
           `${API_URL}/booking/cancellation/pt`,
           {
             bookingId: bookingData.id,
+            otp,
           },
           {
             headers: {
@@ -325,9 +440,10 @@ const UserBookings = () => {
         Swal.fire('Cancelled!', 'Your booking has been cancelled.', 'success');
       } catch (error) {
         fetchBookings();
-        
         swalLoading.close(); // Close the loader
-        Swal.fire('Error', 'There was an error cancelling your booking.', 'error');
+        const err = error as any;
+        const errMsg = err.response?.data?.message || 'There was an error cancelling your booking.';
+        Swal.fire('Error', errMsg, 'error');
       }
     }
   };
@@ -502,7 +618,7 @@ const UserBookings = () => {
                                       aria-controls="nav-RecentTrainer"
                                       aria-selected="false"
                                     >
-                                      Personal Trainer
+                                      Trainer
                                     </button>
                                   </div>
                                 </nav>
@@ -703,16 +819,16 @@ const UserBookings = () => {
                             >
                               <i className="fas fa-dumbbell fs-3" />
                             </div>
-                            <h5 className="font-weight-bold text-dark mb-1">No Personal Trainer Bookings Found</h5>
+                            <h5 className="font-weight-bold text-dark mb-1">No Trainer Bookings Found</h5>
                             <p className="text-muted mb-4" style={{ fontSize: "14px", maxWidth: "420px", margin: "0 auto" }}>
-                              You haven&apos;t booked any personal trainers yet. Level up your fitness with expert trainers!
+                              You haven&apos;t booked any trainers yet. Level up your fitness with expert trainers!
                             </p>
                             <Link
                               to={routes.blogList}
                               className="btn text-white px-4 py-2"
                               style={{ background: "linear-gradient(135deg, #22C55E 0%, #16A34A 100%)", borderRadius: "50px", fontSize: "14px", fontWeight: "600", boxShadow: "0 4px 12px rgba(34, 197, 94, 0.25)" }}
                             >
-                              <i className="fas fa-dumbbell me-2" /> Explore Personal Trainers
+                              <i className="fas fa-dumbbell me-2" /> Explore Trainers
                             </Link>
                           </div>
                         ) : (

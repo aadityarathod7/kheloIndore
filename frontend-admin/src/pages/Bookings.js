@@ -530,7 +530,7 @@ function BookingList({ listType }) {
                   <Dropdown.Item eventKey="Venue">Venue</Dropdown.Item>
                   <Dropdown.Item eventKey="Coach">Coach</Dropdown.Item>
                   <Dropdown.Item eventKey="Personal Trainer">
-                    Personal Trainer
+                    Trainer
                   </Dropdown.Item>
                 </Dropdown.Menu>
               </Dropdown>

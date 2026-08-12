@@ -88,9 +88,12 @@ const TrainingTimeDate = (props: any) => {
     let end: Date;
 
     switch (batch) {
+      case '1 Day Session':
+        end = new Date(start);
+        break;
       case 'Monthly':
         end = new Date(start);
-        end.setMonth(start.getMonth() + 1); // Add 1 month
+        end.setDate(start.getDate() + 30); // Add exactly 30 days
         break;
       case 'Quarterly':
         end = new Date(start);
@@ -267,7 +270,7 @@ const TrainingTimeDate = (props: any) => {
 
       Swal.fire({
         title: 'Not Logged in',
-        text: 'You need to be login to book a Personal Trainer. Click OK to login.',
+        text: 'You need to be logged in to book a Trainer. Click OK to login.',
         icon: 'warning',
         showCancelButton: true,
         confirmButtonText: 'OK',
@@ -291,12 +294,12 @@ const TrainingTimeDate = (props: any) => {
       end_date: endDate,
       start_time: selectedTimeSlot?.start_time,
       end_time: selectedTimeSlot?.end_time,
+      total_price: selectedTimeSlot ? selectedTimeSlot.price * (daysDifference + 1) : 0,
+      packageType: selectedBatch,
     };
 
-    
-
     try {
-      navigate(`/personal-training/training-order-confirm/${id}`, {
+      navigate(`/trainers/training-order-confirm/${id}`, {
         state: {
           bookingData,
           selectedTimeSlot,
@@ -514,7 +517,7 @@ const TrainingTimeDate = (props: any) => {
               <div className="d-inline-flex align-items-center bg-white px-3 py-2 rounded-pill shadow-sm" style={{ fontSize: "13px", border: "1px solid #E5E7EB" }}>
                 <Link to="/" style={{ color: "#64748B", textDecoration: "none", fontWeight: "500" }}><i className="feather-home me-1" style={{ color: "#64748B" }} /> Home</Link>
                 <span style={{ margin: "0 10px", color: "#64748B" }}><i className="feather-chevron-right" style={{ fontSize: "12px", color: "#64748B" }} /></span>
-                <span style={{ color: "#22C55E", fontWeight: "600" }}>Book Personal Trainer</span>
+                <span style={{ color: "#22C55E", fontWeight: "600" }}>Book Trainer</span>
               </div>
             </div>
           </div>
@@ -539,7 +542,7 @@ const TrainingTimeDate = (props: any) => {
               </li>
               {/* <li>
                 <h5>
-                  <Link to={`/personal-training/training-payment/${id}`}>
+                  <Link to={`/trainers/training-payment/${id}`}>
                     <span>3</span>Payment
                   </Link>
                 </h5>
@@ -593,7 +596,7 @@ const TrainingTimeDate = (props: any) => {
                     Select Subscription Batch
                   </h4>
                   <div className="row gap-3 px-3">
-                    {['Monthly', 'Quarterly', 'Half-Yearly', 'Annually', 'Custom'].map((batchOption) => (
+                    {['1 Day Session', 'Monthly', 'Quarterly', 'Half-Yearly', 'Annually', 'Custom'].map((batchOption) => (
                       <div 
                         key={batchOption} 
                         className="col-auto p-0"
@@ -769,7 +772,7 @@ const TrainingTimeDate = (props: any) => {
               <div className="text-center btn-row">
                 <Link
                   className="ki-btn-secondary me-3"
-                  to={trainerData ? `/personal-training/trainer/${(trainerData.first_name + '-' + (trainerData.last_name || '')).replace(/\s+/g, '-').toLowerCase()}/${id}` : '/personal-training'}
+                  to={trainerData ? `/trainers/trainer/${(trainerData.first_name + '-' + (trainerData.last_name || '')).replace(/\s+/g, '-').toLowerCase()}/${id}` : '/trainers'}
                 >
                   <i className="feather-arrow-left-circle me-1" /> Back
                 </Link>

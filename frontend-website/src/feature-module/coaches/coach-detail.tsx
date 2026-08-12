@@ -902,7 +902,7 @@ const CoachDetail = (props: any) => {
                               <strong className="cdg-value">{coachData.skills}</strong>
                             </div>
                           ) : null}
-                          {formattedPrice ? (
+                      {formattedPrice ? (
                             <div className="cdg-item">
                               <span className="cdg-label">Price</span>
                               <strong className="cdg-value">{formattedPrice}/hr</strong>
@@ -914,6 +914,18 @@ const CoachDetail = (props: any) => {
                               <strong className="cdg-value">{coachData.class_location}</strong>
                             </div>
                           ) : null}
+                          <div className="cdg-item">
+                            <span className="cdg-label">Class Mode</span>
+                            <strong className="cdg-value">
+                              {coachData?.class_mode || coachData?.classMode || (coachData?.class_location?.toLowerCase().includes("online") ? "Online & Offline" : "Offline Only")}
+                            </strong>
+                          </div>
+                          <div className="cdg-item">
+                            <span className="cdg-label">Location Constraint</span>
+                            <strong className="cdg-value">
+                              {coachData?.location_constraint || coachData?.locationConstraint || "Home & Center Training Available"}
+                            </strong>
+                          </div>
                           {languagesList.length > 0 ? (
                             <div className="cdg-item">
                               <span className="cdg-label">Languages</span>
@@ -957,6 +969,124 @@ const CoachDetail = (props: any) => {
                         </p>
                       ) : (
                         <p className="mb-0">Loading coach details...</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                {/* Certificates Accordion */}
+                <div className="accordion-item mb-4" id="certificates">
+                  <h4 className="accordion-header" id="panelsStayOpen-certificates">
+                    <button
+                      className={`accordion-button ${activeSection === "certificates" ? "" : "collapsed"}`}
+                      type="button"
+                      aria-expanded={activeSection === "certificates"}
+                      aria-controls="panelsStayOpen-certificates-collapse"
+                      onClick={() => setActiveSection(activeSection === "certificates" ? "" : "certificates")}
+                    >
+                      <i className="feather-award me-2" style={{ color: "#22C55E" }} />
+                      Certificates & Credentials
+                    </button>
+                  </h4>
+                  <div
+                    id="panelsStayOpen-certificates-collapse"
+                    className={`accordion-collapse collapse ${activeSection === "certificates" ? "show" : ""}`}
+                    aria-labelledby="panelsStayOpen-certificates"
+                  >
+                    <div className="accordion-body">
+                      {coachData?.identity_Proof?.length || coachData?.other_document?.length ? (
+                        <div className="row g-3">
+                          {[...(coachData.identity_Proof || []), ...(coachData.other_document || [])].map((doc: any, index: number) => {
+                            const isPdf = typeof doc === "string" && doc.toLowerCase().endsWith(".pdf");
+                            const fileUrl = `${IMG_URL}${doc}`;
+                            return (
+                              <div className="col-6 col-md-4" key={index}>
+                                <div className="card h-100 p-2 text-center" style={{ borderRadius: "12px", border: "1px solid #E2E8F0" }}>
+                                  {isPdf ? (
+                                    <div className="d-flex flex-column align-items-center justify-content-center py-4">
+                                      <i className="fas fa-file-pdf fa-3x text-danger mb-2" />
+                                      <span style={{ fontSize: "12px", fontWeight: "600" }}>Document {index + 1}</span>
+                                      <a href={fileUrl} target="_blank" rel="noopener noreferrer" className="btn btn-sm btn-success mt-2">
+                                        View PDF
+                                      </a>
+                                    </div>
+                                  ) : (
+                                    <div className="position-relative">
+                                      <img
+                                        src={fileUrl}
+                                        alt={`Certificate ${index + 1}`}
+                                        className="img-fluid rounded"
+                                        style={{ maxHeight: "150px", objectFit: "contain", width: "100%" }}
+                                        onError={(e) => {
+                                          (e.target as HTMLImageElement).src = "/assets/img/no-img.png";
+                                        }}
+                                      />
+                                      <a href={fileUrl} target="_blank" rel="noopener noreferrer" className="btn btn-sm btn-success mt-2 d-inline-block">
+                                        View Full
+                                      </a>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <p className="mb-0 text-muted">No certificates uploaded yet.</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Videos Accordion */}
+                <div className="accordion-item mb-4" id="videos">
+                  <h4 className="accordion-header" id="panelsStayOpen-videos">
+                    <button
+                      className={`accordion-button ${activeSection === "videos" ? "" : "collapsed"}`}
+                      type="button"
+                      aria-expanded={activeSection === "videos"}
+                      aria-controls="panelsStayOpen-videos-collapse"
+                      onClick={() => setActiveSection(activeSection === "videos" ? "" : "videos")}
+                    >
+                      <i className="feather-video me-2" style={{ color: "#22C55E" }} />
+                      Video Reels & Gallery
+                    </button>
+                  </h4>
+                  <div
+                    id="panelsStayOpen-videos-collapse"
+                    className={`accordion-collapse collapse ${activeSection === "videos" ? "show" : ""}`}
+                    aria-labelledby="panelsStayOpen-videos"
+                  >
+                    <div className="accordion-body">
+                      {coachData?.videos?.length || coachData?.gallery_videos?.length ? (
+                        <div className="row g-3">
+                          {[...(coachData.videos || []), ...(coachData.gallery_videos || [])].map((video: any, index: number) => {
+                            const isUrl = typeof video === "string" && (video.startsWith("http://") || video.startsWith("https://"));
+                            const videoUrl = isUrl ? video : `${IMG_URL}${video}`;
+                            return (
+                              <div className="col-12 col-md-6" key={index}>
+                                <div className="card h-100 p-2 text-center" style={{ borderRadius: "12px", border: "1px solid #E2E8F0", overflow: "hidden" }}>
+                                  {isUrl && (video.includes("youtube.com") || video.includes("youtu.be")) ? (
+                                    <div className="ratio ratio-16x9">
+                                      <iframe
+                                        src={video.replace("watch?v=", "embed/")}
+                                        title={`Video ${index + 1}`}
+                                        allowFullScreen
+                                        className="rounded"
+                                      />
+                                    </div>
+                                  ) : (
+                                    <div className="ratio ratio-16x9">
+                                      <video src={videoUrl} controls className="w-100 h-100 rounded" style={{ objectFit: "cover" }} />
+                                    </div>
+                                  )}
+                                  <span className="d-block mt-2 font-weight-bold" style={{ fontSize: "12px", fontWeight: "600" }}>Video Reel {index + 1}</span>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <p className="mb-0 text-muted">No videos uploaded yet.</p>
                       )}
                     </div>
                   </div>

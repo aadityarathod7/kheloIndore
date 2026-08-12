@@ -5937,7 +5937,7 @@ body .ki-category-card {
     font-weight: 700 !important;
     margin-bottom: 4px !important;
     font-family: 'Space Grotesk', sans-serif !important;
-    text-transform: lowercase !important;
+    text-transform: capitalize !important;
   }
 
   .ki-category-count {
@@ -6258,4 +6258,12 @@ body .ki-category-card {
       font-weight: 700 !important;
     }
   }
+}
+
+.earn-money h3 span.sports-venue-heading-text {
+  color: #16A34A !important;
+}
+
+.earn-money h3 span.trainer-coach-heading-text {
+  color: #EA580C !important;
 }

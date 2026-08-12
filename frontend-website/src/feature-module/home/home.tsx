@@ -157,13 +157,13 @@ const TopProviderCard = ({ kind, provider }: { kind: ProviderKind; provider: Ven
     ? `/sports-venue/${(venue.vendor_type || "venue").replace(/\s+/g, "-").toLowerCase()}/${name.replace(/\s+/g, "-").toLowerCase()}/${venue._id}`
     : kind === "Coach"
       ? `/coaches/${(person.category || "coach").replace(/\s+/g, "-").toLowerCase()}/${(person.first_name || "coach").replace(/\s+/g, "-").toLowerCase()}/${person._id}`
-      : `/personal-training/trainer/${(person.first_name || "trainer").replace(/\s+/g, "-").toLowerCase()}/${person._id}`;
-  const viewAllLink = kind === "Venue" ? "/sports-venue" : kind === "Coach" ? "/coaches" : "/personal-training";
+      : `/trainers/trainer/${(person.first_name || "trainer").replace(/\s+/g, "-").toLowerCase()}/${person._id}`;
+  const viewAllLink = kind === "Venue" ? "/sports-venue" : kind === "Coach" ? "/coaches" : "/trainers";
   const rate = isVenue ? venue.price_per_hr : person.price || person.package?.monthly;
   const area = getArea(isVenue ? venue.near_by_location : person.near_by_location);
   const rating = isVenue ? venue.rating : person.rating;
   const reviewCount = isVenue ? venue.reviews_count : person.reviews_count;
-  const venueSize = venue.size || venue.venue_size || String(venue.data?.size || venue.data?.venue_size || "Standard");
+  const venueSize = venue.gameType || venue.size || venue.venue_size || String(venue.data?.size || venue.data?.venue_size || "Standard");
 
   return (
     <div className="col-lg-4 col-md-6">
@@ -274,12 +274,12 @@ const Home = () => {
   const timeframeOptions = [
     { name: "Sports Venue" },
     { name: "Coaches" },
-    { name: "Personal Trainer" },
+    { name: "Trainer" },
   ];
   const categoryOptions = [
     { name: "Sports Venue" },
     { name: "Coaches" },
-    { name: "Personal Trainer" },
+    { name: "Trainer" },
   ];
   const [sortOptions, setSortOptions] = useState<{ name: string }[]>([
     { name: "Vijay Nagar" },
@@ -414,7 +414,7 @@ const Home = () => {
     const selectedCategory = selectedTimeframe?.name || "Sports Venue";
     const entries = selectedCategory === "Coaches"
       ? coaches
-      : selectedCategory === "Personal Trainer"
+      : selectedCategory === "Trainer"
         ? trainer
         : venues;
     const popularity = new Map<string, number>();
@@ -441,7 +441,7 @@ const Home = () => {
     };
     const fallback = selectedCategory === "Coaches"
       ? ["Fitness", "Badminton", "Football", "Cricket", "Swimming"]
-      : selectedCategory === "Personal Trainer"
+      : selectedCategory === "Trainer"
         ? ["Fitness", "Weight Loss", "Yoga", "Strength Training", "Swimming"]
         : ["Cricket", "Football", "Badminton", "Tennis", "Basketball"];
 
@@ -645,7 +645,7 @@ const Home = () => {
         const matchSport = !sportName || c.category?.toLowerCase()?.includes(sportName);
         return matchLocation && matchSport;
       }).length;
-    } else if (categoryName === "Personal Trainer") {
+    } else if (categoryName === "Trainer") {
       count = trainer.filter(t => {
         const matchLocation = !locationName || t.near_by_location?.toLowerCase()?.includes(locationName.toLowerCase()) || locationName.toLowerCase()?.includes(t.near_by_location?.toLowerCase());
         const matchSport = !sportName || t.category?.toLowerCase()?.includes(sportName) || t.specializations?.toLowerCase()?.includes(sportName);
@@ -671,8 +671,8 @@ const Home = () => {
       if (result.isConfirmed) {
         if (selectedTimeframe?.name === "Coaches") {
           navigate("/coaches", { state: { selectedLocationSort, selectedSport } });
-        } else if (selectedTimeframe?.name === "Personal Trainer") {
-          navigate("/personal-training", { state: { selectedLocationSort, selectedSport } });
+        } else if (selectedTimeframe?.name === "Trainer") {
+          navigate("/trainers", { state: { selectedLocationSort, selectedSport } });
         } else if (selectedTimeframe?.name === "Sports Venue") {
           const sportSlug = selectedSport?.name
             ? selectedSport.name.toLowerCase().replace(/&/g, "and").replace(/\s+/g, "-")
@@ -933,7 +933,7 @@ const Home = () => {
                           className="ki-search-tag"
                           to={selectedTimeframe?.name === "Sports Venue" || !selectedTimeframe
                             ? `/sports-venue/${item.name.toLowerCase().replace(/\s+/g, "-")}`
-                            : selectedTimeframe.name === "Coaches" ? "/coaches" : "/personal-training"}
+                            : selectedTimeframe.name === "Coaches" ? "/coaches" : "/trainers"}
                           state={selectedTimeframe?.name === "Sports Venue" || !selectedTimeframe
                             ? undefined
                             : { selectedSport: { name: item.name } }}
@@ -1120,13 +1120,13 @@ const Home = () => {
                 </div>
                 <div className="work-content aos" data-aos="fade-up" data-aos-delay="300">
                   <h5>
-                    <Link to="/personal-training">Select Trainer</Link>
+                    <Link to="/trainers">Select Trainer</Link>
                   </h5>
                   <p>
                     Transform your fitness journey with personalized workouts
                     and expert guidance from our dedicated trainers.
                   </p>
-                  <Link className="btn" to="/personal-training">
+                  <Link className="btn" to="/trainers">
                     Go to Trainer <i className="feather-arrow-right" />
                   </Link>
                 </div>
@@ -1215,7 +1215,7 @@ const Home = () => {
               Top Rated <span style={{ color: "var(--ki-primary)" }}>Providers</span>
             </h2>
             <p className="sub-title mb-0" style={{ color: "#606D76" }}>
-              Discover top rated venues, expert coaches, and personal trainers in Indore.
+              Discover top rated venues, expert coaches, and trainers in Indore.
             </p>
           </div>
         </div>
@@ -1495,7 +1495,7 @@ const Home = () => {
                 Top Rated <span style={{ color: "#22C55E" }}>Trainers</span>
               </h3>
               <p className="mb-0" style={{ color: "#64748B", fontSize: "14px", fontWeight: "400" }}>
-                Discover and connect with Indore&apos;s best personal trainers across various fitness goals.
+                Discover and connect with Indore&apos;s best trainers across various fitness goals.
               </p>
               <div style={{ width: "32px", height: "3px", backgroundColor: "#22C55E", borderRadius: "5px", marginTop: "12px" }} />
             </div>
@@ -1532,7 +1532,7 @@ const Home = () => {
                     <div className="featured-venues-item" key={index}>
                       <div className="listing-item mb-0" style={{ background: "var(--ki-bg-surface)", border: "1px solid #E2E8E3", borderRadius: "24px", overflow: "hidden", margin: "10px", boxShadow: "var(--ki-shadow-card)" }}>
                         <div className="listing-img" style={{ height: "200px", position: "relative", overflow: "hidden" }}>
-                          <Link to={`/personal-training/trainer/${train.first_name.replace(/\s+/g, "-").toLowerCase()}/${train._id}`}>
+                          <Link to={`/trainers/trainer/${train.first_name.replace(/\s+/g, "-").toLowerCase()}/${train._id}`}>
                             <ImageWithBasePath
                               src={
                                 train?.profile_picture[0]?.src
@@ -1551,7 +1551,7 @@ const Home = () => {
                         </div>
                         <div className="listing-content p-3" style={{ textAlign: "left" }}>
                           <h3 style={{ fontSize: "16px", fontWeight: "700", color: "#0F172A", marginBottom: "8px", fontFamily: "Space Grotesk, sans-serif", display: "flex", alignItems: "center", justifyContent: "flex-start" }}>
-                            <Link to={`/personal-training/trainer/${train.first_name.replace(/\s+/g, "-").toLowerCase()}/${train._id}`} className="text-truncate d-block" style={{ color: "#0F172A", textDecoration: "none" }}>
+                            <Link to={`/trainers/trainer/${train.first_name.replace(/\s+/g, "-").toLowerCase()}/${train._id}`} className="text-truncate d-block" style={{ color: "#0F172A", textDecoration: "none" }}>
                               {train.first_name} {train.last_name}
                             </Link>
                             <i className="fas fa-check-circle text-success ms-1.5" style={{ fontSize: "13px", flexShrink: 0, color: "#22C55E" }} />
@@ -1576,7 +1576,7 @@ const Home = () => {
                               </span>
                             </div>
                             <Link
-                              to={`/personal-training/trainer/${train.first_name.replace(/\s+/g, "-").toLowerCase()}/${train._id}`}
+                              to={`/trainers/trainer/${train.first_name.replace(/\s+/g, "-").toLowerCase()}/${train._id}`}
                               className="d-flex align-items-center justify-content-center"
                               style={{
                                 width: "36px",
@@ -2047,7 +2047,7 @@ const Home = () => {
                     <div>
                       <h3 style={{ fontSize: "24px", color: "#0F172A", fontFamily: "Space Grotesk, sans-serif", fontWeight: "700", marginBottom: "0", lineHeight: "1.3" }}>
                         List your <br />
-                        <span style={{ color: "#16A34A" }}>sports venue</span> <br />
+                        <span className="sports-venue-heading-text" style={{ color: "#16A34A" }}>sports venue</span> <br />
                         with us
                       </h3>
                       <div style={{ width: "32px", height: "3px", backgroundColor: "#16A34A", borderRadius: "2px", marginTop: "12px" }} />
@@ -2097,17 +2097,17 @@ const Home = () => {
                     borderRadius: "12px",
                     fontSize: "14px",
                     fontWeight: "600",
-                    color: "#16A34A",
-                    border: "1px solid #16A34A",
-                    backgroundColor: "#FFFFFF",
+                    color: "#FFFFFF",
+                    border: "none",
+                    backgroundColor: "#16A34A",
                     transition: "all 0.2s",
                     whiteSpace: "nowrap"
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = "rgba(22, 163, 74, 0.05)";
+                    e.currentTarget.style.backgroundColor = "#15803D";
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = "#FFFFFF";
+                    e.currentTarget.style.backgroundColor = "#16A34A";
                   }}
                 >
                   <div className="d-flex align-items-center gap-2">
@@ -2140,7 +2140,7 @@ const Home = () => {
                     <div>
                       <h3 style={{ fontSize: "24px", color: "#0F172A", fontFamily: "Space Grotesk, sans-serif", fontWeight: "700", marginBottom: "0", lineHeight: "1.3" }}>
                         Are you a <br />
-                        <span style={{ color: "#EA580C" }}>trainer/coach?</span> <br />
+                        <span className="trainer-coach-heading-text" style={{ color: "#EA580C" }}>trainer/coach?</span> <br />
                         Enroll with us
                       </h3>
                       <div style={{ width: "32px", height: "3px", backgroundColor: "#EA580C", borderRadius: "2px", marginTop: "12px" }} />
@@ -2190,17 +2190,17 @@ const Home = () => {
                     borderRadius: "12px",
                     fontSize: "14px",
                     fontWeight: "600",
-                    color: "#EA580C",
-                    border: "1px solid #EA580C",
-                    backgroundColor: "#FFFFFF",
+                    color: "#FFFFFF",
+                    border: "none",
+                    backgroundColor: "#EA580C",
                     transition: "all 0.2s",
                     whiteSpace: "nowrap"
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = "rgba(234, 88, 12, 0.05)";
+                    e.currentTarget.style.backgroundColor = "#C2410C";
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = "#FFFFFF";
+                    e.currentTarget.style.backgroundColor = "#EA580C";
                   }}
                 >
                   <div className="d-flex align-items-center gap-2">

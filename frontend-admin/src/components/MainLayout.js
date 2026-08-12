@@ -81,7 +81,7 @@ const buildMenu = (role) => {
     items.push({
       key: "personal-training",
       icon: <FaChalkboard />,
-      label: "Personal Training",
+      label: "Trainers",
     });
   }
   items.push({ key: "bookings", icon: <FaCalendarAlt />, label: "Bookings" });

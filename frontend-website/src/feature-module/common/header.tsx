@@ -121,7 +121,7 @@ const Header = () => {
           label: `${t.first_name || ""} ${t.last_name || ""}`.trim(),
           subtitle: t.trainer_type || "Trainer",
           icon: "feather-award",
-          link: `/personal-training/trainer/${(t.first_name || "").replace(/\s+/g, "-").toLowerCase()}/${t._id}`,
+          link: `/trainers/trainer/${(t.first_name || "").replace(/\s+/g, "-").toLowerCase()}/${t._id}`,
           badge: t.trainer_type || "Trainer",
         });
       }

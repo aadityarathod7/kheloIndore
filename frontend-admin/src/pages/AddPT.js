@@ -301,7 +301,7 @@ const AddPT = () => {
 
   return (
     <>
-      <h3 className="mb-4 title">Personal Trainer</h3>
+      <h3 className="mb-4 title">Trainer</h3>
       <Container>
         <Form onSubmit={handleSubmit}>
           <Row>

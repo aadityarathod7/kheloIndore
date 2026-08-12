@@ -80,7 +80,7 @@ const CoachDetails = () => {
             <div className="text-center mb-40">
               <h3 className="mb-1">Book A Coach</h3>
               <p className="sub-title">
-                Unlock Your Potential with a Personal Coach
+                Unlock Your Potential with a Coach
               </p>
             </div>
             <div className="master-academy dull-whitesmoke-bg card">

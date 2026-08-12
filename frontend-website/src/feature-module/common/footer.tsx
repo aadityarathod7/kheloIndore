@@ -104,7 +104,7 @@ const Footer = () => {
                     <Link to={routes.coachesGrid}>Coaches & Academies</Link>
                   </li>
                   <li>
-                    <Link to="/personal-training">Trainers</Link>
+                    <Link to={routes.blogList}>Trainers</Link>
                   </li>
                   <li>
                     <Link to={routes.blogGrid}>Blogs & Stories</Link>

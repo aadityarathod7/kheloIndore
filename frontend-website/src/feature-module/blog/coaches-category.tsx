@@ -1,8 +1,36 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
-import { API_URL } from "../../ApiUrl";
+import { API_URL, IMG_URL } from "../../ApiUrl";
 import Loader from "../loader/loader";
+
+const getCategoryImage = (imgStr?: string, categoryName = "") => {
+  const name = categoryName.toLowerCase().trim();
+  if (!imgStr || imgStr.includes("photo-1517649763962-0c623266010b")) {
+    if (name.includes("karate")) {
+      return "https://images.unsplash.com/photo-1555597673-b21d5c935865?q=80&w=800&auto=format&fit=crop";
+    }
+    if (name.includes("taekwon") || name.includes("martial")) {
+      return "https://images.unsplash.com/photo-1589487391730-58f20eb2c308?q=80&w=800&auto=format&fit=crop";
+    }
+    if (name.includes("archery")) {
+      return "https://images.unsplash.com/photo-1616422285623-13ff0162193c?w=800&auto=format&fit=crop&q=80";
+    }
+    if (name.includes("playstation") || name.includes("gaming") || name.includes("game")) {
+      return "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?q=80&w=800&auto=format&fit=crop";
+    }
+    if (name.includes("pool") || name.includes("billiards")) {
+      return "https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=800&auto=format&fit=crop&q=80";
+    }
+    if (name.includes("climbing") || name.includes("rock")) {
+      return "https://images.unsplash.com/photo-1564769625905-50e93615e769?w=800&auto=format&fit=crop&q=80";
+    }
+    return "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?q=80&w=800&auto=format&fit=crop";
+  }
+  if (imgStr.startsWith("http://") || imgStr.startsWith("https://")) return imgStr;
+  const cleanStr = imgStr.startsWith("/") ? imgStr.substring(1) : imgStr;
+  return `${IMG_URL}/${cleanStr}`;
+};
 
 interface Coach {
   category: string;
@@ -11,45 +39,62 @@ interface Coach {
 }
 
 const CoachesCategory = () => {
+  const [categories, setCategories] = useState<any[]>([]);
   const [coaches, setCoaches] = useState<Coach[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [searchQuery, setSearchQuery] = useState<string>("");
 
   useEffect(() => {
     window.scrollTo(0, 0);
     document.title = "Coaches - Categories";
   }, []);
 
+  const slugify = (text: string) => {
+    return text
+      .toLowerCase()
+      .trim()
+      .replace(/[^\w\s-]/g, "")
+      .replace(/[\s_-]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+  };
+
   useEffect(() => {
-    const fetchCoaches = async () => {
+    const fetchData = async () => {
       try {
-        const response = await axios.get(`${API_URL}/web/fetch-all-coaches`);
-        const coachData = response.data.data;
-        const mappedData = coachData.map((c: any) => ({
+        const [coachesRes, catRes] = await Promise.all([
+          axios.get(`${API_URL}/web/fetch-all-coaches`),
+          axios.get(`${API_URL}/category/fetch`)
+        ]);
+
+        const coachData = coachesRes.data.data || [];
+        const mappedCoaches = coachData.map((c: any) => ({
           category: c.category || "",
           trainer_type: c.trainer_type || "",
           specializations: c.specializations || "",
         }));
-        setCoaches(mappedData);
+        setCoaches(mappedCoaches);
+
+        const dbCategories = catRes.data.categories || [];
+        const mappedCategories = dbCategories.map((c: any) => ({
+          id: c._id,
+          name: c.category_name,
+          slug: slugify(c.category_name),
+          image: getCategoryImage(c.images && c.images[0], c.category_name)
+        }));
+        setCategories(mappedCategories);
         setLoading(false);
       } catch (error) {
         setLoading(false);
       }
     };
-    fetchCoaches();
+    fetchData();
   }, []);
 
   const classifyCoaches = (coachesList: Coach[]) => {
-    const counts = {
-      cricket: 0,
-      badminton: 0,
-      swimming: 0,
-      football: 0,
-      pickleball: 0,
-      tennis: 0,
-      basketball: 0,
-      "table-tennis": 0,
-      "other-sports": 0,
-    };
+    const counts: Record<string, number> = {};
+    categories.forEach((cat) => {
+      counts[cat.id] = 0;
+    });
 
     coachesList.forEach((c) => {
       const cat = (c.category || "").toLowerCase().replace(/_/g, " ").trim();
@@ -58,33 +103,21 @@ const CoachesCategory = () => {
         ? c.specializations.join(" ").toLowerCase()
         : String(c.specializations || "").toLowerCase();
 
-      const isCricket = cat.includes("cricket") || trainerType.includes("cricket") || spec.includes("cricket") || cat.includes("turf") || trainerType.includes("turf");
-      const isBadminton = cat.includes("badminton") || trainerType.includes("badminton") || spec.includes("badminton");
-      const isSwimming = cat.includes("swim") || trainerType.includes("swim") || spec.includes("swim");
-      const isFootball = cat.includes("football") || trainerType.includes("football") || spec.includes("football");
-      const isPickleball = cat.includes("pickle") || trainerType.includes("pickle") || spec.includes("pickle");
-      const isTennis = (cat.includes("tennis") || trainerType.includes("tennis") || spec.includes("tennis")) && !cat.includes("table") && !trainerType.includes("table") && !spec.includes("table");
-      const isBasketball = cat.includes("basketball") || trainerType.includes("basketball") || spec.includes("basketball");
-      const isTableTennis = cat.includes("table tennis") || trainerType.includes("table tennis") || spec.includes("table tennis");
+      const matched = categories.find((catObj) => {
+        const cName = catObj.name.toLowerCase().trim();
+        const validCat = cat.length >= 3 && cat !== "other" && cat !== "-";
+        const validTrainerType = trainerType.length >= 3 && trainerType !== "other" && trainerType !== "-";
+        return (
+          (validCat && cat.includes(cName)) ||
+          (validTrainerType && trainerType.includes(cName)) ||
+          (validCat && cName.includes(cat)) ||
+          (validTrainerType && cName.includes(trainerType)) ||
+          spec.includes(cName)
+        );
+      });
 
-      if (isCricket) {
-        counts.cricket++;
-      } else if (isBadminton) {
-        counts.badminton++;
-      } else if (isSwimming) {
-        counts.swimming++;
-      } else if (isFootball) {
-        counts.football++;
-      } else if (isPickleball) {
-        counts.pickleball++;
-      } else if (isTennis) {
-        counts.tennis++;
-      } else if (isBasketball) {
-        counts.basketball++;
-      } else if (isTableTennis) {
-        counts["table-tennis"]++;
-      } else {
-        counts["other-sports"]++;
+      if (matched) {
+        counts[matched.id]++;
       }
     });
 
@@ -93,62 +126,9 @@ const CoachesCategory = () => {
 
   const categoryCounts = classifyCoaches(coaches);
 
-  const categories = [
-    {
-      id: "cricket",
-      name: "cricket",
-      slug: "cricket",
-      image: "https://images.unsplash.com/photo-1531415074968-036ba1b575da?q=80&w=800&auto=format&fit=crop",
-    },
-    {
-      id: "badminton",
-      name: "badminton",
-      slug: "badminton",
-      image: "https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?q=80&w=800&auto=format&fit=crop",
-    },
-    {
-      id: "other-sports",
-      name: "other-sports",
-      slug: "other-sports",
-      image: "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?q=80&w=800&auto=format&fit=crop",
-    },
-    {
-      id: "swimming",
-      name: "swimming",
-      slug: "swimming",
-      image: "https://images.unsplash.com/photo-1530549387789-4c1017266635?q=80&w=800&auto=format&fit=crop",
-    },
-    {
-      id: "football",
-      name: "football",
-      slug: "football",
-      image: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?q=80&w=800&auto=format&fit=crop",
-    },
-    {
-      id: "pickleball",
-      name: "pickleball",
-      slug: "pickleball",
-      image: "https://images.unsplash.com/photo-1599474924187-334a4ae5bd3c?q=80&w=800&auto=format&fit=crop",
-    },
-    {
-      id: "tennis",
-      name: "tennis",
-      slug: "tennis",
-      image: "https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?q=80&w=800&auto=format&fit=crop",
-    },
-    {
-      id: "basketball",
-      name: "basketball",
-      slug: "basketball",
-      image: "https://images.unsplash.com/photo-1546519638-68e109498ffc?q=80&w=800&auto=format&fit=crop",
-    },
-    {
-      id: "table-tennis",
-      name: "table-tennis",
-      slug: "table-tennis",
-      image: "https://images.unsplash.com/photo-1511067007398-7e4b90cfa4bc?q=80&w=800&auto=format&fit=crop",
-    },
-  ];
+  const filteredCategories = categories.filter((cat) =>
+    cat.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <div>
@@ -165,10 +145,23 @@ const CoachesCategory = () => {
                 <div className="col-lg-7 text-start">
                   <span className="font-weight-bold" style={{ fontSize: "13px", letterSpacing: "1.5px", display: "block", marginBottom: "12px", color: "#22C55E", fontWeight: "700" }}>BOOK. PLAY. ENJOY</span>
                   <h1 className="d-flex align-items-center flex-wrap" style={{ fontSize: "56px", fontWeight: "800", color: "#0F172A", lineHeight: "1.1", marginBottom: "16px" }}>
-                    Sports <span style={{ color: "#22C55E", marginLeft: "12px" }}>Coaches</span>
+                    <span style={{ color: "#22C55E" }}>Coaches</span>
                   </h1>
                   <p style={{ color: "#64748B", fontSize: "20px", marginBottom: "24px", fontWeight: "500", maxWidth: "480px" }}>Select a sport category to view listings and book your coach</p>
                   
+                  {/* Category Search Input */}
+                  <div className="mb-4 position-relative" style={{ maxWidth: "480px" }}>
+                    <input
+                      type="text"
+                      className="form-control rounded-pill border-0 shadow px-4 py-3"
+                      placeholder="Search coaches categories (e.g. Football, Basketball, Cricket...)"
+                      style={{ fontSize: "15px", paddingRight: "50px", backgroundColor: "#FFFFFF", border: "1px solid #E2E8F0" }}
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                    <i className="feather-search position-absolute end-0 top-50 translate-middle-y me-4" style={{ color: "#22C55E", fontSize: "18px" }} />
+                  </div>
+
                   {/* Breadcrumb pill */}
                   <div className="d-inline-flex align-items-center bg-white px-3 py-2 rounded-pill shadow-sm" style={{ fontSize: "13px", border: "1px solid #E5E7EB" }}>
                     <Link to="/" style={{ color: "#64748B", textDecoration: "none", fontWeight: "500" }}><i className="feather-home me-1" style={{ color: "#64748B" }} /> Home</Link>
@@ -184,7 +177,16 @@ const CoachesCategory = () => {
           <div className="content blog-grid" style={{ backgroundColor: "#F8FAFC", padding: "24px 0 60px 0" }}>
             <div className="container">
               <div className="row g-4">
-                {categories.map((cat) => {
+                {filteredCategories.length === 0 ? (
+                  <div className="col-12 text-center py-5">
+                    <div className="mb-3">
+                      <i className="feather-search" style={{ fontSize: "48px", color: "#94A3B8" }} />
+                    </div>
+                    <h3 style={{ fontSize: "20px", fontWeight: "700", color: "#334155" }}>No Categories Found</h3>
+                    <p style={{ color: "#64748B" }}>{"We couldn't find any categories matching \"" + searchQuery + "\""}</p>
+                  </div>
+                ) : (
+                  filteredCategories.map((cat) => {
                   const coachCount = categoryCounts[cat.id as keyof typeof categoryCounts] || 0;
                   return (
                     <div className="col-lg-4 col-md-6 col-sm-12" key={cat.id}>
@@ -232,7 +234,7 @@ const CoachesCategory = () => {
                       </Link>
                     </div>
                   );
-                })}
+                }))}
               </div>
             </div>
           </div>

@@ -332,6 +332,7 @@ const {
   cancelBookingForVenue,
   cancelBookingForPersonalTrainer,
   cancelBookingForCoach,
+  requestCancellationOtp,
 } = require('../controllers/BookingController');
 // for venue
 route.post("/booking/add", addBooking);
@@ -342,6 +343,7 @@ route.get("/booking/notification",auth, getBookingsNotification );
 route.post("/booking/cancellation/venue",auth,cancelBookingForVenue)
 route.post("/booking/cancellation/pt",auth,cancelBookingForPersonalTrainer)
 route.post("/booking/cancellation/coach",auth,cancelBookingForCoach)
+route.post("/booking/cancellation/request-otp",auth,requestCancellationOtp)
 //dashboard
 const{bookingDetailCount,userGrowthGraph,totalrevenue,getMoneyReviews} =require('../controllers/DashboardController')
 route.get("/dashboard/booking",auth, bookingDetailCount);

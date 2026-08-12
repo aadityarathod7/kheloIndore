@@ -28,6 +28,19 @@ const SearchResults: React.FC = () => {
 
   const [venues, setVenues] = useState<any[]>([]);
   const [coaches, setCoaches] = useState<any[]>([]);
+
+  const getVenueSize = (venue: any) => {
+    if (Array.isArray(venue.sports_details) && venue.sports_details.length > 0) {
+      const match = venue.sports_details.find((sd: any) => sd && sd.size);
+      if (match && match.size) {
+        return match.size;
+      }
+    }
+    if (venue.gameType && !["cricket", "football", "badminton", "basketball", "tennis", "table tennis", "swimming", "pickle ball"].includes(venue.gameType.toLowerCase())) {
+      return venue.gameType;
+    }
+    return "Standard";
+  };
   const [trainers, setTrainers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"all" | "venues" | "coaches" | "trainers">("all");
@@ -254,19 +267,19 @@ const SearchResults: React.FC = () => {
                     </div>
 
                     {/* Card Body */}
-                    <div className="listing-content news-content p-2.5" style={{ background: "#FFFFFF", padding: "10px" }}>
-                      <div className="d-flex align-items-center justify-content-between mb-1" style={{ fontSize: "10px" }}>
+                    <div className="listing-content news-content p-2.5" style={{ background: "#FFFFFF", padding: "12px" }}>
+                      <div className="d-flex align-items-center justify-content-between mb-2" style={{ fontSize: "12px" }}>
                         <div className="rating-wrap d-flex align-items-center gap-1">
-                          <i className="fas fa-star text-warning" style={{ fontSize: "9px" }} />
-                          <span style={{ fontSize: "10px", fontWeight: "700", color: "#17222D" }}>4.8</span>
+                          <i className="fas fa-star text-warning" style={{ fontSize: "11px" }} />
+                          <span style={{ fontSize: "12px", fontWeight: "700", color: "#17222D" }}>4.8</span>
                         </div>
-                        <span style={{ fontSize: "9px", color: "#606D76", fontWeight: "600" }}>
-                          <i className="feather-grid me-1" style={{ color: "#3CAB4B", fontSize: "9px" }} />
-                          Standard
+                        <span style={{ fontSize: "12px", color: "#606D76", fontWeight: "600" }}>
+                          <i className="feather-grid me-1" style={{ color: "#3CAB4B", fontSize: "11px" }} />
+                          {getVenueSize(venue)}
                         </span>
                       </div>
 
-                      <h3 className="listing-title mb-1" style={{ fontSize: "13px", fontWeight: "700", lineHeight: "1.2" }}>
+                      <h3 className="listing-title mb-1.5" style={{ fontSize: "15px", fontWeight: "700", lineHeight: "1.2" }}>
                         <Link
                           to={`/sports-venue/${venue.vendor_type ? venue.vendor_type.replace(/\s+/g, "-").toLowerCase() : "venue"}/${venue.name.replace(/\s+/g, "-").toLowerCase()}/${venue._id}`}
                           className="text-truncate d-block" style={{ color: "#17222D" }}
@@ -276,21 +289,21 @@ const SearchResults: React.FC = () => {
                         </Link>
                       </h3>
 
-                      <div className="d-flex align-items-center justify-content-between mb-1.5" style={{ fontSize: "11px" }}>
-                        <p className="mb-0 text-truncate" style={{ fontSize: "11px", color: "#606D76" }}>
+                      <div className="d-flex align-items-center justify-content-between mb-2" style={{ fontSize: "12px" }}>
+                        <p className="mb-0 text-truncate" style={{ fontSize: "12px", color: "#606D76" }}>
                           <i className="feather-map-pin me-1" style={{ color: "#3CAB4B" }} />
                           {venue.near_by_location || "Indore"}, Indore
                         </p>
                       </div>
 
-                      <div className="d-flex align-items-center justify-content-between pt-1.5" style={{ borderTop: "1px solid #F1F5F9" }}>
-                        <span style={{ fontSize: "13px", fontWeight: "800", color: "#17222D" }}>
-                          ₹{venue.price_per_hr || "750"} <span style={{ fontSize: "9px", fontWeight: "normal", color: "#606D76" }}>/hr</span>
+                      <div className="d-flex align-items-center justify-content-between pt-2" style={{ borderTop: "1px solid #F1F5F9" }}>
+                        <span style={{ fontSize: "16px", fontWeight: "800", color: "#17222D" }}>
+                          ₹{venue.price_per_hr || "750"} <span style={{ fontSize: "11px", fontWeight: "normal", color: "#606D76" }}>/hr</span>
                         </span>
                         <Link
                           to={`/sports-venue/${venue.vendor_type ? venue.vendor_type.replace(/\s+/g, "-").toLowerCase() : "venue"}/${venue.name.replace(/\s+/g, "-").toLowerCase()}/${venue._id}`}
-                          className="btn btn-primary btn-sm rounded-pill px-2.5 py-0.5"
-                          style={{ fontSize: "10px", fontWeight: "600", backgroundColor: "#22C55E", borderColor: "#22C55E" }}
+                          className="btn btn-primary btn-sm rounded-pill px-3 py-1"
+                          style={{ fontSize: "12px", fontWeight: "600", backgroundColor: "#22C55E", borderColor: "#22C55E" }}
                         >
                           Book Slot
                         </Link>
@@ -388,7 +401,7 @@ const SearchResults: React.FC = () => {
               <div className="d-flex align-items-center gap-2 mb-3">
                 <i className="feather-award text-success" style={{ fontSize: "20px" }} />
                 <h4 className="fw-bold mb-0" style={{ color: "#0F172A", fontSize: "20px" }}>
-                  Personal Trainers
+                  Trainers
                 </h4>
                 <span className="badge rounded-pill" style={{ backgroundColor: "#F0FDF4", color: "#166534", fontSize: "12px", fontWeight: "700", padding: "4px 10px" }}>
                   {filteredTrainers.length}
@@ -401,7 +414,7 @@ const SearchResults: React.FC = () => {
                     <div className="listing-item venue-page ki-card-hover w-100 d-flex flex-column justify-content-between" style={{ margin: 0, overflow: "hidden", backgroundColor: "#FFFFFF", borderRadius: "16px", border: "1px solid #E2E8E3", boxShadow: "0 4px 15px rgba(0,0,0,0.01)" }}>
                       <div className="listing-img" style={{ height: "140px", overflow: "hidden", position: "relative" }}>
                         <Link
-                          to={`/personal-training/trainer/${trainer.first_name?.replace(/\s+/g, "-").toLowerCase()}/${trainer._id}`}
+                          to={`/trainers/trainer/${trainer.first_name?.replace(/\s+/g, "-").toLowerCase()}/${trainer._id}`}
                           style={{ display: "block", height: "100%" }}
                         >
                           <img
@@ -428,7 +441,7 @@ const SearchResults: React.FC = () => {
                           </div>
                           <h3 className="listing-title mb-1" style={{ fontSize: "15px", fontWeight: "700" }}>
                             <Link
-                              to={`/personal-training/trainer/${trainer.first_name?.replace(/\s+/g, "-").toLowerCase()}/${trainer._id}`}
+                              to={`/trainers/trainer/${trainer.first_name?.replace(/\s+/g, "-").toLowerCase()}/${trainer._id}`}
                               className="text-truncate d-block" style={{ color: "#17222D" }}
                             >
                               {trainer.first_name} {trainer.last_name || ""}
@@ -439,7 +452,7 @@ const SearchResults: React.FC = () => {
                             {trainer.near_by_location || "Indore"}, Indore
                           </p>
                           <p className="mb-2 text-truncate" style={{ fontSize: "11px", color: "#64748B" }}>
-                            {trainer?.trainer_type || "Personal Training"}
+                            {trainer?.trainer_type || "Trainer"}
                           </p>
                         </div>
                         <div className="d-flex align-items-center justify-content-between pt-2 mt-auto" style={{ borderTop: "1px solid #E2E8E3" }}>
@@ -447,7 +460,7 @@ const SearchResults: React.FC = () => {
                             ₹{trainer.price_per_hr || trainer.price || "500"} <span style={{ fontSize: "10px", fontWeight: "normal", color: "#606D76" }}>/ hr</span>
                           </span>
                           <Link
-                            to={`/personal-training/trainer/${trainer.first_name?.replace(/\s+/g, "-").toLowerCase()}/${trainer._id}`}
+                            to={`/trainers/trainer/${trainer.first_name?.replace(/\s+/g, "-").toLowerCase()}/${trainer._id}`}
                             className="btn btn-primary btn-sm rounded-pill px-3 py-1 shadow-sm"
                             style={{ fontSize: "11px", fontWeight: "700", background: "linear-gradient(135deg, #43B649 0%, #349E3A 100%)", border: "none" }}
                           >

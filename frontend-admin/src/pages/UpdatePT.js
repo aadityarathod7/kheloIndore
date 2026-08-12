@@ -413,7 +413,7 @@ const UpdatepersonalTrainer  = () => {
 
   return (
     <>
-      <h3 className="mb-4 title">Update Personal Trainer</h3>
+      <h3 className="mb-4 title">Update Trainer</h3>
       <Container>
         <Form onSubmit={handleFormSubmit}>
           <Row>

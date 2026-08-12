@@ -17,6 +17,7 @@ const { mail } = require("./NodeMailerController");
 const mailContent = require("../middlewares/mail-content");
 const nodeSendMail = require("../helper/sendMail")
 const { processBookingRefund } = require("./paymentController");
+const { sendOtp } = require("../helper/bhashMessaging");
 require('dotenv').config();
 const mongoose = require('mongoose');
 const { ObjectId } = require("mongoose").Types;
@@ -1559,6 +1560,64 @@ exports.updateNotificationStatus = async (req, res) => {
   }
 };
 
+const CancellationOtpSchema = new mongoose.Schema({
+  bookingId: { type: String, required: true },
+  otp: { type: String, required: true },
+  expiresAt: { type: Date, required: true }
+});
+const CancellationOtp = mongoose.models.CancellationOtp || mongoose.model("CancellationOtp", CancellationOtpSchema);
+
+exports.requestCancellationOtp = async (req, res) => {
+  try {
+    const { bookingId, bookingType } = req.body;
+    const userId = req.user.userID;
+    const userRole = req.user.role;
+
+    if (!bookingId || !bookingType) {
+      return res.status(400).json({ success: false, message: "Missing bookingId or bookingType" });
+    }
+
+    let booking;
+    if (bookingType === "venue") {
+      booking = await Booking.findById(bookingId);
+    } else if (bookingType === "coach") {
+      booking = await CoachBooking.findById(bookingId);
+    } else if (bookingType === "trainer") {
+      booking = await PersonalTrainerBooking.findById(bookingId);
+    }
+
+    if (!booking) {
+      return res.status(404).json({ success: false, message: "Booking not found" });
+    }
+
+    const bookingUserId = booking.user_id || booking.userId;
+    if (userRole !== "Super Admin" && bookingUserId.toString() !== userId.toString()) {
+      return res.status(403).json({ success: false, message: "Unauthorized to cancel this booking" });
+    }
+
+    const user = await User.findById(userId);
+    if (!user || !user.mobile) {
+      return res.status(400).json({ success: false, message: "User mobile number not found" });
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
+
+    await CancellationOtp.findOneAndUpdate(
+      { bookingId },
+      { otp, expiresAt },
+      { upsert: true, new: true }
+    );
+
+    await sendOtp({ mobile: user.mobile, otp });
+
+    return res.status(200).json({ success: true, message: "Cancellation OTP sent successfully" });
+  } catch (error) {
+    console.error("Error sending cancellation OTP:", error);
+    return res.status(500).json({ success: false, message: "Failed to send OTP", error: error.message });
+  }
+};
+
 exports.cancelBookingForVenue = async (req, res) => {
   try {
     const { bookingId } = req.body; // Booking ID from request body
@@ -1578,6 +1637,18 @@ exports.cancelBookingForVenue = async (req, res) => {
     // Check if the booking is already canceled
     if (booking.cancellation_status === 1) {
       return res.status(400).json({ success: false, message: "Booking is already canceled" });
+    }
+
+    if (userRole === "User") {
+      const { otp } = req.body;
+      if (!otp) {
+        return res.status(400).json({ success: false, message: "OTP is required for cancellation" });
+      }
+      const otpRecord = await CancellationOtp.findOne({ bookingId });
+      if (!otpRecord || otpRecord.otp !== otp || new Date() > otpRecord.expiresAt) {
+        return res.status(400).json({ success: false, message: "Invalid or expired OTP" });
+      }
+      await CancellationOtp.deleteOne({ bookingId });
     }
 
     // Process refund per policy (partial = non-refundable; full >= 4hrs before = 75% refunded)
@@ -1685,6 +1756,18 @@ exports.cancelBookingForPersonalTrainer = async (req, res) => {
       return res.status(400).json({ success: false, message: "Booking is already canceled" });
     }
 
+    if (userRole === "User") {
+      const { otp } = req.body;
+      if (!otp) {
+        return res.status(400).json({ success: false, message: "OTP is required for cancellation" });
+      }
+      const otpRecord = await CancellationOtp.findOne({ bookingId });
+      if (!otpRecord || otpRecord.otp !== otp || new Date() > otpRecord.expiresAt) {
+        return res.status(400).json({ success: false, message: "Invalid or expired OTP" });
+      }
+      await CancellationOtp.deleteOne({ bookingId });
+    }
+
     // Process refund per policy (partial = non-refundable; full >= 4hrs before = 75% refunded)
     let refundResult = null;
     try {
@@ -1788,6 +1871,18 @@ exports.cancelBookingForCoach = async (req, res) => {
     // Check if the booking is already canceled
     if (booking.cancellation_status === 1) {
       return res.status(400).json({ success: false, message: "Booking is already canceled" });
+    }
+
+    if (userRole === "User") {
+      const { otp } = req.body;
+      if (!otp) {
+        return res.status(400).json({ success: false, message: "OTP is required for cancellation" });
+      }
+      const otpRecord = await CancellationOtp.findOne({ bookingId });
+      if (!otpRecord || otpRecord.otp !== otp || new Date() > otpRecord.expiresAt) {
+        return res.status(400).json({ success: false, message: "Invalid or expired OTP" });
+      }
+      await CancellationOtp.deleteOne({ bookingId });
     }
 
     // Process refund per policy (partial = non-refundable; full >= 4hrs before = 75% refunded)

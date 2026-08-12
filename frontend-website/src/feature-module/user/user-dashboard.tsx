@@ -407,7 +407,7 @@ const UserDashboard = () => {
               </div>
               <div className="appointment-content">
                 <h6>Trainer {firstTrainer.first_name} {firstTrainer.last_name}</h6>
-                <p>Personal Training</p>
+                <p>Training</p>
               </div>
             </div>
           </li>
@@ -455,8 +455,8 @@ const UserDashboard = () => {
     })),
     ...trainerBookingData.map((booking) => ({
       id: booking.id,
-      name: `${booking.first_name || ""} ${booking.last_name || ""}`.trim() || "Personal trainer",
-      type: "Personal trainer",
+      name: `${booking.first_name || ""} ${booking.last_name || ""}`.trim() || "Trainer",
+      type: "Trainer",
       date: booking.startDate,
       amount: booking.total_price,
       status: booking.status,
@@ -832,7 +832,7 @@ const UserDashboard = () => {
                           aria-controls="nav-Coaching"
                           aria-selected="false"
                         >
-                          Personal Trainer
+                          Trainer
                         </button>
                       </div>
                     </nav>
@@ -924,9 +924,9 @@ const UserDashboard = () => {
                             [...coachBookingData, ...trainerBookingData].slice(0, 6).map((b, idx) => {
                               const isPT = !b.packageType;
                               const name = isPT 
-                                ? `PT ${b.first_name} ${b.last_name}` 
+                                ? `Trainer ${b.first_name} ${b.last_name}` 
                                 : `Coach ${b.first_name} ${b.last_name}`;
-                              const typeText = isPT ? "Personal Trainer" : (b.packageType || "Coaching Lesson");
+                              const typeText = isPT ? "Trainer" : (b.packageType || "Coaching Lesson");
                               const img = isPT ? "/assets/img/featured/featured-07.jpg" : "/assets/img/featured/featured-05.jpg";
                               return (
                                 <tr key={b.id || idx}>
@@ -1113,9 +1113,9 @@ const UserDashboard = () => {
                             [...upcomingAppointments.coaches, ...upcomingAppointments.trainers].slice(0, 5).map((b, idx) => {
                               const isPT = !b.packageType;
                               const name = isPT 
-                                ? `PT ${b.first_name} ${b.last_name}` 
+                                ? `Trainer ${b.first_name} ${b.last_name}` 
                                 : `Coach ${b.first_name} ${b.last_name}`;
-                              const typeText = isPT ? "Personal Trainer" : (b.packageType || "Coaching Lesson");
+                              const typeText = isPT ? "Trainer" : (b.packageType || "Coaching Lesson");
                               const img = isPT ? "/assets/img/featured/featured-07.jpg" : "/assets/img/featured/featured-05.jpg";
                               return (
                                 <tr key={b.id || idx}>
@@ -1511,9 +1511,9 @@ const UserDashboard = () => {
                             [...coachBookingData, ...trainerBookingData].slice(0, 5).map((b, idx) => {
                               const isPT = !b.packageType;
                               const name = isPT 
-                                ? `PT ${b.first_name} ${b.last_name}` 
+                                ? `Trainer ${b.first_name} ${b.last_name}` 
                                 : `Coach ${b.first_name} ${b.last_name}`;
-                              const typeText = isPT ? "Personal Trainer" : (b.packageType || "Coaching Lesson");
+                              const typeText = isPT ? "Trainer" : (b.packageType || "Coaching Lesson");
                               const img = isPT ? "/assets/img/featured/featured-07.jpg" : "/assets/img/featured/featured-05.jpg";
                               return (
                                 <tr key={b.id || idx}>

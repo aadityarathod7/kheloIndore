@@ -180,8 +180,8 @@ export default function CommonPage() {
                         </div>
                     </div>
                     <div className='col-lg-4 col-md-4'>
-                        <div className='btn btn-primary' onClick={() => handleButtonClick('Personal Trainer')}>
-                            Personal Trainer
+                        <div className='btn btn-primary' onClick={() => handleButtonClick('Trainer')}>
+                            Trainer
                         </div>
                     </div>
                 </div>
@@ -385,7 +385,7 @@ export default function CommonPage() {
                                     </div>
                                 ))}
                         </div>
-                    ) : selected === 'Personal Trainer' ? (
+                    ) : selected === 'Trainer' ? (
                         <div className="row justify-content-center">
                             {trainer.map((trainer, index) => (
                                 <div className="col-lg-4 col-md-6" key={index}>
@@ -399,7 +399,7 @@ export default function CommonPage() {
                         />
                       </Link> */}
 
-                                                <Link to={`/personal-training/trainer/${trainer.first_name.replace(/\s+/g, '-').toLowerCase()}/${trainer._id}`}>
+                                                <Link to={`/trainers/trainer/${trainer.first_name.replace(/\s+/g, '-').toLowerCase()}/${trainer._id}`}>
                                                     <ImageWithBasePath
                                                         src={
                                                             // trainer.profile_picture
@@ -435,7 +435,7 @@ export default function CommonPage() {
                                             </div>
                                             <div className="listing-content">
                                                 <h3 className="listing-title">
-                                                    <Link to={`/personal-training/trainer/${trainer.first_name.replace(/\s+/g, '-').toLowerCase()}/${trainer._id}`}>
+                                                    <Link to={`/trainers/trainer/${trainer.first_name.replace(/\s+/g, '-').toLowerCase()}/${trainer._id}`}>
                                                         {trainer.first_name}&nbsp;&nbsp;{trainer.last_name}
                                                     </Link>
                                                 </h3>
@@ -451,7 +451,7 @@ export default function CommonPage() {
                                                     <ul>
                                                         <li>
                                                             <Link
-                                                                to={`/personal-training/trainer/${trainer.first_name.replace(/\s+/g, '-').toLowerCase()}/${trainer._id}`}
+                                                                to={`/trainers/trainer/${trainer.first_name.replace(/\s+/g, '-').toLowerCase()}/${trainer._id}`}
                                                                 className="btn btn-primary w-100"
                                                             >
                                                                 <i className="feather-eye me-2" />
@@ -460,7 +460,7 @@ export default function CommonPage() {
                                                         </li>
                                                         <li>
                                                             <Link
-                                                                to={`/personal-training/training-timedate/${trainer._id}`}
+                                                                to={`/trainers/training-timedate/${trainer._id}`}
                                                                 className="btn btn-secondary w-100"
                                                             >
                                                                 <i className="feather-calendar me-2" />

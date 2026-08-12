@@ -227,7 +227,7 @@ function PersonalTraininglist() {
     // Show confirmation popup
     const result = await Swal.fire({
       title: 'Are you sure?',
-      text: `Do you really want to update Personal Trainer admin access?`,
+      text: `Do you really want to update Trainer admin access?`,
       icon: 'warning',
       showCancelButton: true,
       confirmButtonText: 'Yes, update it!',
@@ -248,18 +248,18 @@ function PersonalTraininglist() {
         });
 
         if (response.data.success) {
-          Swal.fire("Success!", `Personal Trainer admin access updated successfully.`, "success");
+          Swal.fire("Success!", `Trainer admin access updated successfully.`, "success");
           fetchData()
         } else {
-          Swal.fire("Error", `Failed to update Personal Trainer admin access.`, "error");
+          Swal.fire("Error", `Failed to update Trainer admin access.`, "error");
         }
       } catch (error) {
         
-        Swal.fire("Error", `An error occurred while updating Personal Trainer admin access.`, "error");
+        Swal.fire("Error", `An error occurred while updating Trainer admin access.`, "error");
       }
     } else {
       // If user cancels, show a cancellation message
-      Swal.fire("Cancelled", `No changes were made to Personal Trainer admin access.`, "info");
+      Swal.fire("Cancelled", `No changes were made to Trainer admin access.`, "info");
     }
   };
 
@@ -278,8 +278,8 @@ function PersonalTraininglist() {
       );
       Swal.fire({
         icon: "success",
-        title: "Personal Trainer Updated!",
-        text: "Personal Trainer Activated  successfully",
+        title: "Trainer Updated!",
+        text: "Trainer Activated successfully",
       });
       fetchData();
     } catch (error) {
@@ -289,7 +289,7 @@ function PersonalTraininglist() {
 
   return (
     <>
-      <h3 className="mb-4 title">Personal Training</h3>
+      <h3 className="mb-4 title">Trainers</h3>
       <div className="cnt">
         <Form.Group as={Row} className="mb-3">
           <Col sm={6}>
@@ -306,7 +306,7 @@ function PersonalTraininglist() {
               <div className="mr-3">
                 <Link to="/personal-training/add">
                   <button className="add-button mr-2">
-                    Add Personal Trainer
+                    Add Trainer
                   </button>
                 </Link>
               </div>

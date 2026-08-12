@@ -379,7 +379,7 @@ const Signin = () => {
                         onChange={handleInputChange}
                         style={{ accentColor: "#22C55E", width: "16px", height: "16px" }}
                       />
-                      Personal Trainer
+                      Trainer
                     </label>
                   </div>
                 )}

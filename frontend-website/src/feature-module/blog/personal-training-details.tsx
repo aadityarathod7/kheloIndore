@@ -266,7 +266,7 @@ const PersonalTrainingDetails = (props: any) => {
   const checkToken = (Id: any) => {
     const token = localStorage.getItem('token')
     if (token) {
-      navigate(`/personal-training/training-timedate/${Id}`);
+      navigate(`/trainers/training-timedate/${Id}`);
     } else {
       navigate("/login",
         { state: { URL: location.pathname } }
@@ -297,7 +297,7 @@ const PersonalTrainingDetails = (props: any) => {
                 <div style={{ display: "inline-flex", alignItems: "center", background: "#FFFFFF", padding: "8px 16px", borderRadius: "50px", boxShadow: "0 1px 6px rgba(0,0,0,0.08)", fontSize: "13px", border: "1px solid #E5E7EB" }}>
                   <Link to="/" style={{ color: "#64748B", textDecoration: "none", fontWeight: "500" }}><i className="feather-home" style={{ color: "#64748B", marginRight: "4px" }} /> Home</Link>
                   <span style={{ margin: "0 10px", color: "#64748B" }}><i className="feather-chevron-right" style={{ fontSize: "12px", color: "#64748B" }} /></span>
-                  <Link to="/personal-training" style={{ color: "#64748B", textDecoration: "none", fontWeight: "500" }}>Trainers</Link>
+                  <Link to="/trainers" style={{ color: "#64748B", textDecoration: "none", fontWeight: "500" }}>Trainers</Link>
                   <span style={{ margin: "0 10px", color: "#64748B" }}><i className="feather-chevron-right" style={{ fontSize: "12px", color: "#64748B" }} /></span>
                   <span style={{ color: "#22C55E", fontWeight: "600" }}>Details</span>
                 </div>
@@ -827,11 +827,23 @@ const PersonalTrainingDetails = (props: any) => {
                             </div>
                           ) : null}
                           {trainerData?.class_location ? (
-                            <div className="cdg-item">
-                              <span className="cdg-label">Class Location</span>
-                              <strong className="cdg-value">{trainerData.class_location}</strong>
-                            </div>
-                          ) : null}
+                             <div className="cdg-item">
+                               <span className="cdg-label">Class Location</span>
+                               <strong className="cdg-value">{trainerData.class_location}</strong>
+                             </div>
+                           ) : null}
+                           <div className="cdg-item">
+                             <span className="cdg-label">Class Mode</span>
+                             <strong className="cdg-value">
+                               {trainerData?.class_mode || trainerData?.classMode || (trainerData?.class_location?.toLowerCase().includes("online") ? "Online & Offline" : "Offline Only")}
+                             </strong>
+                           </div>
+                           <div className="cdg-item">
+                             <span className="cdg-label">Location Constraint</span>
+                             <strong className="cdg-value">
+                               {trainerData?.location_constraint || trainerData?.locationConstraint || "Home & Center Training Available"}
+                             </strong>
+                           </div>
                           {languagesList.length > 0 ? (
                             <div className="cdg-item">
                               <span className="cdg-label">Languages</span>
@@ -875,6 +887,124 @@ const PersonalTrainingDetails = (props: any) => {
                         </p>
                       ) : (
                         <p className="mb-0">Loading trainer details...</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                {/* Certificates Accordion */}
+                <div className="accordion-item mb-4" id="certificates">
+                  <h4 className="accordion-header" id="panelsStayOpen-certificates">
+                    <button
+                      className={`accordion-button ${activeSection === "certificates" ? "" : "collapsed"}`}
+                      type="button"
+                      aria-expanded={activeSection === "certificates"}
+                      aria-controls="panelsStayOpen-certificates-collapse"
+                      onClick={() => setActiveSection(activeSection === "certificates" ? "" : "certificates")}
+                    >
+                      <i className="feather-award me-2" style={{ color: "#22C55E" }} />
+                      Certificates & Credentials
+                    </button>
+                  </h4>
+                  <div
+                    id="panelsStayOpen-certificates-collapse"
+                    className={`accordion-collapse collapse ${activeSection === "certificates" ? "show" : ""}`}
+                    aria-labelledby="panelsStayOpen-certificates"
+                  >
+                    <div className="accordion-body">
+                      {trainerData?.identity_Proof?.length || trainerData?.other_document?.length ? (
+                        <div className="row g-3">
+                          {[...(trainerData.identity_Proof || []), ...(trainerData.other_document || [])].map((doc: any, index: number) => {
+                            const isPdf = typeof doc === "string" && doc.toLowerCase().endsWith(".pdf");
+                            const fileUrl = `${IMG_URL}${doc}`;
+                            return (
+                              <div className="col-6 col-md-4" key={index}>
+                                <div className="card h-100 p-2 text-center" style={{ borderRadius: "12px", border: "1px solid #E2E8F0" }}>
+                                  {isPdf ? (
+                                    <div className="d-flex flex-column align-items-center justify-content-center py-4">
+                                      <i className="fas fa-file-pdf fa-3x text-danger mb-2" />
+                                      <span style={{ fontSize: "12px", fontWeight: "600" }}>Document {index + 1}</span>
+                                      <a href={fileUrl} target="_blank" rel="noopener noreferrer" className="btn btn-sm btn-success mt-2">
+                                        View PDF
+                                      </a>
+                                    </div>
+                                  ) : (
+                                    <div className="position-relative">
+                                      <img
+                                        src={fileUrl}
+                                        alt={`Certificate ${index + 1}`}
+                                        className="img-fluid rounded"
+                                        style={{ maxHeight: "150px", objectFit: "contain", width: "100%" }}
+                                        onError={(e) => {
+                                          (e.target as HTMLImageElement).src = "/assets/img/no-img.png";
+                                        }}
+                                      />
+                                      <a href={fileUrl} target="_blank" rel="noopener noreferrer" className="btn btn-sm btn-success mt-2 d-inline-block">
+                                        View Full
+                                      </a>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <p className="mb-0 text-muted">No certificates uploaded yet.</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Videos Accordion */}
+                <div className="accordion-item mb-4" id="videos">
+                  <h4 className="accordion-header" id="panelsStayOpen-videos">
+                    <button
+                      className={`accordion-button ${activeSection === "videos" ? "" : "collapsed"}`}
+                      type="button"
+                      aria-expanded={activeSection === "videos"}
+                      aria-controls="panelsStayOpen-videos-collapse"
+                      onClick={() => setActiveSection(activeSection === "videos" ? "" : "videos")}
+                    >
+                      <i className="feather-video me-2" style={{ color: "#22C55E" }} />
+                      Video Reels & Gallery
+                    </button>
+                  </h4>
+                  <div
+                    id="panelsStayOpen-videos-collapse"
+                    className={`accordion-collapse collapse ${activeSection === "videos" ? "show" : ""}`}
+                    aria-labelledby="panelsStayOpen-videos"
+                  >
+                    <div className="accordion-body">
+                      {trainerData?.videos?.length || trainerData?.gallery_videos?.length ? (
+                        <div className="row g-3">
+                          {[...(trainerData.videos || []), ...(trainerData.gallery_videos || [])].map((video: any, index: number) => {
+                            const isUrl = typeof video === "string" && (video.startsWith("http://") || video.startsWith("https://"));
+                            const videoUrl = isUrl ? video : `${IMG_URL}${video}`;
+                            return (
+                              <div className="col-12 col-md-6" key={index}>
+                                <div className="card h-100 p-2 text-center" style={{ borderRadius: "12px", border: "1px solid #E2E8F0", overflow: "hidden" }}>
+                                  {isUrl && (video.includes("youtube.com") || video.includes("youtu.be")) ? (
+                                    <div className="ratio ratio-16x9">
+                                      <iframe
+                                        src={video.replace("watch?v=", "embed/")}
+                                        title={`Video ${index + 1}`}
+                                        allowFullScreen
+                                        className="rounded"
+                                      />
+                                    </div>
+                                  ) : (
+                                    <div className="ratio ratio-16x9">
+                                      <video src={videoUrl} controls className="w-100 h-100 rounded" style={{ objectFit: "cover" }} />
+                                    </div>
+                                  )}
+                                  <span className="d-block mt-2 font-weight-bold" style={{ fontSize: "12px", fontWeight: "600" }}>Video Reel {index + 1}</span>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <p className="mb-0 text-muted">No videos uploaded yet.</p>
                       )}
                     </div>
                   </div>

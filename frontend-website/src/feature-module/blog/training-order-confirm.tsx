@@ -219,7 +219,7 @@ const TrainingOrderConfirm = (props: any) => {
               </li>
               {/* <li>
                 <h5>
-                  <Link to={`/personal-training/training-payment/${id}`}>
+                  <Link to={`/trainers/training-payment/${id}`}>
                     <span>3</span>Payment
                   </Link>
                 </h5>
@@ -360,18 +360,18 @@ const TrainingOrderConfirm = (props: any) => {
                       onChange={() => setPaymentType("partial")}
                     />
                     <span>
-                      <strong style={{ color: "#0F172A" }}>Partial Payment (50% advance)</strong>
+                      <strong style={{ color: "#0F172A" }}>Partial Payment (25% advance)</strong>
                       <br />
-                      <span style={{ fontSize: "12px", color: "#64748B" }}>Pay 50% now and the rest later. Partial payments are non-refundable.</span>
+                      <span style={{ fontSize: "12px", color: "#64748B" }}>Pay 25% now and the rest later. Partial payments are non-refundable.</span>
                     </span>
                   </label>
                 </div>
               </div>
               <div style={{ background: "#F8FAFC", borderRadius: "10px", padding: "14px 18px", marginTop: "8px" }}>
                 <span style={{ fontSize: "14px", color: "#475569" }}>
-                  Amount payable now: <strong style={{ color: "#16A34A", fontSize: "16px" }}>₹{Math.round((Number(bookingData?.total_price) || 0) * (paymentType === "partial" ? 0.5 : 1))}</strong>
+                  Amount payable now: <strong style={{ color: "#16A34A", fontSize: "16px" }}>₹{Math.round((Number(bookingData?.total_price) || 0) * (paymentType === "partial" ? 0.25 : 1))}</strong>
                   {paymentType === "partial" && (
-                    <span style={{ fontSize: "12px", color: "#64748B" }}> (balance of ₹{Math.round((Number(bookingData?.total_price) || 0) * 0.5)} payable later)</span>
+                    <span style={{ fontSize: "12px", color: "#64748B" }}> (balance of ₹{Math.round((Number(bookingData?.total_price) || 0) * 0.75)} payable later)</span>
                   )}
                 </span>
               </div>
@@ -379,7 +379,7 @@ const TrainingOrderConfirm = (props: any) => {
             <div className="text-center btn-row">
               <Link
                 className="btn btn-primary me-3 btn-icon"
-                to={`/personal-training/training-timedate/${id}`}
+                to={`/trainers/training-timedate/${id}`}
               >
                 <i className="feather-arrow-left-circle me-1" /> Back
               </Link>

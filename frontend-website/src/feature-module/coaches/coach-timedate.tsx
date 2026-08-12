@@ -105,9 +105,12 @@ const CoachTimeDate = (props: any) => {
     let end: Date;
 
     switch (batch) {
+      case '1 Day Session':
+        end = new Date(start);
+        break;
       case 'Monthly':
         end = new Date(start);
-        end.setMonth(start.getMonth() + 1); // Add 1 month
+        end.setDate(start.getDate() + 30); // Add exactly 30 days
         break;
       case 'Quarterly':
         end = new Date(start);
@@ -288,7 +291,7 @@ const CoachTimeDate = (props: any) => {
     if (!userData) {
       Swal.fire({
         title: "Not Logged in",
-        text: "You need to be login to book a Personal Trainer. Click OK to login.",
+        text: "You need to be login to book a Trainer. Click OK to login.",
         icon: "warning",
         showCancelButton: true,
         confirmButtonText: "OK",
@@ -317,6 +320,8 @@ const CoachTimeDate = (props: any) => {
       end_date: endDate,
       start_time: selectedTimeSlot?.start_time,
       end_time: selectedTimeSlot?.end_time,
+      total_price: selectedTimeSlot ? selectedTimeSlot.price * (daysDifference + 1) : 0,
+      packageType: selectedBatch,
     }
 
     
@@ -628,7 +633,7 @@ const CoachTimeDate = (props: any) => {
                     Select Subscription Batch
                   </h4>
                   <div className="row gap-3 px-3">
-                    {['Monthly', 'Quarterly', 'Half-Yearly', 'Annually', 'Custom'].map((batchOption) => (
+                    {['1 Day Session', 'Monthly', 'Quarterly', 'Half-Yearly', 'Annually', 'Custom'].map((batchOption) => (
                       <div 
                         key={batchOption} 
                         className="col-auto p-0"
