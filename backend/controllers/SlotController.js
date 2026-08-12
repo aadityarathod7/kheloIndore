@@ -418,3 +418,76 @@ exports.deleteSlotBySlotID = async (req, res) => {
     return res.status(500).json({ success: false, message: "Internal Server Error", error: error.message });
   }
 };
+
+exports.carryForwardSlots = async (req, res) => {
+  try {
+    const venue_id = req.params.id;
+    const { sourceDate, targetDateFrom, targetDateTo } = req.body;
+
+    if (!sourceDate || !targetDateFrom || !targetDateTo) {
+      return res.status(400).json({ success: false, message: "Missing source or target date fields" });
+    }
+
+    const srcDateObj = new Date(sourceDate);
+    srcDateObj.setUTCHours(0, 0, 0, 0);
+
+    const sourceSlotDoc = await Slot.findOne({
+      venue_id,
+      date: srcDateObj
+    });
+
+    if (!sourceSlotDoc || !sourceSlotDoc.slots || sourceSlotDoc.slots.length === 0) {
+      return res.status(404).json({ success: false, message: "No slots found on source date to carry forward" });
+    }
+
+    const cleanSlots = sourceSlotDoc.slots.map(slot => ({
+      startTime: slot.startTime,
+      endTime: slot.endTime,
+      price: slot.price,
+      isBooked: false,
+      isOfflineBlocked: false
+    }));
+
+    let datePointer = new Date(targetDateFrom);
+    const dateEnd = new Date(targetDateTo);
+
+    while (datePointer <= dateEnd) {
+      const normalizedTargetDate = new Date(datePointer);
+      normalizedTargetDate.setUTCHours(0, 0, 0, 0);
+
+      const targetSlotDoc = await Slot.findOne({
+        venue_id,
+        date: normalizedTargetDate
+      });
+
+      if (targetSlotDoc) {
+        for (let newSlot of cleanSlots) {
+          const matchIndex = targetSlotDoc.slots.findIndex(
+            s => s.startTime === newSlot.startTime && s.endTime === newSlot.endTime
+          );
+          if (matchIndex === -1) {
+            targetSlotDoc.slots.push(newSlot);
+          } else {
+            if (!targetSlotDoc.slots[matchIndex].isBooked) {
+              targetSlotDoc.slots[matchIndex].price = newSlot.price;
+              targetSlotDoc.slots[matchIndex].isOfflineBlocked = false;
+            }
+          }
+        }
+        await targetSlotDoc.save();
+      } else {
+        await Slot.create({
+          venue_id,
+          date: normalizedTargetDate,
+          slots: cleanSlots
+        });
+      }
+
+      datePointer.setDate(datePointer.getDate() + 1);
+    }
+
+    return res.status(200).json({ success: true, message: "Slots carried forward successfully!" });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};

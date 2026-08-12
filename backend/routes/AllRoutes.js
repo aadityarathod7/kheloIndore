@@ -313,8 +313,9 @@ route.post(
   uploadFile
 );
 // for venue slot
-const {createSlots,fetchSlots, getAllSlotsByVenueId, getSlotsBySlotID,updateSlotBySlotID,getSlotById,deleteSlotBySlotID}= require("../controllers/SlotController");
+const {createSlots,fetchSlots, getAllSlotsByVenueId, getSlotsBySlotID,updateSlotBySlotID,getSlotById,deleteSlotBySlotID,carryForwardSlots}= require("../controllers/SlotController");
 route.post("/slot/add/:id", auth, createSlots);
+route.post("/slot/carry-forward/:id", auth, carryForwardSlots);
 route.get("/slot/get/:slot_id",auth,getSlotById)
 route.put("/slot/update-add/:id", auth, updateSlotBySlotID);
 route.put("/slot/delete-by-slotid/:id",auth,deleteSlotBySlotID);

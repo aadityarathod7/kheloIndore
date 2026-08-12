@@ -164,7 +164,9 @@ const Signin = () => {
         } else {
           Swal.fire({
             title: "Success!",
-            text: "You have registered Successfully. Please wait for admin approval.",
+            text: input.role === "Venue Admin" 
+              ? "You have registered successfully! You can now log in to the admin panel."
+              : "You have registered Successfully. Please wait for admin approval.",
             icon: "success",
             confirmButtonText: "OK",
           }).then(() => {

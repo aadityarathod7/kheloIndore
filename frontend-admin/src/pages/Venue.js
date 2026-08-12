@@ -34,6 +34,32 @@ import Volleyball from "../venueComponents/Volleyball";
 import Yoga from "../venueComponents/Yoga";
 import Zumba from "../venueComponents/Zumba";
 import ErrorList from "antd/es/form/ErrorList";
+
+const getNormalizedSportName = (type) => {
+  const t = (type || "").toLowerCase();
+  if (t.includes("cricket") || t.includes("turf")) return "Cricket Turf";
+  if (t.includes("basketball")) return "Basketball";
+  if (t.includes("archery")) return "Archery";
+  if (t.includes("badminton")) return "Badminton";
+  if (t.includes("baseball")) return "Baseball";
+  if (t.includes("golf")) return "Golf Club";
+  if (t.includes("gym")) return "Gym";
+  if (t.includes("hockey")) return "Hockey";
+  if (t.includes("kabaddi")) return "Kabaddi";
+  if (t.includes("playstation") || t.includes("gaming") || t.includes("ps")) return "Playstation";
+  if (t.includes("shooting")) return "Shooting";
+  if (t.includes("skating")) return "Skating";
+  if (t.includes("snooker") || t.includes("billiards") || t.includes("pool")) return "Snooker";
+  if (t.includes("soccer") || t.includes("football")) return "Soccer";
+  if (t.includes("squash")) return "Squash";
+  if (t.includes("swimming")) return "Swimming Pool";
+  if (t.includes("tennis")) return "Tennis";
+  if (t.includes("volleyball")) return "Volleyball(Indoor)";
+  if (t.includes("yoga")) return "Yoga";
+  if (t.includes("zumba")) return "Zumba Classes";
+  return type;
+};
+
 const AddVenue = () => {
   const [selectedOwner, setSelectedOwner] = useState(null);
   const [formData, setFormData] = useState({
@@ -228,6 +254,7 @@ const AddVenue = () => {
         {
           headers: {
             "Content-Type": "multipart/form-data",
+            "Authorization": `Bearer ${localStorage.getItem("token")}`,
           },
         }
       );
@@ -392,6 +419,28 @@ const AddVenue = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    const normalizedSport = (formData.vendor_type || "").toLowerCase();
+    const isTurf = normalizedSport.includes("cricket") || normalizedSport.includes("turf");
+    const isBasketball = normalizedSport.includes("basketball");
+    const isArchery = normalizedSport.includes("archery");
+    const isBadminton = normalizedSport.includes("badminton");
+    const isBaseball = normalizedSport.includes("baseball");
+    const isGolf = normalizedSport.includes("golf");
+    const isGym = normalizedSport.includes("gym");
+    const isHockey = normalizedSport.includes("hockey");
+    const isKabaddi = normalizedSport.includes("kabaddi");
+    const isPlaystation = normalizedSport.includes("playstation") || normalizedSport.includes("gaming") || normalizedSport.includes("ps");
+    const isShooting = normalizedSport.includes("shooting");
+    const isSkating = normalizedSport.includes("skating");
+    const isSnooker = normalizedSport.includes("snooker") || normalizedSport.includes("billiards") || normalizedSport.includes("pool");
+    const isSoccer = (normalizedSport.includes("soccer") || normalizedSport.includes("football")) && !normalizedSport.includes("turf");
+    const isSquash = normalizedSport.includes("squash");
+    const isSwimming = normalizedSport.includes("swimming");
+    const isTennis = normalizedSport.includes("tennis");
+    const isVolleyball = normalizedSport.includes("volleyball");
+    const isYoga = normalizedSport.includes("yoga");
+    const isZumba = normalizedSport.includes("zumba");
+
     const validationErrors = {};
     if (!formData.contact_number.trim()) {
       validationErrors.contact_number = "Contact Number is required";
@@ -434,21 +483,30 @@ const AddVenue = () => {
       }
     }
 
-    if (formData.vendor_type === "Cricket Turf") {
-      if (!formData.vendor_details.total_area_in_sq_feet.trim()) {
+    if (isTurf) {
+      if (!formData.vendor_details?.total_area_in_sq_feet?.trim()) {
         validationErrors.total_area_in_sq_feet = "Total area is required";
       }
-      if (!formData.vendor_details.length_in_feet.trim()) {
+      if (!formData.vendor_details?.length_in_feet?.trim()) {
         validationErrors.length_in_feet = "Length is required";
       }
-      if (!formData.vendor_details.width_in_feet.trim()) {
+      if (!formData.vendor_details?.width_in_feet?.trim()) {
         validationErrors.width_in_feet = "Width is required";
       }
-      if (!formData.vendor_details.height_in_feet.trim()) {
+      if (!formData.vendor_details?.height_in_feet?.trim()) {
         validationErrors.height_in_feet = "Height is required";
       }
-      if (!formData.vendor_details.surface_type.trim()) {
-        validationErrors.surface_type = "Surface Type are required";
+      if (!formData.vendor_details?.surface_type?.trim()) {
+        validationErrors.surface_type = "Surface Type is required";
+      }
+      if (!formData.vendor_details?.size?.trim()) {
+        validationErrors.size = "Size is required";
+      }
+      if (!formData.vendor_details?.grass_type?.trim()) {
+        validationErrors.grass_type = "Grass Type is required";
+      }
+      if (!formData.vendor_details?.dimension?.trim()) {
+        validationErrors.dimension = "Dimension is required";
       }
     }
 
@@ -935,9 +993,6 @@ const AddVenue = () => {
                     name="name"
                     isInvalid={!!errors.name}
                     value={formData.name}
-                    onInput={(e) => {
-                      e.target.value = e.target.value.replace(/[^A-Za-z\s]/g, "");
-                    }}
                     onChange={handleChange}
                     className="add-venue-form-custom-class"
                   />
@@ -958,7 +1013,9 @@ const AddVenue = () => {
                     value={(formData.categories || []).map(cat => ({ value: cat, label: cat }))}
                     onChange={(selectedOptions) => {
                       const selectedVals = selectedOptions ? selectedOptions.map(o => o.value) : [];
-                      setFormData({ ...formData, categories: selectedVals, vendor_type: selectedVals[0] || "" });
+                      const rawType = selectedVals[0] || "";
+                      const normType = getNormalizedSportName(rawType);
+                      setFormData({ ...formData, categories: selectedVals, vendor_type: normType });
                       setErrors({ ...errors, vendor_type: "" });
                     }}
                     placeholder="Select Categories"

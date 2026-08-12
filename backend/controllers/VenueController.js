@@ -1044,6 +1044,17 @@ exports.venueVerifyBySuperAdmin = async (req, res) => {
       html: htmlContent,
     });
 
+    // Send SMS notification
+    try {
+      const { sendCustomMessage } = require("../helper/bhashMessaging");
+      const smsMessage = verifyStatus === 1
+        ? `Dear ${vendor.first_name}, your venue "${verifyVenue.name}" has been approved on KheloIndore! You can now manage it from your panel.`
+        : `Dear ${vendor.first_name}, your venue "${verifyVenue.name}" verification status has been updated. Please check your panel or contact support.`;
+      await sendCustomMessage({ mobile: vendor.mobile, message: smsMessage });
+    } catch (smsError) {
+      console.error("SMS notification failed in venueVerifyBySuperAdmin:", smsError.message);
+    }
+
     return res.status(200).json({
       status: 200,
       success: true,

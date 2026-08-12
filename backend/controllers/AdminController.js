@@ -215,7 +215,8 @@ exports.signup = async (req, res, next) => {
       mobile,
       email,
       otp,
-      password: hashedPassword,    
+      password: hashedPassword,
+      is_admin_access: role === "Venue Admin" ? 1 : 0,
     };
 
     // Check if user already exists
@@ -260,7 +261,14 @@ exports.signup = async (req, res, next) => {
     );
     }
     // Check for Venue Admin role
-    if (["Venue Admin", "Coach", "Personal Trainer"].includes(role)) {
+    if (role === "Venue Admin") {
+      return res.status(200).json({
+        success: true,
+        message: "Your registration as a Venue Admin was successful. You can log in now.",
+      });
+    }
+
+    if (["Coach", "Personal Trainer"].includes(role)) {
       // Notify Super Admin for approval (can send email, create a notification, etc.)  
       const superAdminEmail = process.env.SUPER_ADMIN_EMAIL; // Ensure SUPER_ADMIN_EMAIL is set in your environment
       const approvalLink = `https://kheloindore.in/admin/approve-coach-trainer/${roleSpecificId}`; // Approval link // Example approval link
@@ -1714,6 +1722,17 @@ exports.updateAdminStatus = async (req, res) => {
       subject,
       html: htmlContent,
     });
+
+    // Send the SMS
+    try {
+      const { sendCustomMessage } = require("../helper/bhashMessaging");
+      const smsMessage = is_admin_access === 1
+        ? `Dear ${userToSendCredentials.first_name}, your request for role ${role} has been approved. You can now login at kheloindore.in/admin.`
+        : `Dear ${userToSendCredentials.first_name}, your request status for role ${role} has been updated. Please contact support.`;
+      await sendCustomMessage({ mobile: userToSendCredentials.mobile, message: smsMessage });
+    } catch (smsError) {
+      console.error("SMS notification failed in updateAdminStatus:", smsError.message);
+    }
 
     // Set demo_password to null after sending credentials
     // if (is_admin_access === 1 && userToSendCredentials.demo_password) {
