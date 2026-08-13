@@ -68,7 +68,44 @@ export default function AddVenueSlots() {
     });
 
     const [currentView, setCurrentView] = useState('timeGridWeek');
+    const [showCarryForwardModal, setShowCarryForwardModal] = useState(false);
+    const [carryForwardData, setCarryForwardData] = useState({
+        sourceDate: today,
+        targetDateFrom: today,
+        targetDateTo: today,
+    });
 
+    const handleCarryForward = async () => {
+        try {
+            Swal.fire({
+                title: 'Processing...',
+                text: 'Carrying forward slots...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+            const response = await axios.post(`${API_URL}/slot/carry-forward/${_id}`, carryForwardData, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    'Content-Type': 'application/json',
+                }
+            });
+            if (response.data && response.data.success) {
+                Swal.fire({ icon: "success", title: "Slots carried forward", timer: 1500, showConfirmButton: false });
+                fetchVenueSlots();
+                setShowCarryForwardModal(false);
+            } else {
+                Swal.fire({ icon: "error", title: "Failed", text: response.data.message || "Could not carry forward slots." });
+            }
+        } catch (error) {
+            Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: error.response?.data?.message || "Something went wrong while carrying forward slots.",
+            });
+        }
+    };
 
     const fetchVenueDetails = async () => {
         try {
@@ -431,7 +468,50 @@ export default function AddVenueSlots() {
                 <Form.Control type="number" min="0" placeholder="Price (₹)" value={formData.price} onChange={(e) => setFormData((prev) => ({ ...prev, price: e.target.value }))} required />
                 <Button variant="success" type="submit">Add Available</Button>
                 <Button variant="outline-danger" type="button" onClick={() => handleAddSlot(true)}>Block Offline</Button>
+                <Button variant="outline-primary" type="button" onClick={() => setShowCarryForwardModal(true)}>Carry Forward Slots</Button>
             </Form>
+
+            <Modal show={showCarryForwardModal} onHide={() => setShowCarryForwardModal(false)} centered>
+                <Modal.Header closeButton>
+                    <Modal.Title>Carry Forward Slots</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <Form>
+                        <Form.Group className="mb-3" controlId="formSourceDate">
+                            <Form.Label>Source Date (Copy slots from this date)</Form.Label>
+                            <Form.Control
+                                type="date"
+                                value={carryForwardData.sourceDate}
+                                onChange={(e) => setCarryForwardData(prev => ({ ...prev, sourceDate: e.target.value }))}
+                            />
+                        </Form.Group>
+                        <Form.Group className="mb-3" controlId="formTargetDateFrom">
+                            <Form.Label>Target Start Date</Form.Label>
+                            <Form.Control
+                                type="date"
+                                value={carryForwardData.targetDateFrom}
+                                onChange={(e) => setCarryForwardData(prev => ({ ...prev, targetDateFrom: e.target.value }))}
+                            />
+                        </Form.Group>
+                        <Form.Group className="mb-3" controlId="formTargetDateTo">
+                            <Form.Label>Target End Date</Form.Label>
+                            <Form.Control
+                                type="date"
+                                value={carryForwardData.targetDateTo}
+                                onChange={(e) => setCarryForwardData(prev => ({ ...prev, targetDateTo: e.target.value }))}
+                            />
+                        </Form.Group>
+                    </Form>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={() => setShowCarryForwardModal(false)}>
+                        Cancel
+                    </Button>
+                    <Button variant="primary" onClick={handleCarryForward}>
+                        Carry Forward
+                    </Button>
+                </Modal.Footer>
+            </Modal>
 
             <Container fluid className="venue-calendar-card">
                 <FullCalendar

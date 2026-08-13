@@ -1,6 +1,19 @@
 // controllers/PersonalTrainerController.js
 const PersonalTrainer = require("../models/PersonalTrainingModel");
 const User = require("../models/UserModel");
+const mail = require("../helper/sendMail");
+const mailContent = require("../middlewares/mail-content");
+const { sendCustomMessage } = require("../helper/bhashMessaging");
+const crypto = require("crypto");
+
+const withoutPrivateTrainerDetails = (trainer) => {
+  const publicTrainer = trainer.toObject ? trainer.toObject() : { ...trainer };
+  ["mobile", "other_mobile", "other_contact_number", "email", "address", "zipcode", "password", "demo_password", "otp", "identity_Proof", "other_document", "verification_documents", "profile_completion_token"].forEach((field) => delete publicTrainer[field]);
+  if (publicTrainer.location) {
+    delete publicTrainer.location;
+  }
+  return publicTrainer;
+};
 
 exports.createPersonalTrainer = async (req, res) => {
   try {
@@ -47,6 +60,23 @@ exports.createPersonalTrainer = async (req, res) => {
     }
 
     const newPersonalTrainer = new PersonalTrainer(req.body);
+    await newPersonalTrainer.save();
+    const completionToken = crypto.randomBytes(12).toString("hex");
+    newPersonalTrainer.profile_completion_token = completionToken;
+    await newPersonalTrainer.save();
+    const baseUrl = process.env.WEBSITE_URL || "https://kheloindore.in";
+    const completeLink = `${baseUrl}/personal-training/complete-profile/${newPersonalTrainer._id}?token=${completionToken}`;
+    await Promise.allSettled([
+      newPersonalTrainer.email ? mail.superAdminAddUsersendEmail(
+        newPersonalTrainer.email,
+        mailContent.onboarding_profile_link(`${newPersonalTrainer.first_name} ${newPersonalTrainer.last_name || ""}`.trim(), completeLink)
+      ) : Promise.resolve(),
+      newPersonalTrainer.mobile ? sendCustomMessage({
+        mobile: String(newPersonalTrainer.mobile),
+        message: `Khelo Indore: complete your trainer profile: ${completeLink}`,
+      }) : Promise.resolve(),
+    ]);
+    newPersonalTrainer.onboard_email_sent = Boolean(newPersonalTrainer.email);
     await newPersonalTrainer.save();
 
     return res
@@ -138,10 +168,14 @@ exports.updatePersonalTrainer = async (req, res) => {
       "own_level", "response_time", "class_location", "students_trained",
       "profile_views", "rating", "reviews_count", "gallery_videos", "gallery",
       "coaching_levels", "daily_availability", "social_media", "categories", "videos",
+      "sports", "training_mode", "training_levels", "age_groups", "certifications",
+      "achievements_awards", "training_formats", "group_size_max", "session_durations",
+      "availability_options", "pricing", "professional_experiences", "verification_documents",
+      "training_photos", "certificate_achievement_photos",
     ];
     extendedFields.forEach((field) => {
       if (detail[field] !== undefined && detail[field] !== null && detail[field] !== "") {
-        if (field === "coaching_levels" || field === "daily_availability" || field === "categories" || field === "videos") {
+        if (["coaching_levels", "daily_availability", "categories", "videos", "sports", "training_levels", "age_groups", "certifications", "achievements_awards", "training_formats", "session_durations", "availability_options", "professional_experiences", "training_photos", "certificate_achievement_photos"].includes(field)) {
           if (typeof detail[field] === "string") {
             try {
               updatePayload[field] = JSON.parse(detail[field]);
@@ -337,7 +371,7 @@ exports.fetchAllPersonalTrainers = async (req, res) => {
       }
 
       // Wrap the single object in an array
-      data = [personalTrainer];
+      data = [withoutPrivateTrainerDetails(personalTrainer)];
     } else {
       // Other roles are not authorized
       return res.status(403).json({
@@ -404,7 +438,7 @@ exports.fetchPersonalTrainerById = async (req, res) => {
     }
 
     // Respond with the personal trainer data
-    return res.status(200).json({ success: true, personalTrainer });
+    return res.status(200).json({ success: true, personalTrainer: withoutPrivateTrainerDetails(personalTrainer) });
   } catch (error) {
     
 
@@ -415,6 +449,20 @@ exports.fetchPersonalTrainerById = async (req, res) => {
 
     // Internal server error for unexpected issues
     return res.status(500).json({ success: false, message: "An unexpected error occurred" });
+  }
+};
+
+// Private trainer record for Super Admin management only.
+exports.fetchPersonalTrainerForAdmin = async (req, res) => {
+  try {
+    if (req.user?.role !== "Super Admin") {
+      return res.status(403).json({ success: false, message: "Only Super Admin can access trainer contact details." });
+    }
+    const trainer = await PersonalTrainer.findById(req.params.id);
+    if (!trainer) return res.status(404).json({ success: false, message: "Personal trainer not found" });
+    return res.status(200).json({ success: true, personalTrainer: trainer });
+  } catch (error) {
+    return res.status(400).json({ success: false, message: "Invalid personal trainer ID format" });
   }
 };
 
@@ -477,9 +525,10 @@ exports.fetchAllPersonalTrainersForWeb = async (req, res) => {
       createdAt: -1,
     });
 
+    const { attachRatings } = require("../helper/reviewRatings");
     return res.status(200).json({
       success: true,
-      data: personalTrainers,
+      data: await attachRatings(personalTrainers.map(withoutPrivateTrainerDetails), "trainer"),
     });
   } catch (err) {
     return res.status(500).json({
@@ -505,7 +554,7 @@ exports.fetchPublicTrainer = async (req, res) => {
     }
     trainer.profile_views = (trainer.profile_views || 0) + 1;
     await trainer.save();
-    return res.status(200).json({ success: true, personalTrainer: trainer });
+    return res.status(200).json({ success: true, personalTrainer: withoutPrivateTrainerDetails(trainer) });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
   }
@@ -542,16 +591,7 @@ exports.fetchSharedTrainer = async (req, res) => {
     if (!trainer) {
       return res.status(404).json({ success: false, message: "Invalid or expired share link" });
     }
-    const shared = trainer.toObject();
-    delete shared.mobile;
-    delete shared.other_contact_number;
-    delete shared.email;
-    delete shared.address;
-    delete shared.zipcode;
-    if (shared.location) {
-      delete shared.location.address;
-      delete shared.location.zipcode;
-    }
+    const shared = withoutPrivateTrainerDetails(trainer);
     return res.status(200).json({ success: true, personalTrainer: shared });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
@@ -567,13 +607,19 @@ exports.completeTrainerProfile = async (req, res) => {
     if (!trainer) {
       return res.status(404).json({ success: false, message: "Trainer not found" });
     }
+    if (!req.query.token || req.query.token !== trainer.profile_completion_token) {
+      return res.status(403).json({ success: false, message: "Invalid or expired profile completion link" });
+    }
     const allowed = [
       "gender", "age", "date_of_birth", "price", "category", "trainer_type",
       "near_by_location", "experience", "availability", "specializations", "bio",
       "qualifications", "skills", "languages", "address", "city", "state", "zipcode",
       "coaching_levels", "own_level", "response_time", "class_location",
-      "students_trained", "daily_availability", "social_media", "gallery_videos",
-      "profile_picture", "gallery", "package",
+      "students_trained", "daily_availability", "social_media", "gallery_videos", "videos",
+      "profile_picture", "gallery", "package", "sports", "training_mode", "training_levels",
+      "age_groups", "certifications", "achievements_awards", "training_formats", "group_size_max",
+      "session_durations", "availability_options", "pricing", "professional_experiences",
+      "verification_documents", "training_photos", "certificate_achievement_photos",
     ];
     allowed.forEach((field) => {
       if (detail[field] !== undefined && detail[field] !== null) {
@@ -582,7 +628,7 @@ exports.completeTrainerProfile = async (req, res) => {
     });
     trainer.is_profile_completed = true;
     await trainer.save();
-    return res.status(200).json({ success: true, message: "Profile completed successfully", personalTrainer: trainer });
+    return res.status(200).json({ success: true, message: "Profile completed successfully", personalTrainer: withoutPrivateTrainerDetails(trainer) });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
   }
@@ -621,8 +667,7 @@ exports.sendTrainerOnboardingProfileLink = async (req, res) => {
     if (trainer.mobile) {
       try {
         const { sendCustomMessage } = require("../helper/bhashMessaging");
-        const msg =
-          `Dear ${trainer.first_name}, welcome to Khelo Indore! Complete your trainer profile here: ${completeLink}`.slice(0, 160);
+        const msg = `Khelo Indore: complete your trainer profile: ${completeLink}`;
         await sendCustomMessage({ mobile: String(trainer.mobile), message: msg });
       } catch (e) {
         
@@ -638,13 +683,44 @@ exports.sendTrainerOnboardingProfileLink = async (req, res) => {
 
 exports.updatePersonalTrainers = async (req, res) => {
   try {
+    if (req.user?.role !== "Super Admin") {
+      return res.status(403).json({ success: false, message: "Only Super Admin can update trainer profiles." });
+    }
     const { trainerId } = req.params; // Trainer ID from URL parameters
     const updateData = req.body; // Update data from request body
+
+    if (Array.isArray(updateData.training_formats) && updateData.training_formats.includes("Group Training")) {
+      const groupSize = Number(updateData.group_size_max);
+      if (!Number.isInteger(groupSize) || groupSize < 10 || groupSize > 15) {
+        return res.status(400).json({ success: false, message: "Group training size must be between 10 and 15." });
+      }
+    }
+    if (Array.isArray(updateData.session_durations) && updateData.session_durations.some((duration) => ![1, 2, 3].includes(Number(duration)))) {
+      return res.status(400).json({ success: false, message: "Session duration must be 1, 2, or 3 hours." });
+    }
 
     // Find the trainer by ID
     const trainer = await PersonalTrainer.findById(trainerId);
     if (!trainer) {
       return res.status(404).json({ success: false, message: "Personal Trainer not found" });
+    }
+
+    const nextEmail = updateData.email !== undefined ? String(updateData.email).trim().toLowerCase() : trainer.email;
+    const nextMobile = updateData.mobile !== undefined ? String(updateData.mobile) : String(trainer.mobile || "");
+    if (updateData.email !== undefined && !/^\S+@\S+\.\S+$/.test(nextEmail)) {
+      return res.status(400).json({ success: false, message: "Please enter a valid email address." });
+    }
+    if (updateData.mobile !== undefined && !/^\d{10}$/.test(nextMobile)) {
+      return res.status(400).json({ success: false, message: "Mobile number must be exactly 10 digits." });
+    }
+    const linkedUser = await User.findOne({ role: "Personal Trainer", $or: [{ email: trainer.email }, { mobile: trainer.mobile }] });
+    const duplicateTrainer = await PersonalTrainer.findOne({ _id: { $ne: trainerId }, $or: [{ email: nextEmail }, { mobile: Number(nextMobile) }] });
+    const duplicateUser = await User.findOne({
+      _id: { $ne: linkedUser?._id },
+      $or: [{ email: nextEmail }, { mobile: Number(nextMobile) }],
+    });
+    if (duplicateTrainer || duplicateUser) {
+      return res.status(400).json({ success: false, message: "This email address or mobile number is already in use." });
     }
 
     // Loop through each field in the updateData and update the trainer's data if the field exists in the request
@@ -661,6 +737,13 @@ exports.updatePersonalTrainers = async (req, res) => {
 
     // Save the updated trainer details
     await trainer.save();
+
+    if (linkedUser && (updateData.email !== undefined || updateData.mobile !== undefined)) {
+      await User.findByIdAndUpdate(linkedUser._id, {
+        ...(updateData.email !== undefined ? { email: nextEmail } : {}),
+        ...(updateData.mobile !== undefined ? { mobile: Number(nextMobile) } : {}),
+      }, { runValidators: true });
+    }
 
     // Send response
     res.status(200).json({

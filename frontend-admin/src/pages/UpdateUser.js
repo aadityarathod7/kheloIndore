@@ -109,7 +109,8 @@ const UpdateUsers = () => {
     try {
       const response = await axios.put(
         `${API_URL}/super-admin/update-user/${_id}`,
-        formData
+        formData,
+        { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
       );
       Swal.fire({
         icon: "success",
@@ -206,7 +207,6 @@ const UpdateUsers = () => {
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  disabled
                 />
               </Form.Group>
             </Col>
@@ -217,7 +217,6 @@ const UpdateUsers = () => {
                 </Form.Label>
                 <Form.Control
                   type="text"
-                  disabled
                   placeholder="Enter Mobile Number"
                   name="mobile"
                   value={formData.mobile}

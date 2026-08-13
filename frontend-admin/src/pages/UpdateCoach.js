@@ -37,11 +37,12 @@ const UpdateCoach = () => {
     experience: "",
     availability: "",
     category: "",
-    package: "",
+    package: { monthly: "", quarterly: "", yearly: "" },
     price: "",
     specializations: [],
     profile_picture: [],
     gallery: [],
+    videos: [],
     bio: "",
     status: "",
     // ---- Extended profile fields ----
@@ -49,6 +50,7 @@ const UpdateCoach = () => {
     own_level: "",
     response_time: "",
     class_location: "",
+    training_mode: "",
     students_trained: 0,
     social_media: {
       facebook: "",
@@ -111,6 +113,27 @@ const UpdateCoach = () => {
     });
   };
 
+  const uploadCoachMedia = async (event, mediaType) => {
+    const files = Array.from(event.target.files || []);
+    const uploaded = [];
+    for (const file of files) {
+      if ((mediaType === "image" && !file.type.startsWith("image/")) || (mediaType === "video" && !file.type.startsWith("video/"))) continue;
+      const uploadData = new FormData();
+      uploadData.append("uploadFile", file);
+      try {
+        const response = await axios.post(`${API_URL}/upload-file?types=coach`, uploadData);
+        if (response.data?.file_data?.[0]) uploaded.push(response.data.file_data[0]);
+      } catch {
+        Swal.fire("Upload failed", `Could not upload ${file.name}.`, "error");
+      }
+    }
+    if (uploaded.length) {
+      const field = mediaType === "image" ? "gallery" : "videos";
+      setInput((current) => ({ ...current, [field]: [...(current[field] || []), ...uploaded] }));
+    }
+    event.target.value = "";
+  };
+
   const [newFile, setNewFile] = useState({ new_images: [] });
   const [filePreview, setFilePreview] = useState();
   const [languages, setlanguages] = useState([]);
@@ -136,7 +159,7 @@ const UpdateCoach = () => {
           last_name: coach.last_name,
           gender: coach.gender,
           age: coach.age,
-          language: coach.languages,
+          languages: Array.isArray(coach.languages) ? coach.languages : (coach.languages ? [coach.languages] : []),
           email: coach.email,
           mobile: coach.mobile,
           address: coach.location.address,
@@ -148,7 +171,7 @@ const UpdateCoach = () => {
           experience: coach.experience,
           availability: coach.availability,
           category: coach.category,
-          package: coach.package,
+          package: coach.package || { monthly: "", quarterly: "", yearly: "" },
           price: coach.price,
           specializations: Array.isArray(coach.specializations)
             ? coach.specializations.join(", ")
@@ -160,6 +183,7 @@ const UpdateCoach = () => {
           own_level: coach.own_level || "",
           response_time: coach.response_time || "",
           class_location: coach.class_location || "",
+          training_mode: coach.training_mode || "",
           students_trained: coach.students_trained || 0,
           social_media: coach.social_media || {
             facebook: "",
@@ -169,6 +193,8 @@ const UpdateCoach = () => {
             linkedin: "",
           },
           daily_availability: coach.daily_availability || [],
+          gallery: coach.gallery || [],
+          videos: coach.videos || coach.gallery_videos || [],
         });
         if (response.data.coach.profile_picture.length > 0) {
           const imageUrl = response.data.coach.profile_picture; 
@@ -305,7 +331,8 @@ const UpdateCoach = () => {
         // });
         const response = await axios.put(
           `${API_URL}/update-coach-super-admin/${_id}`,
-          input
+          input,
+          { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
         );
         
         Swal.fire({
@@ -453,17 +480,21 @@ const UpdateCoach = () => {
           </Row>
           <Row>
             <Col sm={3}>
-              <h6>Language</h6>
-              <LanguageSelect
-                autoComplete="off"
-                value={input.language}
-                onChange={(e) => {
-                  setInput({ ...input, language: e.name });
-                  setlanguages(e.id);
-                  
-                }}
-                placeHolder={input.languages}
-              />
+              <h6>Languages Known</h6>
+              {["Hindi", "English", "Marathi"].map((language) => (
+                <Form.Check
+                  key={language}
+                  type="checkbox"
+                  label={language}
+                  checked={(input.languages || []).includes(language)}
+                  onChange={() => setInput((current) => ({
+                    ...current,
+                    languages: (current.languages || []).includes(language)
+                      ? current.languages.filter((item) => item !== language)
+                      : [...(current.languages || []), language],
+                  }))}
+                />
+              ))}
             </Col>
             {/* <Col sm={3}>
               <h6>State</h6>
@@ -661,6 +692,17 @@ const UpdateCoach = () => {
                 />
               </Form.Group>
             </Col>
+            <Col sm={3}>
+              <Form.Group controlId="formTrainingMode">
+                <Form.Label>Training Mode</Form.Label>
+                <Form.Select name="training_mode" value={input.training_mode || ""} onChange={handleChange}>
+                  <option value="">Select training mode</option>
+                  <option value="Online">Online</option>
+                  <option value="Offline">Offline</option>
+                  <option value="Both">Both</option>
+                </Form.Select>
+              </Form.Group>
+            </Col>
 
             <Col sm={3}>
               <Form.Group controlId="formStudentsTrained">
@@ -755,6 +797,23 @@ const UpdateCoach = () => {
               </Form.Group>
             </Col>
           </Row>
+          <Row className="mt-3">
+            <Col sm={12}><Form.Label className="fw-bold">Package Prices</Form.Label></Col>
+            {[['monthly', 'Monthly'], ['quarterly', 'Quarterly'], ['yearly', 'Yearly']].map(([key, label]) => (
+              <Col sm={3} key={key}>
+                <Form.Group controlId={`package-${key}`}>
+                  <Form.Label>{label}</Form.Label>
+                  <Form.Control
+                    type="number"
+                    min="0"
+                    placeholder={`Enter ${label.toLowerCase()} price`}
+                    value={input.package?.[key] || ""}
+                    onChange={(event) => setInput((current) => ({ ...current, package: { ...(current.package || {}), [key]: event.target.value } }))}
+                  />
+                </Form.Group>
+              </Col>
+            ))}
+          </Row>
           <Row>
             <h5 className="mb-3 mt-3">Social Media Profiles</h5>
             {["facebook", "instagram", "youtube", "twitter", "linkedin"].map((platform) => (
@@ -771,6 +830,24 @@ const UpdateCoach = () => {
                 </Form.Group>
               </Col>
             ))}
+          </Row>
+          <Row className="mt-3">
+            <Col sm={6} className="mb-3">
+              <Form.Group controlId="coachGalleryUpload">
+                <Form.Label>Training / Profile Images</Form.Label>
+                <Form.Control type="file" accept="image/jpeg,image/png,image/webp" multiple onChange={(event) => uploadCoachMedia(event, "image")} />
+                <Form.Text className="text-muted">You can select multiple JPEG, PNG, or WebP images.</Form.Text>
+              </Form.Group>
+              {!!input.gallery?.length && <div className="small text-success mt-1">{input.gallery.length} image(s) added</div>}
+            </Col>
+            <Col sm={6} className="mb-3">
+              <Form.Group controlId="coachVideoUpload">
+                <Form.Label>Training Videos</Form.Label>
+                <Form.Control type="file" accept="video/mp4,video/webm,video/quicktime" multiple onChange={(event) => uploadCoachMedia(event, "video")} />
+                <Form.Text className="text-muted">You can select multiple training videos.</Form.Text>
+              </Form.Group>
+              {!!input.videos?.length && <div className="small text-success mt-1">{input.videos.length} video(s) added</div>}
+            </Col>
           </Row>
           <Row>
             <h5 className="mb-3">Daily Availability Timings</h5>

@@ -1,5 +1,8 @@
 const express = require("express");
 const route = express.Router();
+const { getMyWallet } = require("../controllers/WalletController");
+const { getReviews, createReview } = require("../controllers/ReviewController");
+const { myNotifications, markNotificationsRead } = require("../controllers/NotificationController");
 const mail = require('../controllers/NodeMailerController')
 
 const imageUpload= require('../middlewares/multer')
@@ -123,6 +126,7 @@ const {
   fetchAllPersonalTrainers,
   createPersonalTrainer,
   fetchPersonalTrainerById,
+  fetchPersonalTrainerForAdmin,
   updatePersonalTrainer,
   deletePersonalTrainer,
   fetchAllPersonalTrainersForWeb,
@@ -211,7 +215,7 @@ route.put("/blog/deleteBlog", deleteBlog); //shubham
 //Coaches
 route.post("/create-coach",auth, createCoach);
 route.delete("/delete-coach/:id", deleteCoach);
-route.put("/update-coach-super-admin/:id", updateCoachSuperAdmin);
+route.put("/update-coach-super-admin/:id", auth, updateCoachSuperAdmin);
 // route.get('/fetch-all-coaches', fetchAllCoaches); // old 
 route.get('/fetch-all-coaches',auth,fetchAllCoachesNew); // new by sunil
 route.get('/fetch-coach/:id', fetchCoachById);
@@ -255,10 +259,10 @@ route.delete("/activity/delete/:id", deleteActivity);
 route.post("/PersonalTraining/create",auth, createPersonalTrainer);
 route.delete("/PersonalTraining/deactive/:id",auth, deletePersonalTrainer);
 route.put("/PersonalTraining/update/:id",auth, updatePersonalTrainer);
-// route.get("/PersonalTraining/fetch/:id",auth, fetchPersonalTrainerById);
+route.get("/admin/PersonalTraining/fetch/:id",auth, fetchPersonalTrainerForAdmin);
 route.get("/PersonalTraining/fetch/:id", fetchPersonalTrainerById);
 route.get("/PersonalTraining/fetchAll",auth, fetchAllPersonalTrainers);
-route.put("/updatePersonalTrainer/:trainerId",updatePersonalTrainers)
+route.put("/updatePersonalTrainer/:trainerId",auth,updatePersonalTrainers)
 const {
   createEvent,
   getEvent,
@@ -299,6 +303,11 @@ route.get("/dashboard/datefilter",auth, DateFilter);
 route.get("/dashboard/fetch-visitors",auth, fetchVisitors);
 route.get("/dashboard/analytics",auth, bookingRevenueAnalytics);
 route.get("/dashboard/analytics/download",auth, downloadAnalyticsReport);
+route.get("/wallet/me", auth, getMyWallet);
+route.get("/reviews/:type/:id", getReviews);
+route.put("/reviews/:type/:id", auth, createReview);
+route.get("/notifications/me", auth, myNotifications);
+route.put("/notifications/read", auth, markNotificationsRead);
 
 //Images
 route.post(
@@ -313,8 +322,9 @@ route.post(
   uploadFile
 );
 // for venue slot
-const {createSlots,fetchSlots, getAllSlotsByVenueId, getSlotsBySlotID,updateSlotBySlotID,getSlotById,deleteSlotBySlotID}= require("../controllers/SlotController");
+const {createSlots,fetchSlots, getAllSlotsByVenueId, getSlotsBySlotID,updateSlotBySlotID,getSlotById,deleteSlotBySlotID,carryForwardSlots}= require("../controllers/SlotController");
 route.post("/slot/add/:id", auth, createSlots);
+route.post("/slot/carry-forward/:id", auth, carryForwardSlots);
 route.get("/slot/get/:slot_id",auth,getSlotById)
 route.put("/slot/update-add/:id", auth, updateSlotBySlotID);
 route.put("/slot/delete-by-slotid/:id",auth,deleteSlotBySlotID);

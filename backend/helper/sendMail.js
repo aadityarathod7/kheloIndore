@@ -94,7 +94,7 @@ const sendVenuAdminConfirmation = async ({ senderEmail, senderName, recipientEma
     const info = await transporter.sendMail(mailOptions);
     
   } catch (error) {
-    
+    console.error("Error in sendVenuAdminConfirmation SMTP:", error);
   }
 };
 
@@ -110,7 +110,7 @@ const sendVenueConfirnation = async ({ senderEmail, senderName, recipientEmail, 
     const info = await transporter.sendMail(mailOptions);
     
   } catch (error) {
-    
+    console.error("Error in sendVenueConfirnation SMTP:", error);
   }
 };
 

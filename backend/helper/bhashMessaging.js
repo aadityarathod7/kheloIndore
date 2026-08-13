@@ -65,7 +65,7 @@ const sendOtp = async ({ mobile, otp }) => {
     .split(",")
     .map((channel) => channel.trim().toLowerCase())
     .filter(Boolean);
-  const message = `Your KheloIndore OTP is ${otp}. It is valid for 5 minutes. Do not share this code.`;
+  const message = `Your login OTP is ${otp} for Khelo Indore powered by MANS Sports Entertainment. It is valid for 10 min. Please do not share it with anyone.`;
   const senders = { sms: sendSms, whatsapp: sendWhatsApp };
 
   if (!channels.length || channels.some((channel) => !senders[channel])) {

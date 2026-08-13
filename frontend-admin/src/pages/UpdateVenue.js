@@ -33,6 +33,32 @@ import Volleyball from "../venueComponents/Volleyball";
 import Yoga from "../venueComponents/Yoga";
 import Zumba from "../venueComponents/Zumba";
 import { Percent } from "antd/es/progress/style";
+
+const getNormalizedSportName = (type) => {
+  const t = (type || "").toLowerCase();
+  if (t.includes("cricket") || t.includes("turf")) return "Cricket Turf";
+  if (t.includes("basketball")) return "Basketball";
+  if (t.includes("archery")) return "Archery";
+  if (t.includes("badminton")) return "Badminton";
+  if (t.includes("baseball")) return "Baseball";
+  if (t.includes("golf")) return "Golf Club";
+  if (t.includes("gym")) return "Gym";
+  if (t.includes("hockey")) return "Hockey";
+  if (t.includes("kabaddi")) return "Kabaddi";
+  if (t.includes("playstation") || t.includes("gaming") || t.includes("ps")) return "Playstation";
+  if (t.includes("shooting")) return "Shooting";
+  if (t.includes("skating")) return "Skating";
+  if (t.includes("snooker") || t.includes("billiards") || t.includes("pool")) return "Snooker";
+  if (t.includes("soccer") || t.includes("football")) return "Soccer";
+  if (t.includes("squash")) return "Squash";
+  if (t.includes("swimming")) return "Swimming Pool";
+  if (t.includes("tennis")) return "Tennis";
+  if (t.includes("volleyball")) return "Volleyball(Indoor)";
+  if (t.includes("yoga")) return "Yoga";
+  if (t.includes("zumba")) return "Zumba Classes";
+  return type;
+};
+
 const UpdateVenue = () => {
   const [formData, setFormData] = useState({
     vendor_type: "",
@@ -169,12 +195,12 @@ const UpdateVenue = () => {
       });
 
       const response = await axios.post(
-        `${API_URL}/upload-file?types=venue
- `,
+        `${API_URL}/upload-file?types=venue`,
         formData,
         {
           headers: {
             "Content-Type": "multipart/form-data",
+            "Authorization": `Bearer ${localStorage.getItem("token")}`,
           },
         }
       );
@@ -271,7 +297,7 @@ const UpdateVenue = () => {
         additionalNotes: prev?.additionalNotes,
         gameType: prev?.gameType,
         policiesAndRules: prev?.policiesAndRules,
-        vendor_type: prev?.vendor_type,
+        vendor_type: getNormalizedSportName(prev?.vendor_type || ""),
         categories: prev?.categories || [],
         videos: prev?.videos || [],
         sports_details: prev?.sports_details || [],
@@ -424,9 +450,6 @@ const UpdateVenue = () => {
                     maxLength={25}
                     isInvalid={!!errors.name}
                     value={formData.name}
-                    onInput={(e) => {
-                      e.target.value = e.target.value.replace(/[^A-Za-z]/g, " ");
-                    }}
                     onChange={handleChange}
                     className="add-venue-form-custom-class"
                   />
@@ -447,7 +470,9 @@ const UpdateVenue = () => {
                     value={(formData.categories || []).map(cat => ({ value: cat, label: cat }))}
                     onChange={(selectedOptions) => {
                       const selectedVals = selectedOptions ? selectedOptions.map(o => o.value) : [];
-                      setFormData({ ...formData, categories: selectedVals, vendor_type: selectedVals[0] || "" });
+                      const rawType = selectedVals[0] || "";
+                      const normType = getNormalizedSportName(rawType);
+                      setFormData({ ...formData, categories: selectedVals, vendor_type: normType });
                       setErrors({ ...errors, vendor_type: "" });
                     }}
                     placeholder="Select Categories"

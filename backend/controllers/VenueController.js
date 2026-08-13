@@ -95,7 +95,8 @@ exports.fetchVenue = async (req, res) => {
   try {
     const venues = await Venue1.find({}).sort({ createdAt: -1 });
     if (venues) {
-      res.status(200).json({ venues });
+      const { attachRatings } = require("../helper/reviewRatings");
+      res.status(200).json({ venues: await attachRatings(venues, "venue") });
     } else {
       return res.status(400).json({
         success: false,
@@ -331,6 +332,11 @@ exports.addVenue = async (req, res) => {
       sports_details,
       share_token,
     });
+    if (req.user.role === "Venue Admin") {
+      const Notification = require("../models/NotificationModel");
+      const superAdmins = await User.find({ role: "Super Admin" }).select("_id");
+      await Notification.insertMany(superAdmins.map((admin) => ({ user_id: admin._id, title: "Venue approval required", message: `${newVenueDB.name} was submitted for approval.`, type: "venue_approval", entity_id: newVenueDB._id })));
+    }
 
     const vendor = await User.findOne({ _id: vendor_id });
     const vendorEmail = vendor ? vendor.email : null;
@@ -1042,6 +1048,25 @@ exports.venueVerifyBySuperAdmin = async (req, res) => {
       recipientEmail: vendor.email,
       subject,
       html: htmlContent,
+    });
+
+    // Send SMS notification
+    try {
+      const { sendCustomMessage } = require("../helper/bhashMessaging");
+      const smsMessage = verifyStatus === 1
+        ? `Dear ${vendor.first_name}, your venue "${verifyVenue.name}" has been approved on KheloIndore! You can now manage it from your panel.`
+        : `Dear ${vendor.first_name}, your venue "${verifyVenue.name}" verification status has been updated. Please check your panel or contact support.`;
+      await sendCustomMessage({ mobile: vendor.mobile, message: smsMessage });
+    } catch (smsError) {
+      console.error("SMS notification failed in venueVerifyBySuperAdmin:", smsError.message);
+    }
+    const Notification = require("../models/NotificationModel");
+    await Notification.create({
+      user_id: vendor._id,
+      title: verifyStatus === 1 ? "Venue approved" : "Venue approval update",
+      message: verifyStatus === 1 ? `${verifyVenue.name} has been approved and is now live.` : `${verifyVenue.name} was not approved. Please review the details and resubmit.`,
+      type: "venue_approval_result",
+      entity_id: verifyVenue._id,
     });
 
     return res.status(200).json({

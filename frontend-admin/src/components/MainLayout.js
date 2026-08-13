@@ -4,6 +4,7 @@ import {
   MenuUnfoldOutlined,
   LogoutOutlined,
   DollarOutlined,
+  BellOutlined,
 } from "@ant-design/icons";
 import { AiOutlineDashboard } from "react-icons/ai";
 import { RiCouponLine, RiUserLine } from "react-icons/ri";
@@ -21,6 +22,8 @@ import { Layout, ConfigProvider } from "antd";
 import logoImage from "../Khelo Indore Logo/logo.png";
 import Userlogo from "../Khelo Indore Logo/dashboard_user.jpg";
 import "../../src/MainLayout.css";
+import axios from "axios";
+import { API_URL } from "../utils/ApiUrl";
 
 // Auto-logout after 15 minutes of inactivity
 const useAutoLogout = () => {
@@ -227,6 +230,8 @@ const MainLayout = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [hoveredKey, setHoveredKey] = useState(null);
+  const [notifications, setNotifications] = useState([]);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   // Auto-logout after 15 minutes of inactivity
@@ -244,6 +249,7 @@ const MainLayout = () => {
     window.addEventListener("resize", closeOnDesktop);
     return () => window.removeEventListener("resize", closeOnDesktop);
   }, []);
+  useEffect(() => { const token = localStorage.getItem("token"); if (!token) return; const load = () => axios.get(`${API_URL}/notifications/me`, { headers: { Authorization: `Bearer ${token}` } }).then(({ data }) => setNotifications(data.notifications || [])).catch(() => {}); load(); const timer = setInterval(load, 30000); return () => clearInterval(timer); }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -255,6 +261,17 @@ const MainLayout = () => {
   const navigateTo = (key) => {
     navigate(key);
     setMobileMenuOpen(false);
+  };
+  const openNotifications = async () => {
+    const nextOpen = !notificationsOpen;
+    setNotificationsOpen(nextOpen);
+    const unreadIds = notifications.filter((item) => !item.is_read).map((item) => item._id);
+    if (nextOpen && unreadIds.length) {
+      try {
+        await axios.put(`${API_URL}/notifications/read`, { ids: unreadIds }, { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
+        setNotifications((items) => items.map((item) => unreadIds.includes(item._id) ? { ...item, is_read: true } : item));
+      } catch (_) {}
+    }
   };
 
   return (
@@ -439,6 +456,7 @@ const MainLayout = () => {
                 Admin Panel
               </span>
             </div>
+            <div style={{ position: "relative" }}><button aria-label="Notifications" onClick={openNotifications} style={{ background: "none", border: "none", fontSize: 19, color: "#475569", cursor: "pointer" }}><BellOutlined />{notifications.filter(n => !n.is_read).length > 0 && <sup style={{ color: "#dc2626", fontWeight: 700 }}>{notifications.filter(n => !n.is_read).length}</sup>}</button>{notificationsOpen && <div style={{ position: "absolute", right: 0, top: 35, width: 330, maxHeight: 360, overflowY: "auto", background: "#fff", border: "1px solid #e2e8f0", borderRadius: 10, boxShadow: "0 12px 28px rgba(0,0,0,.15)", padding: 12 }}>{notifications.length ? notifications.map(n => <div key={n._id} style={{ padding: "9px 4px", borderBottom: "1px solid #f1f5f9" }}><b>{n.title}</b><div style={{ fontSize: 12, color: "#64748b" }}>{n.message}</div></div>) : <span className="text-muted">No notifications</span>}</div>}</div>
           </Header>
 
           {/* Page Content */}

@@ -198,8 +198,18 @@ const publicRoutes = [
     route: Route,
   },
   {
+    path: routes.sharedTrainerProfile,
+    element: <PersonalTrainingDetails />,
+    route: Route,
+  },
+  {
     path: routes.personalTrainingDetails,
     element: <PersonalTrainingDetails />,
+    route: Route,
+  },
+  {
+    path: routes.sharedCoachProfile,
+    element: <CoachDetail />,
     route: Route,
   },
   {
@@ -229,22 +239,22 @@ const publicRoutes = [
   },
   {
     path: routes.coachesGridSidebar,
-    element: <CoachesGridSidebar />,
+    element: <Navigate to={routes.coachesGrid} replace />,
     route: Route,
   },
   {
     path: routes.coachesList,
-    element: <CoachesList />,
+    element: <Navigate to={routes.coachesGrid} replace />,
     route: Route,
   },
   {
     path: routes.coachesListSidebar,
-    element: <CoachesListSidebar />,
+    element: <Navigate to={routes.coachesGrid} replace />,
     route: Route,
   },
   {
     path: routes.coachesMap,
-    element: <CoachesMap />,
+    element: <Navigate to={routes.coachesGrid} replace />,
     route: Route,
   },
   {
@@ -415,12 +425,12 @@ const publicRoutes = [
   },
   {
     path: routes.listingMap,
-    element: <ListingMap />,
+    element: <Navigate to={routes.sportsVenue} replace />,
     route: Route,
   },
   {
     path: routes.listingMapSidebar,
-    element: <ListingMapSidebar />,
+    element: <Navigate to={routes.sportsVenue} replace />,
     route: Route,
   },
   {

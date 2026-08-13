@@ -117,10 +117,12 @@ export const all_routes = {
   TrainingOrderConfirm: "/trainers/training-order-confirm/:id",
   TrainingPayment: "/trainers/training-payment/:id",
   coachDetail: "/coaches/:type/:name/:id",
+  sharedCoachProfile: "/coaches/shared/:token",
   coachesByCategory: "/coaches/category/:type",
   personalTrainingByCategory: "/trainers/category/:type",
   blogDetails: "/blog/venue-details/:id",
   personalTrainingDetails: "/trainers/trainer/:name/:id",
+  sharedTrainerProfile: "/personal-training/shared/:token",
   eventdetails: "/events/event-details/:id",
   blogDetailsSidebarLeft: "/blog/:slugName",
 };

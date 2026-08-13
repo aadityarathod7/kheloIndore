@@ -93,6 +93,8 @@ interface CategoryCard {
   bg: string;
 }
 
+type CategoryProviderTab = "venue" | "coach" | "trainer";
+
 const getVenueImage = (images: any): string => {
   if (!images || !Array.isArray(images) || images.length === 0) return "assets/img/venues/venue-01.jpg";
   const first = images[0];
@@ -175,7 +177,7 @@ const TopProviderCard = ({ kind, provider }: { kind: ProviderKind; provider: Ven
           View all <i className="fas fa-arrow-right ms-1" />
         </Link>
       </div>
-      <article className="listing-item home-venue border-white-10 top-provider-card" style={{ background: "var(--ki-bg-surface)", border: "1px solid #E2E8E3", borderRadius: "20px", overflow: "hidden", boxShadow: "0 10px 30px rgba(15, 34, 45, 0.08)" }}>
+      <article className={`listing-item home-venue border-white-10 top-provider-card top-provider-card--${kind.toLowerCase()}`} style={{ background: "var(--ki-bg-surface)", border: "1px solid #E2E8E3", borderRadius: "20px", overflow: "hidden", boxShadow: "0 10px 30px rgba(15, 34, 45, 0.08)" }}>
         <div className="listing-img" style={{ height: "165px", position: "relative", overflow: "hidden" }}>
           <Link to={link}>
             <img src={image} className="img-fluid" alt={name} onError={(event) => { event.currentTarget.src = "/assets/img/no-img.png"; }} style={{ height: "100%", width: "100%", objectFit: "cover" }} />
@@ -222,6 +224,7 @@ const Home = () => {
   const [selectedLocationSort, setSelectedLocationSort] = useState<{ name: string } | null>(null);
   const [selectedSport, setSelectedSport] = useState<{ name: string } | null>(null);
   const [showAllCategories, setShowAllCategories] = useState(false);
+  const [categoryProviderTab, setCategoryProviderTab] = useState<CategoryProviderTab>("venue");
 
   const navigate = useNavigate();
 
@@ -230,7 +233,7 @@ const Home = () => {
   }, []);
 
   useEffect(() => {
-    const rotation = window.setInterval(() => setTopProviderIndex((current) => current + 1), 5000);
+    const rotation = window.setInterval(() => setTopProviderIndex((current) => current + 1), 3000);
     return () => window.clearInterval(rotation);
   }, []);
 
@@ -512,6 +515,23 @@ const Home = () => {
     ],
   };
 
+  // Top-rated cards rotate one at a time with a vertical page-like transition.
+  const verticalCardSlider = {
+    dots: false,
+    infinite: true,
+    arrows: false,
+    speed: 8000,
+    vertical: true,
+    verticalSwiping: true,
+    slidesToShow: 1,
+    slidesToScroll: 1,
+    autoplay: true,
+    autoplaySpeed: 0,
+    cssEase: "linear",
+    pauseOnHover: true,
+    pauseOnFocus: true,
+  };
+
   const locationOptions = [
     { value: "germany", label: "Germany" },
     { value: "russia", label: "Russia" },
@@ -700,41 +720,40 @@ const Home = () => {
     { kind: "Trainer" as const, provider: visibleTrainers.length ? visibleTrainers[topProviderIndex % visibleTrainers.length] : null },
   ];
 
-  const categoryCards = useMemo<CategoryCard[]>(() => {
-    const providerCategoryGroups = [
-      ...venues.map((item) => [item.category, item.activities, item.vendor_type]),
-      ...coaches.map((item) => [item.category, item.trainer_type]),
-      ...trainer.map((item) => [item.category, item.specializations, item.trainer_type]),
-    ].map((values) => values
-      .flatMap((value) => String(value || "").split(/[,|/]+/))
-      .map((value) => value.trim())
-      .filter(Boolean));
+  const categoryCardsByProvider = useMemo<Record<CategoryProviderTab, CategoryCard[]>>(() => {
+    const categoryGroups: Record<CategoryProviderTab, string[][]> = {
+      venue: venues.map((item) => [item.category, item.activities, item.vendor_type]),
+      coach: coaches.map((item) => [item.category, item.trainer_type]),
+      trainer: trainer.map((item) => [item.category, item.specializations, item.trainer_type]),
+    };
 
-    const liveCategoryNames = providerCategoryGroups.flat();
+    return (Object.entries(categoryGroups) as [CategoryProviderTab, string[][]][]).reduce((result, [providerType, groups]) => {
+      const providerCategoryGroups = groups.map((values) => values
+        .flatMap((value) => String(value || "").split(/[,|/]+/))
+        .map((value) => value.trim())
+        .filter(Boolean));
+      const liveCategoryNames = providerCategoryGroups.flat();
+      const sourceNames = Array.from(new Map([
+        ...apiCategories.map((category) => category.category_name),
+        ...liveCategoryNames,
+      ].filter(Boolean).map((name) => [normaliseCategory(name), name])).values());
 
-    const sourceNames = apiCategories.length
-      ? apiCategories.map((category) => category.category_name)
-      : Array.from(new Map(liveCategoryNames.map((name) => [normaliseCategory(name), name])).values());
-
-    return sourceNames
-      .map((name) => {
-        const key = normaliseCategory(name);
-        const count = providerCategoryGroups.filter((names) => names.some((liveName) => {
-          const liveKey = normaliseCategory(liveName);
-          return liveKey === key || liveKey.includes(key) || key.includes(liveKey);
-        })).length;
-        const style = categoryStyle(name);
-        return {
-          name,
-          slug: key.replace(/\s+/g, "-"),
-          count,
-          icon: getCategoryIcon(name),
-          ...style,
-        };
-      })
-      .filter((category) => apiCategories.length > 0 || category.count > 0)
-      .sort((first, second) => second.count - first.count || first.name.localeCompare(second.name));
+      result[providerType] = sourceNames
+        .map((name) => {
+          const key = normaliseCategory(name);
+          const count = providerCategoryGroups.filter((names) => names.some((liveName) => {
+            const liveKey = normaliseCategory(liveName);
+            return liveKey === key || liveKey.includes(key) || key.includes(liveKey);
+          })).length;
+          return { name, slug: key.replace(/\s+/g, "-"), count, icon: getCategoryIcon(name), ...categoryStyle(name) };
+        })
+        .filter((category) => providerCategoryGroups.length === 0 || category.count > 0)
+        .sort((first, second) => second.count - first.count || first.name.localeCompare(second.name));
+      return result;
+    }, { venue: [], coach: [], trainer: [] } as Record<CategoryProviderTab, CategoryCard[]>);
   }, [apiCategories, venues, coaches, trainer]);
+
+  const categoryCards = categoryCardsByProvider[categoryProviderTab];
 
   // ─── Stats count-up trigger ───
   // countup.js's built-in scroll-spy measures element positions against the
@@ -1144,18 +1163,52 @@ const Home = () => {
               Browse by <span style={{ color: "var(--ki-primary)" }}>Category</span>
             </h2>
             <p className="sub-title" style={{ color: "#606D76" }}>
-              Select a sport category to view all registered venues, coaches, and academies.
+              Choose a provider type, then explore its available categories.
             </p>
           </div>
 
           <div className="container">
+            <div className="d-flex justify-content-center flex-wrap gap-2 mb-4" role="tablist" aria-label="Browse provider categories">
+              {(["venue", "coach", "trainer"] as CategoryProviderTab[]).map((providerType) => {
+                const isActive = categoryProviderTab === providerType;
+                const label = providerType === "venue" ? "Venue" : providerType === "coach" ? "Coach" : "Trainer";
+                return (
+                  <button
+                    key={providerType}
+                    type="button"
+                    role="tab"
+                    aria-selected={isActive}
+                    className="btn rounded-pill px-4 py-2"
+                    onClick={() => {
+                      setCategoryProviderTab(providerType);
+                      setShowAllCategories(false);
+                    }}
+                    style={{
+                      background: isActive ? "#22C55E" : "#FFFFFF",
+                      border: "1px solid #22C55E",
+                      boxShadow: isActive ? "0 6px 16px rgba(34, 197, 94, 0.24)" : "none",
+                      color: isActive ? "#FFFFFF" : "#16A34A",
+                      fontWeight: 700,
+                      minWidth: "112px",
+                    }}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+
             <div className="row g-3 justify-content-center">
               {categoryCards.slice(0, showAllCategories ? undefined : 6).map((cat) => (
                 <div key={cat.slug} className="col-xl-2 col-lg-3 col-md-4 col-sm-6 col-6 d-flex">
                   <div
                     className="ki-category-slider-card p-3 text-center d-flex flex-column align-items-center justify-content-between w-100"
                     style={{ height: "175px", borderRadius: "20px" }}
-                    onClick={() => navigate(`/sports-venue/${cat.slug}`)}
+                    onClick={() => navigate(
+                      categoryProviderTab === "venue"
+                        ? `/sports-venue/${cat.slug}`
+                        : `${categoryProviderTab === "coach" ? routes.coachesGrid : routes.blogList}?category=${encodeURIComponent(cat.name)}`
+                    )}
                   >
                     <div
                       className="category-icon-wrap d-flex align-items-center justify-content-center mb-2"
@@ -1271,10 +1324,10 @@ const Home = () => {
           <div className="row">
             <div className="featured-slider-group w-100 aos" data-aos="fade-up" data-aos-delay="120">
               <div className="owl-carousel featured-venues-slider owl-theme">
-                <Slider {...settings}>
+                <Slider {...verticalCardSlider} className="ki-vertical-card-slider">
                   {visibleVenues.map((venue, index) => (
                     <div className="featured-venues-item" key={index}>
-                      <div className="listing-item home-venue border-white-10" style={{ background: "var(--ki-bg-surface)", border: "1px solid #E2E8E3", borderRadius: "24px", overflow: "hidden", margin: "10px", boxShadow: "var(--ki-shadow-card)" }}>
+                      <div className="listing-item home-venue border-white-10 ki-feature-card" style={{ background: "var(--ki-bg-surface)", border: "1px solid #E2E8E3", borderRadius: "24px", overflow: "hidden", margin: "10px", boxShadow: "var(--ki-shadow-card)" }}>
                         <div className="listing-img" style={{ height: "200px", position: "relative", overflow: "hidden" }}>
                           <Link to={`/sports-venue/${venue.vendor_type.replace(/\s+/g, "-").toLowerCase()}/${venue.name.replace(/\s+/g, "-").toLowerCase()}/${venue._id}`}>
                             {getVenueImage(venue?.images).startsWith("http") ? (
@@ -1402,10 +1455,10 @@ const Home = () => {
           <div className="row">
             <div className="featured-slider-group w-100 aos" data-aos="fade-up" data-aos-delay="120">
               <div className="owl-carousel featured-venues-slider owl-theme">
-                <Slider {...options}>
+                <Slider {...verticalCardSlider} className="ki-vertical-card-slider">
                   {visibleCoaches.map((coach, index) => (
                     <div className="featured-venues-item" key={index}>
-                      <div className="listing-item mb-0" style={{ background: "var(--ki-bg-surface)", border: "1px solid #E2E8E3", borderRadius: "24px", overflow: "hidden", margin: "10px", boxShadow: "var(--ki-shadow-card)" }}>
+                      <div className="listing-item mb-0 ki-feature-card" style={{ background: "var(--ki-bg-surface)", border: "1px solid #E2E8E3", borderRadius: "24px", overflow: "hidden", margin: "10px", boxShadow: "var(--ki-shadow-card)" }}>
                         <div className="listing-img" style={{ height: "200px", position: "relative", overflow: "hidden" }}>
                           <Link to={`/coaches/${coach?.category?.replace(/\s+/g, "-").toLowerCase()}/${coach?.first_name?.replace(/\s+/g, "-").toLowerCase()}/${coach?._id}`}>
                             <ImageWithBasePath
@@ -1527,10 +1580,10 @@ const Home = () => {
           <div className="row">
             <div className="featured-slider-group w-100 aos" data-aos="fade-up" data-aos-delay="120">
               <div className="owl-carousel featured-venues-slider owl-theme">
-                <Slider {...options}>
+                <Slider {...verticalCardSlider} className="ki-vertical-card-slider">
                   {visibleTrainers.map((train, index) => (
                     <div className="featured-venues-item" key={index}>
-                      <div className="listing-item mb-0" style={{ background: "var(--ki-bg-surface)", border: "1px solid #E2E8E3", borderRadius: "24px", overflow: "hidden", margin: "10px", boxShadow: "var(--ki-shadow-card)" }}>
+                      <div className="listing-item mb-0 ki-feature-card" style={{ background: "var(--ki-bg-surface)", border: "1px solid #E2E8E3", borderRadius: "24px", overflow: "hidden", margin: "10px", boxShadow: "var(--ki-shadow-card)" }}>
                         <div className="listing-img" style={{ height: "200px", position: "relative", overflow: "hidden" }}>
                           <Link to={`/trainers/trainer/${train.first_name.replace(/\s+/g, "-").toLowerCase()}/${train._id}`}>
                             <ImageWithBasePath
@@ -2221,4 +2274,3 @@ const Home = () => {
 };
 
 export default Home;
-

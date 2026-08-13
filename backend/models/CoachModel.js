@@ -77,9 +77,7 @@ const coachSchema = new mongoose.Schema(
       type: Array,
       default: null,
     },
-    languages: {
-      type: String,
-    },
+    languages: { type: [String], default: [] },
     otp: { type: String },
     role: {
       type: String,
@@ -154,6 +152,11 @@ const coachSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    training_mode: {
+      type: String,
+      enum: ["Online", "Offline", "Both"],
+      default: "",
+    },
     // Number of students trained by the coach
     students_trained: {
       type: Number,
@@ -171,6 +174,11 @@ const coachSchema = new mongoose.Schema(
       youtube: { type: String, default: "" },
       twitter: { type: String, default: "" },
       linkedin: { type: String, default: "" },
+    },
+    // Images used on the public coach profile.
+    gallery: {
+      type: Array,
+      default: [],
     },
     // Video gallery on the profile
     gallery_videos: {

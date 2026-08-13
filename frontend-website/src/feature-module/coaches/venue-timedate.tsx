@@ -245,7 +245,7 @@ const VenueTimeDate = () => {
 
       const isBooked = Boolean(apiSlot.isBooked) || isPast;
       const isOfflineBlocked = Boolean(apiSlot.isOfflineBlocked);
-      const price = apiSlot.price || venueData?.price_per_hr || 750;
+      const price = apiSlot.price || venueData?.price_per_hr || 0;
 
       return {
         startTime: apiSlot.startTime,
@@ -471,11 +471,11 @@ const VenueTimeDate = () => {
             <div className="col-lg-7 text-start">
               <span className="font-weight-bold" style={{ fontSize: "13px", letterSpacing: "1.5px", display: "block", marginBottom: "8px", color: "#22C55E", fontWeight: "700" }}>BOOK. PLAY. ENJOY</span>
               <h1 className="venue-time-hero-title">
-                <span className="venue-time-hero-action">Book</span>
-                <span className="venue-time-hero-name">{venueData?.name || "Venue"}</span>
+                <span className="venue-time-hero-action">Check</span>
+                <span className="venue-time-hero-name">Availability</span>
               </h1>
               <p style={{ color: "#64748B", fontSize: "18px", marginBottom: "16px", fontWeight: "500", maxWidth: "480px" }}>
-                Pick your date, time slot, and book the perfect sports venue
+                Select a ground and date to see available time slots
               </p>
               
               {/* Breadcrumb pill matching other pages */}
@@ -535,6 +535,20 @@ const VenueTimeDate = () => {
                 <h3 className="fw-bold text-dark mb-4 d-flex align-items-center gap-2" style={{ fontSize: "18px", color: "#0F172A" }}>
                   <i className="feather-calendar text-success" /> Select Booking Date
                 </h3>
+
+                <div className="d-flex flex-nowrap gap-2 overflow-auto pb-3 mb-2">
+                  {(dateData || []).slice(0, 8).map((dateItem: any) => {
+                    const chipDate = new Date(dateItem.date);
+                    const active = selectedDate?.toDateString() === chipDate.toDateString();
+                    return (
+                      <button key={dateItem._id} type="button" onClick={() => handleDateChange(chipDate)}
+                        className="btn flex-shrink-0"
+                        style={{ borderRadius: "12px", minWidth: "86px", padding: "9px 10px", fontSize: "12px", fontWeight: 700, border: active ? "1px solid #22C55E" : "1px solid #E2E8F0", background: active ? "#22C55E" : "#fff", color: active ? "#fff" : "#475569" }}>
+                        {chipDate.toLocaleDateString("en-US", { weekday: "short", day: "numeric", month: "short" })}
+                      </button>
+                    );
+                  })}
+                </div>
 
                 {/* Calendar & Quick Select Grid */}
                 <div className="row g-4 mb-4 align-items-center">
@@ -630,13 +644,13 @@ const VenueTimeDate = () => {
                             onClick={() => handleSlotClick(slot.startTime)}
                             className="btn w-100 py-1 px-1 text-center transition-all d-flex align-items-center justify-content-center"
                             style={{
-                              height: "44px",
-                              fontSize: "11px",
+                              minHeight: "84px",
+                              fontSize: "12px",
                               fontWeight: "600",
-                              borderRadius: "10px",
-                              backgroundColor: isChecked ? "#22C55E" : isOfflineBlocked ? "#FEF2F2" : isBooked ? "#F1F5F9" : "#FFFFFF",
-                              color: isChecked ? "#FFFFFF" : isOfflineBlocked ? "#B91C1C" : isBooked ? "#CBD5E1" : "#15803D",
-                              border: isChecked ? "none" : isOfflineBlocked ? "1px solid #FECACA" : isBooked ? "1px solid #E2E8F0" : "1px solid #BBF7D0",
+                              borderRadius: "12px",
+                              backgroundColor: isChecked ? "#3730A3" : isOfflineBlocked ? "#171717" : isBooked ? "#6B2424" : "#FACC15",
+                              color: isChecked || isOfflineBlocked || isBooked ? "#FFFFFF" : "#1F2937",
+                              border: "none",
                               cursor: isBooked ? "not-allowed" : "pointer",
                               boxShadow: isChecked ? "0 4px 12px rgba(34,197,94,0.3)" : "none"
                             }}
@@ -646,7 +660,8 @@ const VenueTimeDate = () => {
                             ) : (
                               <div className="d-flex flex-column align-items-center justify-content-center" style={{ lineHeight: 1.2 }}>
                                 <span>{formatTimeDisplay(slot.startTime, timeFormat)}</span>
-                                <span style={{ fontSize: "9px", fontWeight: "700", marginTop: "2px", color: isChecked ? "#FFFFFF" : "#16A34A" }}>₹{slot.price}</span>
+                                <span style={{ fontSize: "16px", fontWeight: "800", marginTop: "7px", color: isChecked || isOfflineBlocked || isBooked ? "#FFFFFF" : "#1F2937" }}>₹{slot.price}</span>
+                                <small style={{ marginTop: "2px", opacity: 0.8 }}>per slot</small>
                               </div>
                             )}
                           </button>
@@ -675,8 +690,18 @@ const VenueTimeDate = () => {
                 
                 {/* Header */}
                 <h3 className="fw-bold text-dark pb-3 mb-3 border-bottom d-flex align-items-center gap-2" style={{ fontSize: "18px", color: "#0F172A", borderColor: "#F1F5F9" }}>
-                  <i className="feather-clipboard text-success" /> Booking Details
+                  <i className="feather-bar-chart-2 text-success" /> Rate Chart
                 </h3>
+
+                <div className="rounded-3 overflow-hidden mb-4" style={{ border: "1px solid #E2E8F0" }}>
+                  <div className="d-flex justify-content-between px-3 py-2" style={{ background: "#2563EB", color: "#fff", fontSize: "11px", fontWeight: 700 }}><span>TIME</span><span>STATUS</span><span>RATE</span></div>
+                  {displaySlots.slice(0, 7).map((slot, index) => (
+                    <div key={`${slot.startTime}-${index}`} className="d-flex justify-content-between px-3 py-2 border-top" style={{ fontSize: "12px", background: slot.isBooked ? "#FEF2F2" : "#F0FDF4" }}>
+                      <span>{formatTimeDisplay(slot.startTime, timeFormat)}</span><span>{slot.isBooked ? "Booked" : "Available"}</span><strong>₹{slot.price}</strong>
+                    </div>
+                  ))}
+                  {!displaySlots.length && <div className="p-3 text-muted text-center">No rates for this date.</div>}
+                </div>
 
                 {/* Detail Summary Rows */}
                 <div className="d-flex flex-column gap-3 mb-4">

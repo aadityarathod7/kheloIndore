@@ -50,6 +50,22 @@ const UpdatepersonalTrainer  = () => {
     daily_availability: [],
     categories: [],
     videos: [],
+    sports: [],
+    languages: [],
+    training_mode: "",
+    training_levels: [],
+    age_groups: [],
+    certifications: [],
+    achievements_awards: [],
+    training_formats: [],
+    group_size_max: 15,
+    session_durations: [],
+    availability_options: [],
+    pricing: { price_per_session: "", price_per_hour: "", monthly: "", quarterly: "", yearly: "", trial_session_price: "" },
+    professional_experiences: [],
+    verification_documents: { government_id: [], coaching_certificates: [], sports_qualifications: [], experience_proofs: [] },
+    training_photos: [],
+    certificate_achievement_photos: [],
   });
 
   const LEVEL_OPTIONS = ["Beginner", "Intermediate", "Advanced"];
@@ -70,6 +86,12 @@ const UpdatepersonalTrainer  = () => {
     "Saturday",
     "Sunday",
   ];
+  const LANGUAGE_OPTIONS = ["Hindi", "English", "Marathi"];
+  const TRAINING_MODE_OPTIONS = ["Online", "Offline", "Both"];
+  const AGE_GROUP_OPTIONS = ["Kids", "Teenagers", "Adults", "Seniors"];
+  const TRAINING_FORMAT_OPTIONS = ["Individual Training", "Group Training"];
+  const AVAILABILITY_OPTIONS = ["Online Training", "Morning", "Evening", "Home Training", "Trial Session"];
+  const SESSION_DURATION_OPTIONS = [1, 2, 3];
   const [categories, setCategories] = useState([]);
 
   const fetchCategories = async () => {
@@ -91,6 +113,25 @@ const UpdatepersonalTrainer  = () => {
       };
     });
   };
+  const toggleListValue = (field, value) => {
+    setFormData((prev) => {
+      const current = prev[field] || [];
+      return { ...prev, [field]: current.includes(value) ? current.filter((item) => item !== value) : [...current, value] };
+    });
+  };
+  const handlePricingChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, pricing: { ...prev.pricing, [name]: value } }));
+  };
+  const updateExperience = (index, field, value) => {
+    setFormData((prev) => {
+      const entries = [...(prev.professional_experiences || [])];
+      entries[index] = { ...(entries[index] || {}), [field]: value };
+      return { ...prev, professional_experiences: entries };
+    });
+  };
+  const addExperience = () => setFormData((prev) => ({ ...prev, professional_experiences: [...(prev.professional_experiences || []), {}] }));
+  const removeExperience = (index) => setFormData((prev) => ({ ...prev, professional_experiences: (prev.professional_experiences || []).filter((_, itemIndex) => itemIndex !== index) }));
   const handleSocialChange = (e) => {
     const { name, value } = e.target;
     setFormData({
@@ -265,9 +306,21 @@ const UpdatepersonalTrainer  = () => {
     }
   };
 
+  const isSquareImage = (file) => new Promise((resolve) => {
+    const image = new Image();
+    image.onload = () => { URL.revokeObjectURL(image.src); resolve(image.width === image.height); };
+    image.onerror = () => resolve(false);
+    image.src = URL.createObjectURL(file);
+  });
+
   const handleUploadImage = async (e, type) => {
     const file = e.target.files[0];
     if (!file) return;
+    if (type === "profile" && (!["image/jpeg", "image/png"].includes(file.type) || file.size > 200 * 1024 || !(await isSquareImage(file)))) {
+      Swal.fire({ icon: "error", title: "Invalid profile photo", text: "Use a square JPEG or PNG image under 200 KB." });
+      e.target.value = "";
+      return;
+    }
 
     const formData = new FormData();
     formData.append("uploadFile", file);
@@ -293,6 +346,18 @@ const UpdatepersonalTrainer  = () => {
         setFormData((prevFormData) => ({
           ...prevFormData,
           other_document: [response.data.file_data[0]],
+        }));
+      } else if (type === "trainingPhoto" || type === "certificatePhoto") {
+        const field = type === "trainingPhoto" ? "training_photos" : "certificate_achievement_photos";
+        setFormData((prev) => ({ ...prev, [field]: [...(prev[field] || []), response.data.file_data[0]] }));
+      } else if (["governmentId", "coachingCertificate", "sportsQualification", "experienceProof"].includes(type)) {
+        const documentKey = { governmentId: "government_id", coachingCertificate: "coaching_certificates", sportsQualification: "sports_qualifications", experienceProof: "experience_proofs" }[type];
+        setFormData((prev) => ({
+          ...prev,
+          verification_documents: {
+            ...prev.verification_documents,
+            [documentKey]: [...(prev.verification_documents?.[documentKey] || []), response.data.file_data[0]],
+          },
         }));
       }
     } catch (error) {
@@ -355,7 +420,10 @@ const UpdatepersonalTrainer  = () => {
 
   const getCoachData = async () => {
     try {
-      const response = await axios.get(`${API_URL}/PersonalTraining/fetch/${UpdatepersonalTrainerID._id}`);
+      const response = await axios.get(
+        `${API_URL}/admin/PersonalTraining/fetch/${UpdatepersonalTrainerID._id}`,
+        { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
+      );
       
       setFormData({
         full_name:
@@ -400,6 +468,22 @@ const UpdatepersonalTrainer  = () => {
         daily_availability: response.data.personalTrainer.daily_availability || [],
         categories: response.data.personalTrainer.categories || [],
         videos: response.data.personalTrainer.videos || [],
+        sports: response.data.personalTrainer.sports || response.data.personalTrainer.categories || [],
+        languages: Array.isArray(response.data.personalTrainer.languages) ? response.data.personalTrainer.languages : (response.data.personalTrainer.languages ? [response.data.personalTrainer.languages] : []),
+        training_mode: response.data.personalTrainer.training_mode || "",
+        training_levels: response.data.personalTrainer.training_levels || response.data.personalTrainer.coaching_levels || [],
+        age_groups: response.data.personalTrainer.age_groups || [],
+        certifications: response.data.personalTrainer.certifications || [],
+        achievements_awards: response.data.personalTrainer.achievements_awards || [],
+        training_formats: response.data.personalTrainer.training_formats || [],
+        group_size_max: response.data.personalTrainer.group_size_max || 15,
+        session_durations: response.data.personalTrainer.session_durations || [],
+        availability_options: response.data.personalTrainer.availability_options || [],
+        pricing: response.data.personalTrainer.pricing || { price_per_session: "", price_per_hour: "", monthly: "", quarterly: "", yearly: "", trial_session_price: "" },
+        professional_experiences: response.data.personalTrainer.professional_experiences || [],
+        verification_documents: response.data.personalTrainer.verification_documents || { government_id: [], coaching_certificates: [], sports_qualifications: [], experience_proofs: [] },
+        training_photos: response.data.personalTrainer.training_photos || [],
+        certificate_achievement_photos: response.data.personalTrainer.certificate_achievement_photos || [],
       });
     } catch (error) {
       
@@ -497,6 +581,58 @@ const UpdatepersonalTrainer  = () => {
                 />
               </Form.Group>
             </Col>
+          </Row>
+          <Row className="mt-4">
+            <Col sm={12}><h5>Training profile</h5></Col>
+            <Col sm={6} className="mb-3">
+              <Form.Label>Sports trained (select one or more)</Form.Label>
+              <div className="d-flex flex-wrap gap-2">{options.map(({ value, label }) => <Form.Check key={value} inline type="checkbox" label={label} checked={(formData.sports || []).includes(value)} onChange={() => toggleListValue("sports", value)} />)}</div>
+            </Col>
+            <Col sm={3} className="mb-3">
+              <Form.Label>Languages known</Form.Label>
+              {LANGUAGE_OPTIONS.map((value) => <Form.Check key={value} type="checkbox" label={value} checked={(formData.languages || []).includes(value)} onChange={() => toggleListValue("languages", value)} />)}
+            </Col>
+            <Col sm={3} className="mb-3">
+              <Form.Label>Training mode</Form.Label>
+              <Form.Select name="training_mode" value={formData.training_mode} onChange={handleInputChange}><option value="">Select mode</option>{TRAINING_MODE_OPTIONS.map((value) => <option key={value}>{value}</option>)}</Form.Select>
+            </Col>
+            <Col sm={4} className="mb-3">
+              <Form.Label>Training levels</Form.Label>
+              {LEVEL_OPTIONS.map((value) => <Form.Check key={value} inline type="checkbox" label={value} checked={(formData.training_levels || []).includes(value)} onChange={() => toggleListValue("training_levels", value)} />)}
+            </Col>
+            <Col sm={4} className="mb-3">
+              <Form.Label>Age groups</Form.Label>
+              {AGE_GROUP_OPTIONS.map((value) => <Form.Check key={value} inline type="checkbox" label={value} checked={(formData.age_groups || []).includes(value)} onChange={() => toggleListValue("age_groups", value)} />)}
+            </Col>
+            <Col sm={4} className="mb-3">
+              <Form.Label>Training format</Form.Label>
+              {TRAINING_FORMAT_OPTIONS.map((value) => <Form.Check key={value} inline type="checkbox" label={value} checked={(formData.training_formats || []).includes(value)} onChange={() => toggleListValue("training_formats", value)} />)}
+              {(formData.training_formats || []).includes("Group Training") && <Form.Control className="mt-2" type="number" min="10" max="15" name="group_size_max" value={formData.group_size_max} onChange={handleInputChange} placeholder="Group size (10–15)" />}
+            </Col>
+          </Row>
+          <Row className="mt-3">
+            <Col sm={4}><Form.Label>Session duration (per day)</Form.Label>{SESSION_DURATION_OPTIONS.map((value) => <Form.Check key={value} inline type="checkbox" label={`${value} hour${value > 1 ? "s" : ""}`} checked={(formData.session_durations || []).includes(value)} onChange={() => toggleListValue("session_durations", value)} />)}</Col>
+            <Col sm={8}><Form.Label>Availability</Form.Label>{AVAILABILITY_OPTIONS.map((value) => <Form.Check key={value} inline type="checkbox" label={value} checked={(formData.availability_options || []).includes(value)} onChange={() => toggleListValue("availability_options", value)} />)}</Col>
+          </Row>
+          <Row className="mt-3">
+            <Col sm={12}><h5>Pricing</h5></Col>
+            {[ ["price_per_session", "Price per session"], ["price_per_hour", "Price per hour"], ["monthly", "Monthly package"], ["quarterly", "Quarterly package"], ["yearly", "Yearly package"], ["trial_session_price", "Trial session price"] ].map(([name, label]) => <Col sm={4} className="mb-3" key={name}><Form.Label>{label}</Form.Label><Form.Control type="number" min="0" name={name} value={formData.pricing?.[name] || ""} onChange={handlePricingChange} /></Col>)}
+          </Row>
+          <Row className="mt-3">
+            <Col sm={6}><Form.Label>Certifications (one per line)</Form.Label><Form.Control as="textarea" rows={3} value={(formData.certifications || []).join("\n")} onChange={(e) => setFormData((prev) => ({ ...prev, certifications: e.target.value.split("\n").map((item) => item.trim()).filter(Boolean) }))} /></Col>
+            <Col sm={6}><Form.Label>Achievements / awards (one per line)</Form.Label><Form.Control as="textarea" rows={3} value={(formData.achievements_awards || []).join("\n")} onChange={(e) => setFormData((prev) => ({ ...prev, achievements_awards: e.target.value.split("\n").map((item) => item.trim()).filter(Boolean) }))} /></Col>
+          </Row>
+          <Row className="mt-3">
+            <Col sm={12} className="d-flex justify-content-between align-items-center"><h5 className="mb-0">Experience</h5><button type="button" className="btn btn-outline-primary btn-sm" onClick={addExperience}>Add experience</button></Col>
+            {(formData.professional_experiences || []).map((entry, index) => <Col sm={12} key={index} className="mt-2 p-3 border rounded"><div className="d-flex justify-content-end"><button type="button" className="btn btn-link text-danger p-0" onClick={() => removeExperience(index)}>Remove</button></div><Row>{[["previous_club_or_academy", "Previous club / academy"], ["notable_teams_or_players", "Notable teams / players trained"], ["tournaments_won", "Tournaments won"], ["championships_or_awards", "Championships / awards"], ["years_playing_experience", "Years of playing experience"], ["years_training_experience", "Years of training experience"]].map(([field, label]) => <Col sm={4} className="mb-2" key={field}><Form.Label>{label}</Form.Label><Form.Control type={field.startsWith("years_") ? "number" : "text"} min="0" value={entry[field] || ""} onChange={(e) => updateExperience(index, field, e.target.value)} /></Col>)}</Row></Col>)}
+          </Row>
+          <Row className="mt-3">
+            <Col sm={12}><h5>Verification documents</h5><small className="text-muted">Visible only to Super Admin.</small></Col>
+            {[ ["governmentId", "Government ID"], ["coachingCertificate", "Training / coaching certificate"], ["sportsQualification", "Sports qualification / certification"], ["experienceProof", "Experience proof"] ].map(([type, label]) => <Col sm={3} className="mb-3" key={type}><Form.Label>{label}</Form.Label><Form.Control type="file" accept="image/jpeg,image/png,application/pdf" onChange={(e) => handleUploadImage(e, type)} /></Col>)}
+          </Row>
+          <Row className="mt-3">
+            <Col sm={6}><Form.Label>Training photos</Form.Label><Form.Control type="file" accept="image/jpeg,image/png" multiple onChange={(e) => handleUploadImage(e, "trainingPhoto")} /></Col>
+            <Col sm={6}><Form.Label>Certificate / achievement photos</Form.Label><Form.Control type="file" accept="image/jpeg,image/png" multiple onChange={(e) => handleUploadImage(e, "certificatePhoto")} /></Col>
           </Row>
           <Row className="mt-3">
             <Col sm={4}>
@@ -674,7 +810,6 @@ const UpdatepersonalTrainer  = () => {
                   maxLength={10}
                   value={formData.mobile}
                   onChange={handleInputChange}
-                  disabled={true}
                   onKeyDown={(e) => {
                     // Prevent non-numeric input
                     if (!/[0-9]/.test(e.key) && e.key !== "Backspace") {
@@ -727,7 +862,6 @@ const UpdatepersonalTrainer  = () => {
                   name="email"
                   maxLength={50}
                   value={formData.email}
-                  disabled={true}
                   onChange={handleInputChange}
                   isInvalid={!!errors.email}
                 />

@@ -24,6 +24,7 @@ interface CoachData {
   skills: string;
   bio: string;
   package: any;
+  pricing?: Record<string, number | string>;
   price: number;
   package_type: string;
   name: string;
@@ -132,6 +133,8 @@ const CoachDetail = (props: any) => {
   const coachLocation = getCoachLocation(coachData);
   const specializationsList = getSpecializations(coachData?.specializations);
   const formattedPrice = formatPrice(coachData?.price);
+  const packageRates = Object.entries({ ...(coachData?.package || {}), ...(coachData?.pricing || {}) })
+    .filter(([, value]) => value !== undefined && value !== null && value !== "" && Number(value) > 0);
   const hasCoachDetails = Boolean(
     coachName ||
       coachData?.gender ||
@@ -197,6 +200,8 @@ const CoachDetail = (props: any) => {
 
   const idData = useParams();
   const id = idData.id;
+  const sharedToken = idData.token;
+  const isSharedProfile = Boolean(sharedToken);
 
   const handleItemClick = (index: number) => {
     setSelectedItems((prevSelectedItems) => {
@@ -338,7 +343,13 @@ const CoachDetail = (props: any) => {
 
     const fetchCoacheId = async () => {
       try {
-        const response = await axios.get(`${API_URL}/fetch-coach/${id}`);
+        const profileId = isSharedProfile ? sharedToken : id;
+        const viewKey = `ki-profile-view-coach-${profileId}`;
+        const shouldCountView = !sessionStorage.getItem(viewKey);
+        const response = isSharedProfile
+          ? await axios.get(`${API_URL}/web/coach/shared/${sharedToken}`)
+          : await axios.get(`${API_URL}/${shouldCountView ? "web/fetch-coach" : "fetch-coach"}/${id}`);
+        if (shouldCountView) sessionStorage.setItem(viewKey, "1");
         const coachDataId = response.data.coach;
         setCochData(coachDataId);
       } catch {
@@ -348,7 +359,7 @@ const CoachDetail = (props: any) => {
     fetchCoacheId();
 
     fetchCoaches();
-  }, []);
+  }, [id, isSharedProfile, sharedToken]);
 
   useEffect(() => {
     document.title = coachName ? `${coachName} - Khelo Indore` : "Coach - Khelo Indore";
@@ -1060,8 +1071,9 @@ const CoachDetail = (props: any) => {
                       {coachData?.videos?.length || coachData?.gallery_videos?.length ? (
                         <div className="row g-3">
                           {[...(coachData.videos || []), ...(coachData.gallery_videos || [])].map((video: any, index: number) => {
-                            const isUrl = typeof video === "string" && (video.startsWith("http://") || video.startsWith("https://"));
-                            const videoUrl = isUrl ? video : `${IMG_URL}${video}`;
+                            const videoPath = typeof video === "object" ? (video.src || video.url || "") : video;
+                            const isUrl = typeof videoPath === "string" && (videoPath.startsWith("http://") || videoPath.startsWith("https://"));
+                            const videoUrl = isUrl ? videoPath : `${IMG_URL}${videoPath}`;
                             return (
                               <div className="col-12 col-md-6" key={index}>
                                 <div className="card h-100 p-2 text-center" style={{ borderRadius: "12px", border: "1px solid #E2E8F0", overflow: "hidden" }}>
@@ -1088,6 +1100,32 @@ const CoachDetail = (props: any) => {
                       ) : (
                         <p className="mb-0 text-muted">No videos uploaded yet.</p>
                       )}
+                    </div>
+                  </div>
+                </div>
+                <div className="accordion-item mb-4" id="gallery">
+                  <h4 className="accordion-header" id="panelsStayOpen-gallery">
+                    <button
+                      className={`accordion-button ${activeSection === "gallery" ? "" : "collapsed"}`}
+                      type="button"
+                      aria-expanded={activeSection === "gallery"}
+                      aria-controls="panelsStayOpen-gallery-collapse"
+                      onClick={() => setActiveSection(activeSection === "gallery" ? "" : "gallery")}
+                    >
+                      Training Photos
+                    </button>
+                  </h4>
+                  <div id="panelsStayOpen-gallery-collapse" className={`accordion-collapse collapse ${activeSection === "gallery" ? "show" : ""}`} aria-labelledby="panelsStayOpen-gallery">
+                    <div className="accordion-body">
+                      {coachData?.gallery?.length ? (
+                        <div className="row g-3">
+                          {coachData.gallery.map((image: any, index: number) => {
+                            const imagePath = typeof image === "object" ? (image.src || image.url || "") : image;
+                            const imageUrl = imagePath?.startsWith("http") ? imagePath : `${IMG_URL}${imagePath}`;
+                            return <div className="col-6 col-md-4" key={index}><img src={imageUrl} alt={`Training ${index + 1}`} className="w-100 rounded" style={{ height: 180, objectFit: "cover" }} /></div>;
+                          })}
+                        </div>
+                      ) : <p className="mb-0 text-muted">No training photos uploaded yet.</p>}
                     </div>
                   </div>
                 </div>
@@ -1771,15 +1809,13 @@ const CoachDetail = (props: any) => {
                     )}
                   </div>
                   {/* Packages before Book Now */}
-                  {coachData?.package && (Object.values(coachData.package).some((v: any) => v) || coachData.package_type) ? (
+                  {(packageRates.length > 0 || coachData?.package_type) ? (
                     <div className="mt-3">
                       <p className="mb-2 fw-bold" style={{ fontSize: "13px", color: "#475569" }}>
                         <i className="feather-gift me-1" style={{ color: "#16A34A" }} /> Packages
                       </p>
                       <div className="d-flex flex-column gap-2">
-                        {(Object.keys(coachData.package || {}) as string[]).map((key) => {
-                          const val = coachData.package[key];
-                          if (!val) return null;
+                        {packageRates.map(([key, val]) => {
                           return (
                             <div
                               key={key}

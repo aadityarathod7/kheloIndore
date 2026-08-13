@@ -4,23 +4,22 @@ import AOS from "aos";
 import "aos/dist/aos.css";
 import ImageWithBasePath from "../../core/data/img/ImageWithBasePath";
 import { all_routes } from "../router/all_routes";
+import axios from "axios";
+import { API_URL } from "../../ApiUrl";
 
 const Footer = () => {
   const routes = all_routes;
   const loginToken = localStorage.getItem("token");
   const location = useLocation();
   const [showAllSports, setShowAllSports] = useState(false);
-  const [showAllLocations, setShowAllLocations] = useState(false);
+  const [showAllCategories, setShowAllCategories] = useState(false);
+  const [categories, setCategories] = useState<string[]>([]);
   // Re-evaluated on every route change so the bottom nav reflects login/logout
   // without requiring a full page reload.
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(Boolean(localStorage.getItem("token")));
   const sports = [
     "Cricket Turfs", "Badminton Courts", "Football Grounds", "Swimming Pools", "Pickleball Courts", "Tennis Courts",
     "Basketball Courts", "Table Tennis", "Volleyball", "Squash Courts", "Box Cricket", "Kabaddi", "Hockey", "Running", "Cycling", "Gym & Fitness",
-  ];
-  const popularLocations = [
-    "Vijay Nagar", "Palasia", "Bhawarkuan", "Rajendra Nagar", "Navlakha", "LIG Square",
-    "Bengali Square", "Annapurna Road", "Mahalaxmi Nagar", "Rau", "Super Corridor", "Nipania", "Kanadia Road", "Khajrana", "Scheme 54", "Sudama Nagar", "AB Road", "Tilak Nagar", "Sukhliya", "Geeta Bhawan", "Saket Nagar", "Ring Road",
   ];
 
   useEffect(() => {
@@ -31,12 +30,18 @@ const Footer = () => {
     setIsLoggedIn(Boolean(localStorage.getItem("token")));
   }, [location.pathname]);
 
+  useEffect(() => {
+    axios.get(`${API_URL}/category/fetch`)
+      .then(({ data }) => setCategories((data.categories || []).map((category: any) => category.category_name).filter(Boolean)))
+      .catch(() => setCategories([]));
+  }, []);
+
   return (
     <footer className="footer">
       <div className="container">
         <div className="footer-top">
           <div className="row g-4 g-xl-5">
-            <div className="col-lg-4 col-md-6">
+            <div className="col-lg-3 col-md-6">
               <div className="footer-widget footer-about">
                 <Link to="/" className="footer-logo" aria-label="Khelo Indore home">
                   <ImageWithBasePath
@@ -93,7 +98,7 @@ const Footer = () => {
               </div>
             </div>
 
-            <div className="col-lg-2 col-md-3 col-6">
+            <div className="col-lg-3 col-md-6 col-6">
               <div className="footer-widget footer-menu">
                 <h4 className="footer-title">Explore</h4>
                 <ul>
@@ -116,7 +121,7 @@ const Footer = () => {
               </div>
             </div>
 
-            <div className="col-lg-2 col-md-3 col-6">
+            <div className="col-lg-3 col-md-6 col-6">
               <div className="footer-widget footer-menu">
                 <h4 className="footer-title">Sports</h4>
                 <ul>
@@ -134,20 +139,20 @@ const Footer = () => {
               </div>
             </div>
 
-            <div className="col-lg-4 col-md-6">
+            <div className="col-lg-3 col-md-6 col-6">
               <div className="footer-widget footer-menu">
-                <h4 className="footer-title">Popular locations</h4>
-                <ul className="footer-location-list">
-                  {popularLocations.slice(0, showAllLocations ? popularLocations.length : 6).map((area) => (
-                    <li key={area}>
-                      <Link to={`/sports-venue?location=${encodeURIComponent(area)}`}>{area}</Link>
+                <h4 className="footer-title">Top Categories</h4>
+                <ul className="footer-category-list">
+                  {categories.slice(0, showAllCategories ? categories.length : 6).map((category) => (
+                    <li key={category}>
+                      <Link to={`/sports-venue?search=${encodeURIComponent(category)}`}>{category}</Link>
                     </li>
                   ))}
-                  <li>
-                    <button type="button" className="footer-load-more" onClick={() => setShowAllLocations((current) => !current)} aria-expanded={showAllLocations}>
-                      {showAllLocations ? "Show less" : `+${popularLocations.length - 6} more`}
+                  {categories.length > 6 && <li>
+                    <button type="button" className="footer-load-more" onClick={() => setShowAllCategories((current) => !current)} aria-expanded={showAllCategories}>
+                      {showAllCategories ? "Show less" : `+${categories.length - 6} more`}
                     </button>
-                  </li>
+                  </li>}
                 </ul>
               </div>
             </div>

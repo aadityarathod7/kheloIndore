@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { MenuFoldOutlined, MenuUnfoldOutlined, LogoutOutlined, BellOutlined, MenuOutlined } from "@ant-design/icons";
 import {
   AiOutlineDashboard,
@@ -10,19 +10,23 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Outlet } from "react-router-dom";
 import { BiCategoryAlt } from "react-icons/bi";
-import { Layout, Menu, theme } from "antd";
+import { Layout, Menu, theme, Popover, Badge, List, Button } from "antd";
 import { useNavigate } from "react-router-dom";
 import { faUser } from '@fortawesome/free-solid-svg-icons';
 import logoImage from "../Khelo Indore Logo/Group 86.png";
 import Userlogo from "../Khelo Indore Logo/dashboard_user.jpg";
 import '../../src/MainLayout.css'
+import axios from "axios";
+import { API_URL } from "../utils/ApiUrl";
 
 const { Header, Sider, Content, Footer } = Layout;
 
 
 const MainLayout = () => {
   const [collapsed, setCollapsed] = useState(false);
-  const [isNewNotification, setIsNewNotification] = useState(false);
+  const [bookings, setBookings] = useState([]);
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(false);
   const {
     token: { colorBgContainer },
   } = theme.useToken();
@@ -34,11 +38,107 @@ const MainLayout = () => {
     navigate('/');
   };
 
-  // Function to handle new notifications
-  const handleNewNotification = () => {
-    setIsNewNotification(true);
-    toast.success("New notification received!"); 
+  const fetchPendingBookings = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+    try {
+      setLoading(true);
+      const response = await axios.get(`${API_URL}/get/booking/my`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      if (response.data && response.data.success) {
+        const pending = (response.data.data || []).filter(b => b.info && b.info.verification_status === 0);
+        setBookings(pending);
+      } else {
+        setBookings([]);
+      }
+    } catch (err) {
+      setBookings([]);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  useEffect(() => {
+    fetchPendingBookings();
+    const interval = setInterval(fetchPendingBookings, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+    const loadNotifications = () => axios.get(`${API_URL}/notifications/me`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(({ data }) => setNotifications(data.notifications || []))
+      .catch(() => setNotifications([]));
+    loadNotifications();
+    const interval = setInterval(loadNotifications, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleVerifyBooking = async (bookingId, verifyStatus) => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+    try {
+      const response = await axios.put(`${API_URL}/verify/booking/status/${bookingId}/${verifyStatus}`, {}, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      if (response.data.success) {
+        toast.success(`Booking ${verifyStatus === 1 ? 'Approved' : 'Rejected'} successfully!`);
+        fetchPendingBookings();
+      } else {
+        toast.error(response.data.message || "Failed to update booking status");
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || "An error occurred");
+    }
+  };
+
+  const notificationContent = (
+    <div style={{ width: 320, maxHeight: 400, overflowY: "auto" }}>
+      <List
+        loading={loading}
+        dataSource={[...notifications, ...bookings]}
+        renderItem={(item) => {
+          if (!item.info) return <List.Item><div><strong>{item.title}</strong><div className="text-muted small">{item.message}</div></div></List.Item>;
+          const customerName = item.info?.user_id 
+            ? `${item.info.user_id.first_name} ${item.info.user_id.last_name}`
+            : "Customer";
+          const venueName = item.info?.venue_id?.name || "Venue";
+          const bookingDate = item.info?.date ? new Date(item.info.date).toLocaleDateString('en-IN') : "";
+          const slotsStr = (item.slots || []).map(s => `${s.startTime}-${s.endTime}`).join(", ");
+          
+          return (
+            <List.Item style={{ padding: "12px 8px" }}>
+              <div style={{ width: "100%" }}>
+                <div className="d-flex justify-content-between align-items-start">
+                  <strong>{customerName}</strong>
+                  <span className="text-muted" style={{ fontSize: "12px" }}>₹{item.info?.total_price || item.info?.price}</span>
+                </div>
+                <div style={{ fontSize: "13px", margin: "4px 0" }}>
+                  <div>{venueName}</div>
+                  <div className="text-muted" style={{ fontSize: "12px" }}>Date: {bookingDate} | Slots: {slotsStr}</div>
+                </div>
+                <div className="d-flex gap-2 justify-content-end mt-2">
+                  <Button size="small" type="primary" onClick={() => handleVerifyBooking(item.info?._id, 1)}>
+                    Approve
+                  </Button>
+                  <Button size="small" danger onClick={() => handleVerifyBooking(item.info?._id, 2)}>
+                    Reject
+                  </Button>
+                </div>
+              </div>
+            </List.Item>
+          );
+        }}
+        locale={{ emptyText: "No pending booking requests" }}
+      />
+    </div>
+  );
 
   return (
     <Layout /* onContextMenu={(e) => e.preventDefault()} */>
@@ -120,9 +220,17 @@ const MainLayout = () => {
             <div className="d-flex gap-3 align-items-center dropdown">
               
               {/* Notification alert.... */}
-              <div style={{ position: 'relative' }}>
-                <BellOutlined className="notification" onClick={handleNewNotification} />
-                {isNewNotification && <span className="badge bg-danger rounded-circle p-1" style={{ position: 'absolute' , right: '-1px'}}>1</span>}
+              <div style={{ position: 'relative', cursor: 'pointer' }}>
+                <Popover
+                  content={notificationContent}
+                  title="Booking Requests"
+                  trigger="click"
+                  placement="bottomRight"
+                >
+                  <Badge count={bookings.length}>
+                    <BellOutlined className="notification" style={{ fontSize: "20px", color: "rgb(255, 95, 21)" }} />
+                  </Badge>
+                </Popover>
               </div>
 
               <div

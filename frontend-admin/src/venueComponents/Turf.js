@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Container, Row, Col, Form } from "react-bootstrap";
+import { Col, Form } from "react-bootstrap";
 function Turf({ onChange, vendorDetails, errors }) {
   const [turf, setTurf] = useState({
     total_area_in_sq_feet: "",
@@ -7,6 +7,9 @@ function Turf({ onChange, vendorDetails, errors }) {
     height_in_feet: "",
     width_in_feet: "",
     surface_type: "",
+    size: "",
+    grass_type: "",
+    dimension: "",
   });
 
   useEffect(() => {
@@ -17,41 +20,27 @@ function Turf({ onChange, vendorDetails, errors }) {
         height_in_feet: vendorDetails.height_in_feet || "",
         width_in_feet: vendorDetails.width_in_feet || "",
         surface_type: vendorDetails.surface_type || "",
+        size: vendorDetails.size || "",
+        grass_type: vendorDetails.grass_type || "",
+        dimension: vendorDetails.dimension || "",
       });
     }
   }, [vendorDetails]);
 
   function handleChange(event) {
     const { name, value } = event.target;
-    setTurf({
+    const updated = {
       ...turf,
       [name]: value,
-    });
-    onChange({ ...turf, [name]: value });
+    };
+    setTurf(updated);
+    onChange(updated);
   }
 
   return (
     <>
       <hr></hr>
       <Col md={4}>
-        {/* <Form.Group controlId="formTurfNumberOfTurfs" className="mb-2">
-          <Form.Label className="heading">
-            Number of Turfs  <span style={{ color: "red" }}>*</span>
-          </Form.Label>
-          <Form.Control
-            type="tel"
-            placeholder="Enter Number Of Turfs"
-            name="number_of_turfs"
-            value={turf.number_of_turfs}
-            onChange={handleChange}
-            maxLength={2}
-            onInput={(e) => {
-              e.target.value = e.target.value.replace(/[^0-9]/g, "");
-            }}
-          
-          />
-        </Form.Group> */}
-
         <Form.Group controlId="formTotalAreaSquareFeet" className="mb-2">
           <Form.Label className="heading">
             Total Area (Square Feet) <span style={{ color: "red" }}>*</span>
@@ -71,7 +60,8 @@ function Turf({ onChange, vendorDetails, errors }) {
             {errors?.total_area_in_sq_feet}
           </Form.Control.Feedback>
         </Form.Group>
-        <Form.Group controlId="formHeightInFeet">
+        
+        <Form.Group controlId="formHeightInFeet" className="mb-2">
           <Form.Label className="heading">
             Height (in feet) <span style={{ color: "red" }}>*</span>
           </Form.Label>
@@ -81,7 +71,6 @@ function Turf({ onChange, vendorDetails, errors }) {
             name="height_in_feet"
             value={turf.height_in_feet}
             onChange={handleChange}
-            // maxLength={2}
             onInput={(e) => {
               e.target.value = e.target.value.replace(/[^0-9]/g, "");
             }}
@@ -89,6 +78,29 @@ function Turf({ onChange, vendorDetails, errors }) {
           />
           <Form.Control.Feedback type="invalid">
             {errors?.height_in_feet}
+          </Form.Control.Feedback>
+        </Form.Group>
+
+        <Form.Group controlId="formTurfSize" className="mb-2">
+          <Form.Label className="heading">
+            Turf Size <span style={{ color: "red" }}>*</span>
+          </Form.Label>
+          <Form.Control
+            as="select"
+            name="size"
+            value={turf.size}
+            onChange={handleChange}
+            isInvalid={!!errors?.size}
+          >
+            <option value="">Select Turf Size</option>
+            <option value="5v5">5v5</option>
+            <option value="7v7">7v7</option>
+            <option value="9v9">9v9</option>
+            <option value="11v11">11v11</option>
+            <option value="Other">Other</option>
+          </Form.Control>
+          <Form.Control.Feedback type="invalid">
+            {errors?.size}
           </Form.Control.Feedback>
         </Form.Group>
       </Col>
@@ -104,7 +116,6 @@ function Turf({ onChange, vendorDetails, errors }) {
             name="length_in_feet"
             value={turf.length_in_feet}
             onChange={handleChange}
-            // maxLength={2}
             onInput={(e) => {
               e.target.value = e.target.value.replace(/[^0-9]/g, "");
             }}
@@ -114,7 +125,8 @@ function Turf({ onChange, vendorDetails, errors }) {
             {errors?.length_in_feet}
           </Form.Control.Feedback>
         </Form.Group>
-        <Form.Group controlId="formSurfaceType">
+        
+        <Form.Group controlId="formSurfaceType" className="mb-2">
           <Form.Label className="heading">
             Surface Type <span style={{ color: "red" }}>*</span>
           </Form.Label>
@@ -136,6 +148,28 @@ function Turf({ onChange, vendorDetails, errors }) {
             {errors?.surface_type}
           </Form.Control.Feedback>
         </Form.Group>
+
+        <Form.Group controlId="formGrassType" className="mb-2">
+          <Form.Label className="heading">
+            Grass Type <span style={{ color: "red" }}>*</span>
+          </Form.Label>
+          <Form.Control
+            as="select"
+            name="grass_type"
+            value={turf.grass_type}
+            onChange={handleChange}
+            isInvalid={!!errors?.grass_type}
+          >
+            <option value="">Select Grass Type</option>
+            <option value="Artificial Grass">Artificial Grass</option>
+            <option value="Natural Grass">Natural Grass</option>
+            <option value="Hybrid Grass">Hybrid Grass</option>
+            <option value="Other">Other</option>
+          </Form.Control>
+          <Form.Control.Feedback type="invalid">
+            {errors?.grass_type}
+          </Form.Control.Feedback>
+        </Form.Group>
       </Col>
 
       <Col md={4}>
@@ -149,7 +183,6 @@ function Turf({ onChange, vendorDetails, errors }) {
             name="width_in_feet"
             value={turf.width_in_feet}
             onChange={handleChange}
-            // maxLength={2}
             onInput={(e) => {
               e.target.value = e.target.value.replace(/[^0-9]/g, "");
             }}
@@ -157,6 +190,23 @@ function Turf({ onChange, vendorDetails, errors }) {
           />
           <Form.Control.Feedback type="invalid">
             {errors?.width_in_feet}
+          </Form.Control.Feedback>
+        </Form.Group>
+
+        <Form.Group controlId="formDimension" className="mb-2">
+          <Form.Label className="heading">
+            Dimension (e.g. 100x70 ft) <span style={{ color: "red" }}>*</span>
+          </Form.Label>
+          <Form.Control
+            type="text"
+            placeholder="Enter Dimension (e.g. 100x70 ft)"
+            name="dimension"
+            value={turf.dimension}
+            onChange={handleChange}
+            isInvalid={!!errors?.dimension}
+          />
+          <Form.Control.Feedback type="invalid">
+            {errors?.dimension}
           </Form.Control.Feedback>
         </Form.Group>
       </Col>

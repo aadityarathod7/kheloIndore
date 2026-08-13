@@ -962,16 +962,24 @@
     }
 }
 
-// Vertical transition used when the top-rated provider category changes.
+// 3D card flip used when the top-rated provider data rotates.
 .top-provider-rotation {
-    animation: top-provider-slide-in 450ms ease-out both;
+    perspective: 1400px;
 }
 
 .top-provider-card {
     height: auto !important;
     min-height: 0 !important;
     margin: 0 !important;
+    animation: top-provider-card-flip 3000ms cubic-bezier(0.22, 0.8, 0.2, 1) both !important;
+    backface-visibility: hidden;
+    transform-origin: center center;
+    transform-style: preserve-3d;
+    will-change: opacity, transform;
 }
+
+.top-provider-card--coach { animation-delay: 140ms !important; }
+.top-provider-card--trainer { animation-delay: 280ms !important; }
 
 // The legacy individual provider sections are replaced by the mixed three-column row.
 .top-providers-section ~ .top-providers-section,
@@ -980,15 +988,9 @@
     display: none;
 }
 
-@keyframes top-provider-slide-in {
-    from {
-        opacity: 0;
-        transform: translateY(28px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+@keyframes top-provider-card-flip {
+    from { opacity: 0; transform: rotateX(90deg) scale(0.94); }
+    to { opacity: 1; transform: rotateX(0) scale(1); }
 }
 .featured-slider-group {
     padding: 15px 15px 20px;

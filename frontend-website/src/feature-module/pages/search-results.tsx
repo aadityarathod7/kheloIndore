@@ -298,7 +298,7 @@ const SearchResults: React.FC = () => {
 
                       <div className="d-flex align-items-center justify-content-between pt-2" style={{ borderTop: "1px solid #F1F5F9" }}>
                         <span style={{ fontSize: "16px", fontWeight: "800", color: "#17222D" }}>
-                          ₹{venue.price_per_hr || "750"} <span style={{ fontSize: "11px", fontWeight: "normal", color: "#606D76" }}>/hr</span>
+                          {Number(venue.price_per_hr) > 0 ? <>₹{venue.price_per_hr} <span style={{ fontSize: "11px", fontWeight: "normal", color: "#606D76" }}>/hr</span></> : "Contact venue"}
                         </span>
                         <Link
                           to={`/sports-venue/${venue.vendor_type ? venue.vendor_type.replace(/\s+/g, "-").toLowerCase() : "venue"}/${venue.name.replace(/\s+/g, "-").toLowerCase()}/${venue._id}`}
