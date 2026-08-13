@@ -1068,8 +1068,7 @@ exports.venueVerifyBySuperAdmin = async (req, res) => {
       type: "venue_approval_result",
       entity_id: verifyVenue._id,
     });
-
-    return res.status(200).json({
+return res.status(200).json({
       status: 200,
       success: true,
       message: "Venue verification status updated successfully",

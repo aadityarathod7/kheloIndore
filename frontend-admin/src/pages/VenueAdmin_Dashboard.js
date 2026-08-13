@@ -67,7 +67,7 @@ const MainLayout = () => {
     return () => clearInterval(interval);
   }, []);
 
-  useEffect(() => {
+useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) return;
     const loadNotifications = () => axios.get(`${API_URL}/notifications/me`, { headers: { Authorization: `Bearer ${token}` } })
@@ -77,7 +77,6 @@ const MainLayout = () => {
     const interval = setInterval(loadNotifications, 30000);
     return () => clearInterval(interval);
   }, []);
-
   const handleVerifyBooking = async (bookingId, verifyStatus) => {
     const token = localStorage.getItem("token");
     if (!token) return;
@@ -105,6 +104,8 @@ const MainLayout = () => {
         dataSource={[...notifications, ...bookings]}
         renderItem={(item) => {
           if (!item.info) return <List.Item><div><strong>{item.title}</strong><div className="text-muted small">{item.message}</div></div></List.Item>;
+        dataSource={bookings}
+        renderItem={(item) => {
           const customerName = item.info?.user_id 
             ? `${item.info.user_id.first_name} ${item.info.user_id.last_name}`
             : "Customer";
