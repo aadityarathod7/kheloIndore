@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import axios from "axios";
 import { API_URL, IMG_URL } from "../../ApiUrl";
 import Loader from "../loader/loader";
+import { getCategoryIcon, getCategoryStyle } from "../../utils/categoryVisual";
 
 const getCategoryImage = (imgStr?: string, categoryName = "") => {
   const name = categoryName.toLowerCase().trim();
@@ -223,6 +224,7 @@ const CoachesCategory = () => {
                         />
                         
                         {/* Category Info */}
+                        <div className="position-absolute top-0 start-0 m-3 rounded-circle d-flex align-items-center justify-content-center" style={{ width: 48, height: 48, ...getCategoryStyle(cat.name) }}><i className={getCategoryIcon(cat.name)} style={{ fontSize: 20 }} /></div>
                         <div className="position-absolute bottom-0 start-0 p-4 text-start">
                           <h3 className="ki-category-title">
                             {cat.name}

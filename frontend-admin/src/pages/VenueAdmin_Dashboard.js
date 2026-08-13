@@ -25,6 +25,7 @@ const { Header, Sider, Content, Footer } = Layout;
 const MainLayout = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [bookings, setBookings] = useState([]);
+  const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(false);
   const {
     token: { colorBgContainer },
@@ -66,6 +67,16 @@ const MainLayout = () => {
     return () => clearInterval(interval);
   }, []);
 
+useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+    const loadNotifications = () => axios.get(`${API_URL}/notifications/me`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(({ data }) => setNotifications(data.notifications || []))
+      .catch(() => setNotifications([]));
+    loadNotifications();
+    const interval = setInterval(loadNotifications, 30000);
+    return () => clearInterval(interval);
+  }, []);
   const handleVerifyBooking = async (bookingId, verifyStatus) => {
     const token = localStorage.getItem("token");
     if (!token) return;
@@ -90,6 +101,9 @@ const MainLayout = () => {
     <div style={{ width: 320, maxHeight: 400, overflowY: "auto" }}>
       <List
         loading={loading}
+        dataSource={[...notifications, ...bookings]}
+        renderItem={(item) => {
+          if (!item.info) return <List.Item><div><strong>{item.title}</strong><div className="text-muted small">{item.message}</div></div></List.Item>;
         dataSource={bookings}
         renderItem={(item) => {
           const customerName = item.info?.user_id 

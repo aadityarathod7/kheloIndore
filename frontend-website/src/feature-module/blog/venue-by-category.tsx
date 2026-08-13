@@ -23,7 +23,17 @@ interface Venues {
   description: any;
   gameType?: string;
   sports_details?: { sport?: string; size?: string; price_per_hr?: number }[];
+  price_per_hr?: number;
 }
+
+const venueHourlyRate = (venue: Venues): number | null => {
+  const sport = String(venue.vendor_type || venue.gameType || venue.category || "").replace(/[_-]/g, " ").trim().toLowerCase();
+  const sportRate = (venue.sports_details || []).find((item) =>
+    String(item.sport || "").replace(/[_-]/g, " ").trim().toLowerCase() === sport && Number(item.price_per_hr) > 0
+  )?.price_per_hr;
+  const rate = Number(sportRate ?? venue.price_per_hr);
+  return Number.isFinite(rate) && rate > 0 ? rate : null;
+};
 
 interface DropdownOption {
   value: string;
@@ -1263,7 +1273,7 @@ export default function VenueByCategory() {
                         <div className="d-flex align-items-center justify-content-between mb-2" style={{ fontSize: "12px" }}>
                           <div className="rating-wrap d-flex align-items-center gap-1">
                             <i className="fas fa-star text-warning" style={{ fontSize: "11px" }} />
-                            <span style={{ fontSize: "12px", fontWeight: "700", color: "#17222D" }}>4.8</span>
+                            <span style={{ fontSize: "12px", fontWeight: "700", color: "#17222D" }}>{Number(venue.rating) > 0 ? Number(venue.rating).toFixed(1) : "New"}</span>
                           </div>
                           <span style={{ fontSize: "12px", color: "#606D76", fontWeight: "600" }}>
                             <i className="feather-grid me-1" style={{ color: "#3CAB4B", fontSize: "11px" }} />
@@ -1305,7 +1315,7 @@ export default function VenueByCategory() {
                         {/* Price & Book Button */}
                         <div className="d-flex align-items-center justify-content-between pt-2" style={{ borderTop: "1px solid #F1F5F9" }}>
                           <span style={{ fontSize: "16px", fontWeight: "800", color: "#17222D" }}>
-                            {"\u20B9"}{venue.price_per_hr || "750"} <span style={{ fontSize: "11px", fontWeight: "normal", color: "#606D76" }}>/hr</span>
+                            {venueHourlyRate(venue) !== null ? <>{"\u20B9"}{venueHourlyRate(venue)} <span style={{ fontSize: "11px", fontWeight: "normal", color: "#606D76" }}>/hr</span></> : "Contact venue"}
                           </span>
                           <Link 
                             to={`/sports-venue/${venue.vendor_type ? venue.vendor_type.replace(/\s+/g, "-").toLowerCase() : "venue"}/${venue.name.replace(/\s+/g, "-").toLowerCase()}/${venue._id}`}

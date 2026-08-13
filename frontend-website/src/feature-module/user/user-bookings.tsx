@@ -4,7 +4,6 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import ImageWithBasePath from "../../core/data/img/ImageWithBasePath";
 import { allCourt } from "../../core/data/interface/model";
-import { userbookingdata } from "../../core/data/json/user_bookingdata";
 import { all_routes } from "../router/all_routes";
 import { Dropdown } from "primereact/dropdown";
 import axios from "axios";
@@ -341,8 +340,8 @@ const UserBookings = () => {
   const cancelVenueBooking = async (bookingData: { id: string }) => {
 
     const { value: confirm } = await Swal.fire({
-      title: 'Are you sure?',
-      text: "Do you really want to cancel this booking?",
+      title: 'Cancel booking?',
+      html: '<p class="mb-2">Partial payments are non-refundable.</p><p class="mb-0">For a full payment cancelled at least 4 hours before the booking time, 25% is deducted and 75% is refunded.</p>',
       icon: 'warning',
       showCancelButton: true,
       confirmButtonText: 'Yes',
@@ -394,8 +393,8 @@ const UserBookings = () => {
 
   const cancelCoachBooking = async (bookingData: { id: string }) => {
     const { value: confirm } = await Swal.fire({
-      title: 'Are you sure?',
-      text: "Do you really want to cancel this booking?",
+      title: 'Cancel booking?',
+      html: '<p class="mb-2">Partial payments are non-refundable.</p><p class="mb-0">For a full payment cancelled at least 4 hours before the booking time, 25% is deducted and 75% is refunded.</p>',
       icon: 'warning',
       showCancelButton: true,
       confirmButtonText: 'Yes',
@@ -446,8 +445,8 @@ const UserBookings = () => {
 
   const cancelTrainerBooking = async (bookingData: { id: string }) => {
     const { value: confirm } = await Swal.fire({
-      title: 'Are you sure?',
-      text: "Do you really want to cancel this booking?",
+      title: 'Cancel booking?',
+      html: '<p class="mb-2">Partial payments are non-refundable.</p><p class="mb-0">For a full payment cancelled at least 4 hours before the booking time, 25% is deducted and 75% is refunded.</p>',
       icon: 'warning',
       showCancelButton: true,
       confirmButtonText: 'Yes',

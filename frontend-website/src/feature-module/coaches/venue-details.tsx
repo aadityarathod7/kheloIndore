@@ -957,7 +957,7 @@ const VenueDetails = () => {
                           <i className="fas fa-rupee-sign" style={{ fontSize: "16px" }} />
                         </div>
                         <span className="spec-label">Price</span>
-                        <span className="spec-value text-truncate">₹{venueData?.price_per_hr || 1000} / hr</span>
+                        <span className="spec-value text-truncate">{Number(venueData?.price_per_hr) > 0 ? `₹${venueData.price_per_hr} / hr` : "Contact venue"}</span>
                       </div>
                     </div>
 
@@ -1034,7 +1034,7 @@ const VenueDetails = () => {
                         <div>
                           <span className="pricing-label-text d-block mb-1">Price Starting From</span>
                           <div className="d-flex align-items-baseline justify-content-center gap-1">
-                            <span className="pricing-amount-text">₹{venueData?.price_per_hr || 1000}</span>
+                            <span className="pricing-amount-text">{Number(venueData?.price_per_hr) > 0 ? `₹${venueData.price_per_hr}` : "Contact venue"}</span>
                             <span className="pricing-unit-text">/ hour</span>
                           </div>
                         </div>

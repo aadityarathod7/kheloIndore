@@ -19,7 +19,7 @@ const AddPT = () => {
     last_name: "",
     gender: "",
     age: "",
-    languages: "",
+    languages: [],
     email: "",
     mobile: "",
     location: {
@@ -38,6 +38,7 @@ const AddPT = () => {
     specializations: [],
     profile_picture: [],
     gallery: [],
+    videos: [],
     bio: "",
     status: true,
     // ---- Extended profile fields ----
@@ -45,6 +46,7 @@ const AddPT = () => {
     own_level: "",
     response_time: "",
     class_location: "",
+    training_mode: "",
     students_trained: 0,
     social_media: {
       facebook: "",
@@ -127,6 +129,7 @@ const AddPT = () => {
   const [categories, setCategories] = useState([]);
   const fileInputRefProfile = useRef(null);
   const fileInputRefGallery = useRef(null);
+  const fileInputRefVideo = useRef(null);
 
   const handleChange = (e) => {
     if (e.name === "zipcode" || e.name === "address") {
@@ -183,6 +186,16 @@ const AddPT = () => {
     }));
   };
 
+  const handleFileInputChangeVideo = (e) => {
+    const files = Array.from(e.target.files || []).filter((file) =>
+      file.type.startsWith("video/")
+    );
+    setFormData((prevState) => ({
+      ...prevState,
+      videos: [...prevState.videos, ...files],
+    }));
+  };
+
   const handleRemovePhoto = (index) => {
     setFormData((prevState) => ({
       ...prevState,
@@ -194,6 +207,13 @@ const AddPT = () => {
     setFormData((prevState) => ({
       ...prevState,
       gallery: prevState.gallery.filter((_, i) => i !== index),
+    }));
+  };
+
+  const handleRemoveVideo = (index) => {
+    setFormData((prevState) => ({
+      ...prevState,
+      videos: prevState.videos.filter((_, i) => i !== index),
     }));
   };
 
@@ -224,6 +244,9 @@ const AddPT = () => {
   };
 
   const uploadImage = async (fileArray) => {
+    if (!fileArray?.length) {
+      return { data: { file_data: [] } };
+    }
     try {
       const formDataForUpload = new FormData();
       fileArray.forEach((file, index) => {
@@ -256,6 +279,11 @@ const AddPT = () => {
     fileInputRefGallery.current.click();
   };
 
+  const handleButtonClickVideo = (e) => {
+    e.preventDefault();
+    fileInputRefVideo.current.click();
+  };
+
   const handleCancel = () => {
     navigate("/personal-training");
   };
@@ -265,15 +293,18 @@ const AddPT = () => {
     try {
       const uploadResponses = await uploadImage(formData.profile_picture);
       const uploadResponses_gallery = await uploadImage(formData.gallery);
-      if (uploadResponses && uploadResponses_gallery) {
+      const uploadResponses_videos = await uploadImage(formData.videos);
+      if (uploadResponses && uploadResponses_gallery && uploadResponses_videos) {
         const profile_picture = uploadResponses.data.file_data;
         const gallery = uploadResponses_gallery.data.file_data;
+        const videos = uploadResponses_videos.data.file_data;
         const response = await axios.post(
           `${API_URL}/PersonalTraining/create`,
           {
             ...formData,
             profile_picture,
             gallery,
+            videos,
           },
           {
             headers: {
@@ -422,16 +453,21 @@ const AddPT = () => {
           </Row>
           <Row>
             <Col sm={3}>
-              <h6>Language</h6>
-              <LanguageSelect
-                autoComplete="off"
-                value={formData.languages}
-                onChange={(e) => {
-                  setFormData({ ...formData, languages: e.name });
-                  setlanguages(e.id);
-                }}
-                placeHolder="Select Language"
-              />
+              <h6>Languages Known</h6>
+              {["Hindi", "English", "Marathi"].map((language) => (
+                <Form.Check
+                  key={language}
+                  type="checkbox"
+                  label={language}
+                  checked={(formData.languages || []).includes(language)}
+                  onChange={() => setFormData((current) => ({
+                    ...current,
+                    languages: (current.languages || []).includes(language)
+                      ? current.languages.filter((item) => item !== language)
+                      : [...(current.languages || []), language],
+                  }))}
+                />
+              ))}
             </Col>
             <Col sm={3}>
               <h6>State</h6>
@@ -724,7 +760,7 @@ const AddPT = () => {
                     />
                     <input
                       type="file"
-                      // multiple
+                      multiple
                       onChange={handleFileInputChangeGallery}
                       style={{ display: "none" }}
                       ref={fileInputRefGallery}
@@ -768,6 +804,49 @@ const AddPT = () => {
                     ))}
                   </div>
                 </div>
+              </div>
+            </Col>
+            <Col md={4}>
+              <div className="mb-3">
+                <h6 style={{ fontWeight: "bold", marginBottom: "10px" }}>
+                  Training Videos
+                </h6>
+                <div
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    const files = Array.from(e.dataTransfer.files || []).filter((file) =>
+                      file.type.startsWith("video/")
+                    );
+                    setFormData((prev) => ({ ...prev, videos: [...prev.videos, ...files] }));
+                  }}
+                  onDragOver={(e) => e.preventDefault()}
+                  style={{ border: "2px dashed #ccc", padding: "20px", textAlign: "center", width: "300px" }}
+                >
+                  <h3 style={{ fontSize: "18px" }}>Drag & Drop videos here</h3>
+                  <FiUpload style={{ fontSize: "48px", marginBottom: "10px" }} />
+                  <input
+                    type="file"
+                    accept="video/mp4,video/webm,video/quicktime"
+                    multiple
+                    onChange={handleFileInputChangeVideo}
+                    style={{ display: "none" }}
+                    ref={fileInputRefVideo}
+                  />
+                  <button type="button" className="btn3" onClick={handleButtonClickVideo}>
+                    Select Videos
+                  </button>
+                  <div className="mt-2">
+                    {formData.videos.map((video, index) => (
+                      <div key={`${video.name}-${index}`} className="d-flex align-items-center justify-content-between mb-1">
+                        <small className="text-truncate">{video.name}</small>
+                        <button type="button" onClick={() => handleRemoveVideo(index)} className="btn btn-link text-danger p-0">
+                          <FiX />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <small className="text-muted">MP4, WebM or MOV. You can select multiple videos.</small>
               </div>
             </Col>
             <Col sm={4}>
@@ -861,6 +940,17 @@ const AddPT = () => {
                   value={formData.class_location}
                   onChange={handleChange}
                 />
+              </Form.Group>
+            </Col>
+            <Col sm={4}>
+              <Form.Group controlId="formTrainingMode">
+                <Form.Label>Training Mode</Form.Label>
+                <Form.Select name="training_mode" value={formData.training_mode} onChange={handleChange}>
+                  <option value="">Select training mode</option>
+                  <option value="Online">Online</option>
+                  <option value="Offline">Offline</option>
+                  <option value="Both">Both</option>
+                </Form.Select>
               </Form.Group>
             </Col>
 

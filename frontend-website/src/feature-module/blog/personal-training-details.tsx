@@ -50,6 +50,7 @@ interface TrainerData {
   share_token: string;
   mobile: string;
   package: any;
+  pricing?: Record<string, number | string>;
   package_type: string;
 }
 // ---------- Display helpers (aligned with how admins enter the data) ----------
@@ -111,6 +112,8 @@ const PersonalTrainingDetails = (props: any) => {
   const [activeSection, setActiveSection] = useState<string>("short-bio");
   const idData = useParams();
   const id = idData.id;
+  const sharedToken = idData.token;
+  const isSharedProfile = Boolean(sharedToken);
   const name = idData.name;
   const type = idData.type;
 
@@ -123,6 +126,8 @@ const PersonalTrainingDetails = (props: any) => {
   const trainerLocation = getTrainerLocation(trainerData);
   const specializationsList = getSpecializations(trainerData?.specializations);
   const formattedPrice = formatPrice(trainerData?.price);
+  const packageRates = Object.entries({ ...(trainerData?.package || {}), ...(trainerData?.pricing || {}) })
+    .filter(([, value]) => value !== undefined && value !== null && value !== "" && Number(value) > 0);
   const hasTrainerDetails = Boolean(
     trainerName ||
       trainerData?.gender ||
@@ -193,9 +198,13 @@ const PersonalTrainingDetails = (props: any) => {
 
     const fetchTrainerId = async () => {
       try {
-        const response = await axios.get(
-          `${API_URL}/PersonalTraining/fetch/${id}`
-        );
+        const profileId = isSharedProfile ? sharedToken : id;
+        const viewKey = `ki-profile-view-trainer-${profileId}`;
+        const shouldCountView = !sessionStorage.getItem(viewKey);
+        const response = isSharedProfile
+          ? await axios.get(`${API_URL}/web/PersonalTraining/shared/${sharedToken}`)
+          : await axios.get(`${API_URL}/${shouldCountView ? "web/PersonalTraining/fetch" : "PersonalTraining/fetch"}/${id}`);
+        if (shouldCountView) sessionStorage.setItem(viewKey, "1");
         const trainerDataId = response.data.personalTrainer;
         setTrainerData(trainerDataId);
       } catch {
@@ -203,7 +212,7 @@ const PersonalTrainingDetails = (props: any) => {
       }
     };
     fetchTrainerId();
-  }, []);
+  }, [id, isSharedProfile, sharedToken]);
   useEffect(() => {
     document.title = trainerName
       ? `${trainerName} - Khelo Indore`
@@ -978,8 +987,9 @@ const PersonalTrainingDetails = (props: any) => {
                       {trainerData?.videos?.length || trainerData?.gallery_videos?.length ? (
                         <div className="row g-3">
                           {[...(trainerData.videos || []), ...(trainerData.gallery_videos || [])].map((video: any, index: number) => {
-                            const isUrl = typeof video === "string" && (video.startsWith("http://") || video.startsWith("https://"));
-                            const videoUrl = isUrl ? video : `${IMG_URL}${video}`;
+                            const videoPath = typeof video === "object" ? (video.src || video.url || "") : video;
+                            const isUrl = typeof videoPath === "string" && (videoPath.startsWith("http://") || videoPath.startsWith("https://"));
+                            const videoUrl = isUrl ? videoPath : `${IMG_URL}${videoPath}`;
                             return (
                               <div className="col-12 col-md-6" key={index}>
                                 <div className="card h-100 p-2 text-center" style={{ borderRadius: "12px", border: "1px solid #E2E8F0", overflow: "hidden" }}>
@@ -1006,6 +1016,33 @@ const PersonalTrainingDetails = (props: any) => {
                       ) : (
                         <p className="mb-0 text-muted">No videos uploaded yet.</p>
                       )}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="accordion-item mb-4" id="gallery">
+                  <h4 className="accordion-header" id="panelsStayOpen-gallery">
+                    <button
+                      className={`accordion-button ${activeSection === "gallery" ? "" : "collapsed"}`}
+                      type="button"
+                      aria-expanded={activeSection === "gallery"}
+                      aria-controls="panelsStayOpen-gallery-collapse"
+                      onClick={() => setActiveSection(activeSection === "gallery" ? "" : "gallery")}
+                    >
+                      Training Photos
+                    </button>
+                  </h4>
+                  <div id="panelsStayOpen-gallery-collapse" className={`accordion-collapse collapse ${activeSection === "gallery" ? "show" : ""}`} aria-labelledby="panelsStayOpen-gallery">
+                    <div className="accordion-body">
+                      {trainerData?.gallery?.length ? (
+                        <div className="row g-3">
+                          {trainerData.gallery.map((image: any, index: number) => {
+                            const imagePath = typeof image === "object" ? (image.src || image.url || "") : image;
+                            const imageUrl = imagePath?.startsWith("http") ? imagePath : `${IMG_URL}${imagePath}`;
+                            return <div className="col-6 col-md-4" key={index}><img src={imageUrl} alt={`Training ${index + 1}`} className="w-100 rounded" style={{ height: 180, objectFit: "cover" }} /></div>;
+                          })}
+                        </div>
+                      ) : <p className="mb-0 text-muted">No training photos uploaded yet.</p>}
                     </div>
                   </div>
                 </div>
@@ -1710,15 +1747,13 @@ const PersonalTrainingDetails = (props: any) => {
                     )}
                   </div>
                   {/* Packages before Book Now */}
-                  {trainerData?.package && (Object.values(trainerData.package).some((v: any) => v) || trainerData?.package_type) ? (
+                  {(packageRates.length > 0 || trainerData?.package_type) ? (
                     <div className="mt-3">
                       <p className="mb-2 fw-bold" style={{ fontSize: "13px", color: "#475569" }}>
                         <i className="feather-gift me-1" style={{ color: "#16A34A" }} /> Packages
                       </p>
                       <div className="d-flex flex-column gap-2">
-                        {(Object.keys(trainerData.package || {}) as string[]).map((key) => {
-                          const val = trainerData.package[key];
-                          if (!val) return null;
+                        {packageRates.map(([key, val]) => {
                           return (
                             <div
                               key={key}

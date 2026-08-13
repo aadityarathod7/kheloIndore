@@ -5,6 +5,8 @@ const Coach = require("../models/CoachModel");
 const mail = require("../helper/sendMail");
 const mailContent = require("../middlewares/mail-content");
 const User = require("../models/UserModel");
+const { sendCustomMessage } = require("../helper/bhashMessaging");
+const crypto = require("crypto");
 exports.createCoach = async (req, res) => {
   try {
     let { first_name, last_name, email, mobile,password } = req.body;
@@ -51,6 +53,23 @@ exports.createCoach = async (req, res) => {
         return res.status(400).json({ message: "Coach already exits" });
       }
       const newCoach = new Coach(req.body);
+      await newCoach.save();
+      const completionToken = crypto.randomBytes(12).toString("hex");
+      newCoach.profile_completion_token = completionToken;
+      await newCoach.save();
+      const baseUrl = process.env.WEBSITE_URL || "https://kheloindore.in";
+      const completeLink = `${baseUrl}/coaches/complete-profile/${newCoach._id}?token=${completionToken}`;
+      await Promise.allSettled([
+        newCoach.email ? mail.superAdminAddUsersendEmail(
+          newCoach.email,
+          mailContent.onboarding_profile_link(`${newCoach.first_name} ${newCoach.last_name || ""}`.trim(), completeLink)
+        ) : Promise.resolve(),
+        newCoach.mobile ? sendCustomMessage({
+          mobile: String(newCoach.mobile),
+          message: `Khelo Indore: complete your coach profile: ${completeLink}`,
+        }) : Promise.resolve(),
+      ]);
+      newCoach.onboard_email_sent = Boolean(newCoach.email);
       await newCoach.save();
       mail.superAdminAddUsersendEmail(
         req.body.email,
@@ -104,6 +123,9 @@ exports.deleteCoach = async (req, res) => {
 
 exports.updateCoachSuperAdmin = async (req, res) => {
   try {
+    if (req.user?.role !== "Super Admin") {
+      return res.status(403).json({ success: false, message: "Only Super Admin can edit coach profiles." });
+    }
     const detail = req.body;
     if (!detail) {
       return res.status(400).json({
@@ -116,6 +138,24 @@ exports.updateCoachSuperAdmin = async (req, res) => {
     const coachData = await Coach.findById(id);
     if (!coachData) {
       return res.status(404).json({ success: false, message: "Coach not found" });
+    }
+
+    const nextEmail = detail.email !== undefined ? String(detail.email).trim().toLowerCase() : coachData.email;
+    const nextMobile = detail.mobile !== undefined ? String(detail.mobile) : String(coachData.mobile || "");
+    if (detail.email !== undefined && !/^\S+@\S+\.\S+$/.test(nextEmail)) {
+      return res.status(400).json({ success: false, message: "Please enter a valid email address." });
+    }
+    if (detail.mobile !== undefined && !/^\d{10}$/.test(nextMobile)) {
+      return res.status(400).json({ success: false, message: "Mobile number must be exactly 10 digits." });
+    }
+    const linkedUser = await User.findOne({ role: "Coach", $or: [{ email: coachData.email }, { mobile: coachData.mobile }] });
+    const duplicateCoach = await Coach.findOne({ _id: { $ne: id }, $or: [{ email: nextEmail }, { mobile: Number(nextMobile) }] });
+    const duplicateUser = await User.findOne({
+      _id: { $ne: linkedUser?._id },
+      $or: [{ email: nextEmail }, { mobile: Number(nextMobile) }],
+    });
+    if (duplicateCoach || duplicateUser) {
+      return res.status(400).json({ success: false, message: "This email address or mobile number is already in use." });
     }
 
     const updatePayload = { isUpdated: true };
@@ -152,19 +192,22 @@ exports.updateCoachSuperAdmin = async (req, res) => {
       "own_level",
       "response_time",
       "class_location",
+      "training_mode",
       "students_trained",
       "profile_views",
       "rating",
       "reviews_count",
       "daily_availability",
       "gallery_videos",
+      "gallery",
       "social_media",
       "categories",
       "videos",
+      "package",
     ];
 
     // Handle array-type fields that arrive as JSON strings from the admin form
-    ["coaching_levels", "daily_availability", "categories", "videos"].forEach((field) => {
+    ["coaching_levels", "daily_availability", "categories", "videos", "gallery"].forEach((field) => {
       const value = detail[field];
       if (value === undefined || value === null || value === "") return;
       if (typeof value === "string") {
@@ -227,12 +270,19 @@ exports.updateCoachSuperAdmin = async (req, res) => {
 
     const updatedCoach = await Coach.findByIdAndUpdate(id, updatePayload, {
       new: true,
+      runValidators: true,
     });
 
     if (!updatedCoach) {
       return res
         .status(400)
         .json({ message: "Something Went Wrong In Update" });
+    }
+    if (linkedUser && (detail.email !== undefined || detail.mobile !== undefined)) {
+      await User.findByIdAndUpdate(linkedUser._id, {
+        ...(detail.email !== undefined ? { email: nextEmail } : {}),
+        ...(detail.mobile !== undefined ? { mobile: Number(nextMobile) } : {}),
+      }, { runValidators: true });
     }
     return res
       .status(200)
@@ -499,9 +549,10 @@ exports.fetchAllCoaches = async (req, res) => {
     
     const coaches = await Coach.find(queryConditions).sort({ createdAt: -1 });
 
+    const { attachRatings } = require("../helper/reviewRatings");
     return res.status(200).json({
       success: true,
-      data: coaches,
+      data: await attachRatings(coaches, "coach"),
     });
   } catch (err) {
     return res.status(500).json({
@@ -612,11 +663,10 @@ exports.fetchSharedCoach = async (req, res) => {
     delete shared.other_contact_number;
     delete shared.email;
     delete shared.address;
+    delete shared.city;
+    delete shared.state;
     delete shared.zipcode;
-    if (shared.location) {
-      delete shared.location.address;
-      delete shared.location.zipcode;
-    }
+    delete shared.location;
     return res.status(200).json({ success: true, coach: shared });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
@@ -636,8 +686,8 @@ exports.completeCoachProfile = async (req, res) => {
       "gender", "age", "date_of_birth", "price", "category", "trainer_type",
       "near_by_location", "experience", "availability", "specializations", "bio",
       "qualifications", "skills", "languages", "address", "city", "state", "zipcode",
-      "coaching_levels", "own_level", "response_time", "class_location",
-      "students_trained", "daily_availability", "social_media", "gallery_videos",
+      "coaching_levels", "own_level", "response_time", "class_location", "training_mode",
+      "students_trained", "daily_availability", "social_media", "gallery_videos", "gallery", "videos",
       "profile_picture", "package",
     ];
     allowed.forEach((field) => {
@@ -686,8 +736,7 @@ exports.sendOnboardingProfileLink = async (req, res) => {
     if (coach.mobile) {
       try {
         const { sendCustomMessage } = require("../helper/bhashMessaging");
-        const msg =
-          `Dear ${coach.first_name}, welcome to Khelo Indore! Complete your coach profile here: ${completeLink}`.slice(0, 160);
+        const msg = `Khelo Indore: complete your coach profile: ${completeLink}`;
         await sendCustomMessage({ mobile: String(coach.mobile), message: msg });
       } catch (e) {
         

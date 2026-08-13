@@ -6,6 +6,7 @@ import { all_routes } from "../router/all_routes";
 import axios from "axios";
 import { API_URL, IMG_URL } from "../../ApiUrl";
 import Swal from "sweetalert2";
+import { getCategoryIcon, getCategoryStyle } from "../../utils/categoryVisual";
 
 interface Trainer {
   first_name: string;
@@ -759,8 +760,8 @@ const BlogList = () => {
 
                             {/* Category Badge */}
                             <div style={{ position: "absolute", top: "8px", left: "8px", zIndex: 2 }}>
-                              <span className="tag tag-blue" style={{ background: "#2D3E33", color: "#FFFFFF", fontWeight: "700", fontSize: "10px", padding: "4px 8px", borderRadius: "4px", textTransform: "uppercase" }}>
-                                {trainer?.trainer_type}
+                              <span className="tag tag-blue d-inline-flex align-items-center gap-1" style={{ ...getCategoryStyle(trainer?.trainer_type || trainer?.category), fontWeight: "700", fontSize: "10px", padding: "5px 8px", borderRadius: "999px", textTransform: "uppercase" }}>
+                                <i className={getCategoryIcon(trainer?.trainer_type || trainer?.category)} /> {trainer?.trainer_type || trainer?.category || "Trainer"}
                               </span>
                             </div>
                           </div>

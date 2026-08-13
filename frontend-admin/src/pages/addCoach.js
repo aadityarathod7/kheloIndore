@@ -17,6 +17,16 @@ const AddCoach = () => {
     password: "",
     confirm_password: "",
     status: false,
+    languages: [],
+    class_location: "",
+    training_mode: "",
+    social_media: {
+      facebook: "",
+      instagram: "",
+      youtube: "",
+      twitter: "",
+      linkedin: "",
+    },
   });
 
   const [errors, setErrors] = useState({});
@@ -34,6 +44,14 @@ const AddCoach = () => {
       ...errors,
       [name]: "",
     });
+  };
+
+  const handleSocialChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((current) => ({
+      ...current,
+      social_media: { ...current.social_media, [name]: value },
+    }));
   };
 
   const handleSubmit = async (e) => {
@@ -90,7 +108,8 @@ const AddCoach = () => {
     try {
       const response = await axios.post(
         `${API_URL}/super-admin/add-user`,
-        formData
+        formData,
+        { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
       );
       
       Swal.fire({
@@ -171,6 +190,68 @@ const AddCoach = () => {
                 </Form.Control.Feedback>
               </Form.Group>
             </Col>
+          </Row>
+
+          <Row className="mt-3">
+            <Col md={12}>
+              <Form.Group controlId="formLanguages">
+                <Form.Label>Languages Known</Form.Label>
+                <div className="d-flex flex-wrap gap-3">
+                  {["Hindi", "English", "Marathi"].map((language) => (
+                    <Form.Check
+                      key={language}
+                      inline
+                      type="checkbox"
+                      label={language}
+                      checked={formData.languages.includes(language)}
+                      onChange={() => setFormData((current) => ({
+                        ...current,
+                        languages: current.languages.includes(language)
+                          ? current.languages.filter((item) => item !== language)
+                          : [...current.languages, language],
+                      }))}
+                    />
+                  ))}
+                </div>
+              </Form.Group>
+            </Col>
+          </Row>
+
+          <Row className="mt-3">
+            <Col md={6}>
+              <Form.Group controlId="formClassLocation">
+                <Form.Label>Class Location</Form.Label>
+                <Form.Control name="class_location" value={formData.class_location} onChange={handleChange} placeholder="e.g. Academy, home, or nearby ground" />
+              </Form.Group>
+            </Col>
+            <Col md={6}>
+              <Form.Group controlId="formTrainingMode">
+                <Form.Label>Training Mode</Form.Label>
+                <Form.Select name="training_mode" value={formData.training_mode} onChange={handleChange}>
+                  <option value="">Select training mode</option>
+                  <option value="Online">Online</option>
+                  <option value="Offline">Offline</option>
+                  <option value="Both">Both</option>
+                </Form.Select>
+              </Form.Group>
+            </Col>
+          </Row>
+
+          <Row className="mt-3">
+            <Col md={12}>
+              <Form.Label>Social Media Profiles</Form.Label>
+            </Col>
+            {["facebook", "instagram", "youtube", "twitter", "linkedin"].map((platform) => (
+              <Col md={4} key={platform} className="mb-3">
+                <Form.Control
+                  type="url"
+                  name={platform}
+                  placeholder={`${platform[0].toUpperCase()}${platform.slice(1)} profile URL`}
+                  value={formData.social_media[platform]}
+                  onChange={handleSocialChange}
+                />
+              </Col>
+            ))}
           </Row>
 
           <Row className="mt-3">

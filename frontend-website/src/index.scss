@@ -2045,6 +2045,13 @@ textarea,
   }
 }
 
+// Keep the dynamic Top Categories footer column aligned with Explore and Sports.
+.footer .footer-category-list {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6px !important;
+}
+
 // Homepage sections share one clean light background; separation is drawn
 // with subtle hairline dividers instead of a rainbow of pastel section colors.
 .work-section,
@@ -3136,6 +3143,57 @@ button {
   .background-image {
     transition: transform 0.4s ease !important;
   }
+}
+
+// Homepage venue, coach, and trainer cards lift smoothly on hover.
+.ki-feature-card {
+  will-change: transform, box-shadow;
+  transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 280ms ease, border-color 280ms ease !important;
+
+  &:hover,
+  &:focus-within {
+    transform: translateY(-12px);
+    border-color: #22C55E !important;
+    box-shadow: 0 20px 38px rgba(15, 34, 45, 0.18) !important;
+  }
+}
+
+// One featured card changes vertically at a time, like a page moving upward.
+.ki-vertical-card-slider {
+  .slick-list { margin: -14px 0; overflow: visible; }
+  .slick-slide > div { padding: 14px 0; }
+  .featured-venues-item { padding: 0 10px; }
+  .slick-track { will-change: transform; }
+}
+
+// The three Top Rated cards are data-driven and refresh together.  A 3D flip
+// makes each newly loaded card feel like a fresh card, rather than moving it
+// vertically across the page.
+.top-provider-rotation {
+  perspective: 1400px;
+}
+
+.top-provider-card {
+  animation: ki-provider-card-flip 3000ms cubic-bezier(0.22, 0.8, 0.2, 1) both !important;
+  backface-visibility: hidden;
+  transform-origin: center center;
+  transform-style: preserve-3d;
+  will-change: opacity, transform;
+}
+.top-provider-card--coach { animation-delay: 140ms !important; }
+.top-provider-card--trainer { animation-delay: 280ms !important; }
+
+@keyframes ki-provider-card-flip {
+  from { opacity: 0; transform: rotateX(90deg) scale(0.94); }
+  to { opacity: 1; transform: rotateX(0) scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ki-feature-card { transition: none !important; }
+  .ki-feature-card:hover,
+  .ki-feature-card:focus-within { transform: none; }
+  .top-provider-rotation { animation: none; }
+  .top-provider-card { animation: none; }
 }
 
 // Availability and Badge adjustments

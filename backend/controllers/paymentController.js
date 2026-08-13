@@ -1081,29 +1081,40 @@ const PARTIAL_PAYMENT_PERCENT = 0.25;
 // Refund policy:
 //  - Partial payment: non-refundable
 //  - Full payment cancelled at least 4 hours before booking time: 25% deducted, 75% refunded
-//  - Full payment cancelled less than 4 hours before: 50% deducted (last-minute cancellation fee)
+//  - Full payment cancelled less than 4 hours before: non-refundable
 const REFUND_WINDOW_HOURS = 4;
 const FULL_PAYMENT_REFUND_PERCENT = 0.75;
 
-// Computes how much (if any) is refundable for a cancelled booking
+const getBookingStartTime = (booking) => {
+  const bookingDate = booking?.startDate || booking?.date;
+  if (!bookingDate) return null;
+
+  const rawTime = booking?.slot_time?.[0]?.startTime || booking?.start_time;
+  const startTime = new Date(bookingDate);
+  if (Number.isNaN(startTime.getTime()) || !rawTime) return null;
+
+  const timeMatch = String(rawTime).trim().match(/^(\d{1,2}):(\d{2})(?::\d{2})?\s*(AM|PM)?$/i);
+  if (!timeMatch) return null;
+
+  let hours = Number(timeMatch[1]);
+  const minutes = Number(timeMatch[2]);
+  const meridiem = timeMatch[3]?.toUpperCase();
+  if (minutes > 59 || hours > 23 || (meridiem && hours > 12)) return null;
+  if (meridiem === "PM" && hours < 12) hours += 12;
+  if (meridiem === "AM" && hours === 12) hours = 0;
+
+  startTime.setHours(hours, minutes, 0, 0);
+  return startTime;
+};
+
+// Computes how much (if any) is refundable for a cancelled booking.
 const computeRefundAmount = (booking) => {
   if (!booking) return 0;
-  if (booking.payment_type === "partial") return 0; // partial payments are non-refundable
+  if (String(booking.payment_type || "full").toLowerCase() === "partial") return 0;
 
-  const paidAmount = booking.payable_amount || booking.total_price || 0;
-  // Determine booking start time: venue uses `date` + first slot_time; coach/PT use startDate
-  let bookingStart = booking.startDate || booking.date;
-  if (!bookingStart && booking.slot_time && booking.slot_time.length > 0) {
-    const start = booking.slot_time[0].startTime;
-    if (start && booking.date) {
-      const [h, m] = String(start).split(":").map(Number);
-      const d = new Date(booking.date);
-      d.setHours(h || 0, m || 0, 0, 0);
-      bookingStart = d;
-    }
-  }
-  const startTime = new Date(bookingStart);
-  if (isNaN(startTime.getTime())) return Math.round(paidAmount * FULL_PAYMENT_REFUND_PERCENT);
+  const paidAmount = Number(booking.payable_amount || booking.total_price || 0);
+  const startTime = getBookingStartTime(booking);
+  if (!startTime || paidAmount <= 0) return 0;
 
   const hoursUntilBooking = (startTime.getTime() - Date.now()) / (1000 * 60 * 60);
   if (hoursUntilBooking >= REFUND_WINDOW_HOURS) {
@@ -2397,6 +2408,19 @@ const venueRefund = async (req, res) => {
     return res.status(400).json({ success: false, message: "A successful refund already exists for this booking" });
   }
 
+  const policyRefundAmount = computeRefundAmount(booking);
+  if (policyRefundAmount <= 0) {
+    return res.status(400).json({
+      success: false,
+      message: "This booking is not eligible for a refund. Partial payments are non-refundable and full payments must be cancelled at least 4 hours before the booking time.",
+    });
+  }
+  if (Number(refundAmount) !== policyRefundAmount) {
+    return res.status(400).json({
+      success: false,
+      message: `Refund amount must be 75% of the full payment (₹${policyRefundAmount}) according to the cancellation policy.`,
+    });
+  }
 
   const txnId = booking.merchantTransaction_id;
 
