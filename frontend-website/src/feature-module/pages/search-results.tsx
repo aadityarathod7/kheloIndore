@@ -36,6 +36,20 @@ const SearchResults: React.FC = () => {
         return match.size;
       }
     }
+    if (venue.data && venue.data.vendor_data && Array.isArray(venue.data.vendor_data)) {
+      const dimensionObj = venue.data.vendor_data.find((item: any) => item && item.key === "dimension");
+      if (dimensionObj && dimensionObj.value) {
+        return `${dimensionObj.value} ft`;
+      }
+      const sizeObj = venue.data.vendor_data.find((item: any) => item && item.key === "size");
+      if (sizeObj && sizeObj.value) {
+        return sizeObj.value;
+      }
+      const areaObj = venue.data.vendor_data.find((item: any) => item && item.key === "total_area_in_sq_feet");
+      if (areaObj && areaObj.value) {
+        return `${areaObj.value} sq. ft.`;
+      }
+    }
     if (venue.gameType && !["cricket", "football", "badminton", "basketball", "tennis", "table tennis", "swimming", "pickle ball"].includes(venue.gameType.toLowerCase())) {
       return venue.gameType;
     }

@@ -52,6 +52,12 @@ import Earnings from "./pages/Earnings";
 
 
 function App() {
+  // Automatically redirect from "/" to "/admin" in local development
+  if (window.location.pathname === "/" || window.location.pathname === "") {
+    window.location.replace("/admin" + window.location.search + window.location.hash);
+    return null;
+  }
+
   return (
     <Router basename="/admin">
       <Routes>

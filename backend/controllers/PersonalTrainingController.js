@@ -683,11 +683,15 @@ exports.sendTrainerOnboardingProfileLink = async (req, res) => {
 
 exports.updatePersonalTrainers = async (req, res) => {
   try {
-    if (req.user?.role !== "Super Admin") {
-      return res.status(403).json({ success: false, message: "Only Super Admin can update trainer profiles." });
-    }
     const { trainerId } = req.params; // Trainer ID from URL parameters
     const updateData = req.body; // Update data from request body
+
+    const isSuperAdmin = req.user?.role === "Super Admin";
+    const isSelfTrainer = req.user?.role === "Personal Trainer" && req.user?.userID === trainerId;
+
+    if (!isSuperAdmin && !isSelfTrainer) {
+      return res.status(403).json({ success: false, message: "Only Super Admin or the trainer themselves can update trainer profiles." });
+    }
 
     if (Array.isArray(updateData.training_formats) && updateData.training_formats.includes("Group Training")) {
       const groupSize = Number(updateData.group_size_max);
@@ -734,6 +738,42 @@ exports.updatePersonalTrainers = async (req, res) => {
 
     // Ensure that 'isUpdated' is set to true when the data is updated
     trainer.isUpdated = true;
+
+    // If update is NOT made by Super Admin (i.e. by trainer themselves)
+    if (!isSuperAdmin) {
+      trainer.status = false;
+      trainer.verification_status = 0; // pending approval
+
+      // Send email & notification to Super Admin
+      try {
+        const superAdmins = await User.find({ role: "Super Admin" });
+        const { sendMailHelper } = require("./NodeMailerController");
+        const Notification = require("../models/NotificationModel");
+
+        for (const admin of superAdmins) {
+          if (admin.email) {
+            await sendMailHelper(
+              admin.email,
+              `Personal Trainer Profile Verification Request`,
+              `
+              <h3>Trainer Service Update</h3>
+              <p>Personal Trainer <strong>${trainer.first_name} ${trainer.last_name}</strong> (Mobile: ${trainer.mobile}) has updated their profile details/services and requested verification.</p>
+              <p>Please log in to the admin panel to review and approve their profile.</p>
+              `
+            );
+          }
+          await Notification.create({
+            user_id: admin._id,
+            title: "Trainer Approval Required",
+            message: `Personal Trainer ${trainer.first_name} ${trainer.last_name} has updated their details and is awaiting verification.`,
+            type: "info",
+            entity_id: trainer._id
+          });
+        }
+      } catch (err) {
+        console.error("Failed to send admin notification for trainer update:", err);
+      }
+    }
 
     // Save the updated trainer details
     await trainer.save();

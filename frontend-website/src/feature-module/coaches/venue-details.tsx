@@ -1034,7 +1034,22 @@ const VenueDetails = () => {
                         <div>
                           <span className="pricing-label-text d-block mb-1">Price Starting From</span>
                           <div className="d-flex align-items-baseline justify-content-center gap-1">
-                            <span className="pricing-amount-text">{Number(venueData?.price_per_hr) > 0 ? `₹${venueData.price_per_hr}` : "Contact venue"}</span>
+                            <span className="pricing-amount-text">
+                              {(() => {
+                                if (Number(venueData?.price_per_hr) > 0) {
+                                  return `₹${venueData.price_per_hr}`;
+                                }
+                                if (Array.isArray(venueData?.sports_details) && venueData.sports_details.length > 0) {
+                                  const prices = venueData.sports_details
+                                    .map((sd: any) => Number(sd.price_per_hr))
+                                    .filter((price: number) => !isNaN(price) && price > 0);
+                                  if (prices.length > 0) {
+                                    return `₹${Math.min(...prices)}`;
+                                  }
+                                }
+                                return "Contact venue";
+                              })()}
+                            </span>
                             <span className="pricing-unit-text">/ hour</span>
                           </div>
                         </div>

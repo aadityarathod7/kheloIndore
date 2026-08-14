@@ -566,12 +566,21 @@ exports.fetchAllCoaches = async (req, res) => {
 exports.coachVerifyBySuperAdmin = async(req,res)=>{
   try {
     const id = req.params.coachId
-    const verifyStatus = req.params.verifyStatus
+    const verifyStatus = parseInt(req.params.verifyStatus, 10);
     const user = req.user.userID
     if(req.user.role =='Super Admin'){
-      const verifyCoach = await Coach.findByIdAndUpdate(id, {
-      verification_status: verifyStatus,
-        });
+      const updateObj = {
+        verification_status: verifyStatus
+      };
+      if (verifyStatus === 1) {
+        updateObj.status = true;
+        updateObj.is_admin_access = 1;
+      } else if (verifyStatus === 2) {
+        updateObj.status = false;
+        updateObj.is_admin_access = 2;
+      }
+
+      const verifyCoach = await Coach.findByIdAndUpdate(id, updateObj, { new: true });
         if(!verifyCoach){
           return res.json({
             status:400,
@@ -579,6 +588,13 @@ exports.coachVerifyBySuperAdmin = async(req,res)=>{
             message:"Coach id not found"
             }) 
         }
+
+        // Sync is_admin_access with the User record
+        await User.findOneAndUpdate(
+          { mobile: verifyCoach.mobile },
+          { is_admin_access: verifyStatus === 1 ? 1 : (verifyStatus === 2 ? 2 : 0) }
+        );
+
         return res.json({
           status:200,
           success:true,
@@ -768,6 +784,42 @@ exports.updatecoach = async (req, res) => {
         coach[key] = updateData[key]; // Update the coach's field
       }
     });
+
+    // If update is NOT made by Super Admin (i.e. by coach themselves)
+    if (req.user?.role !== "Super Admin") {
+      coach.status = false;
+      coach.verification_status = 0; // pending approval
+
+      // Send email & notification to Super Admin
+      try {
+        const superAdmins = await User.find({ role: "Super Admin" });
+        const { sendMailHelper } = require("./NodeMailerController");
+        const Notification = require("../models/NotificationModel");
+
+        for (const admin of superAdmins) {
+          if (admin.email) {
+            await sendMailHelper(
+              admin.email,
+              `Coach Profile Verification Request`,
+              `
+              <h3>Coach Service Update</h3>
+              <p>Coach <strong>${coach.first_name} ${coach.last_name}</strong> (Mobile: ${coach.mobile}) has updated their profile details/services and requested verification.</p>
+              <p>Please log in to the admin panel to review and approve their profile.</p>
+              `
+            );
+          }
+          await Notification.create({
+            user_id: admin._id,
+            title: "Coach Approval Required",
+            message: `Coach ${coach.first_name} ${coach.last_name} has updated their details and is awaiting verification.`,
+            type: "info",
+            entity_id: coach._id
+          });
+        }
+      } catch (err) {
+        console.error("Failed to send admin notification for coach update:", err);
+      }
+    }
 
     // Save the updated coach details
     await coach.save();

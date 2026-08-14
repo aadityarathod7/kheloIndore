@@ -219,7 +219,7 @@ route.put("/update-coach-super-admin/:id", auth, updateCoachSuperAdmin);
 // route.get('/fetch-all-coaches', fetchAllCoaches); // old 
 route.get('/fetch-all-coaches',auth,fetchAllCoachesNew); // new by sunil
 route.get('/fetch-coach/:id', fetchCoachById);
-route.put("/update/coach/:coachId",updatecoach)
+route.put("/update/coach/:coachId", auth, updatecoach)
 // Public coach endpoints (website)
 route.get("/web/fetch-coach/:id", fetchPublicCoach);
 route.post("/web/coach/share/:id", generateCoachShareLink);

@@ -36,7 +36,8 @@ exports.auth = async (req, res, next) => {
 exports.isUser = async(req,res,next)=>{
  try {
    try {
-     if (req.user.role != "User") {
+     const allowedRoles = ["User", "Venue Admin", "Coach", "Personal Trainer"];
+     if (!allowedRoles.includes(req.user.role)) {
        return res.status(400).json({
          success: false,
          message:

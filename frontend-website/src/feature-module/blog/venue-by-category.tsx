@@ -24,6 +24,7 @@ interface Venues {
   gameType?: string;
   sports_details?: { sport?: string; size?: string; price_per_hr?: number }[];
   price_per_hr?: number;
+  data?: any;
 }
 
 const venueHourlyRate = (venue: Venues): number | null => {
@@ -709,6 +710,20 @@ export default function VenueByCategory() {
         return firstWithSize.size;
       }
     }
+    if (venue.data && venue.data.vendor_data && Array.isArray(venue.data.vendor_data)) {
+      const dimensionObj = venue.data.vendor_data.find((item: any) => item && item.key === "dimension");
+      if (dimensionObj && dimensionObj.value) {
+        return `${dimensionObj.value} ft`;
+      }
+      const sizeObj = venue.data.vendor_data.find((item: any) => item && item.key === "size");
+      if (sizeObj && sizeObj.value) {
+        return sizeObj.value;
+      }
+      const areaObj = venue.data.vendor_data.find((item: any) => item && item.key === "total_area_in_sq_feet");
+      if (areaObj && areaObj.value) {
+        return `${areaObj.value} sq. ft.`;
+      }
+    }
     if (venue.gameType && venue.gameType.toLowerCase() !== (thisCategory?.type || "").toLowerCase()) {
       return venue.gameType;
     }
@@ -782,6 +797,7 @@ export default function VenueByCategory() {
           description: venues.description || "",
           gameType: venues.gameType,
           sports_details: Array.isArray(venues.sports_details) ? venues.sports_details : [],
+          data: venues.data,
         }));
         setVenues(mappedData);
       } catch {

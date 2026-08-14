@@ -334,8 +334,28 @@ exports.addVenue = async (req, res) => {
     });
     if (req.user.role === "Venue Admin") {
       const Notification = require("../models/NotificationModel");
-      const superAdmins = await User.find({ role: "Super Admin" }).select("_id");
+      const superAdmins = await User.find({ role: "Super Admin" });
       await Notification.insertMany(superAdmins.map((admin) => ({ user_id: admin._id, title: "Venue approval required", message: `${newVenueDB.name} was submitted for approval.`, type: "venue_approval", entity_id: newVenueDB._id })));
+
+      // Send email alert to Super Admins
+      try {
+        const { sendMailHelper } = require("./NodeMailerController");
+        for (const admin of superAdmins) {
+          if (admin.email) {
+            await sendMailHelper(
+              admin.email,
+              `New Venue Verification Request`,
+              `
+              <h3>Venue Verification Request</h3>
+              <p>A new venue <strong>${newVenueDB.name}</strong> has been added by a Venue Admin (${vendorName}) and is pending approval.</p>
+              <p>Please log in to the admin panel to review and approve this venue.</p>
+              `
+            );
+          }
+        }
+      } catch (mailErr) {
+        console.error("Failed to send venue registration email alert to admins:", mailErr);
+      }
     }
 
     const vendor = await User.findOne({ _id: vendor_id });

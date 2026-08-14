@@ -483,7 +483,7 @@ exports.loginCheckOTP = async (req, res) => {
       userID: check._id,
       first_name: check.first_name,
       last_name: check.last_name,
-      role: check.role,
+      role: check.role === "Venue Admin" ? "User" : check.role,
     };
     const token = jwt.sign(payload, process.env.JWT_AUTH, { expiresIn: "5h" });
 

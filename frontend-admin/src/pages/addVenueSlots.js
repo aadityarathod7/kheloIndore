@@ -238,30 +238,30 @@ export default function AddVenueSlots() {
             return;
         }
 
-        const newSlots = [];
-
-
-        while (startDate <= endDate) {
-            const newSlot = {
-                date: startDate.toISOString().split('T')[0],
-                slots: [{
-                    startTime,
-                    endTime,
-                    price,
-                    isBooked: offlineBlocked,
-                    isOfflineBlocked: offlineBlocked,
-                }]
-            };
-            newSlots.push(newSlot);
-            startDate.setDate(startDate.getDate() + 1);
+        const slotsArray = [];
+        let current = new Date(`2023-01-01T${startTime}:00`);
+        const end = new Date(`2023-01-01T${endTime}:00`);
+        while (current < end) {
+            const next = new Date(current.getTime() + 30 * 60 * 1000);
+            const startHours = current.getHours().toString().padStart(2, '0');
+            const startMins = current.getMinutes().toString().padStart(2, '0');
+            const endHours = next.getHours().toString().padStart(2, '0');
+            const endMins = next.getMinutes().toString().padStart(2, '0');
+            
+            slotsArray.push({
+                startTime: `${startHours}:${startMins}`,
+                endTime: `${endHours}:${endMins}`,
+                price: price / 2,
+                isBooked: offlineBlocked,
+                isOfflineBlocked: offlineBlocked
+            });
+            current = next;
         }
-
-        // setSlots(prevSlots => [...prevSlots, ...newSlots]);
 
         const payload = {
             dateFrom: formData.dateFrom,
             dateTo: formData.dateTo,
-            slots: newSlots[0].slots,
+            slots: slotsArray,
         };
 
         try {
@@ -408,7 +408,11 @@ export default function AddVenueSlots() {
                 });
 
                 // Perform the API request and store the response
-                const response = await axios.put(`${API_URL}/slot/delete-by-slotid/${slotId}`, {});
+                const response = await axios.put(`${API_URL}/slot/delete-by-slotid/${slotId}`, {}, {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem("token")}`
+                    }
+                });
                 
                 if (response?.data.success) {
                     Swal.close();
@@ -442,6 +446,77 @@ export default function AddVenueSlots() {
 
 
 
+    const handleAddWholeDaySlots = async (offlineBlocked = false) => {
+        const { dateFrom, dateTo, startTime, endTime, price } = formData;
+
+        const startDate = parseSlotDate(dateFrom);
+        const endDate = parseSlotDate(dateTo);
+
+        if (!startDate || !endDate || !startTime || !endTime || startTime >= endTime || startDate > endDate || price === "" || Number(price) < 0) {
+            Swal.fire({ icon: "error", title: "Invalid slot details", text: "Choose a date range, start time, later end time, and valid price." });
+            return;
+        }
+
+        Swal.fire({
+            title: 'Generating Slots...',
+            text: 'Creating slots for the whole day.',
+            icon: 'info',
+            showConfirmButton: false,
+            willOpen: () => {
+                Swal.showLoading();
+            },
+        });
+
+        const slotsArray = [];
+        let current = new Date(`2023-01-01T${startTime}:00`);
+        const end = new Date(`2023-01-01T${endTime}:00`);
+        
+        while (current < end) {
+            const next = new Date(current.getTime() + 30 * 60 * 1000);
+            const startHours = current.getHours().toString().padStart(2, '0');
+            const startMins = current.getMinutes().toString().padStart(2, '0');
+            const endHours = next.getHours().toString().padStart(2, '0');
+            const endMins = next.getMinutes().toString().padStart(2, '0');
+            
+            slotsArray.push({
+                startTime: `${startHours}:${startMins}`,
+                endTime: `${endHours}:${endMins}`,
+                price: price / 2,
+                isBooked: offlineBlocked,
+                isOfflineBlocked: offlineBlocked
+            });
+            current = next;
+        }
+
+        const payload = {
+            dateFrom: formData.dateFrom,
+            dateTo: formData.dateTo,
+            slots: slotsArray,
+        };
+
+        try {
+            const response = await axios.post(`${API_URL}/slot/add/${_id}`, payload, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    'Content-Type': 'application/json',
+                }
+            });
+            Swal.close();
+            if (response.data) {
+                Swal.fire({ icon: "success", title: "Whole day slots added", timer: 1400, showConfirmButton: false });
+                handleCloseModal();
+                fetchVenueSlots();
+            }
+        } catch (error) {
+            Swal.close();
+            Swal.fire({
+                icon: "error",
+                title: "Error adding slots",
+                text: error?.response?.data?.message || error.message
+            });
+        }
+    };
+
     return (
         <div className="venue-slots-page">
             <div className="venue-slots-header">
@@ -467,6 +542,7 @@ export default function AddVenueSlots() {
                 </Form.Select>
                 <Form.Control type="number" min="0" placeholder="Price (₹)" value={formData.price} onChange={(e) => setFormData((prev) => ({ ...prev, price: e.target.value }))} required />
                 <Button variant="success" type="submit">Add Available</Button>
+                <Button variant="success" type="button" onClick={() => handleAddWholeDaySlots(false)}>Add Whole Day</Button>
                 <Button variant="outline-danger" type="button" onClick={() => handleAddSlot(true)}>Block Offline</Button>
                 <Button variant="outline-primary" type="button" onClick={() => setShowCarryForwardModal(true)}>Carry Forward Slots</Button>
             </Form>
@@ -674,6 +750,9 @@ export default function AddVenueSlots() {
                             <Modal.Footer>
                                 <Button variant="secondary" onClick={handleCloseModal}>
                                     Close
+                                </Button>
+                                <Button variant="outline-success" type='button' onClick={() => handleAddWholeDaySlots(false)} disabled={!formData.price || !formData.startTime || !formData.endTime}>
+                                    Add Whole Day Slots
                                 </Button>
                                 <Button variant="primary" type='button' onClick={() => handleAddSlot(false)} disabled={!formData.price || !formData.startTime || !formData.endTime}>
                                     Add Slot

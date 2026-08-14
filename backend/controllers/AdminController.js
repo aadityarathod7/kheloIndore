@@ -1,7 +1,7 @@
 const User = require("../models/UserModel");
 const bcrypt = require("bcrypt");
 const otpGenerator = require("otp-generator");
-const { sendOtp, sendCustomMessage } = require("../helper/bhashMessaging");
+const { sendOtp } = require("../helper/bhashMessaging");
 const jwt = require("jsonwebtoken");
 const message = require("../config/message");
 const Admin = require("../models/AdminModel");
@@ -22,44 +22,13 @@ const CoachBooking = require("../models/CoachBookingModel");
 const PersonalTrainerBooking = require("../models/PersonalTrainerBookingModel");
 const blogModel = require('../models/BlogModel');
 const Event = require('../models/EventModel');
-
-const sendProfileCompletionLink = async (role, profile) => {
-  if (!profile || !["Coach", "Personal Trainer"].includes(role)) return null;
-  const completionToken = require("crypto").randomBytes(12).toString("hex");
-  profile.profile_completion_token = completionToken;
-  profile.onboard_email_sent = false;
-  await profile.save();
-
-  const baseUrl = process.env.WEBSITE_URL || "https://kheloindore.in";
-  const profileLabel = role === "Coach" ? "coach" : "trainer";
-  const completeLink = role === "Coach"
-    ? `${baseUrl}/coaches/complete-profile/${profile._id}?token=${completionToken}`
-    : `${baseUrl}/personal-training/complete-profile/${profile._id}?token=${completionToken}`;
-  const name = `${profile.first_name || ""} ${profile.last_name || ""}`.trim() || profileLabel;
-
-  const deliveries = [];
-  if (profile.email) {
-    deliveries.push(mail.superAdminAddUsersendEmail(
-      profile.email,
-      mailContent.onboarding_profile_link(name, completeLink)
-    ));
-  }
-  if (profile.mobile) {
-    const sms = `Khelo Indore: complete your ${profileLabel} profile: ${completeLink}`;
-    deliveries.push(sendCustomMessage({ mobile: String(profile.mobile), message: sms }));
-  }
-  await Promise.allSettled(deliveries);
-  profile.onboard_email_sent = Boolean(profile.email);
-  await profile.save();
-  return completeLink;
-};
 //signup By SuperADmin
 exports.signupBySuperAdmin = async (req, res) => {
   try {
     if (req.user?.role !== "Super Admin") {
       return res.status(403).json({ success: false, message: "Access denied." });
     }
-    const { first_name, last_name, role, mobile, email, password, languages = [], class_location = "", training_mode = "", social_media = {} } = req.body;
+    const { first_name, last_name, role, mobile, email, password } = req.body;
 
     // Validation
     let validationErrors = [];
@@ -125,10 +94,6 @@ exports.signupBySuperAdmin = async (req, res) => {
     role: role || "User",
     password: hashedPassword,
     is_admin_access: isAdminAccess,
-    languages: Array.isArray(languages) ? languages : (languages ? [languages] : []),
-    class_location,
-    training_mode,
-    social_media: social_media && typeof social_media === "object" ? social_media : {},
   };
 
   // Save user in User collection
@@ -153,14 +118,31 @@ exports.signupBySuperAdmin = async (req, res) => {
 
     await mail.superAdminAddUsersendEmail(email, emailContent);
 
-    // After registration, send the link against the actual coach/trainer profile
-    // record (its ID is different from the login User record).
+    // After registration, send coach/trainer an onboarding email + SMS with a link to complete their profile
     if (role === "Coach" || role === "Personal Trainer") {
       try {
-        const profile = role === "Coach"
-          ? await Coach.findOne({ email, mobile })
-          : await PersonalTrainer.findOne({ email, mobile });
-        await sendProfileCompletionLink(role, profile);
+        const completionToken = require("crypto").randomBytes(12).toString("hex");
+        const baseUrl = process.env.WEBSITE_URL || "https://kheloindore.in";
+        const completeLink =
+          role === "Coach"
+            ? `${baseUrl}/coaches/complete-profile/${newUser._id}?token=${completionToken}`
+            : `${baseUrl}/personal-training/complete-profile/${newUser._id}?token=${completionToken}`;
+        await mail.superAdminAddUsersendEmail(
+          email,
+          mailContent.onboarding_profile_link(`${first_name} ${last_name}`.trim(), completeLink)
+        );
+        try {
+          const { sendCustomMessage } = require("../helper/bhashMessaging");
+          const msg = `Dear ${first_name}, welcome to Khelo Indore! Complete your ${role === "Coach" ? "coach" : "trainer"} profile here: ${completeLink}`.slice(0, 160);
+          await sendCustomMessage({ mobile: String(mobile), message: msg });
+        } catch (smsErr) {
+          
+        }
+        if (role === "Coach") {
+          await Coach.findByIdAndUpdate(newUser._id, { profile_completion_token: completionToken });
+        } else {
+          await PersonalTrainer.findByIdAndUpdate(newUser._id, { profile_completion_token: completionToken });
+        }
       } catch (onboardErr) {
         
       }
@@ -233,8 +215,7 @@ exports.signup = async (req, res, next) => {
       mobile,
       email,
       otp,
-      password: hashedPassword,
-      is_admin_access: role === "Venue Admin" ? 1 : 0,
+      password: hashedPassword,    
     };
 
     // Check if user already exists
@@ -279,24 +260,7 @@ exports.signup = async (req, res, next) => {
     );
     }
     // Check for Venue Admin role
-    if (role === "Venue Admin") {
-      return res.status(200).json({
-        success: true,
-        message: "Your registration as a Venue Admin was successful. You can log in now.",
-      });
-    }
-
-    if (["Coach", "Personal Trainer"].includes(role)) {
-      // Send profile-completion link to the applicant immediately after the
-      // role profile is created; approval can proceed independently.
-      try {
-        const profile = role === "Coach"
-          ? await Coach.findById(roleSpecificId)
-          : await PersonalTrainer.findById(roleSpecificId);
-        await sendProfileCompletionLink(role, profile);
-      } catch (onboardErr) {
-        console.error("Profile onboarding delivery failed:", onboardErr.message);
-      }
+    if (["Venue Admin", "Coach", "Personal Trainer"].includes(role)) {
       // Notify Super Admin for approval (can send email, create a notification, etc.)  
       const superAdminEmail = process.env.SUPER_ADMIN_EMAIL; // Ensure SUPER_ADMIN_EMAIL is set in your environment
       const approvalLink = `https://kheloindore.in/admin/approve-coach-trainer/${roleSpecificId}`; // Approval link // Example approval link
@@ -362,7 +326,7 @@ exports.signup = async (req, res, next) => {
 
     // Generate JWT token for non-Venue Admin users
     const payload = { mobile, email, role };
-    const token = jwt.sign(payload, process.env.JWT_AUTH, { expiresIn: "10m" });
+    const token = jwt.sign(payload, process.env.JWT_AUTH, { expiresIn: "5m" });
 
     // Prepare OTP verification email for the user
     req.body.mail = {
@@ -717,7 +681,7 @@ exports.loginUserWithMobile = async (req, res) => {
       });
     }
 
-    if (checkUser && checkUser.status === false) {
+    if (checkUser && checkUser.status === false && (checkUser.role === "User" || checkUser.is_admin_access === 2)) {
       return res.json({
         status: 400,
         success: false,
@@ -725,7 +689,7 @@ exports.loginUserWithMobile = async (req, res) => {
       });
     }
 
-    if (checkCoach && checkCoach.status === false) {
+    if (checkCoach && checkCoach.status === false && checkCoach.is_admin_access === 2) {
       return res.json({
         status: 400,
         success: false,
@@ -755,7 +719,7 @@ exports.loginUserWithMobile = async (req, res) => {
 
     const payload = {
       mobile: mobile,
-      role: checkCoach ? checkCoach.role : (checkUser ? checkUser.role : "User"),
+      role: checkCoach ? checkCoach.role : (checkUser ? (checkUser.role === "Venue Admin" ? "User" : checkUser.role) : "User"),
     };
     const token = jwt.sign(payload, process.env.JWT_AUTH, { expiresIn: "5m" });
 
@@ -867,7 +831,7 @@ exports.loginCheckOTP = async (req, res) => {
       userID: user._id,
       first_name: user.first_name || "",
       last_name: user.last_name || "",
-      role: user.role || "User",
+      role: user.role === "Venue Admin" ? "User" : (user.role || "User"),
       profileCompleted: isProfileCompleted,
     };
     const token = jwt.sign(payload, process.env.JWT_AUTH, { expiresIn: "1d" });
@@ -1109,10 +1073,6 @@ exports.deleteAdmin = async (req, res) => {
 
 exports.UpdateUser = async (req, res) => {
   try {
-    const isSuperAdminRequest = req.originalUrl?.includes("/super-admin/");
-    if (isSuperAdminRequest && req.user?.role !== "Super Admin") {
-      return res.status(403).json({ success: false, message: "Only Super Admin can edit user details." });
-    }
     const id = req.params.id;
     if (!req.body) {
       return res.status(400).json({
@@ -1121,7 +1081,7 @@ exports.UpdateUser = async (req, res) => {
       });
     }
 
-    const { first_name, last_name, email, mobile, status, zipcode, state, stateId, city, address, user_info, is_admin_access, role, profile_image } = req.body;
+    const { first_name, last_name, email, mobile, status, zipcode, state,stateId, city, address,user_info,is_admin_access } = req.body;
 
     // Validate first name and last name
     const nameRegex = /^[A-Za-z\s]+$/;
@@ -1138,12 +1098,8 @@ exports.UpdateUser = async (req, res) => {
       });
     }
 
-    if (email && !/^\S+@\S+\.\S+$/.test(String(email))) {
-      return res.status(400).json({ success: false, message: "Please enter a valid email address." });
-    }
-
     // Validate mobile number to be exactly 10 digits
-    if (mobile && !/^\d{10}$/.test(String(mobile))) {
+    if (mobile && mobile.toString().length !== 10) {
       return res.status(400).json({
         success: false,
         message: "Mobile number must be exactly 10 digits.",
@@ -1166,31 +1122,11 @@ exports.UpdateUser = async (req, res) => {
       });
     }
 
-    // Email and phone are login identifiers, so they must remain unique when
-    // Super Admin changes them.
-    if (email || mobile) {
-      const duplicate = await User.findOne({
-        _id: { $ne: id },
-        $or: [
-          ...(email ? [{ email: String(email).trim().toLowerCase() }] : []),
-          ...(mobile ? [{ mobile: Number(mobile) }] : []),
-        ],
-      });
-      if (duplicate) {
-        return res.status(400).json({
-          success: false,
-          message: duplicate.email === String(email).trim().toLowerCase()
-            ? "This email address is already in use."
-            : "This mobile number is already in use.",
-        });
-      }
-    }
-
     // Update fields if provided, otherwise keep the existing user data
     const updated_first_name = first_name ? first_name : user.first_name;
     const updated_last_name = last_name ? last_name : user.last_name;
-    const updated_email = email !== undefined && email !== "" ? String(email).trim().toLowerCase() : user.email;
-    const updated_mobile = mobile !== undefined && mobile !== "" ? Number(mobile) : user.mobile;
+    const updated_email = email ? email : user.email;
+    const updated_mobile = mobile ? mobile : user.mobile;
     const updated_status = status !== undefined ? status : user.status;
     const updated_zipcode = zipcode ? zipcode : user.zipcode;
     const updated_state = state ? state : user.state;
@@ -1198,16 +1134,11 @@ exports.UpdateUser = async (req, res) => {
     const updated_address = address ? address : user.address;
     const updated_user_info = user_info ? user_info : user.user_info;
     const updated_stateId =stateId ? stateId : user.stateId;
-    const updated_role = isSuperAdminRequest && role !== undefined ? role : user.role;
-    const updated_admin_access = isSuperAdminRequest && is_admin_access !== undefined ? is_admin_access : user.is_admin_access;
-    const updated_profile_image = profile_image !== undefined ? profile_image : user.profile_image;
     const updated_user = await User.findOneAndUpdate(
       { _id: id },
       {
         first_name: updated_first_name,
         last_name: updated_last_name,
-        email: updated_email,
-        mobile: updated_mobile,
         status: updated_status,
         zipcode: updated_zipcode,
         state: updated_state,
@@ -1215,11 +1146,8 @@ exports.UpdateUser = async (req, res) => {
         address: updated_address,
         user_info: updated_user_info,
         stateId:updated_stateId,
-        role: updated_role,
-        is_admin_access: updated_admin_access,
-        profile_image: updated_profile_image,
       },
-      { new: true, runValidators: true }
+      { new: true }
     ).exec();
 
     return res.status(200).json({
@@ -1786,17 +1714,6 @@ exports.updateAdminStatus = async (req, res) => {
       subject,
       html: htmlContent,
     });
-
-    // Send the SMS
-    try {
-      const { sendCustomMessage } = require("../helper/bhashMessaging");
-      const smsMessage = is_admin_access === 1
-        ? `Dear ${userToSendCredentials.first_name}, your request for role ${role} has been approved. You can now login at kheloindore.in/admin.`
-        : `Dear ${userToSendCredentials.first_name}, your request status for role ${role} has been updated. Please contact support.`;
-      await sendCustomMessage({ mobile: userToSendCredentials.mobile, message: smsMessage });
-    } catch (smsError) {
-      console.error("SMS notification failed in updateAdminStatus:", smsError.message);
-    }
 
     // Set demo_password to null after sending credentials
     // if (is_admin_access === 1 && userToSendCredentials.demo_password) {

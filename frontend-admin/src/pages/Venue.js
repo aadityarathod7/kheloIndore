@@ -122,7 +122,12 @@ const AddVenue = () => {
     setCountryid(101);
     fetchNearbyLocations();
     fetchVendor();
-    venueOwnerDetails();
+    if (adminRole === "Super Admin") {
+      venueOwnerDetails();
+    } else {
+      const currentUserId = localStorage.getItem("id");
+      setFormData(prev => ({ ...prev, vendor_id: currentUserId }));
+    }
   }, []);
 
 
@@ -1030,61 +1035,63 @@ const AddVenue = () => {
               </Col>
             </Row>
             <Row>
-              <Col md={4}>
-                <Form.Group controlId="formVenueOwner" className="mb-2">
-                  <Form.Label className="heading">
-                    Venue Owner
-                    <span style={{ color: "red" }}>*</span>
-                  </Form.Label>
-                  <Select
-                    name="vendor_id"
-                    value={
-                      venueOwnerData
-                        .map((owner) => ({
-                          label: `${owner.first_name || ""} ${owner.last_name || ""} (${owner.mobile || ""})`,
-                          value: owner._id,
-                        }))
-                        .find((opt) => opt.value === formData.vendor_id) || null
-                    }
-                    options={venueOwnerData.map((owner) => ({
-                      label: `${owner.first_name || ""} ${owner.last_name || ""} (${owner.mobile || ""})`,
-                      value: owner._id,
-                    }))}
-                    onChange={(selectedOption) => {
-                      setFormData({
-                        ...formData,
-                        vendor_id: selectedOption ? selectedOption.value : "",
-                      });
-                      setErrors((prevErrors) => ({
-                        ...prevErrors,
-                        vendor_id: "",
-                      }));
-                    }}
-                    placeholder="Select Venue Owner"
-                    styles={{
-                      control: (base) => ({
-                        ...base,
-                        borderColor: errors.vendor_id ? "red" : base.borderColor,
-                        "&:hover": {
-                          borderColor: errors.vendor_id ? "red" : base["&:hover"].borderColor,
-                        },
-                      }),
-                    }}
-                  />
-                  {errors.vendor_id && (
-                    <div
-                      style={{
-                        color: "red",
-                        fontSize: "0.875em",
-                        marginTop: "0.25rem",
+              {adminRole === "Super Admin" && (
+                <Col md={4}>
+                  <Form.Group controlId="formVenueOwner" className="mb-2">
+                    <Form.Label className="heading">
+                      Venue Owner
+                      <span style={{ color: "red" }}>*</span>
+                    </Form.Label>
+                    <Select
+                      name="vendor_id"
+                      value={
+                        venueOwnerData
+                          .map((owner) => ({
+                            label: `${owner.first_name || ""} ${owner.last_name || ""} (${owner.mobile || ""})`,
+                            value: owner._id,
+                          }))
+                          .find((opt) => opt.value === formData.vendor_id) || null
+                      }
+                      options={venueOwnerData.map((owner) => ({
+                        label: `${owner.first_name || ""} ${owner.last_name || ""} (${owner.mobile || ""})`,
+                        value: owner._id,
+                      }))}
+                      onChange={(selectedOption) => {
+                        setFormData({
+                          ...formData,
+                          vendor_id: selectedOption ? selectedOption.value : "",
+                        });
+                        setErrors((prevErrors) => ({
+                          ...prevErrors,
+                          vendor_id: "",
+                        }));
                       }}
-                    >
-                      {errors.vendor_id}
-                    </div>
-                  )}
-                </Form.Group>
-              </Col>
-              <Col md={8}>
+                      placeholder="Select Venue Owner"
+                      styles={{
+                        control: (base) => ({
+                          ...base,
+                          borderColor: errors.vendor_id ? "red" : base.borderColor,
+                          "&:hover": {
+                            borderColor: errors.vendor_id ? "red" : base["&:hover"].borderColor,
+                          },
+                        }),
+                      }}
+                    />
+                    {errors.vendor_id && (
+                      <div
+                        style={{
+                          color: "red",
+                          fontSize: "0.875em",
+                          marginTop: "0.25rem",
+                        }}
+                      >
+                        {errors.vendor_id}
+                      </div>
+                    )}
+                  </Form.Group>
+                </Col>
+              )}
+              <Col md={adminRole === "Super Admin" ? 8 : 12}>
                 <Form.Group controlId="formAddress">
                   <Form.Label className="heading">
                     Address
@@ -1403,7 +1410,7 @@ const AddVenue = () => {
               </Col>
             </Row>
             <Row>
-              <Col md={8}>
+              <Col md={4}>
                 <Form.Group controlId="formName" className="mb-2">
                   <Form.Label className="heading">
                     Game Type
@@ -1413,13 +1420,32 @@ const AddVenue = () => {
                     type="text"
                     placeholder="Enter Game Type"
                     name="gameType"
-                    isInvalid={!!errors.gameType}
                     value={formData.gameType}
+                    isInvalid={!!errors.gameType}
                     onChange={handleChange}
                     className="add-venue-form-custom-class"
                   />
                   <Form.Control.Feedback type="invalid">
                     {errors.gameType}
+                  </Form.Control.Feedback>
+                </Form.Group>
+              </Col>
+              <Col md={4}>
+                <Form.Group controlId="formPricePerHr" className="mb-2">
+                  <Form.Label className="heading">
+                    Default Price / Hr (₹) <span style={{ color: "red" }}>*</span>
+                  </Form.Label>
+                  <Form.Control
+                    type="number"
+                    min="0"
+                    placeholder="Enter Default Price"
+                    name="price_per_hr"
+                    value={formData.price_per_hr}
+                    isInvalid={!!errors.price_per_hr}
+                    onChange={handleChange}
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    {errors.price_per_hr}
                   </Form.Control.Feedback>
                 </Form.Group>
               </Col>
@@ -1989,7 +2015,7 @@ const AddVenue = () => {
                         />
                       </Form.Group>
                     </Col>
-                    <Col md={2}>
+                    <Col md={1}>
                       <Form.Group>
                         <Form.Label className="fw-bold">Capacity</Form.Label>
                         <Form.Control
@@ -2000,11 +2026,26 @@ const AddVenue = () => {
                             updated[index].capacity = Number(e.target.value) || "";
                             setFormData({ ...formData, sports_details: updated });
                           }}
-                          placeholder="Max players"
+                          placeholder="Capacity"
                         />
                       </Form.Group>
                     </Col>
-                    <Col md={4}>
+                    <Col md={2}>
+                      <Form.Group>
+                        <Form.Label className="fw-bold">Size / Dimension</Form.Label>
+                        <Form.Control
+                          type="text"
+                          value={sportDetail.size || ""}
+                          onChange={(e) => {
+                            const updated = [...formData.sports_details];
+                            updated[index].size = e.target.value;
+                            setFormData({ ...formData, sports_details: updated });
+                          }}
+                          placeholder="E.g. 100x60"
+                        />
+                      </Form.Group>
+                    </Col>
+                    <Col md={3}>
                       <Form.Group>
                         <Form.Label className="fw-bold">Notes / Description</Form.Label>
                         <Form.Control
@@ -2015,7 +2056,7 @@ const AddVenue = () => {
                             updated[index].description = e.target.value;
                             setFormData({ ...formData, sports_details: updated });
                           }}
-                          placeholder="E.g. timings, ground type"
+                          placeholder="Timings, ground type"
                         />
                       </Form.Group>
                     </Col>
@@ -2037,7 +2078,7 @@ const AddVenue = () => {
                 <button
                   type="button"
                   onClick={() => {
-                    const newDetail = { sport: "", price_per_hr: "", capacity: "", description: "" };
+                    const newDetail = { sport: "", price_per_hr: "", capacity: "", description: "", size: "" };
                     setFormData({ ...formData, sports_details: [...(formData.sports_details || []), newDetail] });
                   }}
                   className="btn btn-outline-success mt-2"

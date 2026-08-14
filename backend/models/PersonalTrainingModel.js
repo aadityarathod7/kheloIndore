@@ -143,6 +143,10 @@ const PersonalTrainerSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    verification_status: {
+      type: Number,
+      default: 0
+    },
     read_seen: {
       type: Number, // 1 for open, 0 for close
       default: 1,  // Default to open
