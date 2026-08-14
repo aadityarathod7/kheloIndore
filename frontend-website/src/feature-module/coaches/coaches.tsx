@@ -7,6 +7,22 @@ import axios from "axios";
 import { API_URL, IMG_URL } from "../../ApiUrl";
 import Swal from "sweetalert2";
 
+const matchCategory = (cat, trainerType, specializations, q) => {
+  const c = (cat || "").toLowerCase().trim();
+  const t = (trainerType || "").toLowerCase().trim();
+  const target = q.toLowerCase().trim();
+
+  const specs = Array.isArray(specializations)
+    ? specializations.join(" ").toLowerCase()
+    : String(specializations || "").toLowerCase();
+
+  if (target === "tennis") {
+    return (c === "tennis" || c === "tennis court" || t.includes("tennis") || specs.includes("tennis")) && !c.includes("table") && !t.includes("table") && !specs.includes("table");
+  }
+
+  return c === target || c.includes(target) || t === target || t.includes(target) || specs.includes(target);
+};
+
 interface Coach {
   full_name: ReactNode;
   trainer_type: any;
@@ -429,11 +445,9 @@ const CoachesGrid = (_props: { id?: string }) => {
           return !isStandard;
         });
       } else {
-        filteredData = filteredData.filter(
-          (coach) =>
-            coach.category?.toLowerCase()?.includes(q) ||
-            coach.trainer_type?.toLowerCase()?.includes(q)
-        );
+        filteredData = filteredData.filter((coach) => {
+          return matchCategory(coach.category, coach.trainer_type, coach.specializations, q);
+        });
       }
     }
 

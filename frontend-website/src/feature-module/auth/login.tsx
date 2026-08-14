@@ -370,7 +370,7 @@ const Login = () => {
               gap: "4px"
             }}>
               <i className="fa-solid fa-handshake" style={{ fontSize: "11px" }} />
-              Venues & Coaches
+              Venues, Coaches & Trainers
             </span>
           </div>
           
@@ -404,7 +404,7 @@ const Login = () => {
                     <circle cx="12" cy="12" r="4" />
                   </svg>
                 </div>
-                <span style={{ fontSize: "12.5px", fontWeight: "700", color: "#0F172A" }}>List Your Turf & Services</span>
+                <span style={{ fontSize: "12.5px", fontWeight: "700", color: "#0F172A" }}>List Your Venue & Services</span>
               </div>
               <span style={{ color: "#16A34A", fontSize: "12px", fontWeight: "700" }}>Register →</span>
             </Link>

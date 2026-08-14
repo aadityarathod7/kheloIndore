@@ -6,6 +6,22 @@ import { all_routes } from "../router/all_routes";
 import axios from "axios";
 import { API_URL, IMG_URL } from "../../ApiUrl";
 import Swal from "sweetalert2";
+
+const matchCategory = (cat, trainerType, specializations, q) => {
+  const c = (cat || "").toLowerCase().trim();
+  const t = (trainerType || "").toLowerCase().trim();
+  const target = q.toLowerCase().trim();
+
+  const specs = Array.isArray(specializations)
+    ? specializations.join(" ").toLowerCase()
+    : String(specializations || "").toLowerCase();
+
+  if (target === "tennis") {
+    return (c === "tennis" || c === "tennis court" || t.includes("tennis") || specs.includes("tennis")) && !c.includes("table") && !t.includes("table") && !specs.includes("table");
+  }
+
+  return c === target || c.includes(target) || t === target || t.includes(target) || specs.includes(target);
+};
 import { getCategoryIcon, getCategoryStyle } from "../../utils/categoryVisual";
 
 interface Trainer {
@@ -388,12 +404,7 @@ const BlogList = () => {
         });
       } else {
         filteredData = filteredData.filter((t) => {
-          const catMatch = t.category?.toLowerCase()?.includes(q);
-          const typeMatch = t.trainer_type?.toLowerCase()?.includes(q);
-          const specMatch = Array.isArray(t.specializations)
-            ? t.specializations.some((s) => String(s || "").toLowerCase().includes(q))
-            : String(t.specializations || "").toLowerCase().includes(q);
-          return catMatch || typeMatch || specMatch;
+          return matchCategory(t.category, t.trainer_type, t.specializations, q);
         });
       }
     }

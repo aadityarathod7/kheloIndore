@@ -154,7 +154,7 @@ const coachSchema = new mongoose.Schema(
     },
     training_mode: {
       type: String,
-      enum: ["Online", "Offline", "Both"],
+      enum: ["Online", "Offline", "Both", ""],
       default: "",
     },
     // Number of students trained by the coach

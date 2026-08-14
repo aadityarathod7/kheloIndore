@@ -3,6 +3,37 @@ import { Link } from "react-router-dom";
 import axios from "axios";
 import { API_URL, IMG_URL } from "../../ApiUrl";
 import Loader from "../loader/loader";
+
+const cleanCategoryName = (name) => {
+  const lower = name.toLowerCase().trim();
+  if (lower === "cricket grounds") return "Cricket";
+  if (lower === "tennis court") return "Tennis";
+  if (lower === "basketball stadium") return "Basketball";
+  if (lower === "volleyball") return "Volleyball";
+  if (lower === "football") return "Football";
+  if (lower === "pool club") return "Pool";
+  if (lower === "archery club") return "Archery";
+  if (lower === "swiming academy" || lower === "swimming academy") return "Swimming";
+  if (lower === "gym") return "Fitness";
+  // Capitalize first letter of each word as fallback
+  return name.replace(/\b\w/g, c => c.toUpperCase());
+};
+
+const matchCategory = (cat, trainerType, specializations, q) => {
+  const c = (cat || "").toLowerCase().trim();
+  const t = (trainerType || "").toLowerCase().trim();
+  const target = q.toLowerCase().trim();
+
+  const specs = Array.isArray(specializations)
+    ? specializations.join(" ").toLowerCase()
+    : String(specializations || "").toLowerCase();
+
+  if (target === "tennis") {
+    return (c === "tennis" || c === "tennis court" || t.includes("tennis") || specs.includes("tennis")) && !c.includes("table") && !t.includes("table") && !specs.includes("table");
+  }
+
+  return c === target || c.includes(target) || t === target || t.includes(target) || specs.includes(target);
+};
 import { getCategoryIcon, getCategoryStyle } from "../../utils/categoryVisual";
 
 const getCategoryImage = (imgStr?: string, categoryName = "") => {
@@ -76,12 +107,15 @@ const CoachesCategory = () => {
         setCoaches(mappedCoaches);
 
         const dbCategories = catRes.data.categories || [];
-        const mappedCategories = dbCategories.map((c: any) => ({
-          id: c._id,
-          name: c.category_name,
-          slug: slugify(c.category_name),
-          image: getCategoryImage(c.images && c.images[0], c.category_name)
-        }));
+        const mappedCategories = dbCategories.map((c: any) => {
+          const cleanedName = cleanCategoryName(c.category_name);
+          return {
+            id: c._id,
+            name: cleanedName,
+            slug: slugify(cleanedName),
+            image: getCategoryImage(c.images && c.images[0], c.category_name)
+          };
+        });
         setCategories(mappedCategories);
         setLoading(false);
       } catch (error) {
@@ -98,28 +132,11 @@ const CoachesCategory = () => {
     });
 
     coachesList.forEach((c) => {
-      const cat = (c.category || "").toLowerCase().replace(/_/g, " ").trim();
-      const trainerType = (c.trainer_type || "").toLowerCase().replace(/_/g, " ").trim();
-      const spec = Array.isArray(c.specializations)
-        ? c.specializations.join(" ").toLowerCase()
-        : String(c.specializations || "").toLowerCase();
-
-      const matched = categories.find((catObj) => {
-        const cName = catObj.name.toLowerCase().trim();
-        const validCat = cat.length >= 3 && cat !== "other" && cat !== "-";
-        const validTrainerType = trainerType.length >= 3 && trainerType !== "other" && trainerType !== "-";
-        return (
-          (validCat && cat.includes(cName)) ||
-          (validTrainerType && trainerType.includes(cName)) ||
-          (validCat && cName.includes(cat)) ||
-          (validTrainerType && cName.includes(trainerType)) ||
-          spec.includes(cName)
-        );
+      categories.forEach((catObj) => {
+        if (matchCategory(c.category, c.trainer_type, c.specializations, catObj.name)) {
+          counts[catObj.id]++;
+        }
       });
-
-      if (matched) {
-        counts[matched.id]++;
-      }
     });
 
     return counts;

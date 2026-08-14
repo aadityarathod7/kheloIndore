@@ -104,8 +104,6 @@ useEffect(() => {
         dataSource={[...notifications, ...bookings]}
         renderItem={(item) => {
           if (!item.info) return <List.Item><div><strong>{item.title}</strong><div className="text-muted small">{item.message}</div></div></List.Item>;
-        dataSource={bookings}
-        renderItem={(item) => {
           const customerName = item.info?.user_id 
             ? `${item.info.user_id.first_name} ${item.info.user_id.last_name}`
             : "Customer";

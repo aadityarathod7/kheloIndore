@@ -76,7 +76,7 @@ const PersonalTrainerSchema = new mongoose.Schema(
    },
     languages: { type: [String], default: [] },
     sports: { type: [String], default: [] },
-    training_mode: { type: String, enum: ["Online", "Offline", "Both"], default: "" },
+    training_mode: { type: String, enum: ["Online", "Offline", "Both", ""], default: "" },
     training_levels: { type: [String], default: [] },
     age_groups: { type: [String], default: [] },
     certifications: { type: [String], default: [] },
