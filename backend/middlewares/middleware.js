@@ -127,3 +127,45 @@ exports.updateAuth = async (req, res, next) => {
   }
 };
 
+exports.requireRole = (...roles) => {
+  return (req, res, next) => {
+    if (!req.user || !roles.includes(req.user.role)) {
+      return res.status(403).json({
+        success: false,
+        message: `Access denied. Requires one of roles: ${roles.join(", ")}`,
+      });
+    }
+    next();
+  };
+};
+
+exports.isSuperAdmin = async (req, res, next) => {
+  if (req.user?.role !== "Super Admin") {
+    return res.status(403).json({
+      success: false,
+      message: "Access denied. Private route for Super Admin.",
+    });
+  }
+  next();
+};
+
+exports.isCoach = async (req, res, next) => {
+  if (req.user?.role !== "Coach") {
+    return res.status(403).json({
+      success: false,
+      message: "Access denied. Private route for Coach.",
+    });
+  }
+  next();
+};
+
+exports.isTrainer = async (req, res, next) => {
+  if (req.user?.role !== "Personal Trainer") {
+    return res.status(403).json({
+      success: false,
+      message: "Access denied. Private route for Personal Trainer.",
+    });
+  }
+  next();
+};
+

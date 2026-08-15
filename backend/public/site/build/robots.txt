@@ -1,0 +1,13 @@
+# Khelo Indore crawler rules
+User-agent: *
+Allow: /
+
+# Private, account-specific, and administrative areas
+Disallow: /admin/
+Disallow: /user-dashboard/
+Disallow: /coach-dashboard/
+Disallow: /chat/
+Disallow: /payment-success
+Disallow: /payment-failed
+
+Sitemap: https://qa.kheloindore.in/sitemap.xml
