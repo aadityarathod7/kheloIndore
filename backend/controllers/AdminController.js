@@ -236,23 +236,24 @@ exports.signup = async (req, res, next) => {
 
     // Save data in the respective role-specific table
     let roleSpecificId;
+    const userDataWithAccess = { ...userData, is_admin_access: 1 };
     if (role === "Coach") {
-      const newUser = new User(userData);
+      const newUser = new User(userDataWithAccess);
       const savedUser = await newUser.save();
-      const coach = new Coach(userData);
+      const coach = new Coach(userDataWithAccess);
       const savedCoach = await coach.save();
       roleSpecificId = savedCoach._id;
     } else if (role === "Personal Trainer") {
-      const newUser = new User(userData);
+      const newUser = new User(userDataWithAccess);
       const savedUser = await newUser.save();
-      const personalTrainer = new PersonalTrainer(userData);
+      const personalTrainer = new PersonalTrainer(userDataWithAccess);
       const savedTrainer = await personalTrainer.save();
       roleSpecificId = savedTrainer._id;
-    }else if (role === "Venue Admin") {
-      const newUser = new User(userData);
+    } else if (role === "Venue Admin") {
+      const newUser = new User(userDataWithAccess);
       const savedUser = await newUser.save();
       roleSpecificId = savedUser._id;
-    }else if (role === "User") {     // Save or update user data for verification
+    } else if (role === "User") {     // Save or update user data for verification
     await signupVerifyOTP.findOneAndUpdate(
       { $or: [{ mobile }, { email }] },
       userData,
@@ -600,11 +601,11 @@ exports.loginWithPassword = async (req, res) => {
         message: "Your account is deactivated. Please contact the administrator."
       });
     }
-    // Check admin access status for non-Super Admin users
-    if (user.role !== "Super Admin" && user.is_admin_access !== 1) {
+    // Block only if explicitly deactivated/rejected by Super Admin (is_admin_access === 2)
+    if (user.is_admin_access === 2) {
       return res.status(403).json({
         success: false,
-        message: "Access denied. Your account is not approved. Please contact the administrator."
+        message: "Access denied. Your account has been deactivated or rejected by the administrator."
       });
     }
 
