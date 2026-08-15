@@ -42,11 +42,14 @@ const getCashfreeHeaders = () => ({
 
 const getCashfreeCustomerDetails = async (userId) => {
   const user = await User.findById(userId).lean();
-  const phone = String(user?.mobile || user?.phone || "9999999999").replace(/\D/g, "").slice(-10) || "9999999999";
+  const rawPhone = String(user?.mobile || user?.phone || "9999999999").replace(/\D/g, "").slice(-10);
+  const phone = rawPhone.length === 10 ? rawPhone : "9999999999";
+  const email = (user?.email && typeof user.email === "string" && user.email.includes("@")) ? user.email : "customer@kheloindore.in";
+  const name = [user?.first_name, user?.last_name].filter(Boolean).join(" ") || "Khelo Indore User";
   return {
     customer_id: `ki_${String(userId)}`,
-    customer_name: [user?.first_name, user?.last_name].filter(Boolean).join(" ") || "Khelo Indore User",
-    customer_email: user?.email || undefined,
+    customer_name: name,
+    customer_email: email,
     customer_phone: phone,
   };
 };
@@ -54,7 +57,10 @@ const getCashfreeCustomerDetails = async (userId) => {
 const createCashfreeOrder = async ({ orderId, amount, userId, service }) => {
   const appId = process.env.CASHFREE_APP_ID;
   const secretKey = process.env.CASHFREE_SECRET_KEY;
-  const baseRedirectUrl = process.env.REDIRECT_API_URL || "http://localhost:4000";
+  let baseRedirectUrl = process.env.REDIRECT_API_URL || "http://localhost:4000";
+  if (!baseRedirectUrl.startsWith("http://") && !baseRedirectUrl.startsWith("https://")) {
+    baseRedirectUrl = `https://${baseRedirectUrl}`;
+  }
 
   if (!appId || !secretKey) {
     console.warn("CASHFREE credentials not configured in .env. Operating in dev test payment mode.");
@@ -68,20 +74,31 @@ const createCashfreeOrder = async ({ orderId, amount, userId, service }) => {
     };
   }
 
-  const response = await axios.post(`${getCashfreeBaseUrl()}/orders`, {
-    order_id: orderId,
-    order_amount: Number(amount),
-    order_currency: "INR",
-    customer_details: await getCashfreeCustomerDetails(userId),
-    order_meta: {
-      return_url: `${baseRedirectUrl}/api/get/${service}/payment/status/${orderId}`,
-    },
-    order_note: `Khelo Indore ${service} booking`,
-  }, {
-    headers: getCashfreeHeaders(),
-    timeout: 30000,
-  });
-  return response.data;
+  try {
+    const customerDetails = await getCashfreeCustomerDetails(userId);
+    const returnUrl = `${baseRedirectUrl}/api/get/${service}/payment/status/${orderId}`;
+    
+    console.log(`Creating Cashfree order ${orderId} (Amount: ₹${amount})...`);
+
+    const response = await axios.post(`${getCashfreeBaseUrl()}/orders`, {
+      order_id: orderId,
+      order_amount: Number(amount),
+      order_currency: "INR",
+      customer_details: customerDetails,
+      order_meta: {
+        return_url: returnUrl,
+      },
+      order_note: `Khelo Indore ${service} booking`,
+    }, {
+      headers: getCashfreeHeaders(),
+      timeout: 30000,
+    });
+    return response.data;
+  } catch (err) {
+    const errorDetails = err.response?.data?.message || err.response?.data?.message || err.message;
+    console.error("Cashfree Order Creation Error Details:", err.response?.data || err.message);
+    throw new Error(errorDetails || "Failed to initialize Cashfree payment");
+  }
 };
 
 const getCashfreePaymentStatus = async (orderId) => {
