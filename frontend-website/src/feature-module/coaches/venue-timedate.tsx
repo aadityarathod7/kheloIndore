@@ -690,18 +690,8 @@ const VenueTimeDate = () => {
                 
                 {/* Header */}
                 <h3 className="fw-bold text-dark pb-3 mb-3 border-bottom d-flex align-items-center gap-2" style={{ fontSize: "18px", color: "#0F172A", borderColor: "#F1F5F9" }}>
-                  <i className="feather-bar-chart-2 text-success" /> Rate Chart
+                  <i className="feather-shopping-cart text-success" /> Booking Summary
                 </h3>
-
-                <div className="rounded-3 overflow-hidden mb-4" style={{ border: "1px solid #E2E8F0" }}>
-                  <div className="d-flex justify-content-between px-3 py-2" style={{ background: "#2563EB", color: "#fff", fontSize: "11px", fontWeight: 700 }}><span>TIME</span><span>STATUS</span><span>RATE</span></div>
-                  {displaySlots.slice(0, 7).map((slot, index) => (
-                    <div key={`${slot.startTime}-${index}`} className="d-flex justify-content-between px-3 py-2 border-top" style={{ fontSize: "12px", background: slot.isBooked ? "#FEF2F2" : "#F0FDF4" }}>
-                      <span>{formatTimeDisplay(slot.startTime, timeFormat)}</span><span>{slot.isBooked ? "Booked" : "Available"}</span><strong>₹{slot.price}</strong>
-                    </div>
-                  ))}
-                  {!displaySlots.length && <div className="p-3 text-muted text-center">No rates for this date.</div>}
-                </div>
 
                 {/* Detail Summary Rows */}
                 <div className="d-flex flex-column gap-3 mb-4">
