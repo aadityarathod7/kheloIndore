@@ -972,13 +972,11 @@ const venuePaymentStatus = async (req, res) => {
     };
 
     // Payment Success Logic
-    if (result.data.success == true) {
-
-      if (result.data.code == "PAYMENT_SUCCESS") {
-        const existing = await Booking.findOne({ merchantTransaction_id: txnId })
-        if (existing) {
-          return safeRedirect(res, process.env.REDIRECT_URL);
-        }
+    if (result.data.success == true || state === "COMPLETED" || responseCode === "PAYMENT_SUCCESS") {
+      const existing = await Booking.findOne({ merchantTransaction_id: txnId });
+      if (existing) {
+        return safeRedirect(res, process.env.REDIRECT_URL);
+      }
 
       const newTransaction = await Transaction.create({
         user_id,
@@ -1491,32 +1489,32 @@ const slotDates = `${formattedStartDate} to ${formattedEndDate}`;
     var invoicePath = path.join(__dirname, `../public/pdf/${filename}`);
     var pdfUrl = `/pdf/${filename}`;
     let hasPdf = false;
+    let browser;
     try {
-      const browser = await puppeteer.launch(getPuppeteerLaunchOptions());
+      browser = await puppeteer.launch(getPuppeteerLaunchOptions());
       const page = await browser.newPage();
-      await page.setContent(html, { waitUntil: "networkidle0" });
+      await page.setContent(html, { waitUntil: "domcontentloaded", timeout: 10000 });
       await page.pdf({
         path: invoicePath,
-        formate: "A3",
+        format: "A3",
         printBackground: true,
       });
-      await browser.close();
       hasPdf = true;
     } catch (pdfError) {
-      console.error("PDF Generation failed in coachPaymentStatus:", pdfError);
+      console.error("PDF Generation failed in coachPaymentStatus:", pdfError.message || pdfError);
+    } finally {
+      if (browser) {
+        try { await browser.close(); } catch (e) {}
+      }
     }
     const attachedFiles = hasPdf ? [{ filename, path: invoicePath }] : [];
           // Create the booking record
 
-         
-          if (result.data.success == true) {
-
-            if (result.data.code == "PAYMENT_SUCCESS") {
-
-              const existing = await CoachBooking.findOne({  merchantTransaction_id: merchantTransactionId })
-        if (existing) {
-          return res.redirect(process.env.REDIRECT_URL);
-        }
+          if (result.data.success == true || state === "COMPLETED" || responseCode === "PAYMENT_SUCCESS") {
+            const existing = await CoachBooking.findOne({ merchantTransaction_id: merchantTransactionId });
+            if (existing) {
+              return safeRedirect(res, process.env.REDIRECT_URL);
+            }
               const newBooking = await CoachBooking.create({
                 userId: user_id,
                 coachId,
@@ -1930,29 +1928,31 @@ const slotDates = `${formattedStartDate} to ${formattedEndDate}`;
     var invoicePath = path.join(__dirname, `../public/pdf/${filename}`);
     var pdfUrl = `/pdf/${filename}`;
     let hasPdf = false;
+    let browser;
     try {
-      const browser = await puppeteer.launch(getPuppeteerLaunchOptions());
+      browser = await puppeteer.launch(getPuppeteerLaunchOptions());
       const page = await browser.newPage();
-      await page.setContent(html, { waitUntil: "networkidle0" });
+      await page.setContent(html, { waitUntil: "domcontentloaded", timeout: 10000 });
       await page.pdf({
         path: invoicePath,
-        formate: "A3",
+        format: "A3",
         printBackground: true,
       });
-      await browser.close();
       hasPdf = true;
     } catch (pdfError) {
-      console.error("PDF Generation failed in personalTrainerPaymentStatus:", pdfError);
+      console.error("PDF Generation failed in personalTrainerPaymentStatus:", pdfError.message || pdfError);
+    } finally {
+      if (browser) {
+        try { await browser.close(); } catch (e) {}
+      }
     }
     const attachedFiles = hasPdf ? [{ filename, path: invoicePath }] : [];
           
-        if (result.data.success == true) {
-         if (result.data.code == "PAYMENT_SUCCESS") {
-   
-          const existing = await PersonalTrainerBooking.findOne({ merchantTransaction_id: merchantTransactionId  })
-        if (existing) {
-          return res.redirect(process.env.REDIRECT_URL);
-        }
+    if (result.data.success == true || state === "COMPLETED" || responseCode === "PAYMENT_SUCCESS") {
+      const existing = await PersonalTrainerBooking.findOne({ merchantTransaction_id: merchantTransactionId });
+      if (existing) {
+        return safeRedirect(res, process.env.REDIRECT_URL);
+      }
 
           const newBooking = await PersonalTrainerBooking.create({
             user_id: user_id,
