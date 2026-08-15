@@ -36,7 +36,8 @@ exports.auth = async (req, res, next) => {
 exports.isUser = async(req,res,next)=>{
  try {
    try {
-     if (req.user.role != "User") {
+     const allowedRoles = ["User", "Venue Admin", "Coach", "Personal Trainer"];
+     if (!allowedRoles.includes(req.user.role)) {
        return res.status(400).json({
          success: false,
          message:
@@ -124,5 +125,47 @@ exports.updateAuth = async (req, res, next) => {
   } else {
     res.status(401).json({ success: false, message: "Unauthorized: Please log in" });
   }
+};
+
+exports.requireRole = (...roles) => {
+  return (req, res, next) => {
+    if (!req.user || !roles.includes(req.user.role)) {
+      return res.status(403).json({
+        success: false,
+        message: `Access denied. Requires one of roles: ${roles.join(", ")}`,
+      });
+    }
+    next();
+  };
+};
+
+exports.isSuperAdmin = async (req, res, next) => {
+  if (req.user?.role !== "Super Admin") {
+    return res.status(403).json({
+      success: false,
+      message: "Access denied. Private route for Super Admin.",
+    });
+  }
+  next();
+};
+
+exports.isCoach = async (req, res, next) => {
+  if (req.user?.role !== "Coach") {
+    return res.status(403).json({
+      success: false,
+      message: "Access denied. Private route for Coach.",
+    });
+  }
+  next();
+};
+
+exports.isTrainer = async (req, res, next) => {
+  if (req.user?.role !== "Personal Trainer") {
+    return res.status(403).json({
+      success: false,
+      message: "Access denied. Private route for Personal Trainer.",
+    });
+  }
+  next();
 };
 

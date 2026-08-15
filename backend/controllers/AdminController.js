@@ -717,7 +717,7 @@ exports.loginUserWithMobile = async (req, res) => {
       });
     }
 
-    if (checkUser && checkUser.status === false) {
+    if (checkUser && checkUser.status === false && (checkUser.role === "User" || checkUser.is_admin_access === 2)) {
       return res.json({
         status: 400,
         success: false,
@@ -725,7 +725,7 @@ exports.loginUserWithMobile = async (req, res) => {
       });
     }
 
-    if (checkCoach && checkCoach.status === false) {
+    if (checkCoach && checkCoach.status === false && checkCoach.is_admin_access === 2) {
       return res.json({
         status: 400,
         success: false,
@@ -755,7 +755,7 @@ exports.loginUserWithMobile = async (req, res) => {
 
     const payload = {
       mobile: mobile,
-      role: checkCoach ? checkCoach.role : (checkUser ? checkUser.role : "User"),
+      role: checkCoach ? checkCoach.role : (checkUser ? (checkUser.role === "Venue Admin" ? "User" : checkUser.role) : "User"),
     };
     const token = jwt.sign(payload, process.env.JWT_AUTH, { expiresIn: "5m" });
 
@@ -867,7 +867,7 @@ exports.loginCheckOTP = async (req, res) => {
       userID: user._id,
       first_name: user.first_name || "",
       last_name: user.last_name || "",
-      role: user.role || "User",
+      role: user.role === "Venue Admin" ? "User" : (user.role || "User"),
       profileCompleted: isProfileCompleted,
     };
     const token = jwt.sign(payload, process.env.JWT_AUTH, { expiresIn: "1d" });
