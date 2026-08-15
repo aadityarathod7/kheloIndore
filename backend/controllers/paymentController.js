@@ -1076,8 +1076,7 @@ const venuePaymentStatus = async (req, res) => {
         console.error("Email sending failed in venuePaymentStatus:", emailError);
       }
       return safeRedirect(res, process.env.REDIRECT_URL);
-  } 
-  }else {
+    } else {
       await Transaction.create({
         user_id,
         venue_id,
@@ -1632,12 +1631,8 @@ const slotDates = `${formattedStartDate} to ${formattedEndDate}`;
     // Delete temporary user payment record
     await UserDetailsAtPayments.deleteOne({ user_id });
    
-    const redirectUrl=process.env.REDIRECT_URL;
-   
-    res.redirect(redirectUrl);
-  } 
-  }
-   else {
+    return safeRedirect(res, process.env.REDIRECT_URL);
+  } else {
     const transaction = await Transaction.create({
       user_id,
       coachId,
@@ -2063,15 +2058,10 @@ const slotDates = `${formattedStartDate} to ${formattedEndDate}`;
     await User.findByIdAndUpdate(user_id, { $inc: { booking_count: 1 } }, { new: true });
 
     await UserDetailsAtPayments.deleteOne({ user_id });
-const redirectUrl=`https://kheloindore.in/payment-success`;
-res.redirect(redirectUrl);
-
-}
-}
- else {
-
-  res.redirect(process.env.FAIL_URL); // Redirect to failure page 
-}
+    return safeRedirect(res, process.env.REDIRECT_URL);
+  } else {
+    return safeRedirect(res, process.env.FAIL_URL);
+  }
   } catch (error) {
     
     return res.status(500).json({
