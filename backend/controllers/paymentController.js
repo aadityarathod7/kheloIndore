@@ -948,25 +948,36 @@ const venuePaymentStatus = async (req, res) => {
     }
 
     let hasPdf = false;
+    let browser;
     try {
-      const browser = await puppeteer.launch(getPuppeteerLaunchOptions());
+      browser = await puppeteer.launch(getPuppeteerLaunchOptions());
       const page = await browser.newPage();
-      await page.setContent(html, { waitUntil: "networkidle0" });
+      await page.setContent(html, { waitUntil: "domcontentloaded", timeout: 10000 });
       await page.pdf({ path: invoicePath, format: "A3", printBackground: true });
-      await browser.close();
       hasPdf = true;
     } catch (pdfError) {
-      console.error("PDF Generation failed in venuePaymentStatus:", pdfError);
+      console.error("PDF Generation failed in venuePaymentStatus:", pdfError.message || pdfError);
+    } finally {
+      if (browser) {
+        try { await browser.close(); } catch (e) {}
+      }
     }
 
- 
+    const safeRedirect = (res, targetUrl) => {
+      let finalUrl = targetUrl || "https://kheloindore.in/user/user-bookings";
+      if (!finalUrl.startsWith("http://") && !finalUrl.startsWith("https://")) {
+        finalUrl = `https://${finalUrl}`;
+      }
+      return res.redirect(finalUrl);
+    };
+
     // Payment Success Logic
     if (result.data.success == true) {
 
       if (result.data.code == "PAYMENT_SUCCESS") {
         const existing = await Booking.findOne({ merchantTransaction_id: txnId })
         if (existing) {
-          return res.redirect(process.env.REDIRECT_URL);
+          return safeRedirect(res, process.env.REDIRECT_URL);
         }
 
       const newTransaction = await Transaction.create({
@@ -1066,7 +1077,7 @@ const venuePaymentStatus = async (req, res) => {
       } catch (emailError) {
         console.error("Email sending failed in venuePaymentStatus:", emailError);
       }
-      res.redirect(process.env.REDIRECT_URL);
+      return safeRedirect(res, process.env.REDIRECT_URL);
   } 
   }else {
       await Transaction.create({
@@ -1086,7 +1097,7 @@ const venuePaymentStatus = async (req, res) => {
       const nameSlug = (venueData.name || "").replace(/\s+/g, "-").toLowerCase();
       const idStr = venueData._id.toString();
       const failedRedirectUrl = `${process.env.REDIRECT_URL}/sports-venue/${categorySlug}/${nameSlug}/${idStr}?payment=failed`;
-      res.redirect(failedRedirectUrl);
+      return safeRedirect(res, failedRedirectUrl);
     }
   } catch (error) {
     
