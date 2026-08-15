@@ -98,13 +98,14 @@ exports.signupBySuperAdmin = async (req, res) => {
 
   // Save user in User collection
   const newUser = await User.create(userData)
- // Save the service profile separately from the login User record.
- let serviceProfile = null;
+ // Save in specific collections based on role
  if (role === "Coach") {
-   serviceProfile = await new Coach(userData).save();
- } else if (role === "Personal Trainer") {
-   serviceProfile = await new PersonalTrainer(userData).save();
- }
+  const coachData = new Coach(userData);
+  await coachData.save();
+} else if (role === "Personal Trainer") {
+  const personalTrainerData = new PersonalTrainer(userData);
+  await personalTrainerData.save();
+}
     // Send email notification
     const emailContent = mailContent.super_admin_add_user_venue_admin(
       first_name,
@@ -124,8 +125,8 @@ exports.signupBySuperAdmin = async (req, res) => {
         const baseUrl = process.env.WEBSITE_URL || "https://kheloindore.in";
         const completeLink =
           role === "Coach"
-            ? `${baseUrl}/coaches/complete-profile/${serviceProfile?._id || newUser._id}?token=${completionToken}`
-            : `${baseUrl}/personal-training/complete-profile/${serviceProfile?._id || newUser._id}?token=${completionToken}`;
+            ? `${baseUrl}/coaches/complete-profile/${newUser._id}?token=${completionToken}`
+            : `${baseUrl}/personal-training/complete-profile/${newUser._id}?token=${completionToken}`;
         await mail.superAdminAddUsersendEmail(
           email,
           mailContent.onboarding_profile_link(`${first_name} ${last_name}`.trim(), completeLink)
@@ -138,9 +139,9 @@ exports.signupBySuperAdmin = async (req, res) => {
           
         }
         if (role === "Coach") {
-          await Coach.findByIdAndUpdate(serviceProfile?._id, { profile_completion_token: completionToken });
+          await Coach.findByIdAndUpdate(newUser._id, { profile_completion_token: completionToken });
         } else {
-          await PersonalTrainer.findByIdAndUpdate(serviceProfile?._id, { profile_completion_token: completionToken });
+          await PersonalTrainer.findByIdAndUpdate(newUser._id, { profile_completion_token: completionToken });
         }
       } catch (onboardErr) {
         
@@ -257,33 +258,6 @@ exports.signup = async (req, res, next) => {
       userData,
       { new: true, upsert: true }
     );
-    }
-    // New partners receive onboarding details. Service approval is requested
-    // later, only when they submit a venue, coach, or trainer service.
-    if (["Venue Admin", "Coach", "Personal Trainer"].includes(role)) {
-      const baseUrl = process.env.WEBSITE_URL || "https://kheloindore.in";
-      let onboardingLink = `${baseUrl}/admin/`;
-      if (role === "Coach") {
-        const coach = await Coach.findById(roleSpecificId);
-        if (coach) {
-          coach.profile_completion_token = require("crypto").randomBytes(12).toString("hex");
-          await coach.save();
-          onboardingLink = `${baseUrl}/coaches/complete-profile/${coach._id}?token=${coach.profile_completion_token}`;
-        }
-      } else if (role === "Personal Trainer") {
-        const trainer = await PersonalTrainer.findById(roleSpecificId);
-        if (trainer) {
-          trainer.profile_completion_token = require("crypto").randomBytes(12).toString("hex");
-          await trainer.save();
-          onboardingLink = `${baseUrl}/personal-training/complete-profile/${trainer._id}?token=${trainer.profile_completion_token}`;
-        }
-      }
-      try {
-        await mail.superAdminAddUsersendEmail(email, mailContent.onboarding_profile_link(`${first_name} ${last_name}`.trim(), onboardingLink));
-      } catch (mailError) {
-        console.error("Partner onboarding email failed:", mailError.message);
-      }
-      return res.status(201).json({ success: true, message: "Registration successful. You can log in now. Check your email to complete your profile and list your services." });
     }
     // Check for Venue Admin role
     if (["Venue Admin", "Coach", "Personal Trainer"].includes(role)) {
@@ -408,7 +382,7 @@ exports.signup = async (req, res, next) => {
       const delivery = await sendOtp({ mobile, otp });
       req.body.mail.resData.deliveryChannels = delivery.delivered;
     } catch (deliveryError) {
-      console.error("OTP delivery failed:", deliveryError.message);
+      
       return res.status(502).json({
         success: false,
         message: "Unable to send OTP right now. Please try again.",
@@ -440,7 +414,7 @@ exports.signupVerifyOTP = async (req, res, next) => {
     }
 
     // Verify and decode the JWT token
-    const decoded = jwt.verify(token, process.env.JWT_AUTH, { algorithms: ["HS256"] });
+    const decoded = jwt.verify(token, process.env.JWT_AUTH);
     const { mobile } = decoded;
 
     // Find the user in the `signupVerifyOTP` collection
@@ -604,12 +578,14 @@ exports.loginWithPassword = async (req, res) => {
       });
     }
 
-    // The User record is the account used for authentication. Coach and trainer
-    // documents represent services and may stay pending until a Super Admin
-    // approves their listing; that must not prevent the account from logging in.
-    let user = await User.findOne({ mobile }) ||
-               await Coach.findOne({ mobile }) ||
-               await PersonalTrainer.findOne({ mobile });
+    // Find user in all roles
+    let user = await PersonalTrainer.findOne({ mobile })|| 
+               await Coach.findOne({ mobile }) || 
+               await User.findOne({ mobile });
+
+              //  let user = await User.findOne({ mobile }) || 
+              //  await Coach.findOne({ mobile }) || 
+              //  await PersonalTrainer.findOne({ mobile });
 
     if (!user) {
       return res.status(404).json({
@@ -624,18 +600,11 @@ exports.loginWithPassword = async (req, res) => {
         message: "Your account is deactivated. Please contact the administrator."
       });
     }
-    // Partner accounts can use their dashboard immediately; their individual
-    // venue/coach/trainer service is approved separately before going public.
-    const partnerRoles = ["Venue Admin", "Coach", "Personal Trainer"];
-    const isPartner = partnerRoles.includes(user.role);
-    const partnerRejected = isPartner && user.is_admin_access === 2;
-    const nonPartnerWithoutAccess = !isPartner && user.role !== "Super Admin" && user.is_admin_access !== 1;
-    if (partnerRejected || nonPartnerWithoutAccess) {
+    // Check admin access status for non-Super Admin users
+    if (user.role !== "Super Admin" && user.is_admin_access !== 1) {
       return res.status(403).json({
         success: false,
-        message: partnerRejected
-          ? "Access denied. Your account has been deactivated. Please contact the administrator."
-          : "Access denied. Your account is not approved. Please contact the administrator."
+        message: "Access denied. Your account is not approved. Please contact the administrator."
       });
     }
 
@@ -758,7 +727,7 @@ exports.loginUserWithMobile = async (req, res) => {
     try {
       delivery = await sendOtp({ mobile, otp });
     } catch (deliveryError) {
-      console.error("OTP delivery failed:", deliveryError.message);
+      
       return res.status(502).json({
         success: false,
         message: "Unable to send OTP right now. Please try again.",
@@ -1343,9 +1312,6 @@ exports.deleteUser = async (req, res) => {
 exports.getUserById = async (req, res) => {
   try {
     const id = req.params.id;
-    if (req.user?.role !== "Super Admin" && String(req.user?.userID || "") !== String(id)) {
-      return res.status(403).json({ success: false, message: "You are not authorized to view this profile." });
-    }
       // Validate the ID format
       if (!id || id.trim() === "") {
         return res.status(400).json({
@@ -1523,9 +1489,6 @@ exports.codeAndCocktailsEmail = async (req, res) => {
 exports.updateProfileSettting = async (req, res) => {
   try {
     const id = req.params.id;
-    if (req.user?.role !== "Super Admin" && String(req.user?.userID || "") !== String(id)) {
-      return res.status(403).json({ success: false, message: "You are not authorized to update this profile." });
-    }
 
     // Check if request body is empty
     if (!req.body || Object.keys(req.body).length === 0) {
@@ -1575,7 +1538,7 @@ exports.updateProfileSettting = async (req, res) => {
       state: state || user.state,
       zipcode: zipcode || user.zipcode,
       user_info: user_info || user.user_info,
-      status: req.user?.role === "Super Admin" && status !== undefined ? status : user.status,
+      status: status !== undefined ? status : user.status, // Preserve existing status if not explicitly updated
       profile_image:profile_image || user.profile_image
     };
 
@@ -1633,16 +1596,7 @@ exports.updateAdminStatus = async (req, res) => {
       if (!coach) {
         return res.status(404).json({ success: false, message: "Coach not found." });
       }
-      // Approving/rejecting a Coach here is service approval, so all public
-      // listing flags must be updated together.
       coach.is_admin_access = is_admin_access;
-      if (is_admin_access === 1) {
-        coach.status = true;
-        coach.verification_status = 1;
-      } else if (is_admin_access === 2) {
-        coach.status = false;
-        coach.verification_status = 2;
-      }
       await coach.save();
 
       const user = await User.findOne({ mobile: coach.mobile });
@@ -1659,13 +1613,6 @@ exports.updateAdminStatus = async (req, res) => {
         return res.status(404).json({ success: false, message: "Personal Trainer not found." });
       }
       personalTrainer.is_admin_access = is_admin_access;
-      if (is_admin_access === 1) {
-        personalTrainer.status = true;
-        personalTrainer.verification_status = 1;
-      } else if (is_admin_access === 2) {
-        personalTrainer.status = false;
-        personalTrainer.verification_status = 2;
-      }
       await personalTrainer.save();
 
       const user = await User.findOne({ mobile: personalTrainer.mobile });

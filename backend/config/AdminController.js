@@ -212,7 +212,7 @@ exports.signupVerifyOTP = async (req, res, next) => {
   try {
     const { otp } = req.body;
     const token = req.header("Authorization").replace("Bearer ", "");
-    const decoded = jwt.verify(token, process.env.JWT_AUTH, { algorithms: ["HS256"] });
+    const decoded = jwt.verify(token, process.env.JWT_AUTH);
     const mobile = decoded.mobile;
 
     // Find the user details from signupVerifyOTP collection

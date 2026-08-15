@@ -15,7 +15,7 @@ exports.auth = async (req, res, next) => {
       });
     }
     try {
-      const decode = jwt.verify(token, process.env.JWT_AUTH, { algorithms: ["HS256"] });
+      const decode = jwt.verify(token, process.env.JWT_AUTH);
 
       req.user = decode;
 
@@ -32,15 +32,6 @@ exports.auth = async (req, res, next) => {
       message: "Authentication required.",
     });
   }
-};
-exports.requireRole = (...roles) => (req, res, next) => {
-  if (!req.user?.role) {
-    return res.status(401).json({ success: false, message: "Authentication required." });
-  }
-  if (!roles.includes(req.user.role)) {
-    return res.status(403).json({ success: false, message: "You are not authorized to perform this action." });
-  }
-  return next();
 };
 exports.isUser = async(req,res,next)=>{
  try {
@@ -110,7 +101,7 @@ exports.updateAuth = async (req, res, next) => {
         message: "Authentication required",
       });
     }
-    const decoded = jwt.verify(token, process.env.JWT_AUTH, { algorithms: ["HS256"] });
+    const decoded = jwt.verify(token, process.env.JWT_AUTH);
 
     if (decoded.userID != venue.ownerID) {
       return res.status(400).json({
