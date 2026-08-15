@@ -72,6 +72,9 @@ const sortOptions = [
   { name: "Response Time" },
   { name: "Price: Low to High" },
   { name: "Price: High to Low" },
+  { name: "Rating: High to Low" },
+  { name: "Newest First" },
+  { name: "Name: A to Z" },
 ];
 
 const genderOptions = ["Male", "Female", "Other"];
@@ -337,6 +340,15 @@ const BlogList = () => {
         break;
       case "Price: High to Low":
         sorted.sort((a, b) => (Number(b.price) || 0) - (Number(a.price) || 0));
+        break;
+      case "Rating: High to Low":
+        sorted.sort((a, b) => (Number(b.rating) || 0) - (Number(a.rating) || 0));
+        break;
+      case "Newest First":
+        sorted.sort((a, b) => +new Date(b.createdAt || b.created_at || 0) - +new Date(a.createdAt || a.created_at || 0));
+        break;
+      case "Name: A to Z":
+        sorted.sort((a, b) => `${a.full_name || a.first_name || ""} ${a.last_name || ""}`.localeCompare(`${b.full_name || b.first_name || ""} ${b.last_name || ""}`));
         break;
       default:
         break;

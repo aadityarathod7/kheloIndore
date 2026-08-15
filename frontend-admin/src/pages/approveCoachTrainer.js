@@ -31,7 +31,7 @@ export default function ApproveCoachTrainer() {
             },
         });
         try {
-            const response = await axios.get(`${API_URL}/user/fetch-user-by-id/${_id}`);
+            const response = await axios.get(`${API_URL}/user/fetch-user-by-id/${_id}`, { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
             const { data } = response.data;
 
             setCoachTrainer(data);

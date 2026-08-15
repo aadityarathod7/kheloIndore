@@ -29,6 +29,82 @@ const { ObjectId } = require("mongoose").Types;
 const personalTrainer = require("../models/PersonalTrainingModel")
 const Refund = require("../models/RefundModel");
 
+const CASHFREE_API_VERSION = process.env.CASHFREE_API_VERSION || "2023-08-01";
+const getCashfreeBaseUrl = () => process.env.CASHFREE_BASE_URL || (process.env.CASHFREE_ENV === "production" ? "https://api.cashfree.com/pg" : "https://sandbox.cashfree.com/pg");
+
+const getCashfreeHeaders = () => ({
+  accept: "application/json",
+  "Content-Type": "application/json",
+  "x-api-version": CASHFREE_API_VERSION,
+  "x-client-id": process.env.CASHFREE_APP_ID,
+  "x-client-secret": process.env.CASHFREE_SECRET_KEY,
+});
+
+const getCashfreeCustomerDetails = async (userId) => {
+  const user = await User.findById(userId).lean();
+  const phone = String(user?.mobile || user?.phone || "9999999999").replace(/\D/g, "").slice(-10) || "9999999999";
+  return {
+    customer_id: `ki_${String(userId)}`,
+    customer_name: [user?.first_name, user?.last_name].filter(Boolean).join(" ") || "Khelo Indore User",
+    customer_email: user?.email || undefined,
+    customer_phone: phone,
+  };
+};
+
+const createCashfreeOrder = async ({ orderId, amount, userId, service }) => {
+  if (!process.env.CASHFREE_APP_ID || !process.env.CASHFREE_SECRET_KEY) {
+    throw new Error("Cashfree credentials are not configured on the server");
+  }
+  const baseRedirectUrl = process.env.REDIRECT_API_URL;
+  if (!baseRedirectUrl) throw new Error("REDIRECT_API_URL is required for Cashfree payment returns");
+
+  const response = await axios.post(`${getCashfreeBaseUrl()}/orders`, {
+    order_id: orderId,
+    order_amount: Number(amount),
+    order_currency: "INR",
+    customer_details: await getCashfreeCustomerDetails(userId),
+    order_meta: {
+      return_url: `${baseRedirectUrl}/api/get/${service}/payment/status/${orderId}`,
+    },
+    order_note: `Khelo Indore ${service} booking`,
+  }, {
+    headers: getCashfreeHeaders(),
+    timeout: 30000,
+  });
+  return response.data;
+};
+
+const getCashfreePaymentStatus = async (orderId) => {
+  const response = await axios.get(`${getCashfreeBaseUrl()}/orders/${encodeURIComponent(orderId)}`, {
+    headers: getCashfreeHeaders(),
+    timeout: 30000,
+  });
+  const order = response.data;
+  const paid = order?.order_status === "PAID";
+  return {
+    data: {
+      success: paid,
+      data: {
+        merchantTransactionId: orderId,
+        transactionId: order?.cf_order_id || orderId,
+        amount: Math.round(Number(order?.order_amount || 0) * 100),
+        state: paid ? "COMPLETED" : (order?.order_status || "FAILED"),
+        responseCode: paid ? "PAYMENT_SUCCESS" : "PAYMENT_PENDING",
+      },
+    },
+  };
+};
+
+const createCashfreeRefund = async ({ orderId, amount, reason }) => {
+  const refundId = `KIREF${Date.now()}${Math.floor(Math.random() * 1000)}`;
+  const response = await axios.post(`${getCashfreeBaseUrl()}/orders/${encodeURIComponent(orderId)}/refunds`, {
+    refund_amount: Number(amount),
+    refund_id: refundId,
+    refund_note: String(reason || "Booking cancellation refund").slice(0, 100),
+    refund_speed: "STANDARD",
+  }, { headers: getCashfreeHeaders(), timeout: 30000 });
+  return Array.isArray(response.data) ? response.data[0] : response.data;
+};
 const getDateRange = (date) => {
   let startOfTargetDay, endOfTargetDay;
   if (typeof date === "string" && date.includes("-") && date.split("-").length === 3) {
@@ -160,38 +236,12 @@ const venuePayment = async (req, res) => {
       paymentType === "partial"
         ? Math.round(totalBookedPrice * PARTIAL_PAYMENT_PERCENT)
         : totalBookedPrice;
-    const data = {
-      merchantId: process.env.MERCHANT_ID,
-      merchantTransactionId: merchantTransactionId,
-      merchantUserId: `MUID${user_id}`,
-      amount: payableAmount * 100,
-      redirectUrl: `${process.env.REDIRECT_API_URL}/api/get/venue/payment/status/${merchantTransactionId}`,
-      redirectMode: "POST",
-      paymentInstrument: {
-        type: "PAY_PAGE",
-      },
-      expirationTime: expirationTime,
-    };
-
-    const payload = JSON.stringify(data);
-    const payloadMain = Buffer.from(payload).toString("base64");
-    const string = payloadMain + "/pg/v1/pay" + process.env.SALT_KEY;
-    const sha256 = crypto.createHash("sha256").update(string).digest("hex");
-    const checksum = sha256 + "###" + process.env.KEY_INDEX;
-
-    const prod_URL = process.env.PROD_URL;
-    const options = {
-      method: "POST",
-      url: prod_URL,
-      headers: {
-        accept: "application/json",
-        "Content-Type": "application/json",
-        "X-VERIFY": checksum,
-      },
-      data: { request: payloadMain },
-    };
-
-    const result = await axios(options);
+    const cashfreeOrder = await createCashfreeOrder({
+      orderId: merchantTransactionId,
+      amount: payableAmount,
+      userId: user_id,
+      service: "venue",
+    });
 
     // Update user booking details
     await UserDetailsAtPayments.deleteOne({ user_id: user_id });
@@ -204,20 +254,22 @@ const venuePayment = async (req, res) => {
       total_price: totalBookedPrice,
       payment_type: paymentType,
       payable_amount: payableAmount,
+      payment_order_id: merchantTransactionId,
+      payment_provider: "cashfree",
     });
 
     // Send success response
     return res.status(200).json({
       success: true,
-      url: result.data.data.instrumentResponse.redirectInfo.url,
+      paymentSessionId: cashfreeOrder.payment_session_id,
+      orderId: cashfreeOrder.order_id,
       expirationTime: expirationTime,
     });
   } catch (error) {
     
     res.status(500).json({
       success: false,
-      message: `An error occurred: ${error.message}`,
-      stack: error.stack, // Remove this in production
+      message: "Unable to initialize payment. Please try again."
     });
   }
 };
@@ -783,23 +835,7 @@ const venuePaymentStatus = async (req, res) => {
   
 
   try {
-    const string =
-      `/pg/v1/status/${process.env.MERCHANT_ID}/${txnId}${process.env.SALT_KEY}`;
-    const sha256 = crypto.createHash("sha256").update(string).digest("hex");
-    const checksum = sha256 + "###" + process.env.KEY_INDEX;
-
-    const options = {
-      method: "GET",
-      url: `${process.env.REDIRECT_STATUS_URL}/${process.env.MERCHANT_ID}/${txnId}`,
-      headers: {
-        accept: "application/json",
-        "Content-Type": "application/json",
-        "X-VERIFY": checksum,
-        "X-MERCHANT-ID": process.env.MERCHANT_ID,
-      },
-    };
-
-    const result = await axios(options);
+    const result = await getCashfreePaymentStatus(txnId);
 
     if (!result.data || !result.data.data) {
       return res.status(400).json({ error: "Invalid payment response" });
@@ -811,7 +847,7 @@ const venuePaymentStatus = async (req, res) => {
 
     const userId = merchantTransactionId.split('-')[0];
 
-    const user = await UserDetailsAtPayments.findOne({ user_id: userId }).sort({ createdAt: -1 });
+    const user = await UserDetailsAtPayments.findOne({ payment_order_id: txnId }).sort({ createdAt: -1 }) || await UserDetailsAtPayments.findOne({ user_id: userId }).sort({ createdAt: -1 });
     if (!user) return res.status(404).json({ error: "User not found for the transaction" });
 
     const { user_id, date, venue_id, slotsBooked, vendor_id, payment_type } = user;
@@ -1123,7 +1159,7 @@ const computeRefundAmount = (booking) => {
   return 0; // cancelled too late - no refund
 };
 
-// Processes a PhonePe refund for a cancelled booking (reuses venueRefund internals)
+// Processes a Cashfree refund for a cancelled booking.
 const processBookingRefund = async ({ booking, reason }) => {
   const refundAmount = computeRefundAmount(booking);
   if (refundAmount <= 0) {
@@ -1134,49 +1170,14 @@ const processBookingRefund = async ({ booking, reason }) => {
     return { success: false, refundAmount: 0, message: "No transaction id - cannot refund" };
   }
 
-  const shortTxnId = txnId.slice(-10);
-  const refundTxnId = `R-${shortTxnId}-${Date.now().toString().slice(-6)}`;
-  const amnt = Math.round(refundAmount * 100);
-  const refundPayload = {
-    merchantId: process.env.MERCHANT_ID,
-    transactionId: refundTxnId,
-    originalTransactionId: txnId,
-    amount: amnt,
-    message: reason || "Booking cancellation refund",
-  };
-  const base64Payload = Buffer.from(JSON.stringify(refundPayload)).toString("base64");
-  const stringToHash = base64Payload + "/v3/credit/backToSource" + process.env.SALT_KEY;
-  const sha256Hash = crypto.createHash("sha256").update(stringToHash).digest("hex");
-  const checksum = `${sha256Hash}###${process.env.KEY_INDEX}`;
-  const refundUrl = "https://mercury-t2.phonepe.com/v3/credit/backToSource";
-
-  let refundTransactionId = refundTxnId;
-  let refundStatus = "SUCCESS";
-  let providerReferenceId = `REF-${Date.now()}`;
-
-  if (process.env.MERCHANT_ID !== "PGTESTPAYUAT86") {
-    try {
-      const result = await axios.post(
-        refundUrl,
-        { request: base64Payload },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-            "X-VERIFY": checksum,
-          },
-        }
-      );
-      if (result.data && result.data.data) {
-        refundTransactionId = result.data.data.transactionId || refundTxnId;
-        refundStatus = result.data.data.status || "SUCCESS";
-        providerReferenceId = result.data.data.providerReferenceId || providerReferenceId;
-      }
-    } catch (err) {
-      
-    }
-  }
-
+  const cashfreeRefund = await createCashfreeRefund({
+    orderId: txnId,
+    amount: refundAmount,
+    reason,
+  });
+  const refundTransactionId = cashfreeRefund.refund_id;
+  const refundStatus = cashfreeRefund.refund_status || "PENDING";
+  const providerReferenceId = cashfreeRefund.cf_refund_id || refundTransactionId;
   const userId = booking.user_id || booking.userId;
   const entityName =
     (booking.venue_id && booking.venue_id.name) ||
@@ -1290,40 +1291,12 @@ const coachPayment = async (req, res) => {
       paymentType === "partial"
         ? Math.round(totalBookedPrice * PARTIAL_PAYMENT_PERCENT)
         : totalBookedPrice;
-    const data = {
-      merchantId: process.env.MERCHANT_ID,
-      merchantTransactionId: merchantTransactionId,
-      merchantUserId: "MUID" + user_id,
-      amount: payableAmount * 100, // Convert to the smallest currency unit (e.g., paise)
-      redirectUrl: `${process.env.REDIRECT_API_URL}/api/get/coach/payment/status/${merchantTransactionId}`,
-      redirectMode: "POST",
-      paymentInstrument: {
-        type: "PAY_PAGE",
-      },
-      expirationTime: expirationTime,
-    };
-
-    const payload = JSON.stringify(data);
-    const payloadMain = Buffer.from(payload).toString("base64");
-    const string = payloadMain + "/pg/v1/pay" + process.env.SALT_KEY;
-    const sha256 = crypto.createHash("sha256").update(string).digest("hex");
-    const checksum = sha256 + "###" + process.env.KEY_INDEX;
-    const prod_URL = process.env.PROD_URL;
-
-    const options = {
-      method: "POST",
-      url: prod_URL,
-      headers: {
-        accept: "application/json",
-        "Content-Type": "application/json",
-        "X-VERIFY": checksum,
-      },
-      data: {
-        request: payloadMain,
-      },
-    };
-
-    const result = await axios(options);
+    const cashfreeOrder = await createCashfreeOrder({
+      orderId: merchantTransactionId,
+      amount: payableAmount,
+      userId: user_id,
+      service: "coach",
+    });
     
 
     // Handle user payment and update the booking details
@@ -1348,13 +1321,16 @@ const coachPayment = async (req, res) => {
       total_price: totalBookedPrice,
       payment_type: paymentType,
       payable_amount: payableAmount,
+      payment_order_id: merchantTransactionId,
+      payment_provider: "cashfree",
     });
 
     // Respond with the payment URL
     return res.json({
       status: 200,
       success: true,
-      url: result.data.data.instrumentResponse.redirectInfo.url,
+      paymentSessionId: cashfreeOrder.payment_session_id,
+      orderId: cashfreeOrder.order_id,
     });
   } catch (error) {
     
@@ -1374,25 +1350,7 @@ const coachPaymentStatus = async (req, res) => {
       return res.status(400).json({ success: false, message: "Invalid merchant transaction ID" });
     }
 
-    const string =
-      `/pg/v1/status/${process.env.MERCHANT_ID}/${merchantTransactionId}${process.env.SALT_KEY}`;
-    const sha256 = crypto.createHash("sha256").update(string).digest("hex");
-    const checksum = sha256 + "###" + process.env.KEY_INDEX;
-
-    // Define request options
-    const options = {
-      method: "GET",
-      url: `${process.env.REDIRECT_STATUS_URL}/${process.env.MERCHANT_ID}/${merchantTransactionId}`,
-      headers: {
-        accept: "application/json",
-        "Content-Type": "application/json",
-        "X-VERIFY": checksum,
-        "X-MERCHANT-ID": process.env.MERCHANT_ID,
-      },
-    };
-
-    // Fetch payment status
-    const result = await axios(options);
+    const result = await getCashfreePaymentStatus(merchantTransactionId);
 
     if (!result.data || !result.data.data) {
       return res.status(400).json({ success: false, message: "Invalid payment response" });
@@ -1407,7 +1365,7 @@ const coachPaymentStatus = async (req, res) => {
     }
 
     // Fetch user details
-    const user = await UserDetailsAtPayments.findOne({ user_id: userId }).sort({ createdAt: -1 });
+    const user = await UserDetailsAtPayments.findOne({ payment_order_id: merchantTransactionId }).sort({ createdAt: -1 }) || await UserDetailsAtPayments.findOne({ user_id: userId }).sort({ createdAt: -1 });
     if (!user) {
       return res.status(404).json({ success: false, message: "No payment details found for user" });
     }
@@ -1786,40 +1744,12 @@ const personalTrainerPayment = async (req, res) => {
       paymentType === "partial"
         ? Math.round(totalBookedPrice * PARTIAL_PAYMENT_PERCENT)
         : totalBookedPrice;
-    const data = {
-      merchantId: process.env.MERCHANT_ID,
-      merchantTransactionId: merchantTransactionId,
-      merchantUserId: "MUID" + user_id,
-      amount: payableAmount * 100, // Convert to the smallest currency unit (e.g., paise)
-      redirectUrl: `${process.env.REDIRECT_API_URL}/api/get/personalTrainer/payment/status/${merchantTransactionId}`,
-      redirectMode: "POST",
-      paymentInstrument: {
-        type: "PAY_PAGE",
-      },
-      expirationTime: expirationTime,
-    };
-
-    const payload = JSON.stringify(data);
-    const payloadMain = Buffer.from(payload).toString("base64");
-    const string = payloadMain + "/pg/v1/pay" + process.env.SALT_KEY;
-    const sha256 = crypto.createHash("sha256").update(string).digest("hex");
-    const checksum = sha256 + "###" + process.env.KEY_INDEX;
-    const prod_URL = process.env.PROD_URL;
-    const options = {
-      method: "POST",
-      url: prod_URL,
-      headers: {
-        accept: "application/json",
-        "Content-Type": "application/json",
-        "X-VERIFY": checksum,
-      },
-      data: {
-        request: payloadMain,
-      },
-    };
-
-    
-    const result = await axios(options);
+    const cashfreeOrder = await createCashfreeOrder({
+      orderId: merchantTransactionId,
+      amount: payableAmount,
+      userId: user_id,
+      service: "personalTrainer",
+    });
     
 
     // Handle user payment and update the booking details
@@ -1842,6 +1772,8 @@ const personalTrainerPayment = async (req, res) => {
       total_price: totalBookedPrice,
       payment_type: paymentType,
       payable_amount: payableAmount,
+      payment_order_id: merchantTransactionId,
+      payment_provider: "cashfree",
     });
 
    
@@ -1850,7 +1782,8 @@ const personalTrainerPayment = async (req, res) => {
     return res.json({
       status: 200,
       success: true,
-      url: result.data.data.instrumentResponse.redirectInfo.url,
+      paymentSessionId: cashfreeOrder.payment_session_id,
+      orderId: cashfreeOrder.order_id,
     });
   } catch (error) {
     
@@ -1869,23 +1802,7 @@ const personalTrainerPaymentStatus = async (req, res) => {
       return res.status(400).json({ success: false, message: "Invalid merchant transaction ID" });
     }
 
-    const string =
-      `/pg/v1/status/${process.env.MERCHANT_ID}/${merchantTransactionId}${process.env.SALT_KEY}`;
-    const sha256 = crypto.createHash("sha256").update(string).digest("hex");
-    const checksum = sha256 + "###" + process.env.KEY_INDEX;
-
-    const options = {
-      method: "GET",
-      url: `${process.env.REDIRECT_STATUS_URL}/${process.env.MERCHANT_ID}/${merchantTransactionId}`,
-      headers: {
-        accept: "application/json",
-        "Content-Type": "application/json",
-        "X-VERIFY": checksum,
-        "X-MERCHANT-ID": process.env.MERCHANT_ID,
-      },
-    };
-
-    const result = await axios(options);
+    const result = await getCashfreePaymentStatus(merchantTransactionId);
 
     if (!result.data || !result.data.data) {
       return res.status(400).json({ success: false, message: "Invalid payment response" });
@@ -1899,7 +1816,7 @@ const personalTrainerPaymentStatus = async (req, res) => {
       return res.status(400).json({ success: false, message: "Invalid user ID" });
     }
 
-    const user = await UserDetailsAtPayments.findOne({ user_id: userId }).sort({ createdAt: -1 });
+    const user = await UserDetailsAtPayments.findOne({ payment_order_id: merchantTransactionId }).sort({ createdAt: -1 }) || await UserDetailsAtPayments.findOne({ user_id: userId }).sort({ createdAt: -1 });
     if (!user) {
       return res.status(404).json({ success: false, message: "No payment details found for user" });
     }
@@ -2339,9 +2256,9 @@ const formattedIST = new Date(ist).toISOString().replace("T", " ").split(".")[0]
   }
 };
 
-const checkPhonePeUrlExpiration = async (txnId) => {
+const checkCashfreeOrderExpiration = async (txnId) => {
   try {
-    // Logic to check if the PhonePe URL has expired
+    // Legacy helper retained for pending payment expiry checks.
     // You can store the URL expiration time when generating the URL and compare it here
     const userDetails = await UserDetailsAtPayments.findOne({ user_id: txnId });
 
@@ -2432,60 +2349,14 @@ const venueRefund = async (req, res) => {
       return res.status(400).json({ success: false, message: "Refund amount cannot exceed the amount paid" });
     }
 
-    const shortTxnId = txnId.slice(-10); // Take last 10 characters
-    const refundTxnId = `R-${shortTxnId}-${Date.now().toString().slice(-6)}`;
-    const amnt = Math.round(refundAmount * 100);
-    // Construct refund payload
-    const refundPayload = {
-      merchantId: process.env.MERCHANT_ID,
-      transactionId: refundTxnId,
-      originalTransactionId: txnId,
-      amount: amnt,
-      message: reason || "Refund issued",
-    };
-
-    
-
-    // Encode payload in Base64
-    const base64Payload = Buffer.from(JSON.stringify(refundPayload)).toString("base64");
-
-    // Generate X-VERIFY hash
-    const stringToHash = base64Payload + "/v3/credit/backToSource" + process.env.SALT_KEY;
-    const sha256Hash = crypto.createHash("sha256").update(stringToHash).digest("hex");
-    const checksum = `${sha256Hash}###${process.env.KEY_INDEX}`;
-
-    // PhonePe Refund API URL
-    const refundUrl = "https://mercury-t2.phonepe.com/v3/credit/backToSource";
-    
-
-    let refundTransactionId = refundTxnId;
-    let refundStatus = "SUCCESS";
-    let providerReferenceId = `REF-${Date.now()}`;
-
-    // Attempt PhonePe Live Refund API if in production; fallback to sandbox test refund handler
-    if (process.env.MERCHANT_ID !== "PGTESTPAYUAT86") {
-      try {
-        const result = await axios.post(
-          refundUrl,
-          { request: base64Payload },
-          {
-            headers: {
-              "Content-Type": "application/json",
-              Accept: "application/json",
-              "X-VERIFY": checksum,
-            },
-          }
-        );
-        if (result.data && result.data.data) {
-          refundTransactionId = result.data.data.transactionId || refundTxnId;
-          refundStatus = result.data.data.status || "SUCCESS";
-          providerReferenceId = result.data.data.providerReferenceId || providerReferenceId;
-        }
-      } catch (err) {
-        
-      }
-    }
-
+    const cashfreeRefund = await createCashfreeRefund({
+    orderId: txnId,
+    amount: refundAmount,
+    reason,
+  });
+  const refundTransactionId = cashfreeRefund.refund_id;
+  const refundStatus = cashfreeRefund.refund_status || "PENDING";
+  const providerReferenceId = cashfreeRefund.cf_refund_id || refundTransactionId;
     const user = booking.user_id || booking.userId;
     const userName = user ? `${user.first_name || ''} ${user.last_name || ''}`.trim() : "Unknown User";
     let associatedEntityName = "N/A";

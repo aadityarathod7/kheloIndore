@@ -117,7 +117,7 @@ function VenueList() {
   const handlePdf = async (row) => {
     try {
       // Fetch detail data
-      const detailResponse = await fetch(`${API_URL}/user/fetch-user-by-id/${row._id}`);
+      const detailResponse = await fetch(`${API_URL}/user/fetch-user-by-id/${row._id}`, { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
       const detailResult = await detailResponse.json();
       if (detailResponse.ok) {
         setDetailData(detailResult.data);
@@ -474,7 +474,7 @@ function VenueList() {
                 {currentVenues && currentVenues.map((venue, index) => (
                   <tr key={venue._id}>
                     <td>{index + 1 + indexOfFirstItem}</td>
-                    <td>{venue.name}</td>
+                    <td><div>{venue.name}</div><small className="text-muted">{venue.provider_public_id || "ID pending"}</small></td>
                     {/* <td>{venue.category}</td> */}
                     <td>{venue.address}</td>
                     <td style={{ color: venue.status ? "#4fd104" : "#ff0000", fontWeight: "bold" }}>

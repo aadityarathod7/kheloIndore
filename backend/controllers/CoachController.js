@@ -7,6 +7,17 @@ const mailContent = require("../middlewares/mail-content");
 const User = require("../models/UserModel");
 const { sendCustomMessage } = require("../helper/bhashMessaging");
 const crypto = require("crypto");
+
+// Never expose provider contact or exact address details through public or shared APIs.
+const withoutPrivateCoachDetails = (coach) => {
+  const publicCoach = coach.toObject ? coach.toObject() : { ...coach };
+  [
+    "mobile", "other_mobile", "other_contact_number", "email", "address", "city", "state", "zipcode",
+    "location", "google_location", "password", "demo_password", "otp", "identity_Proof", "other_document",
+    "verification_documents", "profile_completion_token",
+  ].forEach((field) => delete publicCoach[field]);
+  return publicCoach;
+};
 exports.createCoach = async (req, res) => {
   try {
     let { first_name, last_name, email, mobile,password } = req.body;
@@ -307,7 +318,7 @@ exports.updateCoach = async (req, res) => {
     const { experience, availability, specializations, bio } = detail;
     const token = req.header("Authorization").replace("Bearer ", "");
 
-    const decoded = await jwt.verify(token, process.env.JWT_AUTH);
+    const decoded = await jwt.verify(token, process.env.JWT_AUTH, { algorithms: ["HS256"] });
 
     const id = decoded.userID;
     const updatedCoach = await Coach.findByIdAndUpdate(
@@ -422,19 +433,21 @@ exports.fetchAllCoachesNew = async (req, res) => {
         totalPages: Math.ceil(totalCoaches / limit), // Calculate total pages
       });
     } else if (req.user.role === "Coach") {
-      const id = user;
-    
-      const coach = await Coach.findOne({ _id: id} );
-      const coachData = [coach];
+      // Authentication uses the User document, while the service listing is in
+      // Coach. Match the linked account instead of assuming both _ids are equal.
+      const account = await User.findById(user).select("mobile email");
+      const coach = account
+        ? await Coach.findOne({ $or: [{ mobile: account.mobile }, { email: account.email }] })
+        : await Coach.findById(user);
 
       if (!coach) {
-        return res.status(400).json({ message: "Coach not found or inactive" });
+        return res.status(404).json({ success: false, message: "Coach service profile not found." });
       }
 
       return res.json({
         status: 200,
         success: true,
-        data: coachData,
+        data: [coach],
       });
     } else {
       return res.json({
@@ -469,12 +482,17 @@ exports.fetchCoachById = async (req, res) => {
       return res.status(404).json({ success: false, message: "Coach not found" });
     }
 
-    // Check if is_admin_access is 1
-    if (coach.is_admin_access !== 1 || coach.status !== true) {
-      return res.status(403).json({ success: false, message: "Access denied. Coach is not active or approved." });
+    // This is an authenticated management endpoint. A Coach may view their own
+    // pending profile; approval is required only by the public endpoints.
+    const isSuperAdmin = req.user?.role === "Super Admin";
+    const account = await User.findById(req.user?.userID).select("mobile email");
+    const ownsProfile = req.user?.role === "Coach" && account &&
+      (String(account.mobile) === String(coach.mobile) || String(account.email || "").toLowerCase() === String(coach.email || "").toLowerCase());
+    if (!isSuperAdmin && !ownsProfile) {
+      return res.status(403).json({ success: false, message: "You can view only your own coach service." });
     }
 
-    // Respond with the coach data
+    // Authenticated owner/Super Admin management response.
     return res.status(200).json({ success: true, coach });
   } catch (error) {
     
@@ -499,7 +517,8 @@ exports.fetchAllCoaches = async (req, res) => {
     const { search } = req.query;
     let queryConditions = {
       status: true,
-      is_admin_access: 1 || '1'
+      is_admin_access: 1,
+      verification_status: 1
     };
 
     const searchFields = [
@@ -550,9 +569,10 @@ exports.fetchAllCoaches = async (req, res) => {
     const coaches = await Coach.find(queryConditions).sort({ createdAt: -1 });
 
     const { attachRatings } = require("../helper/reviewRatings");
+    const ratedCoaches = await attachRatings(coaches, "coach");
     return res.status(200).json({
       success: true,
-      data: await attachRatings(coaches, "coach"),
+      data: ratedCoaches.map(withoutPrivateCoachDetails),
     });
   } catch (err) {
     return res.status(500).json({
@@ -629,13 +649,13 @@ exports.fetchPublicCoach = async (req, res) => {
     if (!coach) {
       return res.status(404).json({ success: false, message: "Coach not found" });
     }
-    if (coach.status !== true) {
+    if (coach.status !== true || coach.is_admin_access !== 1 || coach.verification_status !== 1) {
       return res.status(403).json({ success: false, message: "Coach is not active" });
     }
     // Increment profile view counter
     coach.profile_views = (coach.profile_views || 0) + 1;
     await coach.save();
-    return res.status(200).json({ success: true, coach });
+    return res.status(200).json({ success: true, coach: withoutPrivateCoachDetails(coach) });
   } catch (error) {
     
     return res.status(500).json({ success: false, message: "An unexpected error occurred" });
@@ -673,17 +693,7 @@ exports.fetchSharedCoach = async (req, res) => {
     if (!coach) {
       return res.status(404).json({ success: false, message: "Invalid or expired share link" });
     }
-    // Strip private information
-    const shared = coach.toObject();
-    delete shared.mobile;
-    delete shared.other_contact_number;
-    delete shared.email;
-    delete shared.address;
-    delete shared.city;
-    delete shared.state;
-    delete shared.zipcode;
-    delete shared.location;
-    return res.status(200).json({ success: true, coach: shared });
+    return res.status(200).json({ success: true, coach: withoutPrivateCoachDetails(coach) });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
   }
@@ -697,6 +707,9 @@ exports.completeCoachProfile = async (req, res) => {
     const coach = await Coach.findById(id);
     if (!coach) {
       return res.status(404).json({ success: false, message: "Coach not found" });
+    }
+    if (!req.query.token || req.query.token !== coach.profile_completion_token) {
+      return res.status(403).json({ success: false, message: "Invalid or expired profile completion link" });
     }
     const allowed = [
       "gender", "age", "date_of_birth", "price", "category", "trainer_type",
@@ -772,10 +785,20 @@ exports.updatecoach = async (req, res) => {
     const { coachId } = req.params; // Coach ID from URL parameters
     const updateData = req.body; // Update data from request body
 
-    // Find the coach by ID
+    // Find the service profile, then ensure a coach can update only their own profile.
     const coach = await Coach.findById(coachId);
     if (!coach) {
       return res.status(404).json({ success: false, message: "Coach not found" });
+    }
+    if (req.user?.role !== "Super Admin") {
+      if (req.user?.role !== "Coach") {
+        return res.status(403).json({ success: false, message: "You are not authorized to update this coach profile." });
+      }
+      const account = await User.findById(req.user.userID).select("mobile email");
+      const ownsProfile = account && (String(account.mobile) === String(coach.mobile) || String(account.email || "").toLowerCase() === String(coach.email || "").toLowerCase());
+      if (!ownsProfile) {
+        return res.status(403).json({ success: false, message: "You can update only your own coach service." });
+      }
     }
 
     // Update the coach details with the data from the request body
@@ -788,6 +811,7 @@ exports.updatecoach = async (req, res) => {
     // If update is NOT made by Super Admin (i.e. by coach themselves)
     if (req.user?.role !== "Super Admin") {
       coach.status = false;
+      coach.is_admin_access = 0;
       coach.verification_status = 0; // pending approval
 
       // Send email & notification to Super Admin

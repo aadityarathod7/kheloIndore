@@ -396,9 +396,7 @@ exports.getBookings = async (req, res) => {
 
       const bookingData = [];
       if (bookings.length == 0) {
-        return res
-          .status(400)
-          .json({ success: false, message: "No bookings found" });
+        return res.status(200).json({ status: 200, success: true, data: [] });
       }
 
       // Filter the bookings based on the search query
@@ -452,9 +450,7 @@ exports.getBookings = async (req, res) => {
 
       const bookingData = [];
       if (bookings.length == 0) {
-        return res
-          .status(400)
-          .json({ success: false, message: "No bookings found" });
+        return res.status(200).json({ status: 200, success: true, data: [] });
       }
 
       // Filter the bookings based on the search query

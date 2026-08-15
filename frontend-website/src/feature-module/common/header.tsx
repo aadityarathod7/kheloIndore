@@ -214,7 +214,7 @@ const Header = () => {
           setUserData(decodedToken);
           const userId = decodedToken?.userID || decodedToken?.id;
           if (userId) {
-            const res = await axios.get(`${API_URL}/user/fetch-user-by-id/${userId}`);
+            const res = await axios.get(`${API_URL}/user/fetch-user-by-id/${userId}`, { headers: { Authorization: `Bearer ${token}` } });
             if (res.data?.data) {
               setFullUserData(res.data.data);
             }
@@ -474,16 +474,16 @@ const Header = () => {
                     to="/search"
                     className="d-flex align-items-center justify-content-center text-decoration-none"
                     style={{
-                      border: "1px solid #E2E8F0",
-                      borderRadius: "8px",
-                      width: "36px",
+                      border: "none",
+                      borderRadius: "50%",
+                      width: "32px",
                       height: "36px",
-                      backgroundColor: "#FFFFFF",
+                      backgroundColor: "transparent",
                       flexShrink: 0
                     }}
                     aria-label="Search venues, coaches and trainers"
                   >
-                    <i className="fas fa-search text-dark" style={{ fontSize: "13px" }} />
+                    <i className="fas fa-search" style={{ fontSize: "16px", color: "#0F172A" }} />
                   </Link>
                   {/* Account: Profile/Login button */}
                   {loginToken ? (

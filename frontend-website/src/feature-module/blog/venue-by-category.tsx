@@ -121,7 +121,7 @@ const CustomDropdown = ({
   }, [options, searchTerm]);
 
   return (
-    <div className="position-relative w-100" ref={dropdownRef}>
+    <div className="position-relative w-100" ref={dropdownRef} style={{ zIndex: isOpen ? 1100 : 1 }}>
       <button
         type="button"
         className="btn w-100 d-flex align-items-center justify-content-between px-3 bg-white shadow-sm"
@@ -156,10 +156,11 @@ const CustomDropdown = ({
         <div
           className="position-absolute start-0 bg-white shadow-lg border overflow-hidden"
           style={{
-            zIndex: 999,
+            zIndex: 1200,
             minWidth: "100%",
-            width: "max-content",
-            maxWidth: "280px",
+            width: "100%",
+            maxWidth: "min(280px, calc(100vw - 24px))",
+            boxSizing: "border-box",
             borderColor: "#E2E8E3",
             borderRadius: "14px",
             boxShadow: "0 10px 25px rgba(0,0,0,0.12)",
@@ -192,7 +193,7 @@ const CustomDropdown = ({
             </div>
           )}
 
-          <div style={{ maxHeight: "200px", overflowY: "auto", padding: "4px 0" }}>
+          <div style={{ maxHeight: "min(320px, calc(100vh - 180px))", overflowY: "auto", overscrollBehavior: "contain", padding: "4px 0" }}>
             {filteredOptions.length > 0 ? (
               filteredOptions.map((opt) => {
                 const isSelected = opt.value === value;
@@ -312,7 +313,7 @@ const MiniCalendarDropdown = ({
   };
 
   return (
-    <div className="position-relative w-100" ref={dropdownRef}>
+    <div className="position-relative w-100" ref={dropdownRef} style={{ zIndex: isOpen ? 1100 : 1 }}>
       <button
         type="button"
         className="btn w-100 d-flex align-items-center justify-content-between px-3 bg-white shadow-sm"
@@ -347,7 +348,7 @@ const MiniCalendarDropdown = ({
         <div
           className="position-absolute start-0 bg-white shadow-lg border p-3 mt-1"
           style={{
-            zIndex: 999,
+            zIndex: 1200,
             width: "250px",
             borderColor: "#E2E8E3",
             borderRadius: "16px",
@@ -523,7 +524,7 @@ const MultiSelectDropdown = ({
   };
 
   return (
-    <div className="position-relative w-100" ref={dropdownRef}>
+    <div className="position-relative w-100" ref={dropdownRef} style={{ zIndex: isOpen ? 1100 : 1 }}>
       <button
         type="button"
         className="btn w-100 d-flex align-items-center justify-content-between px-3 bg-white shadow-sm"
@@ -558,7 +559,7 @@ const MultiSelectDropdown = ({
         <div
           className="position-absolute start-0 bg-white shadow-lg border overflow-hidden"
           style={{
-            zIndex: 999,
+            zIndex: 1200,
             minWidth: "100%",
             width: "max-content",
             maxWidth: "260px",
@@ -684,6 +685,9 @@ const SORT_OPTIONS: DropdownOption[] = [
   { value: "popular", label: "Popular" },
   { value: "price-low", label: "Price: Low to High" },
   { value: "price-high", label: "Price: High to Low" },
+  { value: "rating-high", label: "Rating: High to Low" },
+  { value: "newest", label: "Newest First" },
+  { value: "name-az", label: "Name: A to Z" },
 ];
 
 export default function VenueByCategory() {
@@ -996,6 +1000,31 @@ export default function VenueByCategory() {
 
   return (
     <div style={{ backgroundColor: "#F8FAFC", minHeight: "100vh" }}>
+      <style>{`
+        @media (max-width: 767.98px) {
+          .hero-booking-section { padding-top: 42px !important; padding-bottom: 20px !important; }
+          .hero-booking-section h1 { font-size: 30px !important; margin-bottom: 8px !important; }
+          .hero-booking-section p { font-size: 16px !important; line-height: 1.55 !important; margin-bottom: 14px !important; }
+          .hero-booking-section .hero-artwork-blend { width: 62% !important; opacity: 0.62 !important; }
+          .hero-booking-section .rounded-pill { padding: 8px 14px !important; font-size: 12px !important; }
+          .venue-category-breadcrumb { max-width: 100%; flex-wrap: wrap !important; row-gap: 4px; border-radius: 14px !important; }
+          .venue-category-breadcrumb > span { margin-left: 7px !important; margin-right: 7px !important; }
+          .content.blog-grid { padding-top: 18px !important; }
+          .ki-mobile-listing-heading { margin-bottom: 16px !important; gap: 10px !important; align-items: flex-end !important; }
+          .ki-mobile-listing-heading h2 { font-size: 22px !important; line-height: 1.15 !important; }
+          .ki-mobile-listing-heading p { font-size: 12px !important; }
+          .ki-mobile-sort { min-width: 142px !important; width: 142px; flex: 0 0 142px; }
+          .ki-mobile-sort > span { display: none; }
+          .ki-mobile-filter-toolbar { margin-bottom: 16px; }
+          .ki-mobile-search .form-control { height: 40px !important; border-radius: 11px !important; }
+          .ki-mobile-filter-row { display: flex; gap: 8px; overflow-x: auto; padding: 2px 1px 4px; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+          .ki-mobile-filter-row::-webkit-scrollbar { display: none; }
+          .ki-mobile-filter-control { flex: 0 0 136px; min-width: 136px; }
+          .ki-mobile-filter-control > .position-relative { width: 100% !important; }
+          .ki-mobile-filter-control .btn { height: 38px !important; border-radius: 10px !important; }
+          .ki-mobile-filter-reset { height: 38px; flex: 0 0 auto; white-space: nowrap; border-radius: 10px !important; padding: 0 12px !important; }
+        }
+      `}</style>
       
       {/* Standard Hero Header Section matching other pages */}
       <div className="hero-booking-section" style={{ background: "linear-gradient(135deg, #F0FDF4 0%, #ECFDF5 100%)", paddingTop: "120px", paddingBottom: "36px", position: "relative", overflow: "hidden", borderBottom: "1px solid #E5E7EB" }}>
@@ -1013,7 +1042,7 @@ export default function VenueByCategory() {
               </p>
               
               {/* Breadcrumb pill matching sports-venue.tsx */}
-              <div className="d-inline-flex align-items-center bg-white px-3 py-2 rounded-pill shadow-sm" style={{ fontSize: "13px", border: "1px solid #E5E7EB" }}>
+              <div className="venue-category-breadcrumb d-inline-flex align-items-center bg-white px-3 py-2 rounded-pill shadow-sm" style={{ fontSize: "13px", border: "1px solid #E5E7EB" }}>
                 <Link to="/" style={{ color: "#64748B", textDecoration: "none", fontWeight: "500" }}><i className="feather-home me-1" style={{ color: "#64748B" }} /> Home</Link>
                 <span style={{ margin: "0 10px", color: "#64748B" }}><i className="feather-chevron-right" style={{ fontSize: "12px", color: "#64748B" }} /></span>
                 <Link to="/sports-venue" style={{ color: "#64748B", textDecoration: "none", fontWeight: "500" }}>Sports Venues</Link>
@@ -1031,7 +1060,7 @@ export default function VenueByCategory() {
         <div className="container-fluid px-lg-5 px-md-4 px-3">
 
           {/* Title & Count Row */}
-          <div className="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
+          <div className="ki-mobile-listing-heading d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4 position-relative">
             <div>
               <h2 className="fw-extrabold text-dark mb-1 d-flex align-items-center gap-2" style={{ fontSize: "24px", fontWeight: "800", color: "#17222D" }}>
                 <span style={{ color: "#22C55E" }}>{displayList.length}</span> {categoryTitle} Venues
@@ -1042,7 +1071,7 @@ export default function VenueByCategory() {
             </div>
 
             {/* Sort Dropdown - top right */}
-            <div className="d-flex align-items-center gap-2" style={{ minWidth: "200px" }}>
+            <div className="ki-mobile-sort d-flex align-items-center gap-2" style={{ minWidth: "200px" }}>
               <span className="text-muted flex-shrink-0" style={{ fontSize: "12px", fontWeight: "600" }}>Sort by:</span>
               <CustomDropdown
                 options={SORT_OPTIONS}
@@ -1206,8 +1235,8 @@ export default function VenueByCategory() {
             {/* RIGHT COLUMN - Venue Cards Grid */}
             <div className="col-lg-9 col-md-8">
 
-              <div className="d-flex d-md-none flex-column gap-2 mb-3 w-100">
-                <div style={{ position: "relative", width: "100%" }}>
+              <div className="ki-mobile-filter-toolbar d-md-none w-100">
+                <div className="ki-mobile-search position-relative mb-2">
                   <input
                     type="text"
                     value={searchQuery}
@@ -1218,11 +1247,11 @@ export default function VenueByCategory() {
                   />
                   <i className="feather-search" style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", color: "#64748B", fontSize: "14px" }} />
                 </div>
-                <div className="d-flex flex-wrap gap-2 w-100">
-                  <CustomDropdown options={locationOptions} value={locationName} onChange={setLocationName} placeholder="Location" icon="feather-map-pin" />
-                  <MiniCalendarDropdown value={selectedDate} onChange={setSelectedDate} />
-                  <CustomDropdown options={SLOT_OPTIONS} value={selectedSlot} onChange={setSelectedSlot} placeholder="Time" icon="feather-clock" />
-                  <button type="button" className="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1" style={{ fontSize: "12px", borderRadius: "10px" }} onClick={handleResetFilters}>
+                <div className="ki-mobile-filter-row" aria-label="Venue filters">
+                  <div className="ki-mobile-filter-control"><CustomDropdown options={locationOptions} value={locationName} onChange={setLocationName} placeholder="Location" icon="feather-map-pin" /></div>
+                  <div className="ki-mobile-filter-control"><MiniCalendarDropdown value={selectedDate} onChange={setSelectedDate} /></div>
+                  <div className="ki-mobile-filter-control"><CustomDropdown options={SLOT_OPTIONS} value={selectedSlot} onChange={setSelectedSlot} placeholder="Time" icon="feather-clock" /></div>
+                  <button type="button" className="ki-mobile-filter-reset btn btn-outline-secondary btn-sm d-flex align-items-center gap-1" style={{ fontSize: "12px" }} onClick={handleResetFilters}>
                     <i className="feather-refresh-cw" style={{ fontSize: "12px" }} /> Reset
                   </button>
                 </div>

@@ -127,6 +127,11 @@ const categoryStyle = (category: string) => {
 
 const normaliseCategory = (value: string) => value.trim().toLowerCase().replace(/[_-]+/g, " ").replace(/\s+/g, " ");
 
+const isUsableCategory = (value: unknown) => {
+  const category = String(value || "").trim();
+  return Boolean(category) && !["-", "n/a", "na", "none", "null", "undefined"].includes(category.toLowerCase());
+};
+
 const formatLocation = (loc: string) => {
   if (!loc) return "Indore";
   const cleaned = loc.trim();
@@ -144,6 +149,41 @@ const getProfileImage = (profilePicture: any): string => {
   return `${IMG_URL}${imagePath}`;
 };
 
+const getVenueSize = (venue: Venues): string | null => {
+  const data = venue.data as Record<string, any> | undefined;
+  const vendorData = Array.isArray(data?.vendor_data)
+    ? Object.fromEntries(data.vendor_data.map((item: any) => [item?.key, item?.value]))
+    : {};
+  const formatFeet = (value: unknown, suffix = "ft") => {
+    if (typeof value !== "string" && typeof value !== "number") return "";
+    const text = String(value).trim();
+    if (!text) return "";
+    return /\b(ft|feet|sq\.?\s*ft)\b/i.test(text) ? text : `${text} ${suffix}`;
+  };
+  const sportSize = venue.sports_details?.find((detail) => detail?.size?.trim())?.size;
+  const values = [
+    formatFeet(data?.total_area_in_sq_feet, "sq. ft."),
+    formatFeet(vendorData.total_area_in_sq_feet, "sq. ft."),
+    formatFeet(data?.dimension),
+    formatFeet(vendorData.dimension),
+    formatFeet(data?.field_dimensions),
+    formatFeet(vendorData.field_dimensions),
+    formatFeet(data?.rink_dimensions),
+    formatFeet(vendorData.rink_dimensions),
+    formatFeet(data?.court_size),
+    formatFeet(vendorData.court_size),
+    sportSize,
+    venue.size,
+    venue.venue_size,
+    data?.size,
+    data?.venue_size,
+    vendorData.size,
+  ];
+
+  return values
+    .map((value) => (typeof value === "string" ? value.trim() : ""))
+    .find((value) => Boolean(value) && !/^\d+[a-z]+\d+$/i.test(value)) || null;
+};
 type ProviderKind = "Venue" | "Coach" | "Trainer";
 
 const TopProviderCard = ({ kind, provider }: { kind: ProviderKind; provider: Venues | Coach | Trainer }) => {
@@ -165,7 +205,7 @@ const TopProviderCard = ({ kind, provider }: { kind: ProviderKind; provider: Ven
   const area = getArea(isVenue ? venue.near_by_location : person.near_by_location);
   const rating = isVenue ? venue.rating : person.rating;
   const reviewCount = isVenue ? venue.reviews_count : person.reviews_count;
-  const venueSize = venue.gameType || venue.size || venue.venue_size || String(venue.data?.size || venue.data?.venue_size || "Standard");
+  const venueSize = isVenue ? getVenueSize(venue) : null;
 
   return (
     <div className="col-lg-4 col-md-6">
@@ -187,12 +227,15 @@ const TopProviderCard = ({ kind, provider }: { kind: ProviderKind; provider: Ven
           </span>
         </div>
         <div className="listing-content" style={{ textAlign: "left", padding: "18px 20px" }}>
-          <h3 className="listing-title text-truncate mb-2" style={{ fontSize: "18px", fontWeight: 700 }}><Link to={link}>{name}</Link></h3>
-          <p className="mb-2 text-truncate" style={{ color: "#64748B", fontSize: "14px" }}><i className="feather-map-pin me-2" />{area}</p>
-          <div className="d-flex align-items-center gap-3 mb-3" style={{ color: "#64748B", fontSize: "13px" }}>
-            {isVenue && <span><i className="feather-maximize me-1" />Size: {venueSize}</span>}
-            {rating && rating > 0 ? <span><i className="fas fa-star me-1" style={{ color: "#F59E0B" }} />{rating.toFixed(1)}{reviewCount ? ` (${reviewCount})` : ""}</span> : !isVenue && <span><i className="fas fa-star me-1" style={{ color: "#94A3B8" }} />New provider</span>}
+          <div className="d-flex align-items-center justify-content-between mb-2" style={{ color: "#64748B", fontSize: "13px", minHeight: "20px" }}>
+            <span>
+              <i className="fas fa-star me-1" style={{ color: rating && rating > 0 ? "#F59E0B" : "#0F172A" }} />
+              {rating && rating > 0 ? `${rating.toFixed(1)}${reviewCount ? ` (${reviewCount})` : ""}` : isVenue ? "New" : "New provider"}
+            </span>
+            {isVenue && venueSize && <span><i className="feather-grid me-1" />{venueSize}</span>}
           </div>
+          <h3 className="listing-title text-truncate mb-2" style={{ fontSize: "18px", fontWeight: 700 }}><Link to={link}>{name}</Link></h3>
+          <p className="mb-3 text-truncate" style={{ color: "#64748B", fontSize: "14px" }}><i className="feather-map-pin me-2" />{area}</p>
           <div className="d-flex align-items-end justify-content-between pt-2" style={{ borderTop: "1px solid #EEF2F0" }}>
             <div><small style={{ color: "#64748B" }}>{isVenue ? "Hourly Rate" : "Starts from"}</small><div style={{ fontSize: "22px", fontWeight: 800 }}>{rate ? `₹${rate}` : "Contact us"}{rate && <small style={{ fontSize: "13px", fontWeight: 400 }}>/{isVenue ? "hr" : "month"}</small>}</div></div>
             <Link to={link} className="d-flex align-items-center justify-content-center" style={{ width: "38px", height: "38px", borderRadius: "50%", background: "#22C55E", color: "#fff" }}><i className="fas fa-chevron-right" /></Link>
@@ -722,28 +765,28 @@ const Home = () => {
 
   const categoryCardsByProvider = useMemo<Record<CategoryProviderTab, CategoryCard[]>>(() => {
     const categoryGroups: Record<CategoryProviderTab, string[][]> = {
-      venue: venues.map((item) => [item.category, item.activities, item.vendor_type]),
-      coach: coaches.map((item) => [item.category, item.trainer_type]),
-      trainer: trainer.map((item) => [item.category, item.specializations, item.trainer_type]),
+      venue: venues.map((item) => [item.category]),
+      coach: coaches.map((item) => [item.category]),
+      trainer: trainer.map((item) => [item.category]),
     };
 
     return (Object.entries(categoryGroups) as [CategoryProviderTab, string[][]][]).reduce((result, [providerType, groups]) => {
       const providerCategoryGroups = groups.map((values) => values
         .flatMap((value) => String(value || "").split(/[,|/]+/))
         .map((value) => value.trim())
-        .filter(Boolean));
+        .filter(isUsableCategory));
       const liveCategoryNames = providerCategoryGroups.flat();
       const sourceNames = Array.from(new Map([
         ...apiCategories.map((category) => category.category_name),
         ...liveCategoryNames,
-      ].filter(Boolean).map((name) => [normaliseCategory(name), name])).values());
+      ].filter(isUsableCategory).map((name) => [normaliseCategory(name), name])).values());
 
       result[providerType] = sourceNames
         .map((name) => {
           const key = normaliseCategory(name);
           const count = providerCategoryGroups.filter((names) => names.some((liveName) => {
             const liveKey = normaliseCategory(liveName);
-            return liveKey === key || liveKey.includes(key) || key.includes(liveKey);
+            return liveKey === key;
           })).length;
           return { name, slug: key.replace(/\s+/g, "-"), count, icon: getCategoryIcon(name), ...categoryStyle(name) };
         })

@@ -12,7 +12,6 @@ import Select from "react-select";
 const UpdatepersonalTrainer  = () => {
   const [formData, setFormData] = useState({
     full_name: "",
-    venue_name: "",
     date_of_birth: "",
     gender: "",
     trainer_type: "",
@@ -328,7 +327,8 @@ const UpdatepersonalTrainer  = () => {
     try {
       const response = await axios.post(
         `${API_URL}/upload-file?types=coach`,
-        formData
+        formData,
+        { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
       );
       
 
@@ -376,7 +376,8 @@ const UpdatepersonalTrainer  = () => {
       try {
         const response = await axios.post(
           `${API_URL}/upload-file?types=coach`,
-          formDataUpload
+          formDataUpload,
+          { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
         );
         if (response.data && response.data.file_data && response.data.file_data[0]) {
           uploaded.push(response.data.file_data[0]);
@@ -431,7 +432,6 @@ const UpdatepersonalTrainer  = () => {
           `${response.data.personalTrainer.first_name || ""} ${
             response.data.personalTrainer.last_name || ""
           }`.trim(), // Use API data or empty string if not available
-        venue_name: response.data.personalTrainer.venue_name ,
         date_of_birth: response.data.personalTrainer.date_of_birth || "",
         gender: response.data.personalTrainer.gender || "",
         trainer_type: response.data.personalTrainer.trainer_type || "",
@@ -452,7 +452,6 @@ const UpdatepersonalTrainer  = () => {
         profile_picture: response.data.personalTrainer.profile_picture || [], // Ensure it's an array
         identity_Proof: response.data.personalTrainer.identity_Proof || [], // Ensure it's an array
         other_document: response.data.personalTrainer.other_document || [], // Ensure it's an array
-        status: response.data.personalTrainer.status || "", // Default to an empty string if not available
         coaching_levels: response.data.personalTrainer.coaching_levels || [],
         own_level: response.data.personalTrainer.own_level || "",
         response_time: response.data.personalTrainer.response_time || "",
@@ -569,18 +568,6 @@ const UpdatepersonalTrainer  = () => {
             </Col>
 
             
-            <Col sm={4}>
-              <Form.Group controlId="formFirstName">
-                <Form.Label>Venue</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="venue_name"
-                  placeholder="Enter Venue"
-                  value={formData.venue_name}
-                  onChange={handleInputChange}
-                />
-              </Form.Group>
-            </Col>
           </Row>
           <Row className="mt-4">
             <Col sm={12}><h5>Training profile</h5></Col>
@@ -615,7 +602,7 @@ const UpdatepersonalTrainer  = () => {
             <Col sm={8}><Form.Label>Availability</Form.Label>{AVAILABILITY_OPTIONS.map((value) => <Form.Check key={value} inline type="checkbox" label={value} checked={(formData.availability_options || []).includes(value)} onChange={() => toggleListValue("availability_options", value)} />)}</Col>
           </Row>
           <Row className="mt-3">
-            <Col sm={12}><h5>Pricing</h5></Col>
+            <Col sm={12}><h5>Pricing &amp; Service Packages</h5><small className="text-muted d-block mb-2">Set optional monthly, quarterly, or yearly package prices.</small></Col>
             {[ ["price_per_session", "Price per session"], ["price_per_hour", "Price per hour"], ["monthly", "Monthly package"], ["quarterly", "Quarterly package"], ["yearly", "Yearly package"], ["trial_session_price", "Trial session price"] ].map(([name, label]) => <Col sm={4} className="mb-3" key={name}><Form.Label>{label}</Form.Label><Form.Control type="number" min="0" name={name} value={formData.pricing?.[name] || ""} onChange={handlePricingChange} /></Col>)}
           </Row>
           <Row className="mt-3">
@@ -1559,24 +1546,6 @@ const UpdatepersonalTrainer  = () => {
                 </div>
               </Form.Group>
             </Col>
-          </Row>
-          <Row className="mt-3">
-            <Form.Group controlId="formCheckbox">
-              <div className="checkbox-container">
-                <Form.Check
-                  type="checkbox"
-                  id="statusCheckbox"
-                  name="status"
-                  aria-label="option 1"
-                  className="checkbox-input"
-                  checked={formData.status || false}
-                  onChange={(e) =>
-                    setFormData((prevFormData) => ({ ...prevFormData, status: e.target.checked }))
-                  }
-                />
-              </div>
-              <Form.Label className="checkbox-label">Status</Form.Label>
-            </Form.Group>
           </Row>
           <button
             type="submit"

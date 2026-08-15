@@ -530,7 +530,7 @@ function BookingList({ listType }) {
                   <Dropdown.Item eventKey="Venue">Venue</Dropdown.Item>
                   <Dropdown.Item eventKey="Coach">Coach</Dropdown.Item>
                   <Dropdown.Item eventKey="Personal Trainer">
-                    Trainer
+                    Personal Trainer
                   </Dropdown.Item>
                 </Dropdown.Menu>
               </Dropdown>
@@ -654,7 +654,7 @@ function BookingList({ listType }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {currentItems?.map((row, index) => {
+                  {currentItems?.length ? currentItems.map((row, index) => {
                     const slotTimesArray = row.slots.map(
                       (slot) => `${slot?.startTime} to ${slot?.endTime}`
                     );
@@ -737,7 +737,17 @@ function BookingList({ listType }) {
                         </td>
                       </tr>
                     );
-                  })}
+                  }) : (
+                    <tr className="admin-empty-row">
+                      <td colSpan={10}>
+                        <div className="admin-empty-table-state">
+                          <i className="feather-calendar" aria-hidden="true" />
+                          <strong>No bookings found</strong>
+                          <span>Bookings will appear here when they are available.</span>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </Table>
             </div>

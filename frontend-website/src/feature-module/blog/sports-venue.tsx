@@ -95,13 +95,19 @@ const BlogListSidebarLeft = () => {
         }));
         setVenues(mappedVenues);
 
-        const dbCategories = catRes.data.categories || [];
-        const mappedCategories = dbCategories.map((c: any) => ({
-          id: c._id,
-          name: c.category_name,
-          slug: slugify(c.category_name),
-          image: getCategoryImage(c.images && c.images[0], c.category_name)
-        }));
+        const dbCategories = (catRes.data.categories || []).filter((category: any) => category.status !== false);
+        const mappedCategories = Array.from(new Map(dbCategories
+          .filter((category: any) => normaliseCategory(category.category_name))
+          .map((c: any) => {
+            const name = String(c.category_name).trim();
+            return [normaliseCategory(name), {
+              id: c._id,
+              name,
+              slug: slugify(name),
+              image: getCategoryImage(c.images && c.images[0], name)
+            }];
+          }))
+          .values());
         setCategories(mappedCategories);
         setLoading(false);
       } catch (error) {
@@ -111,40 +117,48 @@ const BlogListSidebarLeft = () => {
     fetchData();
   }, []);
 
+  const normaliseCategory = (value: unknown) => String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[_-]+/g, " ")
+    .replace(/\s+/g, " ");
+
+  const isValidCategory = (value: string) => Boolean(value) && !["-", "n/a", "na", "none", "null", "undefined", "other"].includes(value);
+
+  const categoryAliases: Record<string, string[]> = {
+    "basketball stadium": ["basketball stadium", "basketball court", "basketball complex", "outdoor basketball court"],
+    "chess club": ["chess", "chess club"],
+    "cricket grounds": ["cricket", "cricket ground", "cricket grounds"],
+    "dance studio": ["dance", "dance studio", "dance and fitness hub", "dance and fitness studio"],
+    "gym": ["gym", "prominent gym", "fitness center", "fitness centers", "fitness centre", "fitness complex", "fitness hub", "fitness studio", "wellness center"],
+    "pickleball": ["pickleball", "pickle ball"],
+    "swiming academy": ["swiming academy", "swimming academy", "swimming centre", "swimming club", "swimming pool", "premier swimming and aquatic training academy"],
+    "tennis court": ["tennis court", "tennis courts"],
+    "turf": ["turf"],
+  };
+
   const classifyVenues = (venuesList: Venues[]) => {
-    const counts: Record<string, number> = {};
-    categories.forEach((cat) => {
-      counts[cat.id] = 0;
-    });
+    const counts: Record<string, number> = Object.fromEntries(categories.map((category) => [category.id, 0]));
 
-    venuesList.forEach((v) => {
-      const vt = (v.vendor_type || "").toLowerCase().replace(/_/g, " ").trim();
-      const cat = (v.category || "").toLowerCase().replace(/_/g, " ").trim();
-      const name = (v.name || "").toLowerCase();
-      const desc = (v.description || "").toLowerCase();
+    venuesList.forEach((venue) => {
+      const venueCategories = String(venue.category || "")
+        .split(/[,|/]+/)
+        .map(normaliseCategory)
+        .filter(isValidCategory);
+      const venueType = normaliseCategory(venue.vendor_type);
 
-      const matched = categories.find((c) => {
-        const cName = c.name.toLowerCase().trim();
-        const validVt = vt.length >= 3 && vt !== "other" && vt !== "-";
-        const validCat = cat.length >= 3 && cat !== "other" && cat !== "-";
-        return (
-          (validVt && vt.includes(cName)) ||
-          (validCat && cat.includes(cName)) ||
-          (validVt && cName.includes(vt)) ||
-          (validCat && cName.includes(cat)) ||
-          name.includes(cName) ||
-          desc.includes(cName)
-        );
+      categories.forEach((category) => {
+        const categoryName = normaliseCategory(category.name);
+        const acceptedValues = categoryAliases[categoryName] || [categoryName];
+        const valuesToCheck = categoryName === "turf" ? [venueType] : venueCategories;
+        if (valuesToCheck.some((value) => acceptedValues.includes(value))) {
+          counts[category.id] += 1;
+        }
       });
-
-      if (matched) {
-        counts[matched.id]++;
-      }
     });
 
     return counts;
   };
-
   const categoryCounts = classifyVenues(venues);
 
   const filteredCategories = categories.filter((cat) =>

@@ -360,17 +360,19 @@ exports.fetchAllPersonalTrainers = async (req, res) => {
         createdAt: -1,
       });
     } else if (req.user.role === "Personal Trainer") {
-      // Personal Trainer can only see their own data
-      const personalTrainer = await PersonalTrainer.findOne({ _id: userId });
+      // Authentication uses User; locate the linked pending service profile.
+      const account = await User.findById(userId).select("mobile email");
+      const personalTrainer = account
+        ? await PersonalTrainer.findOne({ $or: [{ mobile: account.mobile }, { email: account.email }] })
+        : await PersonalTrainer.findById(userId);
 
       if (!personalTrainer) {
         return res.status(404).json({
           success: false,
-          message: "Personal Trainer not found.",
+          message: "Personal Trainer service profile not found.",
         });
       }
 
-      // Wrap the single object in an array
       data = [withoutPrivateTrainerDetails(personalTrainer)];
     } else {
       // Other roles are not authorized
@@ -455,11 +457,15 @@ exports.fetchPersonalTrainerById = async (req, res) => {
 // Private trainer record for Super Admin management only.
 exports.fetchPersonalTrainerForAdmin = async (req, res) => {
   try {
-    if (req.user?.role !== "Super Admin") {
-      return res.status(403).json({ success: false, message: "Only Super Admin can access trainer contact details." });
-    }
     const trainer = await PersonalTrainer.findById(req.params.id);
     if (!trainer) return res.status(404).json({ success: false, message: "Personal trainer not found" });
+    const isSuperAdmin = req.user?.role === "Super Admin";
+    const account = await User.findById(req.user?.userID).select("mobile email");
+    const ownsProfile = req.user?.role === "Personal Trainer" && account &&
+      (String(account.mobile) === String(trainer.mobile) || String(account.email || "").toLowerCase() === String(trainer.email || "").toLowerCase());
+    if (!isSuperAdmin && !ownsProfile) {
+      return res.status(403).json({ success: false, message: "You can view only your own trainer service." });
+    }
     return res.status(200).json({ success: true, personalTrainer: trainer });
   } catch (error) {
     return res.status(400).json({ success: false, message: "Invalid personal trainer ID format" });
@@ -472,7 +478,8 @@ exports.fetchAllPersonalTrainersForWeb = async (req, res) => {
     const { search } = req.query;
     let queryConditions =  {
       status: true,
-      is_admin_access: 1 || '1'
+      is_admin_access: 1,
+      verification_status: 1
     };
 
     const searchFields = [
@@ -549,7 +556,7 @@ exports.fetchPublicTrainer = async (req, res) => {
     if (!trainer) {
       return res.status(404).json({ success: false, message: "Trainer not found" });
     }
-    if (trainer.status !== true || trainer.is_admin_access !== 1) {
+    if (trainer.status !== true || trainer.is_admin_access !== 1 || trainer.verification_status !== 1) {
       return res.status(403).json({ success: false, message: "Trainer is not active or approved" });
     }
     trainer.profile_views = (trainer.profile_views || 0) + 1;
@@ -687,11 +694,6 @@ exports.updatePersonalTrainers = async (req, res) => {
     const updateData = req.body; // Update data from request body
 
     const isSuperAdmin = req.user?.role === "Super Admin";
-    const isSelfTrainer = req.user?.role === "Personal Trainer" && req.user?.userID === trainerId;
-
-    if (!isSuperAdmin && !isSelfTrainer) {
-      return res.status(403).json({ success: false, message: "Only Super Admin or the trainer themselves can update trainer profiles." });
-    }
 
     if (Array.isArray(updateData.training_formats) && updateData.training_formats.includes("Group Training")) {
       const groupSize = Number(updateData.group_size_max);
@@ -703,10 +705,20 @@ exports.updatePersonalTrainers = async (req, res) => {
       return res.status(400).json({ success: false, message: "Session duration must be 1, 2, or 3 hours." });
     }
 
-    // Find the trainer by ID
+    // Find the service profile and verify ownership for a trainer self-update.
     const trainer = await PersonalTrainer.findById(trainerId);
     if (!trainer) {
       return res.status(404).json({ success: false, message: "Personal Trainer not found" });
+    }
+    if (!isSuperAdmin) {
+      if (req.user?.role !== "Personal Trainer") {
+        return res.status(403).json({ success: false, message: "You are not authorized to update this trainer profile." });
+      }
+      const account = await User.findById(req.user.userID).select("mobile email");
+      const ownsProfile = account && (String(account.mobile) === String(trainer.mobile) || String(account.email || "").toLowerCase() === String(trainer.email || "").toLowerCase());
+      if (!ownsProfile) {
+        return res.status(403).json({ success: false, message: "You can update only your own trainer service." });
+      }
     }
 
     const nextEmail = updateData.email !== undefined ? String(updateData.email).trim().toLowerCase() : trainer.email;
@@ -742,6 +754,7 @@ exports.updatePersonalTrainers = async (req, res) => {
     // If update is NOT made by Super Admin (i.e. by trainer themselves)
     if (!isSuperAdmin) {
       trainer.status = false;
+      trainer.is_admin_access = 0;
       trainer.verification_status = 0; // pending approval
 
       // Send email & notification to Super Admin

@@ -255,9 +255,11 @@ const UpdateVenue = () => {
   async function fetchData() {
     try {
       const response = await fetch(
-        `${API_URL}/venue/individual/${updateVenueId}`
+        `${API_URL}/venue/admin/individual/${updateVenueId}`,
+        { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
       );
       const result = await response.json();
+      if (!response.ok || !result?.venue) throw new Error(result?.message || "Venue not found");
       const prev = result.venue;
 
       setNewData(result.venue)
@@ -279,8 +281,8 @@ const UpdateVenue = () => {
         city: prev?.city,
         state: prev?.state,
         zipcode: prev?.zipcode,
-        images: prev?.images,
-        amenities: prev?.amenities,
+        images: Array.isArray(prev?.images) ? prev.images : [],
+        amenities: Array.isArray(prev?.amenities) ? prev.amenities : [],
         near_by_location: prev?.near_by_location,
         google_location: prev?.google_location,
         contact_number: prev?.contact_number,
@@ -292,7 +294,7 @@ const UpdateVenue = () => {
         vendor_details: transformedVendorDetails,
         venue_owner_name: "",
         vendor_id: prev?.vendor_id,
-        facilities: prev?.facilities,
+        facilities: Array.isArray(prev?.facilities) ? prev.facilities : [],
         emailId: prev?.emailId,
         additionalNotes: prev?.additionalNotes,
         gameType: prev?.gameType,
@@ -412,8 +414,7 @@ const UpdateVenue = () => {
   const getVenueOwner = async () => {
     try {
       const response = await axios.get(
-        `${API_URL}/user/fetch-user-by-id/${formData.vendor_id}`
-      );
+        `${API_URL}/user/fetch-user-by-id/${formData.vendor_id}`, { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
       const fullName = `${response?.data?.data?.first_name} ${response?.data?.data?.last_name}`;
       setFormData((prevData) => ({
         ...prevData,
@@ -880,32 +881,7 @@ const UpdateVenue = () => {
                   </div>
                 </Form.Group>
               </Col>
-              <Col md={4}>
-                <Form.Group
-                  controlId="formSnookerContactNumber"
-                  className="mb-2"
-                >
-                  <Form.Label className="heading">
-                    Number of People <span style={{ color: "red" }}>*</span>
-                  </Form.Label>
-                  <Form.Control
-                    type="tel"
-                    placeholder="Enter Number of People"
-                    name="capacity"
-                    value={formData.capacity}
-                    onChange={handleChange}
-                    isInvalid={!!errors.capacity}
-                    maxLength={10}
-                    className="add-venue-form-custom-class"
-                    onInput={(e) => {
-                      e.target.value = e.target.value.replace(/[^0-9]/g, "");
-                    }}
-                  />
-                  <Form.Control.Feedback type="invalid">
-                    {errors.capacity}
-                  </Form.Control.Feedback>
-                </Form.Group>
-              </Col>
+
             </Row>
             <Row>
               <Col md={4}>
@@ -1635,27 +1611,13 @@ const UpdateVenue = () => {
                   + Add Sport Details
                 </button>
               </Col>
-            </Row>
-            <Form.Group controlId="formCheckbox cursor-pointer">
-              <div className="checkbox-container ">
-                <Form.Check
-                  type="checkbox"
-                  id="statusCheckbox"
-                  name="status"
-                  aria-label="option 1"
-                  className="checkbox-input"
-                  checked={formData.status || false}
-                  onChange={(e) => {
-                    setFormData(prevFormData => ({
-                      ...prevFormData,
-                      status: e.target.checked,
-                    }));
-                  }
-                  }
-                />
+            </Row>            <div className="venue-approval-notice" role="status">
+              <i className="feather-shield" aria-hidden="true" />
+              <div>
+                <strong>Service approval</strong>
+                <span>Your venue will be submitted for Super Admin approval after you save it. Only approved, active venues are visible to the public.</span>
               </div>
-              <Form.Label className="checkbox-label">Status</Form.Label>
-            </Form.Group>
+            </div>
           </Row>
           <Row></Row>
           <button type="button" onClick={handleSubmit} className="SubmitButton">

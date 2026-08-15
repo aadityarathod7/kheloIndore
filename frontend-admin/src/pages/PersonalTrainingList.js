@@ -425,7 +425,7 @@ function PersonalTraininglist() {
                 {currentItems.map((row, index) => (
                   <tr key={row._id}>
                     <td>{index + 1 + indexOfFirstItem}</td>
-                    <td>{row.first_name} {row.last_name}</td>
+                    <td><div>{row.first_name} {row.last_name}</div><small className="text-muted">{row.provider_public_id || "ID pending"}</small></td>
                     <td>{row.mobile}</td>
                     <td>{row.email}</td>
                     <td
@@ -515,7 +515,7 @@ function PersonalTraininglist() {
                             <Tooltip title={`Activate`} arrow>
                               <ReloadOutlined
                                 className="delete_icon"
-                                onClick={() => handleActive(row)}
+                                onClick={() => isSuperAdmin && handleUpdateAccess(1, row._id)}
                               />
                             </Tooltip>
                         }

@@ -26,6 +26,7 @@ const Events = () => {
   const [priceFilter, setPriceFilter] = useState("all");
   const [organizerFilter, setOrganizerFilter] = useState("all");
   const [search, setSearch] = useState("");
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -66,7 +67,7 @@ const Events = () => {
       .ki-events-page .events-hero-title { color: #0f172a !important; font-size: clamp(36px, 4vw, 52px); letter-spacing: -1.3px; }
       .ki-events-page .events-content { padding-top: 42px; position: relative; z-index: 2; }
       @media (max-width: 991px) { .ki-events-page .events-hero { min-height: 270px; } .ki-events-page .events-hero-art { opacity: .3; width: 80%; } }
-      @media (max-width: 575px) { .ki-events-page .events-hero { min-height: 0; padding-top: 88px !important; padding-bottom: 50px !important; } .ki-events-page .events-hero-title { font-size: 36px; } .ki-events-page .events-content { padding-top: 28px; } }
+      @media (max-width: 575px) { .ki-events-page .events-hero { min-height: 0; padding-top: 88px !important; padding-bottom: 50px !important; } .ki-events-page .events-hero-title { font-size: 36px; } .ki-events-page .events-content { padding-top: 28px; } .ki-events-page .event-category-scroll { flex-wrap: nowrap !important; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; } .ki-events-page .event-category-scroll::-webkit-scrollbar { display: none; } .ki-events-page .event-category-scroll .event-filter-chip { white-space: nowrap; flex: 0 0 auto; } .ki-events-page .event-mobile-filter-card .form-control, .ki-events-page .event-mobile-filter-card .form-select { min-height: 44px; } }
     `}</style>
     <section className="events-hero position-relative" style={{ paddingTop: "155px", paddingBottom: "82px" }}>
       <div className="events-hero-art" />
@@ -81,7 +82,7 @@ const Events = () => {
     </section>
     <div className="container events-content">
       <div className="row g-4">
-        <aside className="col-lg-3">
+        <aside className="col-lg-3 d-none d-lg-block">
           <div className="event-filter-card bg-white rounded-4 p-4 shadow-sm" style={{ position: "sticky", top: 110 }}>
             <div className="d-flex justify-content-between align-items-center mb-4"><h2 className="event-filter-title h3 mb-0 fw-bold">Filters</h2><button onClick={clearFilters} className="btn btn-link text-success text-decoration-none p-0">Reset all</button></div>
             <div className="mb-4"><label className="event-filter-label fw-semibold mb-2"><i className="feather-search me-2 text-success" />Search events</label><input value={search} onChange={(event) => setSearch(event.target.value)} className="form-control" placeholder="Event or sport" /></div>
@@ -93,7 +94,22 @@ const Events = () => {
           </div>
         </aside>
         <section className="col-lg-9">
-          <div className="d-flex flex-wrap gap-2 mb-4">{categories.map((category) => <button key={category} onClick={() => setSelectedCategory(category)} className={`btn rounded-pill px-3 event-filter-chip ${selectedCategory === category ? "is-active" : ""}`}>{category}</button>)}</div>
+          <div className="d-lg-none mb-3">
+            <button type="button" onClick={() => setShowMobileFilters((current) => !current)} className="btn w-100 d-flex align-items-center justify-content-between bg-white border rounded-3 px-3 py-2 shadow-sm" style={{ color: "#17222d", fontWeight: 700 }} aria-expanded={showMobileFilters}>
+              <span><i className="feather-sliders me-2 text-success" />Filter events</span><i className={showMobileFilters ? "feather-chevron-up" : "feather-chevron-down"} />
+            </button>
+            {showMobileFilters && <div className="event-mobile-filter-card bg-white rounded-3 border shadow-sm p-3 mt-2">
+              <input value={search} onChange={(event) => setSearch(event.target.value)} className="form-control mb-2" placeholder="Search events" />
+              <div className="row g-2">
+                <div className="col-6"><select className="form-select" value={dateFilter} onChange={(event) => setDateFilter(event.target.value)}><option value="all">Any date</option><option value="week">This week</option><option value="month">This month</option></select></div>
+                <div className="col-6"><select className="form-select" value={locationFilter} onChange={(event) => setLocationFilter(event.target.value)}><option value="all">All locations</option>{locations.map((location) => <option key={location} value={location}>{location}</option>)}</select></div>
+                <div className="col-6"><select className="form-select" value={priceFilter} onChange={(event) => setPriceFilter(event.target.value)}><option value="all">Any price</option><option value="free">Free</option><option value="under500">Under ₹500</option><option value="500to1000">₹500 – ₹1,000</option><option value="above1000">Above ₹1,000</option></select></div>
+                {organizers.length > 1 && <div className="col-6"><select className="form-select" value={organizerFilter} onChange={(event) => setOrganizerFilter(event.target.value)}><option value="all">All organisers</option>{organizers.map((organizer) => <option key={organizer} value={organizer}>{organizer}</option>)}</select></div>}
+                <div className="col-6"><button type="button" onClick={clearFilters} className="btn btn-outline-success w-100 h-100">Reset</button></div>
+              </div>
+            </div>}
+          </div>
+          <div className="event-category-scroll d-flex flex-wrap gap-2 mb-4">{categories.map((category) => <button key={category} onClick={() => setSelectedCategory(category)} className={`btn rounded-pill px-3 event-filter-chip ${selectedCategory === category ? "is-active" : ""}`}>{category}</button>)}</div>
           {loading ? <div className="text-center p-5 bg-white rounded-4">Loading events…</div> : <div className="row g-4">{visibleEvents.map((event) => <article key={event._id} className="col-md-6 col-xl-4"><Link to={`/events/event-details/${event._id}`} className="text-decoration-none"><div className="h-100"><div className="rounded-4 overflow-hidden shadow-sm bg-dark" style={{ aspectRatio: "4 / 5" }}><img src={imageUrl(event.images?.[0]?.src)} alt={event.images?.[0]?.alt || event.event_name} className="event-card-image w-100 h-100" style={{ objectFit: "cover" }} /><div className="text-white px-3 py-2" style={{ marginTop: "-43px", position: "relative", background: "linear-gradient(transparent, rgba(0,0,0,.88))" }}>{new Date(event.start_date).toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" })}</div></div><div className="pt-3"><h2 className="event-card-title h5 fw-bold mb-2">{event.event_name}</h2><p className="text-muted mb-1"><i className="feather-map-pin me-1" />{event.location}</p><p className="text-muted mb-1">{event.category || "Sports"}</p><strong className="text-success">₹{event.price || 0} onwards</strong></div></div></Link></article>)}</div>}
           {!loading && !visibleEvents.length && <div className="text-center p-5 bg-white rounded-4">No events match these filters.</div>}
         </section>

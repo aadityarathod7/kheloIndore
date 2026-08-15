@@ -40,7 +40,7 @@ const Footer = () => {
     <footer className="footer">
       <div className="container">
         <div className="footer-top">
-          <div className="row g-4 g-xl-5">
+          <div className="row g-3 footer-content-grid">
             <div className="col-lg-3 col-md-6">
               <div className="footer-widget footer-about">
                 <Link to="/" className="footer-logo" aria-label="Khelo Indore home">
@@ -57,7 +57,7 @@ const Footer = () => {
                 <address className="footer-contact-details">
                   <div className="footer-contact-item">
                     <i className="feather-map-pin" aria-hidden="true" />
-                    <span>366/4, Samajwad Nagar, Indore,<br />Madhya Pradesh, India – 452002</span>
+                    <span>366/4, Samajwad Nagar, Indore, Madhya Pradesh, India – 452002</span>
                   </div>
                   <div className="footer-contact-item">
                     <i className="feather-phone" aria-hidden="true" />

@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 
 const PersonalTrainerSchema = new mongoose.Schema(
   {
+    provider_public_id: { type: String, unique: true, sparse: true, index: true },
     first_name: { type: String, required: true, trim: true },
     last_name: { type: String, required: true, trim: true },
     email: { type: String, trim: true },
@@ -246,4 +247,10 @@ const PersonalTrainerSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+
+const { nextProviderPublicId } = require("../helper/providerPublicId");
+PersonalTrainerSchema.pre("save", async function assignProviderPublicId(next) {
+  if (!this.provider_public_id) this.provider_public_id = await nextProviderPublicId("trainer");
+  next();
+});
 module.exports = mongoose.model("PersonalTrainer", PersonalTrainerSchema);

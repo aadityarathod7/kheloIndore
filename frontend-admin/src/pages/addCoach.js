@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import axios from "axios";
 import { Container, Row, Col, Form } from "react-bootstrap";
@@ -31,6 +31,16 @@ const AddCoach = () => {
 
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (localStorage.getItem("role") !== "Super Admin") {
+      Swal.fire({
+        icon: "info",
+        title: "Super Admin access required",
+        text: "Coach accounts are created through public registration. Only a Super Admin can create one from this page.",
+      }).then(() => navigate("/coaches", { replace: true }));
+    }
+  }, [navigate]);
   const [apiError, setApiError] = useState("");
 
   const handleChange = (e) => {
@@ -120,8 +130,11 @@ const AddCoach = () => {
         navigate('/coaches');
       });
     } catch (error) {
-      
-      setApiError(error.response.data.message)
+      const message = error?.response?.data?.message || "Unable to add the coach. Please try again.";
+      if (error?.response?.status === 403) {
+        Swal.fire("Super Admin access required", "Please sign in with a Super Admin account to create a coach from the admin panel.", "info");
+      }
+      setApiError(message);
     }
   };
 

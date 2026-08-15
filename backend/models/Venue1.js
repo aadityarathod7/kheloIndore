@@ -8,6 +8,7 @@ const keyValueSchema = new mongoose.Schema({
 const venueSchema = new mongoose.Schema(
   {
     vendor_type: String,
+    provider_public_id: { type: String, unique: true, sparse: true, index: true },
     name: String,
     address: String,
     city: String,
@@ -103,6 +104,12 @@ const venueSchema = new mongoose.Schema(
   
    { timestamps: true }
 );
+
+const { nextProviderPublicId } = require("../helper/providerPublicId");
+venueSchema.pre("save", async function assignProviderPublicId(next) {
+  if (!this.provider_public_id) this.provider_public_id = await nextProviderPublicId("venue");
+  next();
+});
 
 // Check if the model already exists before defining it
 const Venue1 = mongoose.model("Venue1", venueSchema);

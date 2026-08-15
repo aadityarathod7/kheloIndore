@@ -450,9 +450,6 @@ const AddVenue = () => {
     if (!formData.contact_number.trim()) {
       validationErrors.contact_number = "Contact Number is required";
     }
-    if (!formData.capacity.trim()) {
-      validationErrors.capacity = "Number of people is required";
-    }
     if (!formData.name.trim()) {
       validationErrors.name = " Venue Name is required";
     }
@@ -1382,32 +1379,7 @@ const AddVenue = () => {
                   </div>
                 </Form.Group>
               </Col>
-              <Col md={4}>
-                <Form.Group
-                  controlId="formSnookerContactNumber"
-                  className="mb-2"
-                >
-                  <Form.Label className="heading">
-                    Number of People <span style={{ color: "red" }}>*</span>
-                  </Form.Label>
-                  <Form.Control
-                    type="tel"
-                    placeholder="Enter Number of People"
-                    name="capacity"
-                    value={formData.capacity}
-                    onChange={handleChange}
-                    isInvalid={!!errors.capacity}
-                    maxLength={10}
-                    className="add-venue-form-custom-class"
-                    onInput={(e) => {
-                      e.target.value = e.target.value.replace(/[^0-9]/g, "");
-                    }}
-                  />
-                  <Form.Control.Feedback type="invalid">
-                    {errors.capacity}
-                  </Form.Control.Feedback>
-                </Form.Group>
-              </Col>
+
             </Row>
             <Row>
               <Col md={4}>
@@ -2087,23 +2059,13 @@ const AddVenue = () => {
                   + Add Sport Details
                 </button>
               </Col>
-            </Row>
-            <Form.Group controlId="formCheckbox cursor-pointer">
-              <div className="checkbox-container ">
-                <Form.Check
-                  type="checkbox"
-                  id="statusCheckbox"
-                  name="status"
-                  aria-label="option 1"
-                  className="checkbox-input"
-                  checked={formData.status || false}
-                  onChange={(e) =>
-                    setFormData({ ...formData, status: e.target.checked })
-                  }
-                />
+            </Row>            <div className="venue-approval-notice" role="status">
+              <i className="feather-shield" aria-hidden="true" />
+              <div>
+                <strong>Service approval</strong>
+                <span>Your venue will be submitted for Super Admin approval after you save it. Only approved, active venues are visible to the public.</span>
               </div>
-              <Form.Label className="checkbox-label">Status</Form.Label>
-            </Form.Group>
+            </div>
           </Row>
           <Row></Row>
           <button type="submit" onClick={handleSubmit} className="SubmitButton">

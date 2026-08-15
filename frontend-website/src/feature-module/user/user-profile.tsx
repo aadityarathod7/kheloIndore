@@ -88,7 +88,8 @@ const UserProfile = () => {
       if (!userId) return;
       try {
         const response = await axios.get<{ data?: ProfileData }>(
-          `${API_URL}/user/fetch-user-by-id/${userId}`
+          `${API_URL}/user/fetch-user-by-id/${userId}`,
+          { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
         );
         if (response.data?.data) {
           setUserData(response.data.data);
@@ -205,7 +206,7 @@ const UserProfile = () => {
       setLoading(true);
       setError("");
 
-      await axios.put(saveApiUrl, payload);
+      await axios.put(saveApiUrl, payload, { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
       localStorage.setItem("profileCompleted", "true");
       window.dispatchEvent(new Event("userProfileUpdated"));
 

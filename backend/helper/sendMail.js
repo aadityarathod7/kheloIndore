@@ -67,20 +67,19 @@ const sendEmailForSwap = async (email, subject, mailcontent, attachedFiles) => {
 
 const superAdminAddUsersendEmail = async (email, mailcontent) => {
   const transporter = createMailTransporter();
-  var mailOptions = {
+  const mailOptions = {
     from: `"KheloIndore" <${getSenderEmail()}>`,
     to: email,
-    subject: 'Login details',
-    html: mailcontent
+    subject: "Khelo Indore – Complete your profile",
+    html: mailcontent,
   };
-
-  transporter.sendMail(mailOptions, function (err, result) {
-    if (err) {
-      
-    }
-    
-  })
-}
+  try {
+    return await transporter.sendMail(mailOptions);
+  } catch (error) {
+    console.error(`SMTP delivery failed for ${email}:`, error.message);
+    throw error;
+  }
+};
 
 const sendVenuAdminConfirmation = async ({ senderEmail, senderName, recipientEmail, subject, html }) => {
   try {

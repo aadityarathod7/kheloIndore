@@ -642,13 +642,13 @@ const VenueTimeDate = () => {
                             type="button"
                             disabled={isBooked}
                             onClick={() => handleSlotClick(slot.startTime)}
-                            className="btn w-100 py-1 px-1 text-center transition-all d-flex align-items-center justify-content-center"
+                            className={`ki-booking-slot btn w-100 py-1 px-1 text-center transition-all d-flex align-items-center justify-content-center ${isChecked ? "is-selected" : ""}`}
                             style={{
                               minHeight: "84px",
                               fontSize: "12px",
                               fontWeight: "600",
                               borderRadius: "12px",
-                              backgroundColor: isChecked ? "#3730A3" : isOfflineBlocked ? "#171717" : isBooked ? "#6B2424" : "#FACC15",
+                              backgroundColor: isChecked ? "#15803D" : isOfflineBlocked ? "#171717" : isBooked ? "#6B2424" : "#FACC15",
                               color: isChecked || isOfflineBlocked || isBooked ? "#FFFFFF" : "#1F2937",
                               border: "none",
                               cursor: isBooked ? "not-allowed" : "pointer",

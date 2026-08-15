@@ -13,6 +13,7 @@ import './index.scss';
 import '@fortawesome/fontawesome-free/css/fontawesome.min.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import { base_path } from "./environment";
+import { PrimeReactProvider } from "primereact/api";
 
 
 
@@ -21,11 +22,13 @@ if (rootElement) {
   const root = ReactDOM.createRoot(rootElement);
   root.render(
     <React.StrictMode>
-      <Provider store={store} >
-        <BrowserRouter basename={base_path}>
-          <Feature />
-        </BrowserRouter>
-      </Provider>
+      <PrimeReactProvider value={{ hideOverlaysOnDocumentScrolling: true }}>
+        <Provider store={store}>
+          <BrowserRouter basename={base_path}>
+            <Feature />
+          </BrowserRouter>
+        </Provider>
+      </PrimeReactProvider>
     </React.StrictMode>
   );
 }

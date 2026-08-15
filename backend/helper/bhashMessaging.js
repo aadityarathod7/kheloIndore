@@ -15,6 +15,15 @@ const bhashSmsPhoneNumber = (mobile) => {
   throw new Error("A valid Indian mobile number is required");
 };
 
+const describeProviderError = (error) => {
+  if (!error) return "No error details returned";
+  const status = error.response?.status ? `HTTP ${error.response.status}` : "";
+  const code = error.code ? `code ${error.code}` : "";
+  const payload = error.response?.data;
+  const body = payload === undefined || payload === null ? "" : `response ${typeof payload === "string" ? payload : JSON.stringify(payload)}`;
+  return [error.message, status, code, body].filter(Boolean).join(" | ") || String(error);
+};
+
 const ensureBhashAccepted = (response, channel) => {
   const providerMessage = String(response.data || "").trim();
   if (/api\s+not\s+activated|error|invalid|failed|not\s+authorized|insufficient|blocked/i.test(providerMessage)) {
@@ -80,7 +89,10 @@ const sendOtp = async ({ mobile, otp }) => {
     .map((result) => result.value.channel);
 
   if (!delivered.length) {
-    const errors = results.map((result) => result.reason?.message).filter(Boolean).join("; ");
+    const errors = results.map((result, index) => {
+      const channel = channels[index];
+      return result.status === "rejected" ? `${channel}: ${describeProviderError(result.reason)}` : `${channel}: no delivery response`; 
+    }).join("; ");
     throw new Error(`BhashSMS could not send the OTP: ${errors}`);
   }
 

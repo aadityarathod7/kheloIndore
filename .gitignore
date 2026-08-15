@@ -28,3 +28,6 @@ yarn-error.log*
 .DS_Store
 Thumbs.db
 *.map
+
+# Generated credential exports must never be committed
+backend/venue_logins_summary.json

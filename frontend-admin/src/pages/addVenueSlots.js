@@ -614,7 +614,7 @@ export default function AddVenueSlots() {
 
                         return {
                             html: `
-                                <div style="font-size: 12px; font-weight: bold;">
+                                <div class="venue-slot-event-content">
                                     <div>${slotLabel}</div>
                                     <div>${startTime} - ${endTime}</div>
                                 </div>

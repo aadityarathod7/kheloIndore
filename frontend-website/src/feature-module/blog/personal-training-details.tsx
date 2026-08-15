@@ -619,6 +619,7 @@ const PersonalTrainingDetails = (props: any) => {
                   <div className="d-sm-flex justify-content-between align-items-start">
                     <h3 className="d-flex align-items-center justify-content-start mb-0">
                       {trainerName}
+                      {trainerData?.provider_public_id && <small className="ms-2 text-muted" style={{ fontSize: "13px", fontWeight: 600 }}>{trainerData.provider_public_id}</small>}
                       <span className="verified-trainer-badge" title="Verified trainer" aria-label="Verified trainer">
                         <i className="fas fa-circle-check" />
                       </span>

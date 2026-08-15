@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 
 const coachSchema = new mongoose.Schema(
   {
+    provider_public_id: { type: String, unique: true, sparse: true, index: true },
     first_name: { type: String, required: true, trim: true },
     last_name: { type: String, required: true, trim: true },
     full_name:{ type: String,trim: true },
@@ -229,4 +230,10 @@ const coachSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+
+const { nextProviderPublicId } = require("../helper/providerPublicId");
+coachSchema.pre("save", async function assignProviderPublicId(next) {
+  if (!this.provider_public_id) this.provider_public_id = await nextProviderPublicId("coach");
+  next();
+});
 module.exports = mongoose.model("Coach", coachSchema);

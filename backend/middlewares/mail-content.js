@@ -2000,6 +2000,7 @@ exports.generateBookingEmail = (
 
 // Email sent to a newly registered Coach/Trainer with a link to complete their profile
 exports.onboarding_profile_link = (name, completeLink) => {
+  const adminLoginUrl = `${new URL(completeLink).origin}/admin/`;
   let mailContent = `
   <!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Transitional //EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
   <html xmlns="http://www.w3.org/1999/xhtml">
@@ -2027,8 +2028,9 @@ exports.onboarding_profile_link = (name, completeLink) => {
                 </p>
                 <p style="margin: 0 0 14px; color: #334155; font-size: 14px; line-height: 1.7;">
                   To start receiving bookings, please complete your profile by clicking the button below. You will be able to add your
-                  specialization, experience, coaching levels, hourly rate, availability and more.
+                  specialization, experience, coaching levels, hourly rate, availability and more. Once your profile is complete, log in to the admin panel to list your services for Super Admin approval.
                 </p>
+                <p style="text-align: center; margin: 18px 0;"><a href="${adminLoginUrl}" style="display: inline-block; background: #0f172a; color: #ffffff; text-decoration: none; padding: 12px 26px; border-radius: 50px; font-size: 14px; font-weight: bold;">Admin Login & List Services</a></p>
                 <p style="text-align: center; margin: 26px 0;">
                   <a href="${completeLink}" style="display: inline-block; background: linear-gradient(135deg, #22C55E 0%, #16A34A 100%); color: #ffffff; text-decoration: none; padding: 13px 34px; border-radius: 50px; font-size: 15px; font-weight: bold;">
                     Complete My Profile

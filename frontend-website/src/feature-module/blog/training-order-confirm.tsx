@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, Link, useParams, useNavigate } from "react-router-dom";
 import { API_URL, IMG_URL } from "../../ApiUrl";
+import { openCashfreeCheckout } from "../../utils/cashfreeCheckout";
 import ImageWithBasePath from "../../core/data/img/ImageWithBasePath";
 import { all_routes } from "../router/all_routes";
 import axios from "axios";
@@ -72,13 +73,12 @@ const TrainingOrderConfirm = (props: any) => {
         {
           ...bookingData,
           payment_type: paymentType,
-        }
-      );
+        }, { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
 
-      if (response && response.data && response.data.url) {
-        window.location.href = response.data.url;
+      if (response?.data?.paymentSessionId) {
+        await openCashfreeCheckout(response.data.paymentSessionId);
       } else {
-        // No alternative action is needed here.
+        throw new Error(response?.data?.message || "Unable to start Cashfree checkout.");
       }
       // navigate(`/coaches/coach-order-confirm/${id}`, {
       //   state: {

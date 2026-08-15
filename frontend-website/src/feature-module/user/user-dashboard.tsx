@@ -98,7 +98,7 @@ const UserDashboard = () => {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const response = await axios.get(`${API_URL}/user/fetch-user-by-id/${user_id}`);
+        const response = await axios.get(`${API_URL}/user/fetch-user-by-id/${user_id}`, { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
         const userData = response.data.data;
         setUserData(userData);
       } catch {

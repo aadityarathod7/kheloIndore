@@ -5,6 +5,7 @@ import {
   LogoutOutlined,
   DollarOutlined,
   BellOutlined,
+  CloseOutlined,
 } from "@ant-design/icons";
 import { AiOutlineDashboard } from "react-icons/ai";
 import { RiCouponLine, RiUserLine } from "react-icons/ri";
@@ -49,6 +50,35 @@ const useAutoLogout = () => {
       if (timerRef.current) clearTimeout(timerRef.current);
       events.forEach((event) => window.removeEventListener(event, resetTimer));
     };
+  }, []);
+};
+const useAdminTableEmptyStates = () => {
+  useEffect(() => {
+    const updateEmptyStates = () => {
+      document.querySelectorAll(".admin-page-content table").forEach((table) => {
+        const body = table.tBodies[0];
+        if (!body) return;
+        const generatedRow = body.querySelector("tr[data-admin-empty-row]");
+        const dataRows = Array.from(body.rows).filter((row) => !row.hasAttribute("data-admin-empty-row"));
+        if (dataRows.length) {
+          generatedRow?.remove();
+          return;
+        }
+        if (generatedRow) return;
+        const row = document.createElement("tr");
+        row.setAttribute("data-admin-empty-row", "true");
+        row.className = "admin-empty-row";
+        const cell = document.createElement("td");
+        cell.colSpan = table.querySelectorAll("thead th").length || 1;
+        cell.innerHTML = '<div class="admin-empty-table-state"><i class="feather-calendar" aria-hidden="true"></i><strong>No records found</strong><span>New records will appear here when available.</span></div>';
+        row.appendChild(cell);
+        body.appendChild(row);
+      });
+    };
+    const observer = new MutationObserver(updateEmptyStates);
+    observer.observe(document.body, { childList: true, subtree: true });
+    updateEmptyStates();
+    return () => observer.disconnect();
   }, []);
 };
 const { Header, Content } = Layout;
@@ -236,6 +266,7 @@ const MainLayout = () => {
   const location = useLocation();
   // Auto-logout after 15 minutes of inactivity
   useAutoLogout();
+  useAdminTableEmptyStates();
   const currentKey =
     location.pathname.split("/").filter(Boolean).pop() || "dashboard";
   const role = localStorage.getItem("role");
@@ -456,7 +487,29 @@ const MainLayout = () => {
                 Admin Panel
               </span>
             </div>
-            <div style={{ position: "relative" }}><button aria-label="Notifications" onClick={openNotifications} style={{ background: "none", border: "none", fontSize: 19, color: "#475569", cursor: "pointer" }}><BellOutlined />{notifications.filter(n => !n.is_read).length > 0 && <sup style={{ color: "#dc2626", fontWeight: 700 }}>{notifications.filter(n => !n.is_read).length}</sup>}</button>{notificationsOpen && <div style={{ position: "absolute", right: 0, top: 35, width: 330, maxHeight: 360, overflowY: "auto", background: "#fff", border: "1px solid #e2e8f0", borderRadius: 10, boxShadow: "0 12px 28px rgba(0,0,0,.15)", padding: 12 }}>{notifications.length ? notifications.map(n => <div key={n._id} style={{ padding: "9px 4px", borderBottom: "1px solid #f1f5f9" }}><b>{n.title}</b><div style={{ fontSize: 12, color: "#64748b" }}>{n.message}</div></div>) : <span className="text-muted">No notifications</span>}</div>}</div>
+            <div className="admin-notification-wrap">
+              <button type="button" className="admin-notification-bell" aria-label="Notifications" aria-expanded={notificationsOpen} onClick={openNotifications}>
+                <BellOutlined />
+                {notifications.filter((item) => !item.is_read).length > 0 && <span className="admin-notification-count">{notifications.filter((item) => !item.is_read).length > 9 ? "9+" : notifications.filter((item) => !item.is_read).length}</span>}
+              </button>
+              {notificationsOpen && <div className="admin-notification-panel">
+                <div className="admin-notification-panel-head">
+                  <div><strong>Notifications</strong><span>{role === "Super Admin" ? "Platform activity and approvals" : "Your latest account updates"}</span></div>
+                  <button type="button" onClick={() => setNotificationsOpen(false)} aria-label="Close notifications"><CloseOutlined /></button>
+                </div>
+                <div className="admin-notification-list">
+                  {notifications.length ? notifications.map((notification) => {
+                    const label = notification.title || "New update";
+                    const initial = label.charAt(0).toUpperCase();
+                    const timestamp = notification.createdAt ? new Date(notification.createdAt).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" }) : "Just now";
+                    return <div key={notification._id} className={`admin-notification-item${notification.is_read ? "" : " is-unread"}`}>
+                      <span className="admin-notification-icon">{initial}</span>
+                      <div className="admin-notification-copy"><div><b>{label}</b><time>{timestamp}</time></div><p>{notification.message}</p></div>
+                    </div>;
+                  }) : <div className="admin-notification-empty"><i className="feather-check" aria-hidden="true" /><strong>You&apos;re all caught up</strong><span>New updates will appear here.</span></div>}
+                </div>
+              </div>}
+            </div>
           </Header>
 
           {/* Page Content */}

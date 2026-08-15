@@ -129,6 +129,9 @@ function Userlist() {
         `${API_URL}/super-admin/update-user/${user._id}`,
         {
           status: true
+        },
+        {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
         }
       );
       if (response.status === 200) {

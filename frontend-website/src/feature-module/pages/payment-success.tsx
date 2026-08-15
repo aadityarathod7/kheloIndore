@@ -40,8 +40,8 @@ export default function PaymentSuccess() {
       from { opacity: 0; transform: translateY(40px); }
       to { opacity: 1; transform: translateY(0); }
     }
-    .phonepe-wrapper {
-      background: linear-gradient(135deg, #5f259f 0%, #3e1273 100%) !important;
+    .cashfree-wrapper {
+      background: linear-gradient(135deg, #16A34A 0%, #0F766E 100%) !important;
       min-height: 85vh !important;
       display: flex !important;
       align-items: center !important;
@@ -49,7 +49,7 @@ export default function PaymentSuccess() {
       padding: 60px 20px !important;
       font-family: 'Inter', sans-serif !important;
     }
-    .phonepe-card {
+    .cashfree-card {
       animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
       background: #FFFFFF !important;
       border-radius: 24px !important;
@@ -101,10 +101,10 @@ export default function PaymentSuccess() {
   `;
 
   return (
-    <div className="phonepe-wrapper">
+    <div className="cashfree-wrapper">
       <style>{styles}</style>
       
-      <div className="phonepe-card">
+      <div className="cashfree-card">
         
         {/* Top Section - Success Info */}
         <div style={{ padding: "40px 20px 30px", textAlign: "center", borderBottom: "2px dashed #E2E8F0" }}>

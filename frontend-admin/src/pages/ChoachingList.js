@@ -175,27 +175,6 @@ function Coachlist() {
     }
   };
 
-  const handleEdit = async (row) => {
-    try {
-      const response = await fetch(`${API_URL}/update-coach/${row._id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-        })
-      });
-
-      if (response.ok) {
-      } else {
-        const responseData = await response.json();
-        
-      }
-    } catch (error) {
-      
-    }
-  };
-
   const handleDelete = async (row) => {
     try {
       const apiUrl = `${API_URL}/delete-coach/${row._id}`;
@@ -422,7 +401,7 @@ function Coachlist() {
                 {currentItems.map((row, index) => (
                   <tr key={row._id}>
                     <td>{index + 1 + indexOfFirstItem}</td>
-                    <td>{row.full_name ? row.full_name : (row.first_name + ' ' + row.last_name)}</td>
+                    <td><div>{row.full_name ? row.full_name : (row.first_name + ' ' + row.last_name)}</div><small className="text-muted">{row.provider_public_id || "ID pending"}</small></td>
 
                     <td>{row.mobile}</td>
                     <td>{row.email}</td>
@@ -442,7 +421,6 @@ function Coachlist() {
                           <Link to={`/coaches/update/${row._id}`} style={{ marginRight: '2%' }}>
                             <EditOutlined
                               className='edit_icon'
-                              onClick={() => handleEdit(row)}
                             />
                           </Link>
                         </Tooltip>
@@ -472,7 +450,7 @@ function Coachlist() {
                             <Tooltip title={`Activate`} arrow>
                               <ReloadOutlined
                                 className="delete_icon"
-                                onClick={() => handleActive(row)}
+                                onClick={() => isSuperAdmin && handleUpdateAccess(1, row._id)}
                               />
                             </Tooltip>
                         }

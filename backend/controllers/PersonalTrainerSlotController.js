@@ -390,10 +390,12 @@ exports.getAllPersonalTrainerSlotsByTrainerId = async (req, res) => {
     // Find all slots for the given personalTrainerId
     const personalTrainerSlots = await PersonalTrainerSlot.find({ trainerId: personalTrainerId }).sort({ start_date: 1 });
 
+    // An empty calendar is valid for a newly registered trainer.
     if (!personalTrainerSlots || personalTrainerSlots.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: "No slots found for the specified personal trainer",
+      return res.status(200).json({
+        success: true,
+        message: "No slots have been added yet.",
+        data: [],
       });
     }
 

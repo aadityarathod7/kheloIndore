@@ -166,11 +166,13 @@ const Signin = () => {
             title: "Success!",
             text: input.role === "Venue Admin" 
               ? "You have registered successfully! You can now log in to the admin panel."
-              : "You have registered Successfully. Please wait for admin approval.",
+              : "Registration successful. Check your email for the admin login link to complete your profile and list your services.",
             icon: "success",
             confirmButtonText: "OK",
           }).then(() => {
-            navigate("/");
+            // Partners complete their profile and manage services in the admin app.
+            // `adminUrl` also points to port 3001 while running locally.
+            window.location.assign(adminUrl);
           });
         }
       } else {

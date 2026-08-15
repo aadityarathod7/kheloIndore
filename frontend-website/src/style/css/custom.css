@@ -1260,3 +1260,61 @@ i[class*="feather"] {
   font-size: 12px !important;
   margin-right: 4px !important;
 }
+/* ============================================================
+   MOBILE PAGE DENSITY — shared compact spacing for public pages
+   Keeps key content visible above the fold on phones.
+   ============================================================ */
+@media (max-width: 767.98px) {
+  .hero-booking-section,
+  .venue-hero-section,
+  .hero-section-custom {
+    padding-top: 42px !important;
+    padding-bottom: 20px !important;
+  }
+
+  .hero-booking-section h1,
+  .hero-booking-section h2,
+  .venue-hero-section h1,
+  .venue-hero-section h2,
+  .hero-section-custom h1,
+  .hero-section-custom h2 {
+    font-size: 30px !important;
+    line-height: 1.15 !important;
+    margin-bottom: 8px !important;
+  }
+
+  .hero-booking-section p,
+  .venue-hero-section p,
+  .hero-section-custom p {
+    font-size: 16px !important;
+    line-height: 1.55 !important;
+    margin-bottom: 14px !important;
+  }
+
+  .hero-booking-section .hero-artwork-blend {
+    width: 62% !important;
+    opacity: .62 !important;
+  }
+
+  .hero-booking-section .rounded-pill,
+  .venue-hero-section .rounded-pill,
+  .hero-section-custom .rounded-pill {
+    padding: 8px 14px !important;
+    font-size: 12px !important;
+  }
+
+  .content.blog-grid {
+    padding-top: 18px !important;
+  }
+}
+/* Selected venue booking slots: keep every label legible on the active green state. */
+.ki-booking-slot.is-selected,
+.ki-booking-slot.is-selected span,
+.ki-booking-slot.is-selected small,
+.ki-booking-slot.is-selected i {
+  color: #FFFFFF !important;
+}
+
+.ki-booking-slot.is-selected small {
+  opacity: .88 !important;
+}

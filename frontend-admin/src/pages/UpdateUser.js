@@ -43,7 +43,7 @@ const UpdateUsers = () => {
       },
     });
     axios
-      .get(`${API_URL}/user/fetch-user-by-id/${_id}`)
+      .get(`${API_URL}/user/fetch-user-by-id/${_id}`, { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } })
       .then((res) => {
         const { data } = res.data;
         

@@ -7,6 +7,7 @@ import ImageWithBasePath from "../../core/data/img/ImageWithBasePath";
 import { all_routes } from "../router/all_routes";
 import axios from "axios";
 import { API_URL, IMG_URL } from "../../ApiUrl";
+import { openCashfreeCheckout } from "../../utils/cashfreeCheckout";
 import Swal from 'sweetalert2';
 
 const PARTIAL_PAYMENT_PERCENT = 0.25;
@@ -89,13 +90,12 @@ const CoachOrderConfirm = (props: any) => {
         {
           ...bookingData,
           payment_type: paymentType,
-        }
-      );
+        }, { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
 
-      if (response && response.data && response.data.url) {
-        window.location.href = response.data.url;
+      if (response?.data?.paymentSessionId) {
+        await openCashfreeCheckout(response.data.paymentSessionId);
       } else {
-        // No alternative action is needed here.
+        throw new Error(response?.data?.message || "Unable to start Cashfree checkout.");
       }
       // navigate(`/coaches/coach-order-confirm/${id}`, {
       //   state: {

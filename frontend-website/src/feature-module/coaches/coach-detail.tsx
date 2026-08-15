@@ -718,6 +718,7 @@ const CoachDetail = (props: any) => {
                   <div className="d-sm-flex justify-content-between align-items-start">
                     <h3 className="d-flex align-items-center justify-content-start mb-0">
                       {coachData?.first_name} {coachData?.last_name}
+                      {coachData?.provider_public_id && <small className="ms-2 text-muted" style={{ fontSize: "13px", fontWeight: 600 }}>{coachData.provider_public_id}</small>}
                       <span className="verified-coach-badge" title="Verified coach" aria-label="Verified coach">
                         <i className="fas fa-circle-check" />
                       </span>

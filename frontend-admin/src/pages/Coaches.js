@@ -12,7 +12,6 @@ import Select from "react-select";
 const Coaches = () => {
   const [formData, setFormData] = useState({
     full_name: "",
-    venue_name: "",
     date_of_birth: "",
     gender: "",
     trainer_type: "",
@@ -76,6 +75,14 @@ const Coaches = () => {
       ...errors,
       [name]: "",
     });
+  };
+
+  const handlePackageChange = (event) => {
+    const { name, value } = event.target;
+    setFormData((previous) => ({
+      ...previous,
+      package: { ...previous.package, [name]: value === "" ? "" : Number(value) },
+    }));
   };
 
   const handleSelectChange = (selectedOption) => {
@@ -147,19 +154,15 @@ const Coaches = () => {
     }
 
 
-    if (!formData.venue_name.trim()) {
-      validationErrors.venue_name = "Venue is required";
-    }
-
     if (!formData.specializations.trim()) {
       validationErrors.specializations = "Specialization is required";
     }
-    if (!formData.experience || formData.experience.trim() === '') {
+    const experienceValue = String(formData.experience ?? "").trim();
+    if (!experienceValue) {
       validationErrors.experience = "Experience is required";
-    } else if (isNaN(formData.experience) || parseInt(formData.experience) <= 0) {
+    } else if (Number.isNaN(Number(experienceValue)) || Number(experienceValue) <= 0) {
       validationErrors.experience = "Experience must be a positive number";
-    }
-    if (typeof formData.price === 'string' && !formData.price.trim()) {
+    }    if (typeof formData.price === 'string' && !formData.price.trim()) {
       validationErrors.price = "Price is required";
     }
 
@@ -213,7 +216,8 @@ const Coaches = () => {
     try {
       const response = await axios.post(
         `${API_URL}/upload-file?types=coach`,
-        formData
+        formData,
+        { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
       );
       
 
@@ -249,7 +253,8 @@ const Coaches = () => {
       try {
         const response = await axios.post(
           `${API_URL}/upload-file?types=coach`,
-          formDataUpload
+          formDataUpload,
+          { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
         );
         if (response.data && response.data.file_data && response.data.file_data[0]) {
           uploaded.push(response.data.file_data[0]);
@@ -293,14 +298,13 @@ const Coaches = () => {
 
   const getCoachData = async () => {
     try {
-      const response = await axios.get(`${API_URL}/fetch-coach/${coachId._id}`);
+      const response = await axios.get(`${API_URL}/fetch-coach/${coachId._id}`, { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
       
       setFormData({
         full_name:
           response.data.coach.full_name ||
           `${response.data.coach.first_name || ""} ${response.data.coach.last_name || ""
             }`.trim(), // Use API data or empty string if not available
-        venue_name: response.data.coach.venue_name || "",
         date_of_birth: response.data.coach.date_of_birth || "",
         gender: response.data.coach.gender || "",
         trainer_type: response.data.coach.trainer_type || "",
@@ -321,7 +325,6 @@ const Coaches = () => {
         profile_picture: response.data.coach.profile_picture || [], // Ensure it's an array
         identity_Proof: response.data.coach.identity_Proof || [], // Ensure it's an array
         other_document: response.data.coach.other_document || [], // Ensure it's an array
-        status: response.data.coach.status || "", // Default to an empty string if not available
         categories: response.data.coach.categories || [],
         videos: response.data.coach.videos || [],
       });
@@ -413,31 +416,6 @@ const Coaches = () => {
             </Col>
 
 
-            <Col sm={4}>
-              <Form.Group controlId="formFirstName">
-                <Form.Label>Venue <span className="text-danger">*</span></Form.Label>
-                <Form.Control
-                  type="text"
-                  name="venue_name"
-                  placeholder="Enter Venue"
-                  value={formData.venue_name}
-                  onChange={handleInputChange}
-                  isInvalid={!!errors.venue_name}
-                />
-                {errors.venue_name && (
-                  <div
-                    style={{
-                      color: "red",
-                      fontSize: "0.875em",
-                      marginTop: "0.25rem",
-                      fontWeight: "400",
-                    }}
-                  >
-                    {errors.venue_name}
-                  </div>
-                )}
-              </Form.Group>
-            </Col>
           </Row>
           <Row className="mt-3">
             <Col sm={4}>
@@ -761,6 +739,47 @@ const Coaches = () => {
             </Col> */}
           </Row>
           <Row className="mt-3">
+            <Col sm={4}>
+              <Form.Group>
+                <Form.Label>Languages Known</Form.Label>
+                <div className="d-flex flex-wrap gap-3">
+                  {["Hindi", "English", "Marathi"].map((language) => (
+                    <Form.Check
+                      inline
+                      key={language}
+                      type="checkbox"
+                      label={language}
+                      checked={(formData.languages || []).includes(language)}
+                      onChange={() => setFormData((previous) => ({
+                        ...previous,
+                        languages: (previous.languages || []).includes(language)
+                          ? previous.languages.filter((item) => item !== language)
+                          : [...(previous.languages || []), language],
+                      }))}
+                    />
+                  ))}
+                </div>
+              </Form.Group>
+            </Col>
+            <Col sm={4}>
+              <Form.Group>
+                <Form.Label>Class Location</Form.Label>
+                <Form.Control name="class_location" placeholder="e.g. Vijay Nagar / Online" value={formData.class_location} onChange={handleInputChange} />
+              </Form.Group>
+            </Col>
+            <Col sm={4}>
+              <Form.Group>
+                <Form.Label>Training Mode</Form.Label>
+                <Form.Select name="training_mode" value={formData.training_mode} onChange={handleInputChange}>
+                  <option value="">Select mode</option>
+                  <option value="Online">Online</option>
+                  <option value="Offline">Offline</option>
+                  <option value="Both">Both</option>
+                </Form.Select>
+              </Form.Group>
+            </Col>
+          </Row>
+          <Row className="mt-3">
             <Col sm={8}>
               <Form.Group controlId="formFirstName">
                 <Form.Label>
@@ -890,6 +909,17 @@ const Coaches = () => {
                 )}
               </Form.Group>
             </Col>
+          </Row>
+          <Row className="mt-2">
+            <Col sm={12}><h5 className="mb-3">Service Packages <small className="text-muted fw-normal">(optional)</small></h5></Col>
+            {[["monthly", "Monthly package"], ["quarterly", "Quarterly package"], ["yearly", "Yearly package"]].map(([name, label]) => (
+              <Col sm={4} key={name}>
+                <Form.Group className="mb-3">
+                  <Form.Label>{label} price (₹)</Form.Label>
+                  <Form.Control type="number" min="0" name={name} placeholder="Enter package price" value={formData.package?.[name] ?? ""} onChange={handlePackageChange} />
+                </Form.Group>
+              </Col>
+            ))}
           </Row>
           <Row className="mt-3">
             <Col sm={12}>
@@ -1225,25 +1255,6 @@ const Coaches = () => {
                 </div>
               </Form.Group>
             </Col>
-          </Row>
-          <Row className="mt-3">
-            <Form.Group controlId="formCheckbox">
-              <div className="checkbox-container">
-                <Form.Check
-                  type="checkbox"
-                  id="statusCheckbox"
-                  name="status"
-                  aria-label="option 1"
-                  className="checkbox-input"
-                  checked={formData.status || false}
-                  onChange={(e) => {
-                    setFormData(prevData => ({ ...prevData, status: e.target.checked }));
-                  }
-                  }
-                />
-              </div>
-              <Form.Label className="checkbox-label">Status</Form.Label>
-            </Form.Group>
           </Row>
           <button
             type="submit"

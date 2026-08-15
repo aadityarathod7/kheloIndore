@@ -5,6 +5,7 @@ import ImageWithBasePath from "../../core/data/img/ImageWithBasePath";
 import { all_routes } from "../router/all_routes";
 import axios from "axios";
 import { API_URL, IMG_URL } from "../../ApiUrl";
+import { openCashfreeCheckout } from "../../utils/cashfreeCheckout";
 import Swal from "sweetalert2";
 
 interface VenueData {
@@ -109,7 +110,6 @@ const VenueOrderConfirm = () => {
     paymentType === "partial" ? Math.round((total_Price || 0) * 0.25) : total_Price || 0;
 
   //   const openNewWindow = () => {
-  //     window.open('https://mercury-uat.phonepe.com/transact/simulator?token=3GobA5RNrRCwUWUccUBeyTBSCransuCxvBXLOIZMWZVrgKGdyyuZJ', '_blank');
   // };
 
   useEffect(() => {
@@ -152,12 +152,12 @@ const VenueOrderConfirm = () => {
         slotsBooked: slotId,
         total_price: total_Price,
         payment_type: paymentType,
-      });
+      }, { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
 
-      if (response && response.data && response.data.url) {
-        window.location.href = response.data.url;
+      if (response?.data?.paymentSessionId) {
+        await openCashfreeCheckout(response.data.paymentSessionId);
       } else {
-        // No alternative action is needed here.
+        throw new Error(response?.data?.message || "Unable to start Cashfree checkout.");
       }
     } catch (error: any) {
       

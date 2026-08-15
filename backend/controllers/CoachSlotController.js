@@ -199,10 +199,12 @@ exports.getAllCoachesSlotsByCoachId = async (req, res) => {
     // Find all slots for the given coachId
     const coachSlots = await CoachSlot.find({ coachId }).sort({ start_date: 1 });
 
+    // An empty calendar is a valid first-time state, not an API error.
     if (!coachSlots || coachSlots.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: "No slots found for the specified coach",
+      return res.status(200).json({
+        success: true,
+        message: "No slots have been added yet.",
+        data: [],
       });
     }
 

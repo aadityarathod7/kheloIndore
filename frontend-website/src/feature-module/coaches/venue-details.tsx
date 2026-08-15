@@ -50,6 +50,12 @@ const getVenueImgUrl = (images: any, index = 0): string => {
   return `${IMG_URL}${str}`;
 };
 
+const getVenueVideoUrl = (video: any): string => {
+  const path = typeof video === "string" ? video : (video?.src || video?.url || "");
+  if (!path) return "";
+  return path.startsWith("http://") || path.startsWith("https://") ? path : `${IMG_URL}${path}`;
+};
+
 const getMinimapSrc = (venueData: any) => {
   const defaultQuery = ((venueData?.address ? `${venueData.address}, ` : "") +
     (venueData?.city || "Indore") + ", " +
@@ -563,6 +569,7 @@ const VenueDetails = () => {
                   <div>
                     <h1 className="fw-bold mb-1 text-dark text-capitalize" style={{ fontSize: "22px", fontFamily: "Space Grotesk, sans-serif" }}>
                       {venueData?.name || (name ? name.replaceAll('-', ' ') : "Sports Venue")}
+                    {venueData?.provider_public_id && <small className="ms-2 text-muted" style={{ fontSize: "13px", fontWeight: 600 }}>{venueData.provider_public_id}</small>}
                     </h1>
                     <div className="d-flex flex-wrap align-items-center gap-3" style={{ fontSize: "13px" }}>
                       <span className="venue-details-bar-text d-inline-flex align-items-center">
@@ -698,7 +705,7 @@ const VenueDetails = () => {
                   })()}
                 </div>
 
-                {(venueData?.gameType || (venueData?.facilities && venueData.facilities.length > 0) || venueData?.policiesAndRules || venueData?.additionalNotes) && (
+                {(venueData?.gameType || (venueData?.facilities && venueData.facilities.length > 0) || (venueData?.videos && venueData.videos.length > 0) || venueData?.policiesAndRules || venueData?.additionalNotes) && (
                   <div className="d-flex flex-wrap gap-2 mb-4 p-2 rounded-3" style={{ backgroundColor: "#F1F5F9", border: "1px solid #E2E8F0" }}>
                     <button
                       type="button"
@@ -754,6 +761,17 @@ const VenueDetails = () => {
                       </button>
                     )}
 
+                    {venueData?.videos && venueData.videos.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab("videos")}
+                        className={`seg-tab-btn d-inline-flex align-items-center gap-2 border-0 px-3 py-2 rounded-pill fw-semibold${activeTab === "videos" ? " active" : ""}`}
+                        style={{ background: activeTab === "videos" ? "#FFFFFF" : "transparent", color: activeTab === "videos" ? "#16A34A" : "#64748B", fontSize: "12px", boxShadow: activeTab === "videos" ? "0 1px 3px rgba(0,0,0,0.1)" : "none", cursor: "pointer" }}
+                      >
+                        <i className="feather-video" style={{ fontSize: "11px" }} />
+                        Videos ({venueData.videos.length})
+                      </button>
+                    )}
                     {venueData?.policiesAndRules && (
                       <button
                         type="button"
@@ -891,6 +909,23 @@ const VenueDetails = () => {
                     </div>
                   )}
 
+                  {activeTab === "videos" && (
+                    <div>
+                      <h2 className="section-title">Venue Videos</h2>
+                      <div className="row g-3">
+                        {venueData?.videos?.map((video: any, index: number) => {
+                          const videoUrl = getVenueVideoUrl(video);
+                          return videoUrl ? (
+                            <div className="col-12 col-md-6" key={index}>
+                              <div className="ratio ratio-16x9 rounded-3 overflow-hidden border bg-dark">
+                                <video src={videoUrl} controls preload="metadata" className="w-100 h-100" style={{ objectFit: "cover" }} />
+                              </div>
+                            </div>
+                          ) : null;
+                        })}
+                      </div>
+                    </div>
+                  )}
                   {activeTab === "rules" && (
                     <div>
                       <h2 className="section-title">Rules & Policies</h2>

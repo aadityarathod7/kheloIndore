@@ -46,6 +46,7 @@ const {
   createVenue2,
   fetchVenue,
   SingleVenue,
+  getVenueForAdmin,
   updateVenue,
   deleteVenue,
   addVenue,
@@ -67,6 +68,7 @@ const {
   isVenueAdmin,
   updateAuth,
   isAuthenticated,
+  requireRole,
 } = require("../middlewares/middleware");
 
 //USER
@@ -151,17 +153,17 @@ route.post("/user/verfy-otp", otpLimiter, verifyOtp);
 route.post("/user/reset-password", otpLimiter, resetPassword);
 
 
-route.post("/admin/signup",signup);
+route.post("/admin/signup", auth, requireRole("Super Admin"), signup);
 
 // Super Admin
 route.post("/super-admin/add-user", auth, signupBySuperAdmin);
 route.get("/dashboard/count",auth, dashboardCount);
 route.get("/users-count-per-month", getUsersCountPerMonth);
-route.put("/super-admin/update-user/:id", auth, UpdateUser);
-route.put("/super-admin/update-admin-status",auth,updateAdminStatus);
-route.get("/super-admin/user-list",auth,userlist)
-route.get("/super-admin/venuadmin-list",auth,venueAdminlist)
-route.get("/super-admin/all-list",auth,fetchAllUsers)
+route.put("/super-admin/update-user/:id", auth, requireRole("Super Admin"), UpdateUser);
+route.put("/super-admin/update-admin-status", auth, requireRole("Super Admin"), updateAdminStatus);
+route.get("/super-admin/user-list", auth, requireRole("Super Admin"), userlist)
+route.get("/super-admin/venuadmin-list", auth, requireRole("Super Admin"), venueAdminlist)
+route.get("/super-admin/all-list", auth, requireRole("Super Admin"), fetchAllUsers)
 // Swap
 route.post("/codeAndCocktailsEmail", codeAndCocktailsEmail);
 
@@ -170,17 +172,17 @@ route.post("/user/registration/otp", otpLimiter, signupVerifyOTP, mail.mail);
 route.post("/user/login", authLimiter, loginWithPassword);
 route.post("/user/login/mobile", otpLimiter, loginUserWithMobile);
 route.post("/user/login/mobile/otp", otpLimiter, loginCheckOTP);
-route.get("/user/getallUser",auth, getAllUsers);
-route.delete("/user/delete/:id", deleteUser);
-route.put("/user/updateUser", UpdateUser);
-route.get("/user/fetch-user-by-id/:id", getUserById);
-route.put("/user/profile-setting/:id",updateProfileSettting)  //shubham
+route.get("/user/getallUser", auth, requireRole("Super Admin"), getAllUsers);
+route.delete("/user/delete/:id", auth, requireRole("Super Admin"), deleteUser);
+route.put("/user/updateUser", auth, requireRole("Super Admin"), UpdateUser);
+route.get("/user/fetch-user-by-id/:id", auth, getUserById);
+route.put("/user/profile-setting/:id", auth, updateProfileSettting)  //shubham
 // adminpanel
-route.post("/admin/create", createAdmin);
-route.get("/admin/fetch", getAdmin);
-route.get("/admin/fetch-ind/:id", getAdminById);
-route.put("/admin/update/:id", updateAdmin);
-route.delete("/admin/delete/:id", deleteAdmin);
+route.post("/admin/create", auth, requireRole("Super Admin"), createAdmin);
+route.get("/admin/fetch", auth, requireRole("Super Admin"), getAdmin);
+route.get("/admin/fetch-ind/:id", auth, requireRole("Super Admin"), getAdminById);
+route.put("/admin/update/:id", auth, requireRole("Super Admin"), updateAdmin);
+route.delete("/admin/delete/:id", auth, requireRole("Super Admin"), deleteAdmin);
 
 //venue not working
 route.post("/venue/add", auth, isVenueAdmin, createVenue); //with JWT auth
@@ -194,46 +196,47 @@ route.get("/get/venue/role/list",getVenueRoleList)
 route.post("/venue/addVenue",auth, addVenue);
 route.get("/venue/fetch", fetchVenue);
 route.get("/venue/individual/:id", SingleVenue);
-route.put("/venue/edit/:id", updateVenue);
-route.delete("/venue/delete/:id", deleteVenue);
+route.get("/venue/admin/individual/:id", auth, getVenueForAdmin);
+route.put("/venue/edit/:id", auth, updateVenue);
+route.delete("/venue/delete/:id", auth, deleteVenue);
 route.get("/venue/fetch/vendor-type", getVenuesByVendorType);
-route.post("/vendor/create", createVendor);
+route.post("/vendor/create", auth, requireRole("Super Admin"), createVendor);
 route.get("/vendor/get", getVendors);
 route.get("/venue/get/admin-id/:id", getVenueByAdminId);
-route.patch("/venues/:id",toggleVenueStatus);
+route.patch("/venues/:id", auth, requireRole("Super Admin"), toggleVenueStatus);
 //super admin
-route.post("/venue/active/:id", activeVenue);
+route.post("/venue/active/:id", auth, requireRole("Super Admin"), activeVenue);
 
 //Blogs
-route.post("/blog/create",createBlog);  //shubham
+route.post("/blog/create", auth, requireRole("Super Admin"), createBlog);  //shubham
 route.get("/blog/getBlogById", getBlogById); //shubham
 route.get("/blog/getAllBlog", getAllBlog);
 route.get("/blog/getAllActiveBlog",getAllActiveBlog);
-route.put("/blog/updateBlog",updateBlog); //shubham
-route.put("/blog/deleteBlog", deleteBlog); //shubham
+route.put("/blog/updateBlog", auth, requireRole("Super Admin"), updateBlog); //shubham
+route.put("/blog/deleteBlog", auth, requireRole("Super Admin"), deleteBlog); //shubham
 
 //Coaches
 route.post("/create-coach",auth, createCoach);
-route.delete("/delete-coach/:id", deleteCoach);
+route.delete("/delete-coach/:id", auth, deleteCoach);
 route.put("/update-coach-super-admin/:id", auth, updateCoachSuperAdmin);
 // route.get('/fetch-all-coaches', fetchAllCoaches); // old 
 route.get('/fetch-all-coaches',auth,fetchAllCoachesNew); // new by sunil
-route.get('/fetch-coach/:id', fetchCoachById);
+route.get('/fetch-coach/:id', auth, fetchCoachById);
 route.put("/update/coach/:coachId", auth, updatecoach)
 // Public coach endpoints (website)
 route.get("/web/fetch-coach/:id", fetchPublicCoach);
-route.post("/web/coach/share/:id", generateCoachShareLink);
+route.post("/web/coach/share/:id", auth, generateCoachShareLink);
 route.get("/web/coach/shared/:token", fetchSharedCoach);
 route.put("/web/coach/complete-profile/:id", completeCoachProfile);
 route.post("/web/coach/onboarding/:id", sendOnboardingProfileLink);
 
 //category
-route.post("/category/create",auth,AddCategory);
+route.post("/category/create", auth, requireRole("Super Admin"), AddCategory);
 
 route.get("/category/fetch", FetchCategory);
 route.get("/category/fetch-ind/:id",auth, getSingleCategory);
-route.put("/category/update/:id",UpdateCategory);
-route.delete("/category/delete/:id",auth, DeleteCategory);
+route.put("/category/update/:id", auth, requireRole("Super Admin"), UpdateCategory);
+route.delete("/category/delete/:id", auth, requireRole("Super Admin"), DeleteCategory);
 route.get("/category/fetch/parent-id/:id",auth, FetchCategoryByParentCategory);
 
 const {
@@ -243,17 +246,17 @@ const {
   DeactiveParentCategory,
 } = require("../controllers/ParentCategoryController");
 //parent category
-route.post("/parent-category/add", CreateParentCategory);
+route.post("/parent-category/add", auth, requireRole("Super Admin"), CreateParentCategory);
 route.get("/parent-category/fetch", FetchParentCategory);
-route.put("/parent-category/update/:id", UpdateParentCategory);
-route.delete("parent-category/delete/:id", DeactiveParentCategory);
+route.put("/parent-category/update/:id", auth, requireRole("Super Admin"), UpdateParentCategory);
+route.delete("/parent-category/delete/:id", auth, requireRole("Super Admin"), DeactiveParentCategory);
 
 
 // Activities Router
-route.post("/activity/create", createActivity);
+route.post("/activity/create", auth, requireRole("Super Admin"), createActivity);
 route.get("/activity/fetch", fetchActivity);
-route.put("/activity/update/:id", updateActivity);
-route.delete("/activity/delete/:id", deleteActivity);
+route.put("/activity/update/:id", auth, requireRole("Super Admin"), updateActivity);
+route.delete("/activity/delete/:id", auth, requireRole("Super Admin"), deleteActivity);
 
 // Personal Training
 route.post("/PersonalTraining/create",auth, createPersonalTrainer);
@@ -271,10 +274,10 @@ const {
   getAllEvents,
 } = require("../controllers/EventController");
 //Events
-route.post("/event/create",auth, createEvent);
+route.post("/event/create", auth, requireRole("Super Admin"), createEvent);
 route.get("/event/get/:id", getEvent);
-route.put("/event/update/:id", updateEvent);
-route.delete("/event/delete/:id", deactivateEvent);
+route.put("/event/update/:id", auth, requireRole("Super Admin"), updateEvent);
+route.delete("/event/delete/:id", auth, requireRole("Super Admin"), deactivateEvent);
 route.get("/event/fetchAll", getAllEvents);
 // route.get("/event/fetchAll",auth, getAllEvents);
 
@@ -345,7 +348,7 @@ const {
   requestCancellationOtp,
 } = require('../controllers/BookingController');
 // for venue
-route.post("/booking/add", addBooking);
+route.post("/booking/add", auth, addBooking);
 route.post("/booking/manual/add", auth, addManualBooking);
 route.get("/booking/get",auth, getBookings); // for admin 
 route.get("/get/booking/:vendor_id",auth, getBookingByVendorId); // for admin 
@@ -390,12 +393,12 @@ const {
   updateCoachSlotBooking,
   deleteSlotsByDateRangeCoach
 } = require("../controllers/CoachSlotController");
-route.post("/coach-slot/add/:coachId", createCoachSlot);
-route.put("/coach-slot/delete", deleteSlotsByDateRangeCoach);
-route.put("/coach-slot/update/:coachId/:slotId/:coachSlotId", updateCoachSlotById);
-route.put("/coach-slot/update/:coachSlotId", updateCoachSlotByIdNew);
-route.put("/cancel-coach-slot/:id",updateCoachSlotBooking);
-route.delete("/coach-slot/delete/:coachSlotId", deleteCoachBatch);
+route.post("/coach-slot/add/:coachId", auth, createCoachSlot);
+route.put("/coach-slot/delete", auth, deleteSlotsByDateRangeCoach);
+route.put("/coach-slot/update/:coachId/:slotId/:coachSlotId", auth, updateCoachSlotById);
+route.put("/coach-slot/update/:coachSlotId", auth, updateCoachSlotByIdNew);
+route.put("/cancel-coach-slot/:id", auth, updateCoachSlotBooking);
+route.delete("/coach-slot/delete/:coachSlotId", auth, deleteCoachBatch);
 route.get("/get-all-coach-slot/:coachId",auth, getAllCoachesSlotsByCoachId);
 route.get("/coach-slot/fetch/:id",auth, getCoachBatchSlots);
 route.get("/coach/batches/:id", fetchAllCoachBatches); 
@@ -404,36 +407,36 @@ const {
   bookCoach,
   fetchCoachBooking,
 } = require("../controllers/CoachBookingController");
-route.post("/coach/booking", bookCoach);
+route.post("/coach/booking", auth, bookCoach);
 route.get("/coach/booking/fetch",auth, fetchCoachBooking);
 // for pt slots
 const {addSlotPT,getPtBatch,getPtSlots, updatePTSlotById,createPersonalTrainerSlot,getAllPersonalTrainerSlotsByTrainerId,fetchPersonalTrainerSlotByDateId,deleteSlotsByDateRangept} = require('../controllers/PersonalTrainerSlotController');
-route.post('/pt/batch/add/:PTId',addSlotPT);
-route.put('/pt/slot/delete',deleteSlotsByDateRangept);
-route.post('/pt/slots/add/:id',createPersonalTrainerSlot);
+route.post('/pt/batch/add/:PTId', auth, addSlotPT);
+route.put('/pt/slot/delete', auth, deleteSlotsByDateRangept);
+route.post('/pt/slots/add/:id', auth, createPersonalTrainerSlot);
 route.get('/get-all-pt-slot/:id',getAllPersonalTrainerSlotsByTrainerId);
 route.get('/get-pt-slot-by-date/:id',fetchPersonalTrainerSlotByDateId);
-route.put('/pt/batch/update/:PTId/:slotId',updatePTSlotById);
+route.put('/pt/batch/update/:PTId/:slotId', auth, updatePTSlotById);
 route.get("/pt/batch/:id", getPtBatch);
 route.get("/pt/batch/slot/:id", getPtSlots);
-route.delete("/pt/batch/delete/:PTId", deleteCoachBatch);
+route.delete("/pt/batch/delete/:PTId", auth, deleteCoachBatch);
 
 const{createPTBooking, getPTBooking,cancelPtSlotBooking} = require('../controllers/PersonalTrainerBookingController');
-route.post("/pt/booking", createPTBooking);
-route.put("/pt/cancelbooking/:id", cancelPtSlotBooking);
+route.post("/pt/booking", auth, createPTBooking);
+route.put("/pt/cancelbooking/:id", auth, cancelPtSlotBooking);
 route.get("/pt/booking/get",auth, getPTBooking);
 //Phonepe
 const { venuePayment, venuePaymentStatus, coachPaymentStatus, coachPayment, personalTrainerPayment, personalTrainerPaymentStatus,getVenueBookingByUserId,getCoachBookingByUserId,getPersonalTrainerBookingByUserId, getVenueCoachPTBookingByUserId,venueRefund,getAllRefunds }  = require("../controllers/paymentController");
-route.post('/venue/payment', venuePayment);
-route.post('/get/venue/payment/status/:txnId', venuePaymentStatus);
+route.post('/venue/payment', auth, venuePayment);
+route.all('/get/venue/payment/status/:txnId', venuePaymentStatus);
 route.get('/get/booking/by/:userId', getVenueBookingByUserId);
 
-route.post('/coach/payment', coachPayment);
-route.post('/get/coach/payment/status/:txnId', coachPaymentStatus);
+route.post('/coach/payment', auth, coachPayment);
+route.all('/get/coach/payment/status/:txnId', coachPaymentStatus);
 route.get('/get/coachBooking/by/:userId', getCoachBookingByUserId);
 
-route.post('/personalTrainer/payment', personalTrainerPayment);
-route.post('/get/personalTrainer/payment/status/:txnId', personalTrainerPaymentStatus);
+route.post('/personalTrainer/payment', auth, personalTrainerPayment);
+route.all('/get/personalTrainer/payment/status/:txnId', personalTrainerPaymentStatus);
 route.get('/get/personalTrainerBooking/by/:userId', getPersonalTrainerBookingByUserId);
 
 route.post('/refund/:BookingId', auth, venueRefund);
@@ -446,7 +449,7 @@ route.get("/web/venue/getVenue", getVenue)
 route.get("/web/PersonalTraining/fetchAll", fetchAllPersonalTrainersForWeb);
 // Public trainer endpoints (website)
 route.get("/web/PersonalTraining/fetch/:id", fetchPublicTrainer);
-route.post("/web/PersonalTraining/share/:id", generateTrainerShareLink);
+route.post("/web/PersonalTraining/share/:id", auth, generateTrainerShareLink);
 route.get("/web/PersonalTraining/shared/:token", fetchSharedTrainer);
 route.put("/web/PersonalTraining/complete-profile/:id", completeTrainerProfile);
 route.post("/web/PersonalTraining/onboarding/:id", sendTrainerOnboardingProfileLink);

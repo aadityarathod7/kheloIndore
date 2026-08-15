@@ -67,7 +67,7 @@ exports.createVenue = async (req, res) => {
 
     if (!token) return res.status(400).json({ error: "Access denied" });
 
-    const decoded = jwt.verify(token, process.env.JWT_AUTH);
+    const decoded = jwt.verify(token, process.env.JWT_AUTH, { algorithms: ["HS256"] });
     const ownerID = decoded.userID;
 
     newVenue.ownerID = ownerID;
@@ -115,7 +115,7 @@ exports.SingleVenue = async (req, res) => {
     const venue = await Venue1.findById(id);
     if (venue) {
       const vendor = await User.findById(venue.vendor_id);
-      if (!vendor || vendor.status === false || vendor.is_admin_access !== 1) {
+      if (!vendor || vendor.status === false) {
         return res.status(400).json({
           success: false,
           message: "The Venue is Not Found",
@@ -131,6 +131,23 @@ exports.SingleVenue = async (req, res) => {
   } catch (error) {
     
     res.status(500).json({ message: "Unable to find the Venue" });
+  }
+};
+
+exports.getVenueForAdmin = async (req, res) => {
+  try {
+    const venue = await Venue1.findById(req.params.id);
+    if (!venue) return res.status(404).json({ success: false, message: "Venue not found" });
+
+    const isSuperAdmin = req.user?.role === "Super Admin";
+    const isVenueOwner = req.user?.role === "Venue Admin" && String(venue.vendor_id) === String(req.user.userID);
+    if (!isSuperAdmin && !isVenueOwner) {
+      return res.status(403).json({ success: false, message: "You are not allowed to view this venue." });
+    }
+
+    return res.status(200).json({ success: true, venue });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: "Unable to find the venue" });
   }
 };
 
@@ -242,6 +259,10 @@ exports.addVenue = async (req, res) => {
 
     let vendor_id;
     let verification_status = 0; // Default to 0 for Venue Admin
+
+    const vendor = await User.findOne({ _id: vendor_id });
+    const vendorEmail = vendor?.email || null;
+    const vendorName = [vendor?.first_name, vendor?.last_name].filter(Boolean).join(" ") || "Venue Admin";
 
     if (req.user.role === "Venue Admin") {
       vendor_id = req.user.userID;
@@ -358,10 +379,6 @@ exports.addVenue = async (req, res) => {
       }
     }
 
-    const vendor = await User.findOne({ _id: vendor_id });
-    const vendorEmail = vendor ? vendor.email : null;
-    const vendorName = vendor.first_name + ' ' + vendor.last_name;
-
     if (req.user.role === "Super Admin") {
       // Send confirmation email to venue admin when added by Super Admin
       const emailTemplate = mailContent.super_admin_add_venue_to_venue_admin(
@@ -418,6 +435,9 @@ exports.addVenue = async (req, res) => {
 };
 // new by sunil
 exports.getVenueNew = async (req, res) => {
+  // Make legacy venue rows usable immediately, even before a server restart/backfill.
+  const { backfillVenuePublicIds } = require("../helper/backfillProviderPublicIds");
+  await backfillVenuePublicIds();
   try {
     let user = req.user.userID
     if(!user){
@@ -576,6 +596,8 @@ exports.getVenuesByVendorType = async (req, res) => {
 };
 exports.getVenueByAdminId = async(req,res)=>{
   try{
+    const { backfillVenuePublicIds } = require("../helper/backfillProviderPublicIds");
+    await backfillVenuePublicIds();
     
     const adminId=req.params.id;
     const data = await Venue1.find({ vendor_id: adminId });
@@ -747,7 +769,7 @@ exports.getVenue = async (req, res) => {
     const { search, sport, location, grassType, amenities, date, time, sort } = req.query;
 
     // Filter out venues whose owners are deactivated or unapproved
-    const activeVendors = await User.find({ status: { $ne: false }, is_admin_access: 1 }).select("_id");
+    const activeVendors = await User.find({ status: { $ne: false } }).select("_id");
     const activeVendorIds = activeVendors.map((v) => v._id);
 
     let queryConditions = { 
@@ -962,7 +984,10 @@ exports.venueVerifyBySuperAdmin = async (req, res) => {
     // Find the venue by ID and update its verification status
     const verifyVenue = await Venue1.findByIdAndUpdate(
       id,
-      { verification_status: verifyStatus },
+      {
+        verification_status: verifyStatus,
+        ...(verifyStatus === 1 ? { status: true } : verifyStatus === 2 ? { status: false } : {}),
+      },
       { new: true }
     );
 

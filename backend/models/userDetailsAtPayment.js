@@ -37,6 +37,11 @@ const userDetailsAtPaymentSchema = new mongoose.Schema(
       type:String,
     },
     vendor_id: {type:String},
+    total_price: { type: Number },
+    payable_amount: { type: Number },
+    payment_type: { type: String, enum: ["full", "partial"], default: "full" },
+    payment_order_id: { type: String, index: true },
+    payment_provider: { type: String, default: "cashfree" },
     slotsBooked: [
       {
         type: mongoose.Schema.Types.ObjectId,
