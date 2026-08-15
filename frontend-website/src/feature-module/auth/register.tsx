@@ -144,6 +144,7 @@ const Signin = () => {
       });
       if (registeredMobiles.includes(input.mobile)) {
         setErrors({ mobile: "Mobile number already registered" });
+        Swal.close();
         return;
       }
 
@@ -176,11 +177,12 @@ const Signin = () => {
           });
         }
       } else {
-        setErrors({ api: response.data.message });
+        setErrors({ api: response.data.message || "Registration failed." });
         Swal.close();
       }
     } catch (error: any) {
-      setErrors({ api: error.response.data.message });
+      const apiError = error?.response?.data?.message || error?.message || "Registration failed. Please check network connection.";
+      setErrors({ api: apiError });
       Swal.close();
     }
   };
