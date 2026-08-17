@@ -784,13 +784,13 @@ exports.user_booked_mail = (name, message,mail_heading) => {
     let url;
     switch (role) {
       case "Venue Admin":
-        url = "https://kheloindore.in/admin";
+        url = "https://kheloindore.in/admin/";
         break;
       case "Coach":
-        url = "https://kheloindore.in/admin";
+        url = "https://kheloindore.in/admin/";
         break;
       case "Personal Trainer":
-        url = "https://kheloindore.in/admin";
+        url = "https://kheloindore.in/admin/";
         break;
       default:
         url = "https://kheloindore.in";
@@ -946,7 +946,7 @@ exports.user_booked_mail = (name, message,mail_heading) => {
             </ul>
             <p>Please log in to the admin panel to review the venue details and take necessary action:</p>
             <p style="text-align: center; margin: 20px 0;">
-              <a href="https://kheloindore.in/admin" target="_blank" style="color: #fff; background-color: #ff5f15; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Review Venue</a>
+              <a href="https://kheloindore.in/admin/" target="_blank" style="color: #fff; background-color: #ff5f15; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Review Venue</a>
             </p>
             <p>If you have any questions or need assistance, please contact the KheloIndore support team at 
               <a href="https://kheloindore.in/contact-us" style="color: #ff5f15;">kheloindore.in</a>.
@@ -1013,7 +1013,7 @@ exports.sendBookingRequestEmail = (
                   </ul>
                   <p style="font-size: 14px; margin: 15px 0;">
                       You can either approve or reject this booking request based on availability and other criteria. To confirm or reject, please click on below link:
-                      <a href="https://kheloindore.in/admin" style="color: #ff5f15; text-decoration: none;">kheloindore.in</a>
+                      <a href="https://kheloindore.in/admin/" style="color: #ff5f15; text-decoration: none;">kheloindore.in/admin/</a>
                   </p>        
                   <p style="font-size: 14px; margin: 15px 0;">
                       If you need more details about this request, please feel free to reach out to the support team.
@@ -1784,7 +1784,7 @@ exports.venueAdminTemplate = (
       <p><strong>Temporary Password:</strong> ${password}</p>
       <p>You can now log in to your admin dashboard using the following link:</p>
       <p>
-        <a href="https://kheloindore.in/admin" style="color: #ff5f15; text-decoration: none;">Admin Dashboard</a>
+        <a href="https://kheloindore.in/admin/" style="color: #ff5f15; text-decoration: none;">Admin Dashboard</a>
       </p>
       <p>If you have any questions or need assistance, please feel free to reach out to our support team.</p>
       <p>Thank you for joining the KheloIndore team!</p>

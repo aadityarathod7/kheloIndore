@@ -340,7 +340,7 @@ exports.signup = async (req, res, next) => {
             Your registration request has been submitted and your account is active. You can now log in to the admin dashboard using the following link:
           </p>
           <p style="text-align: center; margin: 25px 0;">
-            <a href="https://kheloindore.in/admin" style="background-color: #ff5f15; color: #ffffff; text-decoration: none; padding: 12px 25px; border-radius: 5px; font-weight: bold; display: inline-block;">Log In to Partner Dashboard</a>
+            <a href="https://kheloindore.in/admin/" style="background-color: #ff5f15; color: #ffffff; text-decoration: none; padding: 12px 25px; border-radius: 5px; font-weight: bold; display: inline-block;">Log In to Partner Dashboard</a>
           </p>
           <p style="font-size: 14px; line-height: 1.8;">
             Once logged in, you can complete your profile details and set up your listing so clients can find and book your services.
@@ -579,7 +579,7 @@ exports.signupVerifyOTP = async (req, res, next) => {
           <p><strong>Temporary Password:</strong> ${password}</p>
           <p>You can now log in to your admin dashboard using the following link:</p>
           <p>
-            <a href="https://kheloindore.in/admin" style="color: #ff5f15; text-decoration: none;">Admin Dashboard</a>
+            <a href="https://kheloindore.in/admin/" style="color: #ff5f15; text-decoration: none;">Admin Dashboard</a>
           </p>
           <p>If you have any questions or need assistance, please feel free to reach out to our support team.</p>
           <p>Thank you for joining the KheloIndore team!</p>
@@ -1749,7 +1749,7 @@ exports.updateAdminStatus = async (req, res) => {
               <li style="font-size: 14px;"><strong>Mobile:</strong> ${userToSendCredentials.mobile}</li>
               <li style="font-size: 14px;"><strong>Password:</strong> ${userToSendCredentials.demo_password || "N/A"}</li>
             </ul>
-            <a href="https://kheloindore.in/admin" target="_blank" style="color: #ff5f15; text-decoration: none;">kheloindore.in/admin</a> 
+            <a href="https://kheloindore.in/admin/" target="_blank" style="color: #ff5f15; text-decoration: none;">kheloindore.in/admin/</a> 
             to access your account.
           </p>
           <p style="font-size: 16px; font-weight: bold; margin: 20px 0;">Best Regards,</p>
