@@ -121,3 +121,56 @@
   transform: scale(1.15) !important;
   opacity: 0.85 !important;
 }
+
+/* Premium Selection Chips / Pills */
+.ki-selection-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+  margin-bottom: 12px;
+}
+
+.ki-selection-chip {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 1px solid #E2E8F0;
+  background-color: #FFFFFF;
+  color: #475569;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
+}
+
+.ki-selection-chip:hover {
+  border-color: #097e52;
+  color: #097e52;
+  background-color: #F0FDF4;
+  transform: translateY(-1px);
+}
+
+.ki-selection-chip.active {
+  background-color: #097e52;
+  border-color: #097e52;
+  color: #FFFFFF;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(9, 126, 82, 0.2);
+}
+
+.ki-selection-chip .check-icon {
+  font-size: 11px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease;
+}
+
+.ki-selection-chip.active .check-icon {
+  transform: scale(1.1);
+}
+
