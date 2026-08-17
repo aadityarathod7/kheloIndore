@@ -147,6 +147,8 @@ exports.updatePersonalTrainer = async (req, res) => {
 
     const personalTrainerData = await PersonalTrainer.findById(id);
 
+    const isSuperAdminUpdate = req.user?.role === "Super Admin";
+
     const updatePayload = {
       first_name: detail.first_name || personalTrainerData.first_name,
       last_name: detail.last_name || personalTrainerData.last_name,
@@ -157,9 +159,16 @@ exports.updatePersonalTrainer = async (req, res) => {
         detail.specializations || personalTrainerData.specializations,
       location: detail.location || personalTrainerData.location,
       bio: detail.bio || personalTrainerData.bio,
-      status: detail.status,
       isUpdated: true,
     };
+
+    // Only Super Admin can directly change status/verification flags
+    if (isSuperAdminUpdate && detail.status !== undefined) {
+      updatePayload.status = detail.status;
+    }
+    if (isSuperAdminUpdate && detail.verification_status !== undefined) {
+      updatePayload.verification_status = detail.verification_status;
+    }
 
     // Extended profile fields (levels, response time, class location, students, views, socials, etc.)
     const extendedFields = [
@@ -809,5 +818,41 @@ exports.updatePersonalTrainers = async (req, res) => {
   } catch (error) {
     
     res.status(500).json({ success: false, message: "Internal Server Error", error: error.message });
+  }
+};
+
+/**
+ * Trainer calls this when they have finished editing and want Super Admin to review.
+ * Sets awaiting_approval=true and keeps status=false (inactive) until admin approves.
+ */
+exports.submitTrainerForApproval = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const trainer = await PersonalTrainer.findById(id);
+    if (!trainer) {
+      return res.status(404).json({ success: false, message: "Trainer not found" });
+    }
+
+    // Only the trainer themselves (or Super Admin) can submit for approval
+    const isSuperAdmin = req.user?.role === "Super Admin";
+    const account = await User.findById(req.user?.userID).select("mobile email").catch(() => null);
+    const ownsProfile =
+      isSuperAdmin ||
+      String(req.user?.userID) === String(trainer._id) ||
+      (account &&
+        (String(account.mobile) === String(trainer.mobile) ||
+          String(account.email || "").toLowerCase() === String(trainer.email || "").toLowerCase()));
+
+    if (!ownsProfile) {
+      return res.status(403).json({ success: false, message: "You can only submit your own profile for approval." });
+    }
+
+    // Mark as awaiting approval; do NOT flip status yet
+    trainer.awaiting_approval = true;
+    await trainer.save();
+
+    return res.status(200).json({ success: true, message: "Profile submitted for Super Admin approval. You will be notified once approved." });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
   }
 };

@@ -138,7 +138,15 @@ const {
   fetchSharedTrainer,
   completeTrainerProfile,
   sendTrainerOnboardingProfileLink,
+  submitTrainerForApproval,
 } = require("../controllers/PersonalTrainingController");
+
+// Admin Trainer Approval
+const {
+  getPendingTrainers,
+  approveTrainer,
+  rejectTrainer,
+} = require("../controllers/AdminTrainerController");
 
 //CONTACT US
 const {
@@ -459,4 +467,15 @@ route.put("/verify/booking/status/:bookingId/:verifyStatus",auth,bookingVerifySt
 //  coach verify by super admin
 route.put("/verify/coach/:coachId/:verifyStatus",auth,coachVerifyBySuperAdmin)
 route.put("/verify/venue/:venueId/:verifyStatus",auth,venueVerifyBySuperAdmin)
+
+// ── Trainer / Coach Approval Workflow ─────────────────────────────────────
+// Trainer submits their finished profile for Super Admin review
+route.post("/personal-training/submit-for-approval/:id", auth, submitTrainerForApproval);
+// Super Admin: list all pending trainers
+route.get("/admin/pending-trainers", auth, requireRole("Super Admin"), getPendingTrainers);
+// Super Admin: approve a trainer
+route.post("/admin/approveTrainer/:id", auth, requireRole("Super Admin"), approveTrainer);
+// Super Admin: reject a trainer
+route.post("/admin/rejectTrainer/:id", auth, requireRole("Super Admin"), rejectTrainer);
+
 module.exports = route;

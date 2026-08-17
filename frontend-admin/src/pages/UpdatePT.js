@@ -10,6 +10,8 @@ import "../Coaches.css";
 import Select from "react-select";
 
 const UpdatepersonalTrainer  = () => {
+  const [userRole, setUserRole] = React.useState("");
+  const [trainerStatus, setTrainerStatus] = React.useState({ status: false, awaiting_approval: false, rejection_reason: "" });
   const [formData, setFormData] = useState({
     full_name: "",
     date_of_birth: "",
@@ -158,6 +160,17 @@ const UpdatepersonalTrainer  = () => {
   const [errors, setErrors] = useState({});
   const UpdatepersonalTrainerID = useParams();
   const navigate = useNavigate();
+
+  // Decode role from JWT stored in localStorage
+  useEffect(() => {
+    try {
+      const token = localStorage.getItem("token");
+      if (token) {
+        const payload = JSON.parse(atob(token.split(".")[1]));
+        setUserRole(payload.role || "");
+      }
+    } catch (_) {}
+  }, []);
 
   
 
@@ -399,6 +412,67 @@ const UpdatepersonalTrainer  = () => {
     }));
   };
 
+  // ── Approval workflow handlers ──────────────────────────────────────────
+  const handleSubmitForApproval = async () => {
+    try {
+      await axios.post(
+        `${API_URL}/personal-training/submit-for-approval/${UpdatepersonalTrainerID._id}`,
+        {},
+        { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
+      );
+      Swal.fire({
+        icon: "success",
+        title: "Submitted!",
+        text: "Your profile has been submitted for Super Admin approval. You will be notified once it is reviewed.",
+      });
+      setTrainerStatus((prev) => ({ ...prev, awaiting_approval: true }));
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "Failed",
+        text: error.response?.data?.message || "Could not submit for approval. Please try again.",
+      });
+    }
+  };
+
+  const handleApprove = async () => {
+    try {
+      await axios.post(
+        `${API_URL}/admin/approveTrainer/${UpdatepersonalTrainerID._id}`,
+        {},
+        { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
+      );
+      Swal.fire({ icon: "success", title: "Approved!", text: "Trainer profile approved and is now active." });
+      setTrainerStatus({ status: true, awaiting_approval: false, rejection_reason: "" });
+    } catch (error) {
+      Swal.fire({ icon: "error", title: "Error", text: error.response?.data?.message || "Approval failed." });
+    }
+  };
+
+  const handleReject = async () => {
+    const { value: reason } = await Swal.fire({
+      title: "Reject Profile",
+      input: "textarea",
+      inputLabel: "Reason for rejection (optional)",
+      inputPlaceholder: "Tell the trainer what needs to be improved...",
+      showCancelButton: true,
+      confirmButtonText: "Reject",
+      confirmButtonColor: "#e53e3e",
+    });
+    if (reason === undefined) return; // cancelled
+    try {
+      await axios.post(
+        `${API_URL}/admin/rejectTrainer/${UpdatepersonalTrainerID._id}`,
+        { reason },
+        { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
+      );
+      Swal.fire({ icon: "info", title: "Rejected", text: "Trainer profile rejected. The trainer can re-edit and resubmit." });
+      setTrainerStatus({ status: false, awaiting_approval: false, rejection_reason: reason });
+    } catch (error) {
+      Swal.fire({ icon: "error", title: "Error", text: error.response?.data?.message || "Rejection failed." });
+    }
+  };
+
   const handleRemoveVideo = (index) => {
     setFormData((prevFormData) => ({
       ...prevFormData,
@@ -489,6 +563,12 @@ const UpdatepersonalTrainer  = () => {
         verification_documents: response.data.personalTrainer.verification_documents || { government_id: [], coaching_certificates: [], sports_qualifications: [], experience_proofs: [] },
         training_photos: response.data.personalTrainer.training_photos || [],
         certificate_achievement_photos: response.data.personalTrainer.certificate_achievement_photos || [],
+      });
+      // Sync approval status
+      setTrainerStatus({
+        status: response.data.personalTrainer.status || false,
+        awaiting_approval: response.data.personalTrainer.awaiting_approval || false,
+        rejection_reason: response.data.personalTrainer.rejection_reason || "",
       });
     } catch (error) {
       
@@ -1629,6 +1709,61 @@ const UpdatepersonalTrainer  = () => {
               </Form.Group>
             </Col>
           </Row>
+          {/* ── Approval status banner ───────────────────────────────────────── */}
+          {trainerStatus.status && (
+            <div style={{ background: "#c6f6d5", border: "1px solid #38a169", borderRadius: 8, padding: "12px 18px", marginBottom: 16, display: "flex", alignItems: "center", gap: 10 }}>
+              <span style={{ fontSize: 20 }}>✅</span>
+              <span style={{ color: "#276749", fontWeight: 600 }}>This profile is <strong>Active</strong> and visible on the public website.</span>
+            </div>
+          )}
+          {!trainerStatus.status && trainerStatus.awaiting_approval && (
+            <div style={{ background: "#fefcbf", border: "1px solid #d69e2e", borderRadius: 8, padding: "12px 18px", marginBottom: 16, display: "flex", alignItems: "center", gap: 10 }}>
+              <span style={{ fontSize: 20 }}>⏳</span>
+              <span style={{ color: "#744210", fontWeight: 600 }}>Profile is <strong>Pending Approval</strong>. Waiting for Super Admin to review.</span>
+            </div>
+          )}
+          {!trainerStatus.status && !trainerStatus.awaiting_approval && trainerStatus.rejection_reason && (
+            <div style={{ background: "#fff5f5", border: "1px solid #e53e3e", borderRadius: 8, padding: "12px 18px", marginBottom: 16 }}>
+              <span style={{ fontSize: 20 }}>❌</span>
+              <span style={{ color: "#c53030", fontWeight: 600 }}> Profile was <strong>Rejected</strong>. Reason: {trainerStatus.rejection_reason}</span>
+              <p style={{ margin: "6px 0 0", color: "#9b2c2c" }}>Please update your details and resubmit for approval.</p>
+            </div>
+          )}
+
+          {/* Submit for Approval – visible to the trainer when not yet pending/active */}
+          {userRole !== "Super Admin" && !trainerStatus.status && !trainerStatus.awaiting_approval && (
+            <button
+              type="button"
+              id="btn-submit-for-approval"
+              onClick={handleSubmitForApproval}
+              style={{ background: "linear-gradient(135deg,#4299e1,#3182ce)", color: "#fff", border: "none", borderRadius: 8, padding: "10px 28px", fontWeight: 700, fontSize: 15, cursor: "pointer", marginRight: 12, marginBottom: 8, boxShadow: "0 2px 8px rgba(49,130,206,0.35)" }}
+            >
+              🚀 Submit for Approval
+            </button>
+          )}
+
+          {/* Approve / Reject – visible only to Super Admin when awaiting approval */}
+          {userRole === "Super Admin" && trainerStatus.awaiting_approval && !trainerStatus.status && (
+            <>
+              <button
+                type="button"
+                id="btn-approve-trainer"
+                onClick={handleApprove}
+                style={{ background: "linear-gradient(135deg,#48bb78,#38a169)", color: "#fff", border: "none", borderRadius: 8, padding: "10px 28px", fontWeight: 700, fontSize: 15, cursor: "pointer", marginRight: 12, marginBottom: 8, boxShadow: "0 2px 8px rgba(56,161,105,0.35)" }}
+              >
+                ✅ Approve Trainer
+              </button>
+              <button
+                type="button"
+                id="btn-reject-trainer"
+                onClick={handleReject}
+                style={{ background: "linear-gradient(135deg,#fc8181,#e53e3e)", color: "#fff", border: "none", borderRadius: 8, padding: "10px 28px", fontWeight: 700, fontSize: 15, cursor: "pointer", marginRight: 12, marginBottom: 8, boxShadow: "0 2px 8px rgba(229,62,62,0.35)" }}
+              >
+                ❌ Reject
+              </button>
+            </>
+          )}
+
           <button
             type="submit"
             onClick={handleFormSubmit}
