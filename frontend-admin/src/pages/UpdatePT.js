@@ -315,8 +315,8 @@ const UpdatepersonalTrainer  = () => {
   const handleUploadImage = async (e, type) => {
     const file = e.target.files[0];
     if (!file) return;
-    if (type === "profile" && (!file.type.startsWith("image/") || file.size > 500 * 1024 || !(await isSquareImage(file)))) {
-      Swal.fire({ icon: "error", title: "Invalid profile photo", text: "Use a square image under 500 KB." });
+    if (type === "profile" && (!file.type.startsWith("image/") || file.size > 500 * 1024)) {
+      Swal.fire({ icon: "error", title: "Invalid profile photo", text: "Use an image under 500 KB." });
       e.target.value = "";
       return;
     }
