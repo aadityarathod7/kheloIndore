@@ -305,7 +305,7 @@ export default function VenueAdminList() {
                                                         <EditOutlined className="edit_icon" />
                                                     </Link>
                                                 </Tooltip>
-                                                {
+                                                {role === 'Super Admin' && (
                                                     row.status ?
                                                         <Tooltip title={`Deactivate`} arrow>
                                                             <DeleteOutlined
@@ -320,7 +320,7 @@ export default function VenueAdminList() {
                                                                 onClick={() => handleActive(row)}
                                                             />
                                                         </Tooltip>
-                                                }
+                                                )}
                                             </div>
                                         </td>
 

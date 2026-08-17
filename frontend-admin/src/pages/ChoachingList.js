@@ -438,7 +438,7 @@ function Coachlist() {
                             />
                           </Link>
                         </Tooltip>
-                        {
+                        {isSuperAdmin && (
                           row.status ?
                             <Tooltip title={`Deactivate`} arrow>
                               <DeleteOutlined
@@ -450,10 +450,10 @@ function Coachlist() {
                             <Tooltip title={`Activate`} arrow>
                               <ReloadOutlined
                                 className="delete_icon"
-                                onClick={() => isSuperAdmin && handleUpdateAccess(1, row._id)}
+                                onClick={() => handleUpdateAccess(1, row._id)}
                               />
                             </Tooltip>
-                        }
+                        )}
                       </div>
                     </td>
                     <td>

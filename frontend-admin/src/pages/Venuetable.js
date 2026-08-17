@@ -511,7 +511,7 @@ function VenueList() {
                             />
                           </Link>
                         </Tooltip>
-                        {
+                        {isSuperAdmin && (
                           venue.status ?
                             <Tooltip title={`Deactivate`} arrow>
                               {undefined}
@@ -527,7 +527,7 @@ function VenueList() {
                                 onClick={() => handleActive(venue)}
                               />
                             </Tooltip>
-                        }
+                        )}
                       </div>
                     </td>
                     <td>

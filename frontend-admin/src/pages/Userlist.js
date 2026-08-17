@@ -272,21 +272,22 @@ function Userlist() {
                               <EditOutlined className="edit_icon" />
                             </Link>
                           </Tooltip>
-                          {user.status ?
-                            <Tooltip title={`Deactivate`} arrow>
-                              <DeleteOutlined
-                                className="delete_icon"
-                                onClick={() => handleDelete(user)}
-                              />
-                            </Tooltip>
-                            :
-                            <Tooltip title={`Activate`} arrow>
-                              <ReloadOutlined
-                                className="delete_icon"
-                                onClick={() => handleActive(user)}
-                              />
-                            </Tooltip>
-                          }
+                          {role === 'Super Admin' && (
+                            user.status ?
+                              <Tooltip title={`Deactivate`} arrow>
+                                <DeleteOutlined
+                                  className="delete_icon"
+                                  onClick={() => handleDelete(user)}
+                                />
+                              </Tooltip>
+                              :
+                              <Tooltip title={`Activate`} arrow>
+                                <ReloadOutlined
+                                  className="delete_icon"
+                                  onClick={() => handleActive(user)}
+                                />
+                              </Tooltip>
+                          )}
                         </div>
                       </td>
                     </tr>
