@@ -460,6 +460,16 @@ const VenueTimeDate = () => {
           color: #FFFFFF !important;
           font-weight: 700 !important;
         }
+        .ki-booking-slot:disabled {
+          background-color: #F1F5F9 !important;
+          border: 1px solid #E2E8F0 !important;
+          color: #94A3B8 !important;
+          cursor: not-allowed !important;
+          opacity: 1 !important;
+        }
+        .ki-booking-slot:disabled * {
+          color: #94A3B8 !important;
+        }
       `}} />
 
       {/* Hero Header Banner */}
