@@ -1727,11 +1727,13 @@ exports.updateAdminStatus = async (req, res) => {
         return res.status(404).json({ success: false, message: "Coach not found." });
       }
       coach.is_admin_access = is_admin_access;
-      // Sync status: approved (1) → active; rejected (2) → inactive
+      // Sync status & verification_status: approved (1) → active; rejected (2) → inactive
       if (is_admin_access === 1) {
         coach.status = true;
+        coach.verification_status = 1;
       } else if (is_admin_access === 2) {
         coach.status = false;
+        coach.verification_status = 2;
       }
       await coach.save();
 
@@ -1749,13 +1751,15 @@ exports.updateAdminStatus = async (req, res) => {
         return res.status(404).json({ success: false, message: "Personal Trainer not found." });
       }
       personalTrainer.is_admin_access = is_admin_access;
-      // Sync status: approved (1) → active on website; rejected (2) → inactive
+      // Sync status & verification_status: approved (1) → active on website; rejected (2) → inactive
       if (is_admin_access === 1) {
         personalTrainer.status = true;
         personalTrainer.awaiting_approval = false;
+        personalTrainer.verification_status = 1;
       } else if (is_admin_access === 2) {
         personalTrainer.status = false;
         personalTrainer.awaiting_approval = false;
+        personalTrainer.verification_status = 2;
       }
       await personalTrainer.save();
 
