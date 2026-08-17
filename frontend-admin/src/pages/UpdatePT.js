@@ -315,8 +315,8 @@ const UpdatepersonalTrainer  = () => {
   const handleUploadImage = async (e, type) => {
     const file = e.target.files[0];
     if (!file) return;
-    if (type === "profile" && (!["image/jpeg", "image/png"].includes(file.type) || file.size > 200 * 1024 || !(await isSquareImage(file)))) {
-      Swal.fire({ icon: "error", title: "Invalid profile photo", text: "Use a square JPEG or PNG image under 200 KB." });
+    if (type === "profile" && (!file.type.startsWith("image/") || file.size > 500 * 1024 || !(await isSquareImage(file)))) {
+      Swal.fire({ icon: "error", title: "Invalid profile photo", text: "Use a square image under 500 KB." });
       e.target.value = "";
       return;
     }
@@ -361,7 +361,13 @@ const UpdatepersonalTrainer  = () => {
         }));
       }
     } catch (error) {
-      
+      console.error("Upload error:", error);
+      const errMsg = error.response?.data?.message || "Failed to upload file. Please try again.";
+      Swal.fire({
+        icon: "error",
+        title: "Upload Failed",
+        text: errMsg,
+      });
     }
   };
 

@@ -210,6 +210,12 @@ const Coaches = () => {
     const file = e.target.files[0];
     if (!file) return;
 
+    if (type === "profile" && (!file.type.startsWith("image/") || file.size > 500 * 1024)) {
+      Swal.fire({ icon: "error", title: "Invalid profile photo", text: "Use an image under 500 KB." });
+      e.target.value = "";
+      return;
+    }
+
     const formData = new FormData();
     formData.append("uploadFile", file);
 
@@ -238,7 +244,13 @@ const Coaches = () => {
         }));
       }
     } catch (error) {
-      
+      console.error("Upload error:", error);
+      const errMsg = error.response?.data?.message || "Failed to upload file. Please try again.";
+      Swal.fire({
+        icon: "error",
+        title: "Upload Failed",
+        text: errMsg,
+      });
     }
   };
 

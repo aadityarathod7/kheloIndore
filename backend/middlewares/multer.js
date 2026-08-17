@@ -54,17 +54,20 @@ const storage = multer.diskStorage({
     cb(null, dir);
   },
   filename: function (req, file, cb) {
-    const extension =
-      ALLOWED_MIME_TYPES[file.mimetype] || "bin";
+    let extension = ALLOWED_MIME_TYPES[file.mimetype];
+    if (!extension) {
+      const extMatch = file.originalname.match(/\.([a-zA-Z0-9]+)$/);
+      extension = extMatch ? extMatch[1].toLowerCase() : "bin";
+    }
     cb(null, `${Date.now()}-${Math.round(Math.random() * 1e9)}.${extension}`);
   },
 });
 
 const fileFilter = (req, file, cb) => {
-  if (ALLOWED_MIME_TYPES[file.mimetype]) {
+  if (file.mimetype.startsWith("image/") || ALLOWED_MIME_TYPES[file.mimetype]) {
     cb(null, true);
   } else {
-    cb(new Error("File type not allowed."));
+    cb(new Error("File type not allowed. Only images, documents, PDFs and videos are allowed."));
   }
 };
 

@@ -1463,26 +1463,58 @@ if (!Array.isArray(req.files.uploadFile) || req.files.uploadFile.length === 0) {
   });
 }
 
-    let uploadedFiles;
-    
-    if (
-      Array.isArray(req.files.uploadFile) &&
-      req.files.uploadFile.length > 0
-    ) {
-      uploadedFiles = req.files.uploadFile.map((file) => {
-        const modifiedSrc = `/uploads/${req.query.types}/${path.basename(
-          file.path
-        )}`;
-        return {
-          src: modifiedSrc.replace(/\\/g, "/"),
-          fileName: file.mimetype,
-          orgname: file.originalname,
-        };
-      });
+    const fs = require("fs");
+    const ALLOWED_TYPES = new Set([
+      "user",
+      "coach",
+      "trainer",
+      "venue",
+      "blog",
+      "event",
+      "category",
+      "payment",
+      "misc",
+      "document",
+      "enquiry",
+      "default",
+      "events-media",
+      "personal-training",
+    ]);
+
+    let type = req.query.types || "misc";
+    if (typeof type !== "string" || !ALLOWED_TYPES.has(type)) {
+      type = "misc";
     }
 
+    const files = Array.isArray(req.files.uploadFile) ? req.files.uploadFile : [req.files.uploadFile];
+
+    // Enforce 500kb limit on images
+    for (const file of files) {
+      if (file.mimetype.startsWith("image/") && file.size > 500 * 1024) {
+        // Clean up files written to disk in this request
+        for (const f of files) {
+          try {
+            fs.unlinkSync(f.path);
+          } catch (err) {}
+        }
+        return res.status(400).json({
+          status: false,
+          message: `Image "${file.originalname}" exceeds the maximum allowed size of 500KB (Size: ${(file.size / 1024).toFixed(1)}KB). Please compress it and try again.`,
+        });
+      }
+    }
+
+    const uploadedFiles = files.map((file) => {
+      const modifiedSrc = `/uploads/${type}/${path.basename(file.path)}`;
+      return {
+        src: modifiedSrc.replace(/\\/g, "/"),
+        fileName: file.mimetype,
+        orgname: file.originalname,
+      };
+    });
+
     res.status(200).json({
-      file_data: uploadedFiles || [],
+      file_data: uploadedFiles,
       status: true,
       message: "Files uploaded successfully",
     });

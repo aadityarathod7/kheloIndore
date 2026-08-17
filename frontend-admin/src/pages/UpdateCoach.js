@@ -118,13 +118,18 @@ const UpdateCoach = () => {
     const uploaded = [];
     for (const file of files) {
       if ((mediaType === "image" && !file.type.startsWith("image/")) || (mediaType === "video" && !file.type.startsWith("video/"))) continue;
+      if (mediaType === "image" && file.size > 500 * 1024) {
+        Swal.fire("Upload failed", `Image "${file.name}" exceeds the maximum allowed size of 500KB.`, "error");
+        continue;
+      }
       const uploadData = new FormData();
       uploadData.append("uploadFile", file);
       try {
         const response = await axios.post(`${API_URL}/upload-file?types=coach`, uploadData);
         if (response.data?.file_data?.[0]) uploaded.push(response.data.file_data[0]);
-      } catch {
-        Swal.fire("Upload failed", `Could not upload ${file.name}.`, "error");
+      } catch (err) {
+        const errMsg = err.response?.data?.message || `Could not upload ${file.name}.`;
+        Swal.fire("Upload failed", errMsg, "error");
       }
     }
     if (uploaded.length) {
