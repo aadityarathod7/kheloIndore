@@ -461,8 +461,18 @@ exports.fetchPersonalTrainerForAdmin = async (req, res) => {
     if (!trainer) return res.status(404).json({ success: false, message: "Personal trainer not found" });
     const isSuperAdmin = req.user?.role === "Super Admin";
     const account = await User.findById(req.user?.userID).select("mobile email");
-    const ownsProfile = req.user?.role === "Personal Trainer" && account &&
-      (String(account.mobile) === String(trainer.mobile) || String(account.email || "").toLowerCase() === String(trainer.email || "").toLowerCase());
+    const ownsProfile = req.user?.role === "Personal Trainer" && (
+      (String(req.user?.userID) === String(trainer._id)) ||
+      (account && (String(account.mobile) === String(trainer.mobile) || String(account.email || "").toLowerCase() === String(trainer.email || "").toLowerCase()))
+    );
+    console.log("DEBUG fetchPersonalTrainerForAdmin:", {
+      user: req.user,
+      trainerId: req.params.id,
+      trainerMobile: trainer.mobile,
+      trainerEmail: trainer.email,
+      accountExists: !!account,
+      ownsProfile
+    });
     if (!isSuperAdmin && !ownsProfile) {
       return res.status(403).json({ success: false, message: "You can view only your own trainer service." });
     }
@@ -711,22 +721,11 @@ exports.updatePersonalTrainers = async (req, res) => {
       return res.status(404).json({ success: false, message: "Personal Trainer not found" });
     }
     if (!isSuperAdmin) {
-      console.log("DEBUG updatePersonalTrainers auth failure diagnostics:", {
-        user: req.user,
-        trainerId,
-        trainerEmail: trainer.email,
-        trainerMobile: trainer.mobile,
-      });
       if (req.user?.role !== "Personal Trainer") {
-        console.log("DEBUG updatePersonalTrainers: Rejecting role (not Personal Trainer)", req.user?.role);
         return res.status(403).json({ success: false, message: "You are not authorized to update this trainer profile." });
       }
       const account = await User.findById(req.user.userID).select("mobile email");
-      const ownsProfile = account && (String(account.mobile) === String(trainer.mobile) || String(account.email || "").toLowerCase() === String(trainer.email || "").toLowerCase());
-      console.log("DEBUG updatePersonalTrainers: ownsProfile =", ownsProfile, {
-        accountEmail: account?.email,
-        accountMobile: account?.mobile,
-      });
+      const ownsProfile = (String(req.user.userID) === String(trainer._id)) || (account && (String(account.mobile) === String(trainer.mobile) || String(account.email || "").toLowerCase() === String(trainer.email || "").toLowerCase()));
       if (!ownsProfile) {
         return res.status(403).json({ success: false, message: "You can update only your own trainer service." });
       }
