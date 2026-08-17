@@ -52,7 +52,7 @@
 .admin-page-content img, .admin-page-content svg, .admin-page-content canvas { max-width: 100%; }
 .admin-page-content .table-responsive, .admin-page-content .table-container, .admin-page-content .ant-table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 .admin-page-content .ant-table { min-width: 680px; }
-.admin-page-content button, .admin-page-content .ant-btn, .admin-page-content input, .admin-page-content select { min-height: 40px; }
+.admin-page-content button, .admin-page-content .ant-btn, .admin-page-content input:not([type="checkbox"]):not([type="radio"]), .admin-page-content select { min-height: 40px; }
 .admin-page-content button:focus-visible, .admin-page-content .ant-btn:focus-visible, .admin-page-content input:focus-visible, .admin-page-content select:focus-visible, .admin-page-content a:focus-visible { outline: 3px solid #34d399; outline-offset: 2px; }
 @media (max-width: 768px) {
   .admin-page-content { overflow-x: hidden; }

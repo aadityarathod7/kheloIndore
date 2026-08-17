@@ -373,7 +373,7 @@ exports.fetchAllPersonalTrainers = async (req, res) => {
         });
       }
 
-      data = [withoutPrivateTrainerDetails(personalTrainer)];
+      data = [personalTrainer];
     } else {
       // Other roles are not authorized
       return res.status(403).json({
