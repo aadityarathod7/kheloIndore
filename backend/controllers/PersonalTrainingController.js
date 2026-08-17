@@ -465,14 +465,6 @@ exports.fetchPersonalTrainerForAdmin = async (req, res) => {
       (String(req.user?.userID) === String(trainer._id)) ||
       (account && (String(account.mobile) === String(trainer.mobile) || String(account.email || "").toLowerCase() === String(trainer.email || "").toLowerCase()))
     );
-    console.log("DEBUG fetchPersonalTrainerForAdmin:", {
-      user: req.user,
-      trainerId: req.params.id,
-      trainerMobile: trainer.mobile,
-      trainerEmail: trainer.email,
-      accountExists: !!account,
-      ownsProfile
-    });
     if (!isSuperAdmin && !ownsProfile) {
       return res.status(403).json({ success: false, message: "You can view only your own trainer service." });
     }
