@@ -486,8 +486,10 @@ exports.fetchCoachById = async (req, res) => {
     // pending profile; approval is required only by the public endpoints.
     const isSuperAdmin = req.user?.role === "Super Admin";
     const account = await User.findById(req.user?.userID).select("mobile email");
-    const ownsProfile = req.user?.role === "Coach" && account &&
-      (String(account.mobile) === String(coach.mobile) || String(account.email || "").toLowerCase() === String(coach.email || "").toLowerCase());
+    const ownsProfile = req.user?.role === "Coach" && (
+      (String(req.user?.userID) === String(coach._id)) ||
+      (account && (String(account.mobile) === String(coach.mobile) || String(account.email || "").toLowerCase() === String(coach.email || "").toLowerCase()))
+    );
     if (!isSuperAdmin && !ownsProfile) {
       return res.status(403).json({ success: false, message: "You can view only your own coach service." });
     }
@@ -798,7 +800,7 @@ exports.updatecoach = async (req, res) => {
         return res.status(403).json({ success: false, message: "You are not authorized to update this coach profile." });
       }
       const account = await User.findById(req.user.userID).select("mobile email");
-      const ownsProfile = account && (String(account.mobile) === String(coach.mobile) || String(account.email || "").toLowerCase() === String(coach.email || "").toLowerCase());
+      const ownsProfile = (String(req.user.userID) === String(coach._id)) || (account && (String(account.mobile) === String(coach.mobile) || String(account.email || "").toLowerCase() === String(coach.email || "").toLowerCase()));
       if (!ownsProfile) {
         return res.status(403).json({ success: false, message: "You can update only your own coach service." });
       }
