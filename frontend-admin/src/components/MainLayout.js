@@ -103,7 +103,11 @@ const buildMenu = (role) => {
   }
   if (role === "Super Admin" || role === "Venue Admin") {
     items.push(
-      { key: "venues", icon: <RiCouponLine />, label: "Venues" },
+      { key: "venues", icon: <RiCouponLine />, label: "Venues" }
+    );
+  }
+  if (role === "Super Admin") {
+    items.push(
       { key: "venue-admin", icon: <RiUserLine />, label: "Venue Admin" }
     );
   }
