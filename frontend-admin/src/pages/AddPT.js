@@ -452,24 +452,29 @@ const AddPT = () => {
             </Col>
           </Row>
           <Row>
-            <Col sm={3}>
+            <Col sm={12} className="mb-3">
               <h6>Languages Known</h6>
-              {["Hindi", "English", "Marathi"].map((language) => (
-                <Form.Check
-                  key={language}
-                  type="checkbox"
-                  label={language}
-                  checked={(formData.languages || []).includes(language)}
-                  onChange={() => setFormData((current) => ({
-                    ...current,
-                    languages: (current.languages || []).includes(language)
-                      ? current.languages.filter((item) => item !== language)
-                      : [...(current.languages || []), language],
-                  }))}
-                />
-              ))}
-            </Col>
-            <Col sm={3}>
+              <div className="ki-selection-group">
+                {["Hindi", "English", "Marathi"].map((language) => {
+                  const active = (formData.languages || []).includes(language);
+                  return (
+                    <div
+                      key={language}
+                      className={`ki-selection-chip ${active ? "active" : ""}`}
+                      onClick={() => setFormData((current) => ({
+                        ...current,
+                        languages: (current.languages || []).includes(language)
+                          ? current.languages.filter((item) => item !== language)
+                          : [...(current.languages || []), language],
+                      }))}
+                    >
+                      {active && <span className="check-icon">✓</span>}
+                      {language}
+                    </div>
+                  );
+                })}
+              </div>
+            </Col>  <Col sm={3}>
               <h6>State</h6>
               <StateSelect
                 countryid={countryid}

@@ -479,22 +479,28 @@ const UpdateCoach = () => {
             </Col>
           </Row>
           <Row>
-            <Col sm={3}>
+            <Col sm={12} className="mb-3">
               <h6>Languages Known</h6>
-              {["Hindi", "English", "Marathi"].map((language) => (
-                <Form.Check
-                  key={language}
-                  type="checkbox"
-                  label={language}
-                  checked={(input.languages || []).includes(language)}
-                  onChange={() => setInput((current) => ({
-                    ...current,
-                    languages: (current.languages || []).includes(language)
-                      ? current.languages.filter((item) => item !== language)
-                      : [...(current.languages || []), language],
-                  }))}
-                />
-              ))}
+              <div className="ki-selection-group">
+                {["Hindi", "English", "Marathi"].map((language) => {
+                  const active = (input.languages || []).includes(language);
+                  return (
+                    <div
+                      key={language}
+                      className={`ki-selection-chip ${active ? "active" : ""}`}
+                      onClick={() => setInput((current) => ({
+                        ...current,
+                        languages: (current.languages || []).includes(language)
+                          ? current.languages.filter((item) => item !== language)
+                          : [...(current.languages || []), language],
+                      }))}
+                    >
+                      {active && <span className="check-icon">✓</span>}
+                      {language}
+                    </div>
+                  );
+                })}
+              </div>
             </Col>
             {/* <Col sm={3}>
               <h6>State</h6>

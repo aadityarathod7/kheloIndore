@@ -739,25 +739,28 @@ const Coaches = () => {
             </Col> */}
           </Row>
           <Row className="mt-3">
-            <Col sm={4}>
+            <Col sm={12}>
               <Form.Group>
                 <Form.Label>Languages Known</Form.Label>
-                <div className="d-flex flex-wrap gap-3">
-                  {["Hindi", "English", "Marathi"].map((language) => (
-                    <Form.Check
-                      inline
-                      key={language}
-                      type="checkbox"
-                      label={language}
-                      checked={(formData.languages || []).includes(language)}
-                      onChange={() => setFormData((previous) => ({
-                        ...previous,
-                        languages: (previous.languages || []).includes(language)
-                          ? previous.languages.filter((item) => item !== language)
-                          : [...(previous.languages || []), language],
-                      }))}
-                    />
-                  ))}
+                <div className="ki-selection-group">
+                  {["Hindi", "English", "Marathi"].map((language) => {
+                    const active = (formData.languages || []).includes(language);
+                    return (
+                      <div
+                        key={language}
+                        className={`ki-selection-chip ${active ? "active" : ""}`}
+                        onClick={() => setFormData((previous) => ({
+                          ...previous,
+                          languages: (previous.languages || []).includes(language)
+                            ? previous.languages.filter((item) => item !== language)
+                            : [...(previous.languages || []), language],
+                        }))}
+                      >
+                        {active && <span className="check-icon">✓</span>}
+                        {language}
+                      </div>
+                    );
+                  })}
                 </div>
               </Form.Group>
             </Col>

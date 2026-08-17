@@ -207,25 +207,28 @@ const AddCoach = () => {
 
           <Row className="mt-3">
             <Col md={12}>
-              <Form.Group controlId="formLanguages">
-                <Form.Label>Languages Known</Form.Label>
-                <div className="d-flex flex-wrap gap-3">
-                  {["Hindi", "English", "Marathi"].map((language) => (
-                    <Form.Check
-                      key={language}
-                      inline
-                      type="checkbox"
-                      label={language}
-                      checked={formData.languages.includes(language)}
-                      onChange={() => setFormData((current) => ({
-                        ...current,
-                        languages: current.languages.includes(language)
-                          ? current.languages.filter((item) => item !== language)
-                          : [...current.languages, language],
-                      }))}
-                    />
-                  ))}
-                </div>
+               <Form.Group controlId="formLanguages">
+                 <Form.Label>Languages Known</Form.Label>
+                 <div className="ki-selection-group">
+                   {["Hindi", "English", "Marathi"].map((language) => {
+                     const active = formData.languages.includes(language);
+                     return (
+                       <div
+                         key={language}
+                         className={`ki-selection-chip ${active ? "active" : ""}`}
+                         onClick={() => setFormData((current) => ({
+                           ...current,
+                           languages: current.languages.includes(language)
+                             ? current.languages.filter((item) => item !== language)
+                             : [...current.languages, language],
+                         }))}
+                       >
+                         {active && <span className="check-icon">✓</span>}
+                         {language}
+                       </div>
+                     );
+                   })}
+                 </div>
               </Form.Group>
             </Col>
           </Row>

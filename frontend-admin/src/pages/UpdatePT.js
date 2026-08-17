@@ -571,35 +571,111 @@ const UpdatepersonalTrainer  = () => {
           </Row>
           <Row className="mt-4">
             <Col sm={12}><h5>Training profile</h5></Col>
-            <Col sm={6} className="mb-3">
+            <Col sm={12} className="mb-3">
               <Form.Label>Sports trained (select one or more)</Form.Label>
-              <div className="d-flex flex-wrap gap-2">{options.map(({ value, label }) => <Form.Check key={value} inline type="checkbox" label={label} checked={(formData.sports || []).includes(value)} onChange={() => toggleListValue("sports", value)} />)}</div>
+              <div className="ki-selection-group">
+                {options.map(({ value, label }) => {
+                  const active = (formData.sports || []).includes(value);
+                  return (
+                    <div key={value} className={`ki-selection-chip ${active ? "active" : ""}`} onClick={() => toggleListValue("sports", value)}>
+                      {active && <span className="check-icon">✓</span>}
+                      {label}
+                    </div>
+                  );
+                })}
+              </div>
             </Col>
-            <Col sm={3} className="mb-3">
+            <Col sm={6} className="mb-3">
               <Form.Label>Languages known</Form.Label>
-              {LANGUAGE_OPTIONS.map((value) => <Form.Check key={value} type="checkbox" label={value} checked={(formData.languages || []).includes(value)} onChange={() => toggleListValue("languages", value)} />)}
+              <div className="ki-selection-group">
+                {LANGUAGE_OPTIONS.map((value) => {
+                  const active = (formData.languages || []).includes(value);
+                  return (
+                    <div key={value} className={`ki-selection-chip ${active ? "active" : ""}`} onClick={() => toggleListValue("languages", value)}>
+                      {active && <span className="check-icon">✓</span>}
+                      {value}
+                    </div>
+                  );
+                })}
+              </div>
             </Col>
-            <Col sm={3} className="mb-3">
+            <Col sm={6} className="mb-3">
               <Form.Label>Training mode</Form.Label>
-              <Form.Select name="training_mode" value={formData.training_mode} onChange={handleInputChange}><option value="">Select mode</option>{TRAINING_MODE_OPTIONS.map((value) => <option key={value}>{value}</option>)}</Form.Select>
+              <Form.Select name="training_mode" value={formData.training_mode} onChange={handleInputChange} style={{ height: "40px" }}><option value="">Select mode</option>{TRAINING_MODE_OPTIONS.map((value) => <option key={value}>{value}</option>)}</Form.Select>
             </Col>
             <Col sm={4} className="mb-3">
               <Form.Label>Training levels</Form.Label>
-              {LEVEL_OPTIONS.map((value) => <Form.Check key={value} inline type="checkbox" label={value} checked={(formData.training_levels || []).includes(value)} onChange={() => toggleListValue("training_levels", value)} />)}
+              <div className="ki-selection-group">
+                {LEVEL_OPTIONS.map((value) => {
+                  const active = (formData.training_levels || []).includes(value);
+                  return (
+                    <div key={value} className={`ki-selection-chip ${active ? "active" : ""}`} onClick={() => toggleListValue("training_levels", value)}>
+                      {active && <span className="check-icon">✓</span>}
+                      {value}
+                    </div>
+                  );
+                })}
+              </div>
             </Col>
             <Col sm={4} className="mb-3">
               <Form.Label>Age groups</Form.Label>
-              {AGE_GROUP_OPTIONS.map((value) => <Form.Check key={value} inline type="checkbox" label={value} checked={(formData.age_groups || []).includes(value)} onChange={() => toggleListValue("age_groups", value)} />)}
+              <div className="ki-selection-group">
+                {AGE_GROUP_OPTIONS.map((value) => {
+                  const active = (formData.age_groups || []).includes(value);
+                  return (
+                    <div key={value} className={`ki-selection-chip ${active ? "active" : ""}`} onClick={() => toggleListValue("age_groups", value)}>
+                      {active && <span className="check-icon">✓</span>}
+                      {value}
+                    </div>
+                  );
+                })}
+              </div>
             </Col>
             <Col sm={4} className="mb-3">
               <Form.Label>Training format</Form.Label>
-              {TRAINING_FORMAT_OPTIONS.map((value) => <Form.Check key={value} inline type="checkbox" label={value} checked={(formData.training_formats || []).includes(value)} onChange={() => toggleListValue("training_formats", value)} />)}
+              <div className="ki-selection-group">
+                {TRAINING_FORMAT_OPTIONS.map((value) => {
+                  const active = (formData.training_formats || []).includes(value);
+                  return (
+                    <div key={value} className={`ki-selection-chip ${active ? "active" : ""}`} onClick={() => toggleListValue("training_formats", value)}>
+                      {active && <span className="check-icon">✓</span>}
+                      {value}
+                    </div>
+                  );
+                })}
+              </div>
               {(formData.training_formats || []).includes("Group Training") && <Form.Control className="mt-2" type="number" min="10" max="15" name="group_size_max" value={formData.group_size_max} onChange={handleInputChange} placeholder="Group size (10–15)" />}
             </Col>
           </Row>
           <Row className="mt-3">
-            <Col sm={4}><Form.Label>Session duration (per day)</Form.Label>{SESSION_DURATION_OPTIONS.map((value) => <Form.Check key={value} inline type="checkbox" label={`${value} hour${value > 1 ? "s" : ""}`} checked={(formData.session_durations || []).includes(value)} onChange={() => toggleListValue("session_durations", value)} />)}</Col>
-            <Col sm={8}><Form.Label>Availability</Form.Label>{AVAILABILITY_OPTIONS.map((value) => <Form.Check key={value} inline type="checkbox" label={value} checked={(formData.availability_options || []).includes(value)} onChange={() => toggleListValue("availability_options", value)} />)}</Col>
+            <Col sm={6}>
+              <Form.Label>Session duration (per day)</Form.Label>
+              <div className="ki-selection-group">
+                {SESSION_DURATION_OPTIONS.map((value) => {
+                  const active = (formData.session_durations || []).includes(value);
+                  return (
+                    <div key={value} className={`ki-selection-chip ${active ? "active" : ""}`} onClick={() => toggleListValue("session_durations", value)}>
+                      {active && <span className="check-icon">✓</span>}
+                      {`${value} hour${value > 1 ? "s" : ""}`}
+                    </div>
+                  );
+                })}
+              </div>
+            </Col>
+            <Col sm={6}>
+              <Form.Label>Availability</Form.Label>
+              <div className="ki-selection-group">
+                {AVAILABILITY_OPTIONS.map((value) => {
+                  const active = (formData.availability_options || []).includes(value);
+                  return (
+                    <div key={value} className={`ki-selection-chip ${active ? "active" : ""}`} onClick={() => toggleListValue("availability_options", value)}>
+                      {active && <span className="check-icon">✓</span>}
+                      {value}
+                    </div>
+                  );
+                })}
+              </div>
+            </Col>
           </Row>
           <Row className="mt-3">
             <Col sm={12}><h5>Pricing &amp; Service Packages</h5><small className="text-muted d-block mb-2">Set optional monthly, quarterly, or yearly package prices.</small></Col>
