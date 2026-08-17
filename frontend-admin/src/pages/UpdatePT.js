@@ -1769,7 +1769,7 @@ const UpdatepersonalTrainer  = () => {
             onClick={handleFormSubmit}
             className="SubmitButton"
           >
-            Submit
+            {userRole === "Super Admin" ? "Save Changes" : "Save Draft"}
           </button>
 
           <button type="button" className="CancelButton" onClick={()=>{navigate("/personal-training")}}>
