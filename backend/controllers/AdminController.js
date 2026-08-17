@@ -686,7 +686,7 @@ exports.loginWithPassword = async (req, res) => {
       userId: user._id,
     });
   } catch (error) {
-    
+    console.error("Login error trace:", error);
     res.status(500).json({
       success: false,
       message: "An unexpected error occurred during login. Please try again later.",
