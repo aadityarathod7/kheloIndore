@@ -320,6 +320,54 @@ exports.signup = async (req, res, next) => {
           resData: { message: `Registration successful! You can now log in to the admin panel to manage your profile and list your services.` },
       };
 
+      // Send welcome email to newly registered partner
+      try {
+        const welcomeHtml = `
+      <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: auto; border: 1px solid #ddd; border-radius: 8px; overflow: hidden;">
+        <!-- Header Section -->
+        <div style="text-align: center; background-color: #ff5f15; padding: 20px; color: #fff;">
+          <img src="https://kheloindore.in/uploads/coach/1736171446480.png" alt="KheloIndore Logo" style="max-width: 100px; margin-bottom: 10px;">
+          <h1 style="font-size: 24px; margin: 0; color: #fff;">Welcome to KheloIndore</h1>
+        </div>
+      
+        <!-- Content Section -->
+        <div style="padding: 20px;">
+          <p style="font-size: 16px;">Dear ${first_name} ${last_name},</p>
+          <p style="font-size: 14px; line-height: 1.8;">
+            Thank you for registering as a <strong>${role}</strong> on KheloIndore! We are thrilled to welcome you to our partner network.
+          </p>
+          <p style="font-size: 14px; line-height: 1.8;">
+            Your registration request has been submitted and your account is active. You can now log in to the admin dashboard using the following link:
+          </p>
+          <p style="text-align: center; margin: 25px 0;">
+            <a href="https://kheloindore.in/admin" style="background-color: #ff5f15; color: #ffffff; text-decoration: none; padding: 12px 25px; border-radius: 5px; font-weight: bold; display: inline-block;">Log In to Partner Dashboard</a>
+          </p>
+          <p style="font-size: 14px; line-height: 1.8;">
+            Once logged in, you can complete your profile details and set up your listing so clients can find and book your services.
+          </p>
+          <p style="font-size: 14px; line-height: 1.8;">
+            If you have any questions or need any assistance setting up your listing, please visit <a href="https://kheloindore.in/contact-us" style="color: #ff5f15; text-decoration: none;">kheloindore.in</a> to reach our support team.
+          </p>
+          <br>
+          <p style="font-size: 16px; font-weight: bold; margin: 0;">Best Regards,</p>
+          <p style="font-size: 14px; margin: 0;">Team KheloIndore</p>
+        </div>
+      
+        <!-- Footer Section -->
+        <div style="background-color: #f9f9f9; padding: 15px 20px; text-align: center; font-size: 12px; color: #888;">
+          <p style="margin: 0;">This email was sent by KheloIndore. Please do not reply to this email.</p>
+        </div>
+      </div>
+        `;
+        await mail.sendEmailConfirm({
+          recipientEmail: email,
+          subject: `Welcome to KheloIndore - ${role} Registration`,
+          html: welcomeHtml,
+        });
+      } catch (emailErr) {
+        console.error("Partner welcome email failed to send:", emailErr.message || emailErr);
+      }
+
       // Call next() to send the email to Super Admin
       next();
       return;
