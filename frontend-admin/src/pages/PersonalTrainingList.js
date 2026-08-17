@@ -173,32 +173,29 @@ function PersonalTraininglist() {
   };
 
   const handleDeactivate = async (row) => {
+    const result = await Swal.fire({
+      title: "Deactivate Trainer?",
+      text: "This will hide the trainer from the public website.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes, deactivate",
+      confirmButtonColor: "#e53e3e",
+    });
+    if (!result.isConfirmed) return;
     try {
-      const apiUrl = `${API_URL}/PersonalTraining/deactive/${row._id}`;
-      const response = await fetch(apiUrl, {
-        method: "DELETE",
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+      await axios.post(
+        `${API_URL}/admin/rejectTrainer/${row._id}`,
+        { reason: "Deactivated by admin" },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
         }
-      });
-      if (response.ok) {
-        Swal.fire(
-          "Deactivated!",
-          "Personal Training has been deactivated.",
-          "success"
-        );
-        fetchData();
-      } else {
-        
-        Swal.fire("Error", "Failed to deactivate Personal Training.", "error");
-      }
-    } catch (error) {
-      
-      Swal.fire(
-        "Error",
-        "An error occurred while deactivating the Personal Training.",
-        "error"
       );
+      Swal.fire("Deactivated!", "Personal Trainer has been deactivated.", "success");
+      fetchData();
+    } catch (error) {
+      Swal.fire("Error", error.response?.data?.message || "Failed to deactivate.", "error");
     }
   };
 
@@ -265,11 +262,9 @@ function PersonalTraininglist() {
 
   const handleActive = async (UpdatepersonalTrainerID) => {
     try {
-      const response = await axios.put(
-        `${API_URL}/updatePersonalTrainer/${UpdatepersonalTrainerID._id}`,
-        {
-          status: true
-        },
+      await axios.post(
+        `${API_URL}/admin/approveTrainer/${UpdatepersonalTrainerID._id}`,
+        {},
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -278,14 +273,19 @@ function PersonalTraininglist() {
       );
       Swal.fire({
         icon: "success",
-        title: "Trainer Updated!",
-        text: "Trainer Activated successfully",
+        title: "Trainer Activated!",
+        text: "Trainer profile approved and is now active.",
       });
       fetchData();
     } catch (error) {
-      
+      Swal.fire({
+        icon: "error",
+        title: "Failed to Activate",
+        text: error.response?.data?.message || "Something went wrong. Please try again.",
+      });
     }
   }
+
 
   return (
     <>
