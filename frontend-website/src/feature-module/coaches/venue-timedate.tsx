@@ -463,7 +463,7 @@ const VenueTimeDate = () => {
       `}} />
 
       {/* Hero Header Banner */}
-      <div className="hero-booking-section venue-time-hero" style={{ background: "linear-gradient(135deg, #F0FDF4 0%, #ECFDF5 100%)", position: "relative", overflow: "hidden", borderBottom: "1px solid #E5E7EB" }}>
+      <div className="hero-booking-section venue-time-hero" style={{ background: "linear-gradient(135deg, #F0FDF4 0%, #ECFDF5 100%)", paddingTop: "120px", paddingBottom: "36px", position: "relative", overflow: "hidden", borderBottom: "1px solid #E5E7EB" }}>
         <div className="hero-artwork-blend" style={{ position: "absolute", right: "-60px", top: 0, bottom: 0, width: "55%", backgroundImage: "url('/assets/img/bg/banner-illustration.png')", backgroundSize: "cover", backgroundPosition: "left center", backgroundRepeat: "no-repeat", maskImage: "linear-gradient(to left, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%)", WebkitMaskImage: "linear-gradient(to left, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%)", opacity: 0.9 }}></div>
         
         <div className="container" style={{ position: "relative", zIndex: 2 }}>
