@@ -646,6 +646,13 @@ exports.loginWithPassword = async (req, res) => {
       });
     }
 
+    if (!user.password) {
+      return res.status(401).json({
+        success: false,
+        message: "No password set for this account. Please log in using OTP or set a password."
+      });
+    }
+
     // Verify password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
