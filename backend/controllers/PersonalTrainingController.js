@@ -753,9 +753,9 @@ exports.updatePersonalTrainers = async (req, res) => {
 
     // If update is NOT made by Super Admin (i.e. by trainer themselves)
     if (!isSuperAdmin) {
-      trainer.status = false;
-      trainer.is_admin_access = 0;
-      trainer.verification_status = 0; // pending approval
+      trainer.status = true;
+      trainer.is_admin_access = 1;
+      trainer.verification_status = 0; // pending approval for service listing
 
       // Send email & notification to Super Admin
       try {

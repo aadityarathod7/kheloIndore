@@ -317,7 +317,7 @@ exports.signup = async (req, res, next) => {
           </tfoot>
         </table>
       </div>`,
-          resData: { message: `Your registration as a ${role} has been submitted for approval by the Super Admin. You will be notified once it is reviewed.` },
+          resData: { message: `Registration successful! You can now log in to the admin panel to manage your profile and list your services.` },
       };
 
       // Call next() to send the email to Super Admin
@@ -458,6 +458,41 @@ exports.signupVerifyOTP = async (req, res, next) => {
         password: user.password,
         role: user.role,
         email: user.email,
+        is_admin_access: 1,
+        status: true,
+        verification_status: 0,
+      });
+      await User.create({
+        first_name: user.first_name,
+        last_name: user.last_name,
+        mobile: user.mobile,
+        password: user.password,
+        role: user.role,
+        email: user.email,
+        is_admin_access: 1,
+        status: true,
+      });
+    } else if (user.role === "Personal Trainer") {
+      newUser = await PersonalTrainer.create({
+        first_name: user.first_name,
+        last_name: user.last_name,
+        mobile: user.mobile,
+        password: user.password,
+        role: user.role,
+        email: user.email,
+        is_admin_access: 1,
+        status: true,
+        verification_status: 0,
+      });
+      await User.create({
+        first_name: user.first_name,
+        last_name: user.last_name,
+        mobile: user.mobile,
+        password: user.password,
+        role: user.role,
+        email: user.email,
+        is_admin_access: 1,
+        status: true,
       });
     } else {
       newUser = await User.create({
@@ -467,6 +502,8 @@ exports.signupVerifyOTP = async (req, res, next) => {
         password: user.password,
         role: user.role,
         email: user.email,
+        is_admin_access: ["Venue Admin", "Coach", "Personal Trainer"].includes(user.role) ? 1 : 0,
+        status: true,
       });
     }
 
@@ -595,10 +632,10 @@ exports.loginWithPassword = async (req, res) => {
       });
     }
 
-    if (user.status === false) {
+    if (user.status === false && user.is_admin_access === 2) {
       return res.status(403).json({
         success: false,
-        message: "Your account is deactivated. Please contact the administrator."
+        message: "Your account is deactivated or rejected. Please contact the administrator."
       });
     }
     // Block only if explicitly deactivated/rejected by Super Admin (is_admin_access === 2)

@@ -598,6 +598,9 @@ exports.coachVerifyBySuperAdmin = async(req,res)=>{
       } else if (verifyStatus === 2) {
         updateObj.status = false;
         updateObj.is_admin_access = 2;
+      } else {
+        updateObj.status = true;
+        updateObj.is_admin_access = 1;
       }
 
       const verifyCoach = await Coach.findByIdAndUpdate(id, updateObj, { new: true });
@@ -612,7 +615,7 @@ exports.coachVerifyBySuperAdmin = async(req,res)=>{
         // Sync is_admin_access with the User record
         await User.findOneAndUpdate(
           { mobile: verifyCoach.mobile },
-          { is_admin_access: verifyStatus === 1 ? 1 : (verifyStatus === 2 ? 2 : 0) }
+          { is_admin_access: verifyStatus === 2 ? 2 : 1, status: verifyStatus === 2 ? false : true }
         );
 
         return res.json({
@@ -810,9 +813,9 @@ exports.updatecoach = async (req, res) => {
 
     // If update is NOT made by Super Admin (i.e. by coach themselves)
     if (req.user?.role !== "Super Admin") {
-      coach.status = false;
-      coach.is_admin_access = 0;
-      coach.verification_status = 0; // pending approval
+      coach.status = true;
+      coach.is_admin_access = 1;
+      coach.verification_status = 0; // pending approval for service listing
 
       // Send email & notification to Super Admin
       try {
