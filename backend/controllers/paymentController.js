@@ -80,6 +80,9 @@ const createCashfreeOrder = async ({ orderId, amount, userId, service }) => {
     
     console.log(`Creating Cashfree order ${orderId} (Amount: ₹${amount})...`);
 
+    const expiryDate = new Date(Date.now() + 10 * 60 * 1000);
+    const order_expiry_time = expiryDate.toISOString();
+
     const response = await axios.post(`${getCashfreeBaseUrl()}/orders`, {
       order_id: orderId,
       order_amount: Number(amount),
@@ -88,7 +91,8 @@ const createCashfreeOrder = async ({ orderId, amount, userId, service }) => {
       order_meta: {
         return_url: returnUrl,
       },
-      order_note: `Khelo Indore ${service} booking`,
+      order_note: `Prompt booking: Khelo Indore ${service} booking`,
+      order_expiry_time: order_expiry_time,
     }, {
       headers: getCashfreeHeaders(),
       timeout: 30000,
