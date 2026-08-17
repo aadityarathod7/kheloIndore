@@ -616,8 +616,13 @@ exports.loginWithPassword = async (req, res) => {
       });
     }
 
+    const mobileNum = Number(mobile);
+
     // Find user in all roles
-    let user = await PersonalTrainer.findOne({ mobile })|| 
+    let user = await PersonalTrainer.findOne({ mobile: mobileNum }) || 
+               await Coach.findOne({ mobile: mobileNum }) || 
+               await User.findOne({ mobile: mobileNum }) ||
+               await PersonalTrainer.findOne({ mobile }) || 
                await Coach.findOne({ mobile }) || 
                await User.findOne({ mobile });
 
