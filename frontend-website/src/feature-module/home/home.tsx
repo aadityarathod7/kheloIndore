@@ -237,9 +237,19 @@ const SingleProviderCard = ({ kind, provider }: { kind: ProviderKind; provider: 
 
 const TopProviderCard = ({ kind, providers }: { kind: ProviderKind; providers: (Venues | Coach | Trainer)[] }) => {
   const viewAllLink = kind === "Venue" ? "/sports-venue" : kind === "Coach" ? "/coaches" : "/trainers";
+  const sliderRef = useRef<any>(null);
+  const [currentSlide, setCurrentSlide] = React.useState(0);
+
+  const total = providers.length;
+
+  const goTo = (index: number) => {
+    const wrapped = ((index % total) + total) % total;
+    sliderRef.current?.slickGoTo(wrapped);
+    setCurrentSlide(wrapped);
+  };
 
   const columnSliderSettings = {
-    dots: true,
+    dots: false,
     infinite: true,
     arrows: false,
     speed: 500,
@@ -251,10 +261,7 @@ const TopProviderCard = ({ kind, providers }: { kind: ProviderKind; providers: (
     autoplaySpeed: 3000,
     pauseOnHover: true,
     pauseOnFocus: true,
-    dotsClass: "ki-vertical-dots",
-    customPaging: () => (
-      <div className="vertical-dot-inner" />
-    )
+    beforeChange: (_: number, next: number) => setCurrentSlide(next),
   };
 
   return (
@@ -268,14 +275,114 @@ const TopProviderCard = ({ kind, providers }: { kind: ProviderKind; providers: (
         </Link>
       </div>
       {providers && providers.length > 0 ? (
-        <div className="ki-vertical-provider-slider">
-          <Slider {...columnSliderSettings}>
-            {providers.map((item) => (
-              <div key={item._id} style={{ outline: "none" }}>
-                <SingleProviderCard kind={kind} provider={item} />
-              </div>
-            ))}
-          </Slider>
+        <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+          {/* Vertical dot nav panel */}
+          <div style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: "6px",
+            flexShrink: 0,
+            padding: "6px 0",
+          }}>
+            {/* Up arrow */}
+            <button
+              onClick={() => goTo(currentSlide - 1)}
+              style={{
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                color: "#22C55E",
+                padding: "2px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "14px",
+                lineHeight: 1,
+              }}
+              aria-label="Previous"
+            >
+              <i className="fas fa-chevron-up" />
+            </button>
+
+            {/* Dot track */}
+            <div style={{ position: "relative", display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
+              {/* Thin track line */}
+              <div style={{
+                position: "absolute",
+                top: 0,
+                bottom: 0,
+                left: "50%",
+                transform: "translateX(-50%)",
+                width: "1.5px",
+                background: "#E2E8E3",
+                zIndex: 0,
+              }} />
+              {providers.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => goTo(i)}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    padding: 0,
+                    position: "relative",
+                    zIndex: 1,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    width: "14px",
+                    height: i === currentSlide ? "20px" : "10px",
+                    transition: "height 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                  }}
+                  aria-label={`Go to slide ${i + 1}`}
+                >
+                  <span style={{
+                    display: "block",
+                    width: "7px",
+                    height: i === currentSlide ? "20px" : "7px",
+                    borderRadius: "99px",
+                    background: i === currentSlide ? "#22C55E" : "#CBD5E1",
+                    opacity: i === currentSlide ? 1 : 0.55,
+                    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                    boxShadow: i === currentSlide ? "0 2px 8px rgba(34,197,94,0.35)" : "none",
+                  }} />
+                </button>
+              ))}
+            </div>
+
+            {/* Down arrow */}
+            <button
+              onClick={() => goTo(currentSlide + 1)}
+              style={{
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                color: "#22C55E",
+                padding: "2px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "14px",
+                lineHeight: 1,
+              }}
+              aria-label="Next"
+            >
+              <i className="fas fa-chevron-down" />
+            </button>
+          </div>
+
+          {/* Slider */}
+          <div className="ki-vertical-provider-slider" style={{ flex: 1, minWidth: 0 }}>
+            <Slider ref={sliderRef} {...columnSliderSettings}>
+              {providers.map((item) => (
+                <div key={item._id} style={{ outline: "none" }}>
+                  <SingleProviderCard kind={kind} provider={item} />
+                </div>
+              ))}
+            </Slider>
+          </div>
         </div>
       ) : (
         <div className="text-center py-4 text-muted" style={{ background: "var(--ki-bg-surface)", border: "1px solid #E2E8E3", borderRadius: "20px" }}>
