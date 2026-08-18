@@ -10,9 +10,19 @@ import { FiUpload, FiX } from "react-icons/fi";
 import Swal from "sweetalert2";
 import axios from "axios";
 import Select from "react-select";
+import CreatableSelect from "react-select/creatable";
 import { API_URL } from "../utils/ApiUrl";
 import { Image_URL } from "../utils/ApiUrl";
 import "../Coaches.css";
+
+const ALL_LANGUAGES = [
+  "Hindi", "English", "Marathi", "Gujarati", "Bengali", "Telugu", "Tamil",
+  "Kannada", "Malayalam", "Odia", "Punjabi", "Assamese", "Maithili",
+  "Sanskrit", "Urdu", "Sindhi", "Kashmiri", "Konkani", "Manipuri",
+  "Nepali", "Bodo", "Dogri", "Santali", "French", "Spanish", "German",
+  "Russian", "Chinese", "Japanese", "Korean", "Arabic"
+];
+const LANGUAGE_OPTIONS = ALL_LANGUAGES.map(lang => ({ label: lang, value: lang }));
 
 const UpdateCoach = () => {
   const { _id } = useParams();
@@ -565,26 +575,18 @@ const UpdateCoach = () => {
           <Row>
             <Col sm={12} className="mb-3">
               <h6>Languages Known</h6>
-              <div className="ki-selection-group">
-                {["Hindi", "English", "Marathi"].map((language) => {
-                  const active = (input.languages || []).includes(language);
-                  return (
-                    <div
-                      key={language}
-                      className={`ki-selection-chip ${active ? "active" : ""}`}
-                      onClick={() => setInput((current) => ({
-                        ...current,
-                        languages: (current.languages || []).includes(language)
-                          ? current.languages.filter((item) => item !== language)
-                          : [...(current.languages || []), language],
-                      }))}
-                    >
-                      {active && <span className="check-icon">✓</span>}
-                      {language}
-                    </div>
-                  );
-                })}
-              </div>
+              <CreatableSelect
+                isMulti
+                options={LANGUAGE_OPTIONS}
+                value={(input.languages || []).map(lang => ({ label: lang, value: lang }))}
+                onChange={(selectedOptions) => {
+                  setInput(current => ({
+                    ...current,
+                    languages: selectedOptions ? selectedOptions.map(item => item.value) : []
+                  }));
+                }}
+                placeholder="Select or type languages..."
+              />
             </Col>
             {/* <Col sm={3}>
               <h6>State</h6>

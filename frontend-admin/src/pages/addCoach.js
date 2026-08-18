@@ -6,6 +6,16 @@ import "../../src/User.css";
 import Swal from "sweetalert2";
 import { API_URL } from '../utils/ApiUrl';
 import { useNavigate } from 'react-router-dom';
+import CreatableSelect from "react-select/creatable";
+
+const ALL_LANGUAGES = [
+  "Hindi", "English", "Marathi", "Gujarati", "Bengali", "Telugu", "Tamil", 
+  "Kannada", "Malayalam", "Odia", "Punjabi", "Assamese", "Maithili", 
+  "Sanskrit", "Urdu", "Sindhi", "Kashmiri", "Konkani", "Manipuri", 
+  "Nepali", "Bodo", "Dogri", "Santali", "French", "Spanish", "German", 
+  "Russian", "Chinese", "Japanese", "Korean", "Arabic"
+];
+const LANGUAGE_OPTIONS = ALL_LANGUAGES.map(lang => ({ label: lang, value: lang }));
 
 const AddCoach = () => {
   const [formData, setFormData] = useState({
@@ -209,26 +219,18 @@ const AddCoach = () => {
             <Col md={12}>
                <Form.Group controlId="formLanguages">
                  <Form.Label>Languages Known</Form.Label>
-                 <div className="ki-selection-group">
-                   {["Hindi", "English", "Marathi"].map((language) => {
-                     const active = formData.languages.includes(language);
-                     return (
-                       <div
-                         key={language}
-                         className={`ki-selection-chip ${active ? "active" : ""}`}
-                         onClick={() => setFormData((current) => ({
-                           ...current,
-                           languages: current.languages.includes(language)
-                             ? current.languages.filter((item) => item !== language)
-                             : [...current.languages, language],
-                         }))}
-                       >
-                         {active && <span className="check-icon">✓</span>}
-                         {language}
-                       </div>
-                     );
-                   })}
-                 </div>
+                 <CreatableSelect
+                   isMulti
+                   options={LANGUAGE_OPTIONS}
+                   value={(formData.languages || []).map(lang => ({ label: lang, value: lang }))}
+                   onChange={(selectedOptions) => {
+                     setFormData(current => ({
+                       ...current,
+                       languages: selectedOptions ? selectedOptions.map(item => item.value) : []
+                     }));
+                   }}
+                   placeholder="Select or type languages..."
+                 />
               </Form.Group>
             </Col>
           </Row>
