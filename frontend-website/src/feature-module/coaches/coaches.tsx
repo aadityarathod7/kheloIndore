@@ -799,7 +799,7 @@ const CoachesGrid = (_props: { id?: string }) => {
                         <div className="listing-item venue-page ki-card-hover w-100 d-flex flex-column justify-content-between" style={{ margin: 0, overflow: "hidden", backgroundColor: "#FFFFFF", borderRadius: "16px", border: "1px solid #E2E8E3", boxShadow: "0 4px 15px rgba(0,0,0,0.01)" }}>
                           <div className="listing-img" style={{ height: "140px", overflow: "hidden", position: "relative" }}>
                             <Link
-                              to={`/coaches/${coach.trainer_type?.replace(/\s+/g, "-").toLowerCase()}/${coach.first_name?.replace(/\s+/g, "-").toLowerCase()}/${coach._id}`}
+                              to={`/coaches/${(coach.trainer_type || "coach").replace(/\s+/g, "-").toLowerCase()}/${(coach.first_name || "coach").replace(/\s+/g, "-").toLowerCase()}/${coach._id}`}
                               style={{ display: "block", height: "100%" }}
                             >
                               <ImageWithBasePath
@@ -853,7 +853,7 @@ const CoachesGrid = (_props: { id?: string }) => {
 
                               <h3 className="listing-title mb-1" style={{ fontSize: "15px", fontWeight: "700" }}>
                                 <Link
-                                  to={`/coaches/${coach.trainer_type?.replace(/\s+/g, "-").toLowerCase()}/${coach.first_name?.replace(/\s+/g, "-").toLowerCase()}/${coach._id}`}
+                                  to={`/coaches/${(coach.trainer_type || "coach").replace(/\s+/g, "-").toLowerCase()}/${(coach.first_name || "coach").replace(/\s+/g, "-").toLowerCase()}/${coach._id}`}
                                   className="text-truncate d-block" style={{ color: "#17222D" }}
                                 >
                                   {coach.full_name ? coach.full_name : coach.first_name}
@@ -881,7 +881,7 @@ const CoachesGrid = (_props: { id?: string }) => {
                               </span>
                               <div className="d-flex gap-1.5">
                                 <Link
-                                  to={`/coaches/${coach.trainer_type?.replace(/\s+/g, "-").toLowerCase()}/${coach.first_name?.replace(/\s+/g, "-").toLowerCase()}/${coach._id}`}
+                                  to={`/coaches/${(coach.trainer_type || "coach").replace(/\s+/g, "-").toLowerCase()}/${(coach.first_name || "coach").replace(/\s+/g, "-").toLowerCase()}/${coach._id}`}
                                   className="btn btn-outline-success btn-sm rounded-pill px-2.5 py-1"
                                   style={{ fontSize: "11px", fontWeight: "600", borderColor: "#3CAB4B", color: "#3CAB4B" }}
                                 >

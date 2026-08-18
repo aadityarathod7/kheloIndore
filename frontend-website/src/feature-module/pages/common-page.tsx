@@ -279,7 +279,7 @@ export default function CommonPage() {
                                         <div className="featured-venues-item">
                                             <div className="listing-item listing-item-grid">
                                                 <div className="listing-img" style={{ height: "316px" }}>
-                                                    <Link to={`/coaches/${coach?.category?.replace(/\s+/g, '-').toLowerCase()}/${coach?.first_name?.replace(/\s+/g, '-').toLowerCase()}/${coach._id}`}>
+                                                    <Link to={`/coaches/${(coach?.category || "coach").replace(/\s+/g, '-').toLowerCase()}/${(coach?.first_name || "coach").replace(/\s+/g, '-').toLowerCase()}/${coach._id}`}>
 
                                                         <ImageWithBasePath
                                                             // src="assets/img/featured/featured-05.jpg"
@@ -314,7 +314,7 @@ export default function CommonPage() {
                                                 </div>
                                                 <div className="listing-content">
                                                     <h3 className="listing-title">
-                                                        <Link to={`/coaches/${coach?.category?.replace(/\s+/g, '-').toLowerCase()}/${coach?.first_name?.replace(/\s+/g, '-').toLowerCase()}/${coach._id}`}>
+                                                        <Link to={`/coaches/${(coach?.category || "coach").replace(/\s+/g, '-').toLowerCase()}/${(coach?.first_name || "coach").replace(/\s+/g, '-').toLowerCase()}/${coach._id}`}>
                                                             {coach.first_name} {coach.last_name}
                                                         </Link>
                                                     </h3>
@@ -341,7 +341,7 @@ export default function CommonPage() {
                                                                     // to={
                                                                     //   routes.coachDetail
                                                                     // }
-                                                                    to={`/coaches/${coach?.category?.replace(/\s+/g, '-').toLowerCase()}/${coach?.first_name?.replace(/\s+/g, '-').toLowerCase()}/${coach._id}`}
+                                                                    to={`/coaches/${(coach?.category || "coach").replace(/\s+/g, '-').toLowerCase()}/${(coach?.first_name || "coach").replace(/\s+/g, '-').toLowerCase()}/${coach._id}`}
                                                                     className="btn btn-primary w-100"
                                                                 >
                                                                     <i className="feather-eye me-2" />

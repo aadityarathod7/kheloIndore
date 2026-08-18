@@ -348,7 +348,7 @@ const SearchResults: React.FC = () => {
                     <div className="listing-item venue-page ki-card-hover w-100 d-flex flex-column justify-content-between" style={{ margin: 0, overflow: "hidden", backgroundColor: "#FFFFFF", borderRadius: "16px", border: "1px solid #E2E8E3", boxShadow: "0 4px 15px rgba(0,0,0,0.01)" }}>
                       <div className="listing-img" style={{ height: "140px", overflow: "hidden", position: "relative" }}>
                         <Link
-                          to={`/coaches/${coach.trainer_type?.replace(/\s+/g, "-").toLowerCase()}/${coach.first_name?.replace(/\s+/g, "-").toLowerCase()}/${coach._id}`}
+                          to={`/coaches/${(coach.trainer_type || "coach").replace(/\s+/g, "-").toLowerCase()}/${(coach.first_name || "coach").replace(/\s+/g, "-").toLowerCase()}/${coach._id}`}
                           style={{ display: "block", height: "100%" }}
                         >
                           <img
@@ -375,7 +375,7 @@ const SearchResults: React.FC = () => {
                           </div>
                           <h3 className="listing-title mb-1" style={{ fontSize: "15px", fontWeight: "700" }}>
                             <Link
-                              to={`/coaches/${coach.trainer_type?.replace(/\s+/g, "-").toLowerCase()}/${coach.first_name?.replace(/\s+/g, "-").toLowerCase()}/${coach._id}`}
+                              to={`/coaches/${(coach.trainer_type || "coach").replace(/\s+/g, "-").toLowerCase()}/${(coach.first_name || "coach").replace(/\s+/g, "-").toLowerCase()}/${coach._id}`}
                               className="text-truncate d-block" style={{ color: "#17222D" }}
                             >
                               {coach.full_name ? coach.full_name : coach.first_name}
@@ -394,7 +394,7 @@ const SearchResults: React.FC = () => {
                             ₹{coach.price_per_hr || "500"} <span style={{ fontSize: "10px", fontWeight: "normal", color: "#606D76" }}>/ hr</span>
                           </span>
                           <Link
-                            to={`/coaches/${coach.trainer_type?.replace(/\s+/g, "-").toLowerCase()}/${coach.first_name?.replace(/\s+/g, "-").toLowerCase()}/${coach._id}`}
+                            to={`/coaches/${(coach.trainer_type || "coach").replace(/\s+/g, "-").toLowerCase()}/${(coach.first_name || "coach").replace(/\s+/g, "-").toLowerCase()}/${coach._id}`}
                             className="btn btn-primary btn-sm rounded-pill px-3 py-1 shadow-sm"
                             style={{ fontSize: "11px", fontWeight: "700", background: "linear-gradient(135deg, #43B649 0%, #349E3A 100%)", border: "none" }}
                           >
@@ -428,7 +428,7 @@ const SearchResults: React.FC = () => {
                     <div className="listing-item venue-page ki-card-hover w-100 d-flex flex-column justify-content-between" style={{ margin: 0, overflow: "hidden", backgroundColor: "#FFFFFF", borderRadius: "16px", border: "1px solid #E2E8E3", boxShadow: "0 4px 15px rgba(0,0,0,0.01)" }}>
                       <div className="listing-img" style={{ height: "140px", overflow: "hidden", position: "relative" }}>
                         <Link
-                          to={`/trainers/trainer/${trainer.first_name?.replace(/\s+/g, "-").toLowerCase()}/${trainer._id}`}
+                          to={`/trainers/trainer/${(trainer.first_name || "trainer").replace(/\s+/g, "-").toLowerCase()}/${trainer._id}`}
                           style={{ display: "block", height: "100%" }}
                         >
                           <img
@@ -455,7 +455,7 @@ const SearchResults: React.FC = () => {
                           </div>
                           <h3 className="listing-title mb-1" style={{ fontSize: "15px", fontWeight: "700" }}>
                             <Link
-                              to={`/trainers/trainer/${trainer.first_name?.replace(/\s+/g, "-").toLowerCase()}/${trainer._id}`}
+                              to={`/trainers/trainer/${(trainer.first_name || "trainer").replace(/\s+/g, "-").toLowerCase()}/${trainer._id}`}
                               className="text-truncate d-block" style={{ color: "#17222D" }}
                             >
                               {trainer.first_name} {trainer.last_name || ""}
@@ -474,7 +474,7 @@ const SearchResults: React.FC = () => {
                             ₹{trainer.price_per_hr || trainer.price || "500"} <span style={{ fontSize: "10px", fontWeight: "normal", color: "#606D76" }}>/ hr</span>
                           </span>
                           <Link
-                            to={`/trainers/trainer/${trainer.first_name?.replace(/\s+/g, "-").toLowerCase()}/${trainer._id}`}
+                            to={`/trainers/trainer/${(trainer.first_name || "trainer").replace(/\s+/g, "-").toLowerCase()}/${trainer._id}`}
                             className="btn btn-primary btn-sm rounded-pill px-3 py-1 shadow-sm"
                             style={{ fontSize: "11px", fontWeight: "700", background: "linear-gradient(135deg, #43B649 0%, #349E3A 100%)", border: "none" }}
                           >

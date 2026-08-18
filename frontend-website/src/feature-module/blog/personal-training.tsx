@@ -756,7 +756,7 @@ const BlogList = () => {
                         <div className="listing-item venue-page ki-card-hover w-100 d-flex flex-column justify-content-between" style={{ margin: 0, overflow: "hidden", backgroundColor: "#FFFFFF", borderRadius: "16px", border: "1px solid #E2E8E3", boxShadow: "0 4px 15px rgba(0,0,0,0.01)" }}>
                           <div className="listing-img" style={{ height: "140px", overflow: "hidden", position: "relative" }}>
                             <Link
-                              to={`/trainers/trainer/${trainer.first_name?.replace(/\s+/g, "-").toLowerCase()}/${trainer._id}`}
+                              to={`/trainers/trainer/${(trainer.first_name || "trainer").replace(/\s+/g, "-").toLowerCase()}/${trainer._id}`}
                               style={{ display: "block", height: "100%" }}
                             >
                               <ImageWithBasePath
@@ -810,7 +810,7 @@ const BlogList = () => {
 
                               <h3 className="listing-title mb-1" style={{ fontSize: "15px", fontWeight: "700" }}>
                                 <Link
-                                  to={`/trainers/trainer/${trainer.first_name?.replace(/\s+/g, "-").toLowerCase()}/${trainer._id}`}
+                                  to={`/trainers/trainer/${(trainer.first_name || "trainer").replace(/\s+/g, "-").toLowerCase()}/${trainer._id}`}
                                   className="text-truncate d-block" style={{ color: "#17222D" }}
                                 >
                                   {trainer.first_name} {trainer.last_name}
@@ -838,7 +838,7 @@ const BlogList = () => {
                               </span>
                               <div className="d-flex gap-1.5">
                                 <Link
-                                  to={`/trainers/trainer/${trainer.first_name?.replace(/\s+/g, "-").toLowerCase()}/${trainer._id}`}
+                                  to={`/trainers/trainer/${(trainer.first_name || "trainer").replace(/\s+/g, "-").toLowerCase()}/${trainer._id}`}
                                   className="btn btn-outline-success btn-sm rounded-pill px-2.5 py-1"
                                   style={{ fontSize: "11px", fontWeight: "600", borderColor: "#3CAB4B", color: "#3CAB4B" }}
                                 >

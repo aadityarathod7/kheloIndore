@@ -1503,7 +1503,7 @@ const Home = () => {
                     <div className="featured-venues-item" key={index}>
                       <div className="listing-item mb-0 ki-feature-card" style={{ background: "var(--ki-bg-surface)", border: "1px solid #E2E8E3", borderRadius: "24px", overflow: "hidden", margin: "10px", boxShadow: "var(--ki-shadow-card)" }}>
                         <div className="listing-img" style={{ height: "200px", position: "relative", overflow: "hidden" }}>
-                          <Link to={`/coaches/${coach?.category?.replace(/\s+/g, "-").toLowerCase()}/${coach?.first_name?.replace(/\s+/g, "-").toLowerCase()}/${coach?._id}`}>
+                          <Link to={`/coaches/${(coach?.category || "coach").replace(/\s+/g, "-").toLowerCase()}/${(coach?.first_name || "coach").replace(/\s+/g, "-").toLowerCase()}/${coach?._id}`}>
                             <ImageWithBasePath
                               src={
                                 coach?.profile_picture[0]?.src
@@ -1522,7 +1522,7 @@ const Home = () => {
                         </div>
                         <div className="listing-content list-coche-content p-3" style={{ textAlign: "left" }}>
                           <h3 style={{ fontSize: "16px", fontWeight: "700", color: "#0F172A", marginBottom: "8px", fontFamily: "Space Grotesk, sans-serif", display: "flex", alignItems: "center", justifyContent: "flex-start" }}>
-                            <Link to={`/coaches/${coach?.category?.replace(/\s+/g, "-").toLowerCase()}/${coach?.first_name?.replace(/\s+/g, "-").toLowerCase()}/${coach?._id}`} className="text-truncate d-block" style={{ color: "#0F172A", textDecoration: "none" }}>
+                            <Link to={`/coaches/${(coach?.category || "coach").replace(/\s+/g, "-").toLowerCase()}/${(coach?.first_name || "coach").replace(/\s+/g, "-").toLowerCase()}/${coach?._id}`} className="text-truncate d-block" style={{ color: "#0F172A", textDecoration: "none" }}>
                               {coach?.first_name} {coach?.last_name}
                             </Link>
                             <i className="fas fa-check-circle text-success ms-1.5" style={{ fontSize: "13px", flexShrink: 0, color: "#22C55E" }} />
@@ -1547,7 +1547,7 @@ const Home = () => {
                               </span>
                             </div>
                             <Link
-                              to={`/coaches/${coach?.category?.replace(/\s+/g, "-").toLowerCase()}/${coach?.first_name?.replace(/\s+/g, "-").toLowerCase()}/${coach?._id}`}
+                              to={`/coaches/${(coach?.category || "coach").replace(/\s+/g, "-").toLowerCase()}/${(coach?.first_name || "coach").replace(/\s+/g, "-").toLowerCase()}/${coach?._id}`}
                               className="d-flex align-items-center justify-content-center"
                               style={{
                                 width: "36px",
