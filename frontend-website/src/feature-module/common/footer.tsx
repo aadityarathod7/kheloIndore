@@ -12,14 +12,38 @@ const Footer = () => {
   const loginToken = localStorage.getItem("token");
   const location = useLocation();
   const [showAllSports, setShowAllSports] = useState(false);
-  const [showAllCategories, setShowAllCategories] = useState(false);
-  const [categories, setCategories] = useState<string[]>([]);
+  const [showAllCoaches, setShowAllCoaches] = useState(false);
+  const [showAllTrainers, setShowAllTrainers] = useState(false);
   // Re-evaluated on every route change so the bottom nav reflects login/logout
   // without requiring a full page reload.
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(Boolean(localStorage.getItem("token")));
   const sports = [
     "Cricket Turfs", "Badminton Courts", "Football Grounds", "Swimming Pools", "Pickleball Courts", "Tennis Courts",
     "Basketball Courts", "Table Tennis", "Volleyball", "Squash Courts", "Box Cricket", "Kabaddi", "Hockey", "Running", "Cycling", "Gym & Fitness",
+  ];
+
+  const coachCategories = [
+    { name: "Cricket Coaches", search: "Cricket" },
+    { name: "Badminton Coaches", search: "Badminton" },
+    { name: "Football Coaches", search: "Football" },
+    { name: "Tennis Coaches", search: "Tennis" },
+    { name: "Swimming Coaches", search: "Swimming" },
+    { name: "Gym & Fitness Coaches", search: "Gym" },
+    { name: "Yoga Coaches", search: "Yoga" },
+    { name: "Basketball Coaches", search: "Basketball" },
+    { name: "Skating Coaches", search: "Skating" },
+    { name: "Zumba Coaches", search: "Zumba" }
+  ];
+
+  const trainerCategories = [
+    { name: "Personal Fitness", search: "Fitness" },
+    { name: "Yoga & Meditation", search: "Yoga" },
+    { name: "Zumba & Dance", search: "Zumba" },
+    { name: "Gym & Strength", search: "Gym" },
+    { name: "Pilates & Core", search: "Pilates" },
+    { name: "Sports Conditioning", search: "Conditioning" },
+    { name: "Weight Loss", search: "Weight" },
+    { name: "Boxing Training", search: "Boxing" }
   ];
 
   useEffect(() => {
@@ -29,12 +53,6 @@ const Footer = () => {
   useEffect(() => {
     setIsLoggedIn(Boolean(localStorage.getItem("token")));
   }, [location.pathname]);
-
-  useEffect(() => {
-    axios.get(`${API_URL}/category/fetch`)
-      .then(({ data }) => setCategories((data.categories || []).map((category: any) => category.category_name).filter(Boolean)))
-      .catch(() => setCategories([]));
-  }, []);
 
   return (
     <footer className="footer">
@@ -100,30 +118,7 @@ const Footer = () => {
 
             <div className="col-lg-3 col-md-6 col-6">
               <div className="footer-widget footer-menu">
-                <h4 className="footer-title">Explore</h4>
-                <ul>
-                  <li>
-                    <Link to={routes.blogListSidebarLeft}>Sports Venues</Link>
-                  </li>
-                  <li>
-                    <Link to={routes.coachesGrid}>Coaches & Academies</Link>
-                  </li>
-                  <li>
-                    <Link to={routes.blogList}>Trainers</Link>
-                  </li>
-                  <li>
-                    <Link to={routes.blogGrid}>Blogs & Stories</Link>
-                  </li>
-                  <li>
-                    <Link to={routes.contactUs}>Contact Us</Link>
-                  </li>
-                </ul>
-              </div>
-            </div>
-
-            <div className="col-lg-3 col-md-6 col-6">
-              <div className="footer-widget footer-menu">
-                <h4 className="footer-title">Sports</h4>
+                <h4 className="footer-title">Sports Venues</h4>
                 <ul>
                   {sports.slice(0, showAllSports ? sports.length : 6).map((sport) => (
                     <li key={sport}>
@@ -141,18 +136,36 @@ const Footer = () => {
 
             <div className="col-lg-3 col-md-6 col-6">
               <div className="footer-widget footer-menu">
-                <h4 className="footer-title">Top Categories</h4>
-                <ul className="footer-category-list">
-                  {categories.slice(0, showAllCategories ? categories.length : 6).map((category) => (
-                    <li key={category}>
-                      <Link to={`/sports-venue?search=${encodeURIComponent(category)}`}>{category}</Link>
+                <h4 className="footer-title">Coaches</h4>
+                <ul>
+                  {coachCategories.slice(0, showAllCoaches ? coachCategories.length : 6).map((coach) => (
+                    <li key={coach.name}>
+                      <Link to={`/coaches?search=${encodeURIComponent(coach.search)}`}>{coach.name}</Link>
                     </li>
                   ))}
-                  {categories.length > 6 && <li>
-                    <button type="button" className="footer-load-more" onClick={() => setShowAllCategories((current) => !current)} aria-expanded={showAllCategories}>
-                      {showAllCategories ? "Show less" : `+${categories.length - 6} more`}
+                  <li>
+                    <button type="button" className="footer-load-more" onClick={() => setShowAllCoaches((current) => !current)} aria-expanded={showAllCoaches}>
+                      {showAllCoaches ? "Show less" : `+${coachCategories.length - 6} more`}
                     </button>
-                  </li>}
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="col-lg-3 col-md-6 col-6">
+              <div className="footer-widget footer-menu">
+                <h4 className="footer-title">Trainers</h4>
+                <ul>
+                  {trainerCategories.slice(0, showAllTrainers ? trainerCategories.length : 6).map((trainer) => (
+                    <li key={trainer.name}>
+                      <Link to={`/trainers?search=${encodeURIComponent(trainer.search)}`}>{trainer.name}</Link>
+                    </li>
+                  ))}
+                  <li>
+                    <button type="button" className="footer-load-more" onClick={() => setShowAllTrainers((current) => !current)} aria-expanded={showAllTrainers}>
+                      {showAllTrainers ? "Show less" : `+${trainerCategories.length - 6} more`}
+                    </button>
+                  </li>
                 </ul>
               </div>
             </div>
@@ -173,6 +186,8 @@ const Footer = () => {
               </div>
               <div className="col-lg-7">
                 <ul className="footer-legal-links">
+                  <li><Link to={routes.blogGrid}>Blogs</Link></li>
+                  <li><Link to={routes.contactUs}>Contact Us</Link></li>
                   <li><Link to={routes.privacyPolicy}>Privacy Policy</Link></li>
                   <li><Link to={routes.termsCondition}>Terms &amp; Conditions</Link></li>
                   <li><Link to={routes.refundPolicy}>Refund Policy</Link></li>
