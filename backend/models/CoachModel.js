@@ -132,6 +132,18 @@ const coachSchema = new mongoose.Schema(
       type: Number,
       default:0
     },
+    awaiting_approval: {
+      type: Boolean,
+      default: false,
+    },
+    rejection_reason: {
+      type: String,
+      default: "",
+    },
+    is_admin_access: {
+      type: Number,
+      default: 0,
+    },
     // ---- Extended profile fields ----
     // Levels of people this coach wants to coach (Beginner/Intermediate/Advanced)
     coaching_levels: {

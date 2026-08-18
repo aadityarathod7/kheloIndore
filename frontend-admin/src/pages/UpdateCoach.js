@@ -18,6 +18,19 @@ const UpdateCoach = () => {
   const { _id } = useParams();
   const navigate = useNavigate();
 
+  const [userRole, setUserRole] = useState("");
+  const [coachStatus, setCoachStatus] = useState({ status: false, awaiting_approval: false, rejection_reason: "" });
+
+  useEffect(() => {
+    try {
+      const token = localStorage.getItem("token");
+      if (token) {
+        const payload = JSON.parse(atob(token.split(".")[1]));
+        setUserRole(payload.role || "");
+      }
+    } catch (_) {}
+  }, []);
+
   const [input, setInput] = useState({
     first_name: "",
     last_name: "",
@@ -205,6 +218,11 @@ const UpdateCoach = () => {
           const imageUrl = response.data.coach.profile_picture; 
           setFilePreview(imageUrl); 
         }
+        setCoachStatus({
+          status: coach.status || false,
+          awaiting_approval: coach.awaiting_approval || false,
+          rejection_reason: coach.rejection_reason || "",
+        });
       } catch (error) {
         
       }
@@ -212,6 +230,67 @@ const UpdateCoach = () => {
 
     fetchcoach();
   }, []);
+
+  const handleApprove = async () => {
+    try {
+      await axios.post(
+        `${API_URL}/admin/approveCoach/${_id}`,
+        {},
+        { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
+      );
+      Swal.fire({ icon: "success", title: "Approved!", text: "Coach approved successfully" });
+      setCoachStatus({ status: true, awaiting_approval: false, rejection_reason: "" });
+      navigate('/coaches');
+    } catch (error) {
+      Swal.fire({ icon: "error", title: "Error", text: error.response?.data?.message || "Approval failed." });
+    }
+  };
+
+  const handleReject = async () => {
+    const { value: reason } = await Swal.fire({
+      title: "Reject Profile",
+      input: "textarea",
+      inputLabel: "Reason for rejection (optional)",
+      inputPlaceholder: "Tell the coach what needs to be improved...",
+      showCancelButton: true,
+      confirmButtonText: "Reject",
+      confirmButtonColor: "#e53e3e",
+    });
+    if (reason === undefined) return; // cancelled
+    try {
+      await axios.post(
+        `${API_URL}/admin/rejectCoach/${_id}`,
+        { reason },
+        { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
+      );
+      Swal.fire({ icon: "info", title: "Rejected", text: "Coach profile rejected. The coach can re-edit and resubmit." });
+      setCoachStatus({ status: false, awaiting_approval: false, rejection_reason: reason });
+    } catch (error) {
+      Swal.fire({ icon: "error", title: "Error", text: error.response?.data?.message || "Rejection failed." });
+    }
+  };
+
+  const handleSubmitForApproval = async () => {
+    try {
+      await axios.post(
+        `${API_URL}/coach/submit-for-approval/${_id}`,
+        {},
+        { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
+      );
+      Swal.fire({
+        icon: "success",
+        title: "Submitted!",
+        text: "Your profile has been submitted for Super Admin review.",
+      });
+      setCoachStatus((prev) => ({ ...prev, awaiting_approval: true }));
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "Submission Failed",
+        text: error.response?.data?.message || "Something went wrong.",
+      });
+    }
+  };
 
   const handleFileInputChange = (e) => {
     const files = Array.from(e.target.files);
@@ -1033,11 +1112,66 @@ const UpdateCoach = () => {
               <Form.Label className="checkbox-label">Status</Form.Label>
             </Form.Group>
           </Row>
+          {/* ── Approval status banner ───────────────────────────────────────── */}
+          {coachStatus.status && (
+            <div style={{ background: "#c6f6d5", border: "1px solid #38a169", borderRadius: 8, padding: "12px 18px", marginBottom: 16, display: "flex", alignItems: "center", gap: 10 }}>
+              <span style={{ fontSize: 20 }}>✅</span>
+              <span style={{ color: "#276749", fontWeight: 600 }}>This profile is <strong>Active</strong> and visible on the public website.</span>
+            </div>
+          )}
+          {!coachStatus.status && coachStatus.awaiting_approval && (
+            <div style={{ background: "#fefcbf", border: "1px solid #d69e2e", borderRadius: 8, padding: "12px 18px", marginBottom: 16, display: "flex", alignItems: "center", gap: 10 }}>
+              <span style={{ fontSize: 20 }}>⏳</span>
+              <span style={{ color: "#744210", fontWeight: 600 }}>Profile is <strong>Pending Approval</strong>. Waiting for Super Admin to review.</span>
+            </div>
+          )}
+          {!coachStatus.status && !coachStatus.awaiting_approval && coachStatus.rejection_reason && (
+            <div style={{ background: "#fff5f5", border: "1px solid #e53e3e", borderRadius: 8, padding: "12px 18px", marginBottom: 16 }}>
+              <span style={{ fontSize: 20 }}>❌</span>
+              <span style={{ color: "#c53030", fontWeight: 600 }}> Profile was <strong>Rejected</strong>. Reason: {coachStatus.rejection_reason}</span>
+              <p style={{ margin: "6px 0 0", color: "#9b2c2c" }}>Please update your details and resubmit for approval.</p>
+            </div>
+          )}
+
+          {/* Submit for Approval – visible to the coach when not yet pending/active */}
+          {userRole !== "Super Admin" && !coachStatus.status && !coachStatus.awaiting_approval && (
+            <button
+              type="button"
+              id="btn-submit-for-approval"
+              onClick={handleSubmitForApproval}
+              style={{ background: "linear-gradient(135deg,#4299e1,#3182ce)", color: "#fff", border: "none", borderRadius: 8, padding: "10px 28px", fontWeight: 700, fontSize: 15, cursor: "pointer", marginRight: 12, marginBottom: 8, boxShadow: "0 2px 8px rgba(49,130,206,0.35)" }}
+            >
+              🚀 Submit for Approval
+            </button>
+          )}
+
+          {/* Approve / Reject – visible only to Super Admin when awaiting approval */}
+          {userRole === "Super Admin" && coachStatus.awaiting_approval && !coachStatus.status && (
+            <>
+              <button
+                type="button"
+                id="btn-approve-coach"
+                onClick={handleApprove}
+                style={{ background: "linear-gradient(135deg,#48bb78,#38a169)", color: "#fff", border: "none", borderRadius: 8, padding: "10px 28px", fontWeight: 700, fontSize: 15, cursor: "pointer", marginRight: 12, marginBottom: 8, boxShadow: "0 2px 8px rgba(56,161,105,0.35)" }}
+              >
+                ✅ Approve Coach
+              </button>
+              <button
+                type="button"
+                id="btn-reject-coach"
+                onClick={handleReject}
+                style={{ background: "linear-gradient(135deg,#fc8181,#e53e3e)", color: "#fff", border: "none", borderRadius: 8, padding: "10px 28px", fontWeight: 700, fontSize: 15, cursor: "pointer", marginRight: 12, marginBottom: 8, boxShadow: "0 2px 8px rgba(229,62,62,0.35)" }}
+              >
+                ❌ Reject
+              </button>
+            </>
+          )}
+
           <button type="submit" className="SubmitButton" onClick={handleSubmit}>
-            Update
+            {userRole === "Super Admin" ? "Save Changes" : "Save Draft"}
           </button>
 
-          <button type="cancel" className="CancelButton" onClick={handleCancel}>
+          <button type="button" className="CancelButton" onClick={handleCancel}>
             Cancel
           </button>
         </Form>

@@ -176,26 +176,29 @@ function Coachlist() {
   };
 
   const handleDelete = async (row) => {
+    const result = await Swal.fire({
+      title: "Deactivate Coach?",
+      text: "This will hide the coach from the public website.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes, deactivate",
+      confirmButtonColor: "#e53e3e",
+    });
+    if (!result.isConfirmed) return;
     try {
-      const apiUrl = `${API_URL}/delete-coach/${row._id}`;
-
-      const response = await fetch(apiUrl, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (response.ok) {
-        Swal.fire('Deactivated!', 'Coach Profile has been Deactivated.', 'success');
-        fetchData();
-      } else {
-        
-        Swal.fire('Error', 'Failed to delete category.', 'error');
-      }
+      await axios.post(
+        `${API_URL}/admin/rejectCoach/${row._id}`,
+        { reason: "Deactivated by admin" },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      Swal.fire("Deactivated!", "Coach profile has been deactivated.", "success");
+      fetchData();
     } catch (error) {
-      
-      Swal.fire('Error', 'An error occurred while deleting the category.', 'error');
+      Swal.fire("Error", error.response?.data?.message || "Failed to deactivate.", "error");
     }
   };
 
@@ -273,36 +276,38 @@ function Coachlist() {
 
 
   const handleUpdateAccess = async (isAdminAccess, coachId) => {
+    const isApprove = isAdminAccess === 1;
     const result = await Swal.fire({
       title: 'Are you sure?',
-      text: `Do you really want to update Coach admin access?`,
+      text: `Do you really want to ${isApprove ? 'approve' : 'reject'} this Coach?`,
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonText: 'Yes, update it!',
+      confirmButtonText: isApprove ? 'Yes, approve!' : 'Yes, reject!',
       cancelButtonText: 'No, cancel!',
     });
 
     if (result.isConfirmed) {
       try {
-        const response = await axios.put(`${API_URL}/super-admin/update-admin-status`, {
-          id: coachId,
-          is_admin_access: isAdminAccess,
-          role: "Coach"
-        }, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
+        const url = isApprove 
+          ? `${API_URL}/admin/approveCoach/${coachId}`
+          : `${API_URL}/admin/rejectCoach/${coachId}`;
+        const response = await axios.post(url, 
+          isApprove ? {} : { reason: "Rejected by admin" }, 
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
 
         if (response.data.success) {
-          Swal.fire("Success!", `Coach admin access updated successfully.`, "success");
-          fetchData()
+          Swal.fire("Success!", `Coach status updated successfully.`, "success");
+          fetchData();
         } else {
-          Swal.fire("Error", `Failed to update Coach admin access.`, "error");
+          Swal.fire("Error", `Failed to update Coach status.`, "error");
         }
       } catch (error) {
-        
-        Swal.fire("Error", `An error occurred while updating Coach admin access.`, "error");
+        Swal.fire("Error", error.response?.data?.message || `An error occurred while updating Coach status.`, "error");
       }
     } else {
       // If user cancels, show a cancellation message

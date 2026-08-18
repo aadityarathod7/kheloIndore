@@ -815,9 +815,9 @@ exports.updatecoach = async (req, res) => {
 
     // If update is NOT made by Super Admin (i.e. by coach themselves)
     if (req.user?.role !== "Super Admin") {
-      coach.status = true;
-      coach.is_admin_access = 1;
+      coach.status = false; // Keep inactive during draft updates
       coach.verification_status = 0; // pending approval for service listing
+      coach.awaiting_approval = false; // Reset to draft mode so they can submit for approval again
 
       // Send email & notification to Super Admin
       try {
@@ -860,7 +860,43 @@ exports.updatecoach = async (req, res) => {
       coach,
     });
   } catch (error) {
-    
     res.status(500).json({ success: false, message: "Internal Server Error", error: error.message });
   }
 };
+
+/**
+ * Coach calls this when they have finished editing and want Super Admin to review.
+ * Sets awaiting_approval=true and keeps status=false (inactive) until admin approves.
+ */
+exports.submitCoachForApproval = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const coach = await Coach.findById(id);
+    if (!coach) {
+      return res.status(404).json({ success: false, message: "Coach not found" });
+    }
+
+    // Only the coach themselves (or Super Admin) can submit for approval
+    const isSuperAdmin = req.user?.role === "Super Admin";
+    const account = await User.findById(req.user?.userID).select("mobile email").catch(() => null);
+    const ownsProfile =
+      isSuperAdmin ||
+      String(req.user?.userID) === String(coach._id) ||
+      (account &&
+        (String(account.mobile) === String(coach.mobile) ||
+          String(account.email || "").toLowerCase() === String(coach.email || "").toLowerCase()));
+
+    if (!ownsProfile) {
+      return res.status(403).json({ success: false, message: "You can only submit your own profile for approval." });
+    }
+
+    // Mark as awaiting approval; do NOT flip status yet
+    coach.awaiting_approval = true;
+    await coach.save();
+
+    return res.status(200).json({ success: true, message: "Profile submitted for Super Admin approval. You will be notified once approved." });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+

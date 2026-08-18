@@ -122,6 +122,7 @@ const {
   fetchSharedCoach,
   completeCoachProfile,
   sendOnboardingProfileLink,
+  submitCoachForApproval,
 } = require("../controllers/CoachController");
 //PERSONAL TRAINING
 const {
@@ -141,11 +142,14 @@ const {
   submitTrainerForApproval,
 } = require("../controllers/PersonalTrainingController");
 
-// Admin Trainer Approval
+// Admin Trainer/Coach Approval
 const {
   getPendingTrainers,
   approveTrainer,
   rejectTrainer,
+  getPendingCoaches,
+  approveCoach,
+  rejectCoach,
 } = require("../controllers/AdminTrainerController");
 
 //CONTACT US
@@ -477,5 +481,14 @@ route.get("/admin/pending-trainers", auth, requireRole("Super Admin"), getPendin
 route.post("/admin/approveTrainer/:id", auth, requireRole("Super Admin"), approveTrainer);
 // Super Admin: reject a trainer
 route.post("/admin/rejectTrainer/:id", auth, requireRole("Super Admin"), rejectTrainer);
+
+// Coach submits profile for Super Admin review
+route.post("/coach/submit-for-approval/:id", auth, submitCoachForApproval);
+// Super Admin: list all pending coaches
+route.get("/admin/pending-coaches", auth, requireRole("Super Admin"), getPendingCoaches);
+// Super Admin: approve a coach
+route.post("/admin/approveCoach/:id", auth, requireRole("Super Admin"), approveCoach);
+// Super Admin: reject a coach
+route.post("/admin/rejectCoach/:id", auth, requireRole("Super Admin"), rejectCoach);
 
 module.exports = route;
