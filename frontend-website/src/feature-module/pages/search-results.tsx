@@ -23,8 +23,13 @@ const getCoachImage = (profile_picture: any): string => {
 };
 
 const SearchResults: React.FC = () => {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const query = searchParams.get("q") || "";
+  const [searchInput, setSearchInput] = useState(query);
+
+  useEffect(() => {
+    setSearchInput(query);
+  }, [query]);
 
   const [venues, setVenues] = useState<any[]>([]);
   const [coaches, setCoaches] = useState<any[]>([]);
@@ -130,6 +135,11 @@ const SearchResults: React.FC = () => {
   const showCoaches = activeTab === "all" || activeTab === "coaches";
   const showTrainers = activeTab === "all" || activeTab === "trainers";
 
+  const handlePageSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    setSearchParams({ q: searchInput.trim() });
+  };
+
   return (
     <div style={{ backgroundColor: "#F8FAFC", minHeight: "100vh" }}>
 
@@ -149,6 +159,46 @@ const SearchResults: React.FC = () => {
                   {loading ? "Searching..." : `Showing ${totalResults} result${totalResults !== 1 ? "s" : ""} for "${query}"`}
                 </p>
               )}
+
+              {/* Mobile/Tablet/Desktop Search Bar */}
+              <div className="mb-4" style={{ maxWidth: "480px" }}>
+                <form onSubmit={handlePageSearch} className="position-relative">
+                  <input
+                    type="text"
+                    value={searchInput}
+                    onChange={(e) => setSearchInput(e.target.value)}
+                    className="form-control rounded-pill shadow-sm"
+                    placeholder="Search venues, coaches, trainers..."
+                    style={{
+                      height: "44px",
+                      paddingLeft: "20px",
+                      paddingRight: "50px",
+                      border: "1px solid #E2E8F0",
+                      fontSize: "14px",
+                      fontWeight: "500",
+                      backgroundColor: "#FFFFFF"
+                    }}
+                  />
+                  <button
+                    type="submit"
+                    className="btn d-flex align-items-center justify-content-center position-absolute"
+                    style={{
+                      right: "4px",
+                      top: "4px",
+                      bottom: "4px",
+                      width: "36px",
+                      height: "36px",
+                      borderRadius: "50%",
+                      backgroundColor: "#22C55E",
+                      color: "#FFFFFF",
+                      border: "none",
+                      padding: 0
+                    }}
+                  >
+                    <i className="feather-search" style={{ fontSize: "15px" }} />
+                  </button>
+                </form>
+              </div>
 
               {/* Breadcrumb pill */}
               <div className="d-inline-flex align-items-center bg-white px-3 py-2 rounded-pill shadow-sm" style={{ fontSize: "13px", border: "1px solid #E5E7EB" }}>
