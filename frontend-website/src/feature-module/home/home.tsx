@@ -186,7 +186,7 @@ const getVenueSize = (venue: Venues): string | null => {
 };
 type ProviderKind = "Venue" | "Coach" | "Trainer";
 
-const TopProviderCard = ({ kind, provider }: { kind: ProviderKind; provider: Venues | Coach | Trainer }) => {
+const SingleProviderCard = ({ kind, provider }: { kind: ProviderKind; provider: Venues | Coach | Trainer }) => {
   const isVenue = kind === "Venue";
   const venue = provider as Venues;
   const person = provider as Coach | Trainer;
@@ -200,12 +200,62 @@ const TopProviderCard = ({ kind, provider }: { kind: ProviderKind; provider: Ven
     : kind === "Coach"
       ? `/coaches/${(person.category || "coach").replace(/\s+/g, "-").toLowerCase()}/${(person.first_name || "coach").replace(/\s+/g, "-").toLowerCase()}/${person._id}`
       : `/trainers/trainer/${(person.first_name || "trainer").replace(/\s+/g, "-").toLowerCase()}/${person._id}`;
-  const viewAllLink = kind === "Venue" ? "/sports-venue" : kind === "Coach" ? "/coaches" : "/trainers";
   const rate = isVenue ? venue.price_per_hr : person.price || person.package?.monthly;
   const area = getArea(isVenue ? venue.near_by_location : person.near_by_location);
   const rating = isVenue ? venue.rating : person.rating;
   const reviewCount = isVenue ? venue.reviews_count : person.reviews_count;
   const venueSize = isVenue ? getVenueSize(venue) : null;
+
+  return (
+    <article className={`listing-item home-venue border-white-10 top-provider-card top-provider-card--${kind.toLowerCase()}`} style={{ background: "var(--ki-bg-surface)", border: "1px solid #E2E8E3", borderRadius: "20px", overflow: "hidden", boxShadow: "0 10px 30px rgba(15, 34, 45, 0.08)", margin: "4px" }}>
+      <div className="listing-img" style={{ height: "165px", position: "relative", overflow: "hidden" }}>
+        <Link to={link}>
+          <img src={image} className="img-fluid" alt={name} onError={(event) => { event.currentTarget.src = "/assets/img/no-img.png"; }} style={{ height: "100%", width: "100%", objectFit: "cover" }} />
+        </Link>
+        <span className="tag tag-blue" style={{ position: "absolute", top: "12px", left: "12px", padding: "6px 10px", background: "#22C55E", color: "#fff", fontWeight: 700, borderRadius: "9px", fontSize: "11px" }}>
+          {kind === "Venue" ? category : `${category} ${kind}`}
+        </span>
+      </div>
+      <div className="listing-content" style={{ textAlign: "left", padding: "18px 20px" }}>
+        <div className="d-flex align-items-center justify-content-between mb-2" style={{ color: "#64748B", fontSize: "13px", minHeight: "20px" }}>
+          <span>
+            <i className="fas fa-star me-1" style={{ color: rating && rating > 0 ? "#F59E0B" : "#0F172A" }} />
+            {rating && rating > 0 ? `${rating.toFixed(1)}${reviewCount ? ` (${reviewCount})` : ""}` : isVenue ? "New" : "New provider"}
+          </span>
+          {isVenue && venueSize && <span><i className="feather-grid me-1" />{venueSize}</span>}
+        </div>
+        <h3 className="listing-title text-truncate mb-2" style={{ fontSize: "18px", fontWeight: 700 }}><Link to={link}>{name}</Link></h3>
+        <p className="mb-3 text-truncate" style={{ color: "#64748B", fontSize: "14px" }}><i className="feather-map-pin me-2" />{area}</p>
+        <div className="d-flex align-items-end justify-content-between pt-2" style={{ borderTop: "1px solid #EEF2F0" }}>
+          <div><small style={{ color: "#64748B" }}>{isVenue ? "Hourly Rate" : "Starts from"}</small><div style={{ fontSize: "22px", fontWeight: 800 }}>{rate ? `₹${rate}` : "Contact us"}{rate && <small style={{ fontSize: "13px", fontWeight: 400 }}>/{isVenue ? "hr" : "month"}</small>}</div></div>
+          <Link to={link} className="d-flex align-items-center justify-content-center" style={{ width: "38px", height: "38px", borderRadius: "50%", background: "#22C55E", color: "#fff" }}><i className="fas fa-chevron-right" /></Link>
+        </div>
+      </div>
+    </article>
+  );
+};
+
+const TopProviderCard = ({ kind, providers }: { kind: ProviderKind; providers: (Venues | Coach | Trainer)[] }) => {
+  const viewAllLink = kind === "Venue" ? "/sports-venue" : kind === "Coach" ? "/coaches" : "/trainers";
+
+  const columnSliderSettings = {
+    dots: true,
+    infinite: true,
+    arrows: false,
+    speed: 500,
+    vertical: true,
+    verticalSwiping: true,
+    slidesToShow: 1,
+    slidesToScroll: 1,
+    autoplay: true,
+    autoplaySpeed: 3000,
+    pauseOnHover: true,
+    pauseOnFocus: true,
+    dotsClass: "ki-vertical-dots",
+    customPaging: () => (
+      <div className="vertical-dot-inner" />
+    )
+  };
 
   return (
     <div className="col-lg-4 col-md-6">
@@ -217,31 +267,21 @@ const TopProviderCard = ({ kind, provider }: { kind: ProviderKind; provider: Ven
           View all <i className="fas fa-arrow-right ms-1" />
         </Link>
       </div>
-      <article className={`listing-item home-venue border-white-10 top-provider-card top-provider-card--${kind.toLowerCase()}`} style={{ background: "var(--ki-bg-surface)", border: "1px solid #E2E8E3", borderRadius: "20px", overflow: "hidden", boxShadow: "0 10px 30px rgba(15, 34, 45, 0.08)" }}>
-        <div className="listing-img" style={{ height: "165px", position: "relative", overflow: "hidden" }}>
-          <Link to={link}>
-            <img src={image} className="img-fluid" alt={name} onError={(event) => { event.currentTarget.src = "/assets/img/no-img.png"; }} style={{ height: "100%", width: "100%", objectFit: "cover" }} />
-          </Link>
-          <span className="tag tag-blue" style={{ position: "absolute", top: "12px", left: "12px", padding: "6px 10px", background: "#22C55E", color: "#fff", fontWeight: 700, borderRadius: "9px", fontSize: "11px" }}>
-            {kind === "Venue" ? category : `${category} ${kind}`}
-          </span>
+      {providers && providers.length > 0 ? (
+        <div className="ki-vertical-provider-slider">
+          <Slider {...columnSliderSettings}>
+            {providers.map((item) => (
+              <div key={item._id} style={{ outline: "none" }}>
+                <SingleProviderCard kind={kind} provider={item} />
+              </div>
+            ))}
+          </Slider>
         </div>
-        <div className="listing-content" style={{ textAlign: "left", padding: "18px 20px" }}>
-          <div className="d-flex align-items-center justify-content-between mb-2" style={{ color: "#64748B", fontSize: "13px", minHeight: "20px" }}>
-            <span>
-              <i className="fas fa-star me-1" style={{ color: rating && rating > 0 ? "#F59E0B" : "#0F172A" }} />
-              {rating && rating > 0 ? `${rating.toFixed(1)}${reviewCount ? ` (${reviewCount})` : ""}` : isVenue ? "New" : "New provider"}
-            </span>
-            {isVenue && venueSize && <span><i className="feather-grid me-1" />{venueSize}</span>}
-          </div>
-          <h3 className="listing-title text-truncate mb-2" style={{ fontSize: "18px", fontWeight: 700 }}><Link to={link}>{name}</Link></h3>
-          <p className="mb-3 text-truncate" style={{ color: "#64748B", fontSize: "14px" }}><i className="feather-map-pin me-2" />{area}</p>
-          <div className="d-flex align-items-end justify-content-between pt-2" style={{ borderTop: "1px solid #EEF2F0" }}>
-            <div><small style={{ color: "#64748B" }}>{isVenue ? "Hourly Rate" : "Starts from"}</small><div style={{ fontSize: "22px", fontWeight: 800 }}>{rate ? `₹${rate}` : "Contact us"}{rate && <small style={{ fontSize: "13px", fontWeight: 400 }}>/{isVenue ? "hr" : "month"}</small>}</div></div>
-            <Link to={link} className="d-flex align-items-center justify-content-center" style={{ width: "38px", height: "38px", borderRadius: "50%", background: "#22C55E", color: "#fff" }}><i className="fas fa-chevron-right" /></Link>
-          </div>
+      ) : (
+        <div className="text-center py-4 text-muted" style={{ background: "var(--ki-bg-surface)", border: "1px solid #E2E8E3", borderRadius: "20px" }}>
+          No {kind.toLowerCase()}s available
         </div>
-      </article>
+      )}
     </div>
   );
 };
@@ -757,11 +797,7 @@ const Home = () => {
   const visibleVenues = venues.slice(0, 6);
   const visibleCoaches = coaches.slice(0, 6);
   const visibleTrainers = trainer.slice(0, 6);
-  const rotatingProviders = [
-    { kind: "Venue" as const, provider: visibleVenues.length ? visibleVenues[topProviderIndex % visibleVenues.length] : null },
-    { kind: "Coach" as const, provider: visibleCoaches.length ? visibleCoaches[topProviderIndex % visibleCoaches.length] : null },
-    { kind: "Trainer" as const, provider: visibleTrainers.length ? visibleTrainers[topProviderIndex % visibleTrainers.length] : null },
-  ];
+
 
   const categoryCardsByProvider = useMemo<Record<CategoryProviderTab, CategoryCard[]>>(() => {
     const categoryGroups: Record<CategoryProviderTab, string[][]> = {
@@ -1319,8 +1355,63 @@ const Home = () => {
 
       <section className="section featured-venues-list top-providers-section py-5">
         <div className="container">
-          <div className="row g-4 align-items-start top-provider-rotation" key={topProviderIndex}>
-            {rotatingProviders.map(({ kind, provider }) => provider && <TopProviderCard key={kind} kind={kind} provider={provider} />)}
+          <style>{`
+            .ki-vertical-provider-slider {
+              position: relative;
+            }
+            .ki-vertical-provider-slider .slick-list {
+              margin: 0 -4px;
+            }
+            .ki-vertical-provider-slider .slick-slide {
+              padding: 10px 4px 15px 24px !important;
+              outline: none !important;
+            }
+            .ki-vertical-dots {
+              position: absolute !important;
+              left: 2px !important;
+              right: auto !important;
+              top: 50% !important;
+              transform: translateY(-50%) !important;
+              width: 20px !important;
+              list-style: none !important;
+              padding: 0 !important;
+              margin: 0 !important;
+              display: flex !important;
+              flex-direction: column !important;
+              align-items: center !important;
+              gap: 8px !important;
+              z-index: 10 !important;
+            }
+            .ki-vertical-dots li {
+              width: 12px !important;
+              height: 24px !important;
+              display: flex !important;
+              align-items: center !important;
+              justify-content: center !important;
+              margin: 0 !important;
+              cursor: pointer !important;
+            }
+            .ki-vertical-dots li .vertical-dot-inner {
+              width: 6px;
+              height: 6px;
+              border-radius: 50%;
+              background-color: #94A3B8;
+              opacity: 0.4;
+              transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+            .ki-vertical-dots li.slick-active .vertical-dot-inner {
+              width: 6px;
+              height: 18px;
+              border-radius: 99px;
+              background-color: #22C55E;
+              opacity: 1;
+            }
+          `}</style>
+
+          <div className="row g-4 align-items-start">
+            <TopProviderCard kind="Venue" providers={visibleVenues} />
+            <TopProviderCard kind="Coach" providers={visibleCoaches} />
+            <TopProviderCard kind="Trainer" providers={visibleTrainers} />
           </div>
         </div>
       </section>

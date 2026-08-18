@@ -257,6 +257,42 @@ const Login = () => {
               )}
             </div>
 
+            <div className="mb-3 mt-2">
+              <label
+                htmlFor="terms-checkbox"
+                style={{
+                  display: "flex",
+                  alignItems: "flex-start",
+                  gap: "10px",
+                  cursor: "pointer",
+                  fontSize: "12px",
+                  color: "#64748B",
+                  lineHeight: "1.5",
+                }}
+              >
+                <input
+                  id="terms-checkbox"
+                  type="checkbox"
+                  checked={agreedToTerms}
+                  onChange={(e) => setAgreedToTerms(e.target.checked)}
+                  style={{
+                    width: "16px",
+                    height: "16px",
+                    minWidth: "16px",
+                    marginTop: "1px",
+                    accentColor: "#22C55E",
+                    cursor: "pointer",
+                  }}
+                />
+                <span>
+                  By continuing, I agree to Khelo Indore&apos;s{" "}
+                  <Link to="/contact-us" style={{ color: "#22C55E", fontWeight: 600 }}>Terms of Service</Link>
+                  {" "}&amp;{" "}
+                  <Link to="/contact-us" style={{ color: "#22C55E", fontWeight: 600 }}>Privacy Policy</Link>.
+                </span>
+              </label>
+            </div>
+
             <button
               type="submit"
               className="btn btn-submit w-100 fw-bold"
@@ -445,41 +481,8 @@ const Login = () => {
           </div>
         </div>
 
-        <div className="mt-3 pt-2.5 border-top">
-          <label
-            htmlFor="terms-checkbox"
-            style={{
-              display: "flex",
-              alignItems: "flex-start",
-              gap: "10px",
-              cursor: "pointer",
-              fontSize: "12px",
-              color: "#64748B",
-              lineHeight: "1.5",
-            }}
-          >
-            <input
-              id="terms-checkbox"
-              type="checkbox"
-              checked={agreedToTerms}
-              onChange={(e) => setAgreedToTerms(e.target.checked)}
-              style={{
-                width: "16px",
-                height: "16px",
-                minWidth: "16px",
-                marginTop: "1px",
-                accentColor: "#22C55E",
-                cursor: "pointer",
-              }}
-            />
-            <span>
-              By continuing, I agree to Khelo Indore&apos;s{" "}
-              <Link to="/contact-us" style={{ color: "#22C55E", fontWeight: 600 }}>Terms of Service</Link>
-              {" "}&amp;{" "}
-              <Link to="/contact-us" style={{ color: "#22C55E", fontWeight: 600 }}>Privacy Policy</Link>.
-            </span>
-          </label>
-        </div>
+        
+        {/* Term Checkbox has been moved to form view */}
       </div>
     </div>
   );
