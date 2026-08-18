@@ -284,9 +284,9 @@ export default function CommonPage() {
                                                         <ImageWithBasePath
                                                             // src="assets/img/featured/featured-05.jpg"
                                                             src={
-                                                                coach.profile_picture[0]?.src
-                                                                    ? `${IMG_URL}${coach.profile_picture[0]?.src}`
-                                                                    : "assets/img/profiles/avatar-06.jpg"
+                                                                coach.profile_picture?.[0]?.src
+                                                                    ? `${IMG_URL}${coach.profile_picture?.[0]?.src}`
+                                                                    : "/assets/img/profiles/avatar-06.jpg"
                                                             }
                                                             alt="user"
                                                         />

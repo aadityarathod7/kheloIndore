@@ -236,7 +236,7 @@ const CoachPayment = () => {
                         // src="/assets/img/profiles/avatar-02.png"
                         src={
                           coachData?.profile_picture?.[0]?.src
-                            ? `${IMG_URL}${coachData.profile_picture[0].src}`
+                            ? `${IMG_URL}${coachData.profile_picture?.[0]?.src}`
                             : "/assets/img/profiles/avatar-06.jpg"
                         }
                         alt="User"

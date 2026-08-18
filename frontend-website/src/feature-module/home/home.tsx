@@ -96,10 +96,10 @@ interface CategoryCard {
 type CategoryProviderTab = "venue" | "coach" | "trainer";
 
 const getVenueImage = (images: any): string => {
-  if (!images || !Array.isArray(images) || images.length === 0) return "assets/img/venues/venue-01.jpg";
+  if (!images || !Array.isArray(images) || images.length === 0) return "/assets/img/venues/venue-01.jpg";
   const first = images[0];
   const imgStr = typeof first === "string" ? first : (first?.src || first?.url || "");
-  if (!imgStr) return "assets/img/venues/venue-01.jpg";
+  if (!imgStr) return "/assets/img/venues/venue-01.jpg";
   if (imgStr.startsWith("http://") || imgStr.startsWith("https://")) return imgStr;
   return `${IMG_URL}${imgStr}`;
 };
@@ -1506,8 +1506,8 @@ const Home = () => {
                           <Link to={`/coaches/${(coach?.category || "coach").replace(/\s+/g, "-").toLowerCase()}/${(coach?.first_name || "coach").replace(/\s+/g, "-").toLowerCase()}/${coach?._id}`}>
                             <ImageWithBasePath
                               src={
-                                coach?.profile_picture[0]?.src
-                                  ? `${IMG_URL}${coach?.profile_picture[0]?.src}`
+                                coach?.profile_picture?.[0]?.src
+                                  ? `${IMG_URL}${coach?.profile_picture?.[0]?.src}`
                                   : "/assets/img/no-img.png"
                               }
                               style={{ height: "100%", width: "100%", objectFit: "cover" }}
@@ -1631,8 +1631,8 @@ const Home = () => {
                           <Link to={`/trainers/trainer/${train.first_name.replace(/\s+/g, "-").toLowerCase()}/${train._id}`}>
                             <ImageWithBasePath
                               src={
-                                train?.profile_picture[0]?.src
-                                  ? `${IMG_URL}${train?.profile_picture[0]?.src}`
+                                train?.profile_picture?.[0]?.src
+                                  ? `${IMG_URL}${train?.profile_picture?.[0]?.src}`
                                   : "/assets/img/no-img.png"
                               }
                               style={{ height: "100%", width: "100%", objectFit: "cover" }}

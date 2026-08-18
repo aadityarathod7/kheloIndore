@@ -6,10 +6,10 @@ import ImageWithBasePath from "../../core/data/img/ImageWithBasePath";
 
 // ─── Image Helper ───
 const getVenueImage = (images: any): string => {
-  if (!images || !Array.isArray(images) || images.length === 0) return "assets/img/venues/venue-01.jpg";
+  if (!images || !Array.isArray(images) || images.length === 0) return "/assets/img/venues/venue-01.jpg";
   const first = images[0];
   const imgStr = typeof first === "string" ? first : (first?.src || first?.url || "");
-  if (!imgStr) return "assets/img/venues/venue-01.jpg";
+  if (!imgStr) return "/assets/img/venues/venue-01.jpg";
   if (imgStr.startsWith("http://") || imgStr.startsWith("https://")) return imgStr;
   return `${IMG_URL}${imgStr}`;
 };

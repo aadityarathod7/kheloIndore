@@ -2185,9 +2185,9 @@ const CoachDetail = (props: any) => {
                               <Link to={routes.coachDetail}>
                                 <ImageWithBasePath
                                   src={
-                                    coach?.profile_picture[0]?.src
-                                      ? `${IMG_URL}${coach.profile_picture[0].src}`
-                                      : "assets/img/profiles/avatar-06.jpg"
+                                    coach?.profile_picture?.[0]?.src
+                                      ? `${IMG_URL}${coach.profile_picture?.[0]?.src}`
+                                      : "/assets/img/profiles/avatar-06.jpg"
                                   }
                                 />
                               </Link>

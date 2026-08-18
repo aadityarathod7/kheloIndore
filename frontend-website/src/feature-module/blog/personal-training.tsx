@@ -760,7 +760,7 @@ const BlogList = () => {
                               style={{ display: "block", height: "100%" }}
                             >
                               <ImageWithBasePath
-                                src={trainer.profile_picture[0]?.src ? `${IMG_URL}${trainer.profile_picture[0].src}` : "/assets/img/no-img.png"}
+                                src={trainer.profile_picture?.[0]?.src ? `${IMG_URL}${trainer.profile_picture?.[0]?.src}` : "/assets/img/no-img.png"}
                                 alt="user"
                                 style={{ height: "100%", width: "100%", objectFit: "cover" }}
                               />

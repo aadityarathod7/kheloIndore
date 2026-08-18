@@ -599,7 +599,7 @@ const CoachTimeDate = (props: any) => {
                         className="corner-radius-100 coach-book-img"
                         src={
                           coachData?.profile_picture?.[0]?.src
-                            ? `${IMG_URL}${coachData.profile_picture[0].src}`
+                            ? `${IMG_URL}${coachData.profile_picture?.[0]?.src}`
                             : "/assets/img/profiles/avatar-06.jpg"
                         }
                         alt="User"

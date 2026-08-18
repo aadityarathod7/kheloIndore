@@ -247,7 +247,7 @@ const TrainingOrderConfirm = (props: any) => {
                     <Link to="#">
                       <ImageWithBasePath
                         className="corner-radius-100 coach-book-img"
-                        src={trainerData?.profile_picture ? `${IMG_URL}${trainerData.profile_picture[0].src}` : "/assets/img/featured/featured-06.jpg"}
+                        src={trainerData?.profile_picture?.[0]?.src ? `${IMG_URL}${trainerData.profile_picture?.[0]?.src}` : "/assets/img/featured/featured-06.jpg"}
                         alt="User"
                       />
                     </Link>

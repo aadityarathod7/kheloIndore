@@ -803,7 +803,7 @@ const CoachesGrid = (_props: { id?: string }) => {
                               style={{ display: "block", height: "100%" }}
                             >
                               <ImageWithBasePath
-                                src={coach.profile_picture[0]?.src ? `${IMG_URL}${coach.profile_picture[0]?.src}` : "/assets/img/no-img.png"}
+                                src={coach.profile_picture?.[0]?.src ? `${IMG_URL}${coach.profile_picture?.[0]?.src}` : "/assets/img/no-img.png"}
                                 alt="user"
                                 style={{ height: "100%", width: "100%", objectFit: "cover" }}
                               />
