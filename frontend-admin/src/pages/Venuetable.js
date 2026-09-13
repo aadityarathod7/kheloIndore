@@ -266,7 +266,10 @@ function VenueList() {
   const currentVenues = filteredData
     ?.filter((row) => {
       
-      return row?.name?.toLowerCase()?.includes(searchText?.toLowerCase()) &&
+      const query = searchText?.toLowerCase() || '';
+      return [row?.name, row?.provider_public_id, row?._id]
+        .filter(Boolean)
+        .some((value) => String(value).toLowerCase().includes(query)) &&
         (searchQuery === '' ||
           (searchQuery === 'active' && row.status === true) ||
           (searchQuery === 'inactive' && row.status === false)
@@ -333,6 +336,18 @@ function VenueList() {
         
       }
     });
+  };
+
+  const approvePendingUpdate = async (venue) => {
+    try {
+      await axios.put(`${API_URL}/venue/${venue._id}/approve-update`, {}, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      });
+      Swal.fire("Approved", "Venue changes are now live.", "success");
+      fetchData();
+    } catch (error) {
+      Swal.fire("Error", error.response?.data?.message || "Unable to approve venue changes.", "error");
+    }
   };
 
 
@@ -527,6 +542,11 @@ function VenueList() {
                                 onClick={() => handleActive(venue)}
                               />
                             </Tooltip>
+                        )}
+                        {isSuperAdmin && venue.awaiting_approval && (
+                          <button type="button" className="btn btn-sm btn-outline-success" onClick={() => approvePendingUpdate(venue)}>
+                            Approve changes
+                          </button>
                         )}
                       </div>
                     </td>

@@ -13,6 +13,8 @@ import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { API_URL, IMG_URL } from "../../ApiUrl";
 import Swal from "sweetalert2";
+import { jwtDecode } from "jwt-decode";
+import { COACH_TRAINER_CATEGORIES, toCategorySlug, VENUE_CATEGORIES } from "../../constants/categories";
 
 interface Coach {
   first_name: string;
@@ -125,7 +127,20 @@ const categoryStyle = (category: string) => {
   return { color: "#16A34A", bg: "#DCFCE7" };
 };
 
-const normaliseCategory = (value: string) => value.trim().toLowerCase().replace(/[_-]+/g, " ").replace(/\s+/g, " ");
+const singulariseCategoryWord = (word: string) => {
+  if (word.endsWith("ies")) return `${word.slice(0, -3)}y`;
+  if (/(ches|shes|xes|zes|ses)$/.test(word)) return word.slice(0, -2);
+  if (word.endsWith("s") && !word.endsWith("ss") && !word.endsWith("is")) return word.slice(0, -1);
+  return word;
+};
+
+const normaliseCategory = (value: string) => value
+  .trim()
+  .toLowerCase()
+  .replace(/[_-]+/g, " ")
+  .split(/\s+/)
+  .map(singulariseCategoryWord)
+  .join(" ");
 
 const isUsableCategory = (value: unknown) => {
   const category = String(value || "").trim();
@@ -415,11 +430,32 @@ const Home = () => {
   const [selectedSport, setSelectedSport] = useState<{ name: string } | null>(null);
   const [showAllCategories, setShowAllCategories] = useState(false);
   const [categoryProviderTab, setCategoryProviderTab] = useState<CategoryProviderTab>("venue");
+  const [favouriteSports, setFavouriteSports] = useState<string[]>([]);
 
   const navigate = useNavigate();
 
   useEffect(() => {
     document.title = "Home";
+  }, []);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    try {
+      const { userID } = jwtDecode<{ userID: string | number }>(token);
+      if (!userID) return;
+
+      axios.get(`${API_URL}/user/fetch-user-by-id/${userID}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      }).then((response) => {
+        setFavouriteSports(response.data?.data?.favourite_sports || []);
+      }).catch(() => {
+        // The standard homepage remains available if the profile cannot be fetched.
+      });
+    } catch {
+      // Ignore an invalid or expired stored token.
+    }
   }, []);
 
   useEffect(() => {
@@ -501,17 +537,14 @@ const Home = () => {
     { name: "Dewas Naka" },
   ]);
 
-  const [sportsOptions, setSportsOptions] = useState<{ name: string }[]>([
-    { name: "Cricket" },
-    { name: "Football" },
-    { name: "Badminton" },
-    { name: "Tennis" },
-    { name: "Swimming" },
-    { name: "Basketball" },
-    { name: "Volleyball" },
-    { name: "Gym & Fitness" },
-    { name: "Table Tennis" },
-  ]);
+  const [sportsOptions, setSportsOptions] = useState<{ name: string }[]>(VENUE_CATEGORIES.map((name) => ({ name })));
+
+  useEffect(() => {
+    const categories = selectedTimeframe?.name === "Sports Venue"
+      ? VENUE_CATEGORIES
+      : COACH_TRAINER_CATEGORIES;
+    setSportsOptions(categories.map((name) => ({ name })));
+  }, [selectedTimeframe]);
 
   useEffect(() => {
     const cleanLocation = (loc: string): string => {
@@ -528,15 +561,11 @@ const Home = () => {
     };
 
     const locationsSet = new Set<string>();
-    const sportsSet = new Set<string>();
 
     // Collect from venues
     venues.forEach(v => {
       if (v.near_by_location) {
         locationsSet.add(cleanLocation(v.near_by_location));
-      }
-      if (v.category) {
-        sportsSet.add(v.category.trim());
       }
     });
 
@@ -545,18 +574,12 @@ const Home = () => {
       if (c.near_by_location) {
         locationsSet.add(cleanLocation(c.near_by_location));
       }
-      if (c.category) {
-        sportsSet.add(c.category.trim());
-      }
     });
 
     // Collect from trainers
     trainer.forEach(t => {
       if (t.near_by_location) {
         locationsSet.add(cleanLocation(t.near_by_location));
-      }
-      if (t.category) {
-        sportsSet.add(t.category.trim());
       }
     });
 
@@ -570,37 +593,6 @@ const Home = () => {
       setSortOptions(uniqueSorted);
     }
 
-    // Filter, sort, and map sports
-    const uniqueSports = Array.from(sportsSet)
-      .map(sport => {
-        const cleaned = sport.trim();
-        // Skip invalid characters, hyphens, and empty entries
-        if (cleaned === "-" || cleaned === "_" || cleaned.length < 2) return null;
-
-        // Capitalize each word (Title Case)
-        let formatted = cleaned.split(" ")
-          .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
-          .join(" ");
-
-        // Fix common spelling errors
-        if (formatted.toLowerCase() === "swiming") formatted = "Swimming";
-
-        return { name: formatted };
-      })
-      .filter((s): s is { name: string } => s !== null);
-
-    // Deduplicate
-    const uniqueSportsMap = new Map();
-    uniqueSports.forEach(s => {
-      uniqueSportsMap.set(s.name.toLowerCase(), s);
-    });
-
-    const finalSports = Array.from(uniqueSportsMap.values())
-      .sort((a, b) => a.name.localeCompare(b.name));
-
-    if (finalSports.length > 0) {
-      setSportsOptions(finalSports);
-    }
   }, [venues, coaches, trainer]);
 
   const popularSearches = useMemo(() => {
@@ -882,7 +874,7 @@ const Home = () => {
         if (selectedTimeframe?.name === "Coaches") {
           navigate("/coaches", { state: { selectedLocationSort, selectedSport } });
         } else if (selectedTimeframe?.name === "Trainer") {
-          navigate("/trainers", { state: { selectedLocationSort, selectedSport } });
+          navigate("/trainers/search", { state: { selectedLocationSort, selectedSport } });
         } else if (selectedTimeframe?.name === "Sports Venue") {
           const sportSlug = selectedSport?.name
             ? selectedSport.name.toLowerCase().replace(/&/g, "and").replace(/\s+/g, "-")
@@ -901,9 +893,21 @@ const Home = () => {
     });
   };
 
-  const visibleVenues = venues.slice(0, 6);
-  const visibleCoaches = coaches.slice(0, 6);
-  const visibleTrainers = trainer.slice(0, 6);
+  const prioritiseFavouriteSports = <T extends { category: string }>(items: T[]) => {
+    if (!favouriteSports.length) return items;
+
+    const matchesFavourite = (category: string) => favouriteSports.some((sport) => {
+      const categoryValue = String(category || "").toLowerCase();
+      const sportValue = sport.toLowerCase();
+      return categoryValue.includes(sportValue) || sportValue.includes(categoryValue);
+    });
+
+    return [...items.filter((item) => matchesFavourite(item.category)), ...items.filter((item) => !matchesFavourite(item.category))];
+  };
+
+  const visibleVenues = prioritiseFavouriteSports(venues).slice(0, 6);
+  const visibleCoaches = prioritiseFavouriteSports(coaches).slice(0, 6);
+  const visibleTrainers = prioritiseFavouriteSports(trainer).slice(0, 6);
 
 
   const categoryCardsByProvider = useMemo<Record<CategoryProviderTab, CategoryCard[]>>(() => {
@@ -919,22 +923,29 @@ const Home = () => {
         .map((value) => value.trim())
         .filter(isUsableCategory));
       const liveCategoryNames = providerCategoryGroups.flat();
-      const sourceNames = Array.from(new Map([
-        ...apiCategories.map((category) => category.category_name),
-        ...liveCategoryNames,
-      ].filter(isUsableCategory).map((name) => [normaliseCategory(name), name])).values());
+      const sourceNames = providerType === "venue"
+        ? VENUE_CATEGORIES
+        : providerType === "coach" || providerType === "trainer"
+          ? COACH_TRAINER_CATEGORIES
+          : Array.from(new Map([
+            ...apiCategories.map((category) => category.category_name),
+            ...liveCategoryNames,
+          ].filter(isUsableCategory).map((name) => [normaliseCategory(name), name])).values());
 
-      result[providerType] = sourceNames
+      const cards = sourceNames
         .map((name) => {
           const key = normaliseCategory(name);
           const count = providerCategoryGroups.filter((names) => names.some((liveName) => {
             const liveKey = normaliseCategory(liveName);
             return liveKey === key;
           })).length;
-          return { name, slug: key.replace(/\s+/g, "-"), count, icon: getCategoryIcon(name), ...categoryStyle(name) };
+          return { name, slug: toCategorySlug(name), count, icon: getCategoryIcon(name), ...categoryStyle(name) };
         })
-        .filter((category) => providerCategoryGroups.length === 0 || category.count > 0)
-        .sort((first, second) => second.count - first.count || first.name.localeCompare(second.name));
+        .filter((category) => ["venue", "coach", "trainer"].includes(providerType) || providerCategoryGroups.length === 0 || category.count > 0);
+
+      result[providerType] = ["venue", "coach", "trainer"].includes(providerType)
+        ? cards
+        : cards.sort((first, second) => second.count - first.count || first.name.localeCompare(second.name));
       return result;
     }, { venue: [], coach: [], trainer: [] } as Record<CategoryProviderTab, CategoryCard[]>);
   }, [apiCategories, venues, coaches, trainer]);
@@ -1138,7 +1149,9 @@ const Home = () => {
                           className="ki-search-tag"
                           to={selectedTimeframe?.name === "Sports Venue" || !selectedTimeframe
                             ? `/sports-venue/${item.name.toLowerCase().replace(/\s+/g, "-")}`
-                            : selectedTimeframe.name === "Coaches" ? "/coaches" : "/trainers"}
+                            : selectedTimeframe.name === "Coaches"
+                              ? `/coaches/category/${toCategorySlug(item.name)}`
+                              : `/trainers/category/${toCategorySlug(item.name)}`}
                           state={selectedTimeframe?.name === "Sports Venue" || !selectedTimeframe
                             ? undefined
                             : { selectedSport: { name: item.name } }}
@@ -1176,20 +1189,6 @@ const Home = () => {
               <div className="col-6 col-lg-3 ki-stat-col">
                 <div className="ki-stat">
                   <div className="ki-stat-icon">
-                    <i className="feather-users" />
-                  </div>
-                  <div className="ki-stat-info">
-                    <h3 className="mb-0 ki-stat-num">
-                      {statsInView ? <CountUp end={500} suffix="+" duration={2.2} /> : "500+"}
-                    </h3>
-                    <p className="mb-0">Expert Coaches <span>Qualified &amp; Verified</span></p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="col-6 col-lg-3 ki-stat-col">
-                <div className="ki-stat">
-                  <div className="ki-stat-icon">
                     <i className="feather-map-pin" />
                   </div>
                   <div className="ki-stat-info">
@@ -1197,6 +1196,20 @@ const Home = () => {
                       {statsInView ? <CountUp end={50} suffix="+" duration={2.2} /> : "50+"}
                     </h3>
                     <p className="mb-0">Premium Venues <span>Across Indore</span></p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="col-6 col-lg-3 ki-stat-col">
+                <div className="ki-stat">
+                  <div className="ki-stat-icon">
+                    <i className="feather-users" />
+                  </div>
+                  <div className="ki-stat-info">
+                    <h3 className="mb-0 ki-stat-num">
+                      {statsInView ? <CountUp end={500} suffix="+" duration={2.2} /> : "500+"}
+                    </h3>
+                    <p className="mb-0">Expert Coaches / Trainers <span>Qualified &amp; Verified</span></p>
                   </div>
                 </div>
               </div>
@@ -1252,7 +1265,7 @@ const Home = () => {
               How It <span style={{ color: "var(--ki-primary)" }}>Works</span>
             </h2>
             <p className="sub-title" style={{ color: "#606D76" }}>
-              Simplifying the booking process for coaches, venues, and athletes.
+              Simplifying the booking process for venues, coaches, and trainers.
             </p>
           </div>
           <div className="row justify-content-center ">
@@ -1393,7 +1406,9 @@ const Home = () => {
                     onClick={() => navigate(
                       categoryProviderTab === "venue"
                         ? `/sports-venue/${cat.slug}`
-                        : `${categoryProviderTab === "coach" ? routes.coachesGrid : routes.blogList}?category=${encodeURIComponent(cat.name)}`
+                        : categoryProviderTab === "coach"
+                          ? `/coaches/category/${cat.slug}`
+                          : `/trainers/category/${cat.slug}`
                     )}
                   >
                     <div
@@ -2353,7 +2368,7 @@ const Home = () => {
                   <ul className="list-unstyled mb-0" style={{ paddingLeft: 0 }}>
                     <li style={{ display: "flex", alignItems: "center", marginBottom: "12px", color: "#334155", fontSize: "14px", fontWeight: "500" }}>
                       <i className="fa-solid fa-circle-check" style={{ color: "#16A34A", marginRight: "8px", fontSize: "16px" }} />
-                      ₹1,000,000 liability insurance
+                      List Your Venue. Get More Bookings.
                     </li>
                     <li style={{ display: "flex", alignItems: "center", marginBottom: "12px", color: "#334155", fontSize: "14px", fontWeight: "500" }}>
                       <i className="fa-solid fa-circle-check" style={{ color: "#16A34A", marginRight: "8px", fontSize: "16px" }} />
@@ -2446,7 +2461,7 @@ const Home = () => {
                   <ul className="list-unstyled mb-0" style={{ paddingLeft: 0 }}>
                     <li style={{ display: "flex", alignItems: "center", marginBottom: "12px", color: "#334155", fontSize: "14px", fontWeight: "500" }}>
                       <i className="fa-solid fa-circle-check" style={{ color: "#EA580C", marginRight: "8px", fontSize: "16px" }} />
-                      Connect with students in Indore
+                      Connect with candidates in Indore
                     </li>
                     <li style={{ display: "flex", alignItems: "center", marginBottom: "12px", color: "#334155", fontSize: "14px", fontWeight: "500" }}>
                       <i className="fa-solid fa-circle-check" style={{ color: "#EA580C", marginRight: "8px", fontSize: "16px" }} />

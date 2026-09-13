@@ -4875,6 +4875,22 @@ header.header.header-sticky {
   }
 }
 
+// Keep the public listing-page heroes visually consistent on desktop.
+.standard-page-hero {
+  box-sizing: border-box;
+  height: 470px;
+  min-height: 470px;
+  padding-top: 110px !important;
+  padding-bottom: 20px !important;
+}
+
+@media (max-width: 767.98px) {
+  .standard-page-hero {
+    height: auto;
+    min-height: 0;
+  }
+}
+
 // Contact Us & Section Headings High Contrast Fix
 .contact-us-page,
 .contact-group {

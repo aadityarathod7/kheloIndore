@@ -69,8 +69,9 @@ const sendWhatsApp = async ({ mobile, otp }) => {
 };
 
 /** Sends the same OTP through every configured BhashSMS channel. */
-const sendOtp = async ({ mobile, otp }) => {
-  const channels = (process.env.BHASH_OTP_CHANNELS || "sms")
+const sendOtp = async ({ mobile, otp, channels: requestedChannels }) => {
+  const channels = (requestedChannels || process.env.BHASH_OTP_CHANNELS || "sms")
+    .toString()
     .split(",")
     .map((channel) => channel.trim().toLowerCase())
     .filter(Boolean);

@@ -84,7 +84,11 @@ const AddCoachSlot = () => {
     }
 
     try {
-      let response = await axios.post(`${API_URL}/coach-slot/add/${id}`, formData);
+      let response = await axios.post(`${API_URL}/coach-slot/add/${id}`, formData, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
       if(response.data.status==200){
         Swal.fire({
           icon: "success",
@@ -105,7 +109,7 @@ const AddCoachSlot = () => {
       Swal.fire({
         icon: "error",
         title: "Error",
-        text: "Failed to add slot. Please try again later.",
+        text: error?.response?.data?.message || "Failed to add slot. Please try again later.",
       });
     }
   };

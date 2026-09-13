@@ -20,6 +20,7 @@ const PersonalTrainerSchema = new mongoose.Schema(
     password: {
       type: String,
     },
+    password_reset_sent_at: { type: Date, default: null },
     demo_password: { 
       type: String
      },

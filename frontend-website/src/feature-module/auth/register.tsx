@@ -22,6 +22,7 @@ const Signin = () => {
     : "/admin";
   const searchParams = new URLSearchParams(location.search);
   const paramRole = searchParams.get("role");
+  const returnTo = location.state?.URL;
 
   let defaultRole = "Venue Admin";
   if (paramRole === "coach") {
@@ -160,7 +161,7 @@ const Signin = () => {
             icon: "success",
             confirmButtonText: "OK",
           }).then(() => {
-            navigate("/auth/verifyotp");
+            navigate("/auth/verifyotp", { state: { returnTo } });
           });
         } else {
           Swal.fire({

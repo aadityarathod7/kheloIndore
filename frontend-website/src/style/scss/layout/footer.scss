@@ -28,6 +28,31 @@
     }
   }
 
+  .footer-content-grid {
+    align-items: flex-start;
+
+    > [class*="col-"] {
+      display: flex;
+    }
+
+    .footer-widget {
+      width: 100%;
+    }
+
+    @include respond-above(custom1200) {
+      display: grid;
+      gap: 0 56px;
+      grid-template-columns: minmax(360px, 1.35fr) repeat(3, minmax(0, 1fr));
+
+      > [class*="col-"] {
+        padding-left: 0;
+        padding-right: 0;
+        width: auto;
+      }
+    }
+
+  }
+
   .footer-title {
     color: #fff;
     font-size: 14px;
@@ -40,7 +65,7 @@
   .footer-menu {
     ul {
       list-style: none;
-      margin: 0;
+      margin: 7px 0 0;
       padding: 0;
 
       li {

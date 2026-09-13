@@ -41,6 +41,7 @@ import AddVenueSlots from "./pages/addVenueSlots";
 import VenueAdminList from "./pages/venueAdminList";
 import AddVenueAdmin from "./pages/addVanueAdmin";
 import UpdateVenueAdmin from "./pages/updateVenueAdmin";
+import VenueAdminVenuesDashboard from "./pages/VenueAdminVenuesDashboard";
 import Approve from "./pages/approve";
 import AddCoach from "./pages/addCoach";
 import AddPersonalTrainer from "./pages/addTrainer";
@@ -84,6 +85,7 @@ function App() {
             <Route path="/venue-admin" element={<VenueAdminList />} />
             <Route path="/venue-admin/add" element={<AddVenueAdmin />} />
             <Route path="/venue-admin/update/:_id" element={<UpdateVenueAdmin />} />
+            <Route path="/venue-admin/:id/venues" element={<VenueAdminVenuesDashboard />} />
 
 
             <Route path="/venues" element={<Venuetable />} />

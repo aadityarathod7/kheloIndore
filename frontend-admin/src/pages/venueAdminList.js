@@ -11,6 +11,7 @@ import "../../src/Userlist.css";
 import "../Style/List.css";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import axios from "axios";
+import PasswordResetLinkButton from "../components/PasswordResetLinkButton";
 
 export default function VenueAdminList() {
     const [venueAdmin, setVenueAdmin] = useState([]);
@@ -21,6 +22,8 @@ export default function VenueAdminList() {
     const role = localStorage.getItem('role');
 
     const [filterStatus, setFilterStatus] = useState('all');
+    const [filterCategory, setFilterCategory] = useState('all');
+    const venueCategories = [...new Set(venueAdmin.flatMap((admin) => admin.venue_categories || []))].sort();
 
     const csvData = venueAdmin.map((row, index) => ({
         "S.No.": index + 1 + (currentPage - 1) * itemsPerPage,
@@ -29,6 +32,9 @@ export default function VenueAdminList() {
         "E-mail": row.email,
         "Role": row.role,
         "Mobile Number": row.mobile,
+        "Venue Count": row.venue_count || 0,
+        "Venue IDs": (row.venue_ids || []).join(", "),
+        "Venue Categories": (row.venue_categories || []).join(", "),
         "Status": row.status ? "Active" : "Inactive",
     }));
 
@@ -64,20 +70,21 @@ export default function VenueAdminList() {
     const handleDelete = async (row) => {
         setLoading(true)
         try {
-            const apiUrl = `${API_URL}/user/delete/${row._id}`;
+            const apiUrl = `${API_URL}/super-admin/accounts/user/${row._id}/archive`;
 
             const response = await fetch(apiUrl, {
-                method: "DELETE",
+                method: "POST",
                 headers: {
                     "Content-Type": "application/json",
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
                 },
             });
 
             if (response.ok) {
                 setLoading(false)
                 Swal.fire(
-                    "Deactivated!",
-                    "Venue Admin has been deactivated.",
+                    "Archived!",
+                    "Venue Admin access has been removed. Profile and booking history are retained.",
                     "success"
                 );
                 fetchVenueAdmin();
@@ -95,8 +102,9 @@ export default function VenueAdminList() {
 
     const { Option } = Select;
     const filteredData = venueAdmin.filter(row => {
-        if (filterStatus === 'all') return true;
-        return filterStatus === 'active' ? row.status : !row.status;
+        const statusMatch = filterStatus === 'all' || (filterStatus === 'active' ? row.status : !row.status);
+        const categoryMatch = filterCategory === 'all' || (row.venue_categories || []).includes(filterCategory);
+        return statusMatch && categoryMatch;
     });
 
     const handleColumnFilter = (column, value) => {
@@ -176,6 +184,9 @@ export default function VenueAdminList() {
                 `${API_URL}/super-admin/update-user/${venueAdmin._id}`,
                 {
                     status: true
+                },
+                {
+                    headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
                 }
             );
             Swal.fire({
@@ -197,7 +208,7 @@ export default function VenueAdminList() {
             <div className="cnt">
                 <Form.Group as={Row} className="mb-3 align-items-center">
                     {role === 'Super Admin' && (
-                        <Col sm={6}>
+                            <Col sm={4}>
                             <Form.Control
                                 type="text"
                                 placeholder="Search..."
@@ -206,8 +217,14 @@ export default function VenueAdminList() {
                                 onChange={handleSearch}
                             />
                         </Col>
+                        <Col sm={3}>
+                            <Form.Select value={filterCategory} onChange={(event) => { setFilterCategory(event.target.value); setCurrentPage(1); }}>
+                                <option value="all">All venue categories</option>
+                                {venueCategories.map((category) => <option key={category} value={category}>{category}</option>)}
+                            </Form.Select>
+                        </Col>
                     )}
-                    <Col sm={6} className="d-flex justify-content-end align-items-center">
+                    <Col sm={5} className="d-flex justify-content-end align-items-center">
                         <div>
                             {role === 'Super Admin' && (
                                 <>
@@ -245,6 +262,9 @@ export default function VenueAdminList() {
                                     <th style={{ width: "10%" }}>Last Name</th>
                                     <th style={{ width: "10%" }}>E-mail</th>
                                     <th style={{ width: "10%" }}>Mobile Number</th>
+                                    <th style={{ width: "8%" }}>Venues</th>
+                                    <th style={{ width: "14%" }}>Venue IDs</th>
+                                    <th style={{ width: "14%" }}>Venue Categories</th>
                                     <th style={{ width: "10%" }}>Status
                                         <Popover
                                             placement="bottom"
@@ -278,6 +298,13 @@ export default function VenueAdminList() {
                                         <td>{row.last_name}</td>
                                         <td>{row.email}</td>
                                         <td>{row.mobile}</td>
+                                        <td>
+                                            <Link to={`/venue-admin/${row._id}/venues`} className="fw-bold text-success text-decoration-none" title="Open this Venue Admin's venue dashboard">
+                                                {row.venue_count || 0}
+                                            </Link>
+                                        </td>
+                                        <td>{(row.venue_ids || []).join(", ") || "—"}</td>
+                                        <td>{(row.venue_categories || []).join(", ") || "—"}</td>
                                         <td style={{
                                             color: row.status ? "#4fd104" : "#ff0000",
                                             fontWeight: "bold",
@@ -305,6 +332,7 @@ export default function VenueAdminList() {
                                                         <EditOutlined className="edit_icon" />
                                                     </Link>
                                                 </Tooltip>
+                                                {role === 'Super Admin' && <PasswordResetLinkButton accountType="user" account={row} />}
                                                 {role === 'Super Admin' && (
                                                     row.status ?
                                                         <Tooltip title={`Deactivate`} arrow>

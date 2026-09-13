@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import ImageWithBasePath from "../../core/data/img/ImageWithBasePath";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { all_routes } from "../router/all_routes";
 // import "./register.css";
 import axios from "axios";
@@ -14,6 +14,8 @@ import Loader from "../loader/loader";
 const VerifyOTP = () => {
   const route = all_routes;
   const navigate = useNavigate(); // Use useNavigate hook
+  const location = useLocation();
+  const returnTo = location.state?.returnTo;
   const [otp, setOTP] = useState('');
   const [error, setError] = useState('');
   const [token, setToken] = useState('');
@@ -75,7 +77,7 @@ useEffect(()=>{
         // localStorage.setItem('token', response.data.token);
 
         Swal.fire('Success!', 'Signup Successful!', 'success');
-        navigate('/login');
+        navigate('/login', { state: { URL: returnTo } });
       } else {
         Swal.fire('Error!', 'Invalid OTP. Please try again.', 'error');
       }
@@ -174,7 +176,6 @@ useEffect(()=>{
 };
 
 export default VerifyOTP;
-
 
 
 

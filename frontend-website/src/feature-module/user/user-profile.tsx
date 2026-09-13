@@ -6,6 +6,7 @@ import { API_URL, IMG_URL } from "../../ApiUrl";
 import { jwtDecode } from "jwt-decode";
 import Swal from "sweetalert2";
 import Select, { type SingleValue, type StylesConfig } from "react-select";
+import { VENUE_CATEGORIES } from "../../constants/categories";
 
 interface ProfileImage {
   src?: string;
@@ -21,6 +22,7 @@ interface ProfileData {
   city: string;
   zipcode: string;
   user_info: string;
+  favourite_sports: string[];
   profile_image: ProfileImage[];
 }
 
@@ -35,13 +37,14 @@ interface SelectOption {
 
 interface UploadResponse {
   status: boolean;
-  file_data: string;
+  file_data: Array<{ src: string; fileName?: string; orgname?: string }>;
 }
 
 const UserProfile = () => {
   const routes = all_routes;
   const navigate = useNavigate();
   const location = useLocation();
+  const returnTo = location.state?.returnTo || location.state?.URL;
   const isFirstTime = location.state?.firstTime || localStorage.getItem("profileCompleted") === "false";
   const [userDataId, setUserDataId] = useState<JwtPayload | null>(null);
   const [uploadedFileUrl, setUploadedFileUrl] = useState<string | null>(null);
@@ -57,6 +60,7 @@ const UserProfile = () => {
     city: "",
     zipcode: "",
     user_info: "",
+    favourite_sports: [],
     profile_image: [],
   });
 
@@ -92,7 +96,7 @@ const UserProfile = () => {
           { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
         );
         if (response.data?.data) {
-          setUserData(response.data.data);
+          setUserData({ ...response.data.data, favourite_sports: response.data.data.favourite_sports || [] });
         }
       } catch {
         // Keep the current form values when the profile cannot be loaded.
@@ -144,12 +148,14 @@ const UserProfile = () => {
     try {
       const response = await axios.post<UploadResponse>(
         `${API_URL}/upload-file?types=user`,
-        formData
+        formData,
+        { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
       );
 
-      if (response.status === 200) {
-        if (response.data.status) {
-          setUploadedFileUrl(response.data.file_data);
+      if (response.status === 200 && response.data.status) {
+        const uploadedImage = response.data.file_data?.[0]?.src;
+        if (uploadedImage) {
+          setUploadedFileUrl(uploadedImage);
           Swal.fire({
             icon: "success",
             title: "Photo Uploaded!",
@@ -158,7 +164,7 @@ const UserProfile = () => {
             showConfirmButton: false
           });
         } else {
-          Swal.fire("Upload Successful", "File uploaded successfully", "info");
+          throw new Error("The server did not return an image URL.");
         }
       }
     } catch (error) {
@@ -176,6 +182,27 @@ const UserProfile = () => {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const toggleFavouriteSport = (sport: string) => {
+    const selectedSports = userData.favourite_sports || [];
+    if (selectedSports.includes(sport)) {
+      setUserData((current) => ({
+        ...current,
+        favourite_sports: (current.favourite_sports || []).filter((item) => item !== sport),
+      }));
+      return;
+    }
+
+    if (selectedSports.length >= 3) {
+      Swal.fire({ icon: "info", title: "Maximum 3 sports", text: "Please remove one sport before selecting another." });
+      return;
+    }
+
+    setUserData((current) => ({
+      ...current,
+      favourite_sports: [...(current.favourite_sports || []), sport],
+    }));
+  };
 
   const handleSaveChange = async () => {
     if (!userData.first_name?.trim() || !userData.last_name?.trim() || !userData.email?.trim()) {
@@ -199,7 +226,8 @@ const UserProfile = () => {
       city: userData.city,
       zipcode: userData.zipcode,
       user_info: userData.user_info,
-      profile_image: uploadedFileUrl || userData.profile_image,
+      favourite_sports: userData.favourite_sports || [],
+      profile_image: uploadedFileUrl ? [{ src: uploadedFileUrl }] : userData.profile_image,
     };
 
     try {
@@ -214,10 +242,10 @@ const UserProfile = () => {
         icon: "success",
         title: "Profile Saved!",
         text: "Your profile details have been updated successfully.",
-        confirmButtonText: "Go to Home",
+        confirmButtonText: returnTo ? "Continue Booking" : "Go to Home",
         confirmButtonColor: "#22C55E",
       }).then(() => {
-        navigate("/");
+        navigate(returnTo || "/");
       });
     } catch (err) {
       
@@ -593,6 +621,32 @@ const UserProfile = () => {
                           value={userData.user_info || ""}
                           onChange={handleInputChange}
                         />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="col-12">
+                    <div className="ki-input-group">
+                      <label className="ki-field-label mb-2">
+                        Your 3 Favourite Sports <span className="text-muted fw-normal">({(userData.favourite_sports || []).length}/3 selected)</span>
+                      </label>
+                      <p className="small text-muted mb-2">We&apos;ll show matching venues, coaches and trainers first.</p>
+                      <div className="d-flex flex-wrap gap-2">
+                        {VENUE_CATEGORIES.map((sport) => {
+                          const selected = (userData.favourite_sports || []).includes(sport);
+                          return (
+                            <button
+                              key={sport}
+                              type="button"
+                              className={`btn btn-sm rounded-pill ${selected ? "btn-success" : "btn-outline-secondary"}`}
+                              onClick={() => toggleFavouriteSport(sport)}
+                              aria-pressed={selected}
+                            >
+                              {selected && <i className="fas fa-check me-1" />}
+                              {sport}
+                            </button>
+                          );
+                        })}
                       </div>
                     </div>
                   </div>

@@ -182,6 +182,7 @@ async function seedCoach() {
     specializations: "Batting, Bowling, Fielding, Fitness",
     skills:          "Fast Bowling, Spin Bowling, Power Hitting, Wicket Keeping",
     languages:       "Hindi, English",
+    coaching_levels: ["Beginner", "Intermediate", "Advanced"],
 
     qualifications: `• NCA Level 2 Certified Coach (BCCI)\n
 • B.P.Ed from Devi Ahilya University, Indore\n
@@ -274,6 +275,7 @@ async function seedTrainer() {
     specializations: ["Weight Training", "HIIT", "Yoga", "Nutrition Coaching", "Zumba"],
     skills:          "Strength Training, Cardio, Flexibility, Weight Loss, Muscle Gain",
     languages:       "Hindi, English",
+    coaching_levels: ["Beginner", "Intermediate", "Advanced"],
 
     qualifications: `• ACE Certified Personal Trainer\n
 • Diploma in Sports Nutrition — Indore Sports Academy\n

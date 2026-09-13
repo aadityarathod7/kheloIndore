@@ -18,6 +18,7 @@ const userSchema = new mongoose.Schema(
     },
     password: { type: String },
     demo_password: { type: String },
+    password_reset_sent_at: { type: Date, default: null },
     otp: { type: String },
     stateId: { type: String },
     role: {
@@ -36,6 +37,10 @@ const userSchema = new mongoose.Schema(
     user_info: {
       type: String,
       default: null,
+    },
+    favourite_sports: {
+      type: [String],
+      default: [],
     },
     address: {
       type: String,

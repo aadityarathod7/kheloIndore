@@ -37,6 +37,16 @@ interface VenueData {
   gameType: any;
   additionalNotes: any;
   policiesAndRules: any;
+  membership_plans?: MembershipPlan[];
+}
+
+interface MembershipPlan {
+  name: string;
+  months: number;
+  price: number;
+  priority?: string;
+  discount?: string;
+  support?: string;
 }
 
 const getVenueImgUrl = (images: any, index = 0): string => {
@@ -259,29 +269,15 @@ const VenueDetails = () => {
 
   const handleBookNow = async (e:any) => {
     e.preventDefault();
-    
-    const token = localStorage.getItem("token");
-    
-    if (token) {
-      navigate(`/sports-venue/venue-timedate/${id}`);
-    } else {
-      Swal.fire({
-        title: "Please Log In",
-        text: "In order to book a venue, you must log in.",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonText: "OK",
-        cancelButtonText: "Cancel",
-      }).then((result) => {
-        if (result.isConfirmed) {
-          navigate("/login",
-            { state: { URL: location.pathname } }
-          )
-        }
-      });
-    }
-
+    // Visitors can browse dates and select available slots before authentication.
+    // Login is requested only when they continue to confirm/payment.
+    navigate(`/sports-venue/venue-timedate/${id}`);
   }
+
+  const recurringMembershipPlans = (venueData?.membership_plans || []).filter((plan) =>
+    plan?.name && Number(plan?.months) > 0 && Number(plan?.price) >= 0
+  );
+  const isRecurringFacility = /gym|swimming/.test(`${venueData?.category || ""} ${venueData?.gameType || ""}`.toLowerCase());
 
   // Opens (or starts) a real chat with the venue owner
 
@@ -1115,6 +1111,37 @@ const VenueDetails = () => {
                       </button>
                     </div>
                   </div>
+
+                  {isRecurringFacility && recurringMembershipPlans.length > 0 && (
+                    <div className="pro-card mb-4">
+                      <div className="d-flex align-items-start gap-2 mb-3">
+                        <span className="d-inline-flex align-items-center justify-content-center rounded-circle bg-success bg-opacity-10 text-success" style={{ width: "36px", height: "36px" }}>
+                          <i className="fas fa-repeat" />
+                        </span>
+                        <div>
+                          <h3 className="card-title-head mb-1" style={{ color: "#111827", fontSize: "17px" }}>Recurring Memberships</h3>
+                          <p className="text-muted mb-0" style={{ fontSize: "12px" }}>Choose a plan for regular training and priority booking.</p>
+                        </div>
+                      </div>
+                      <div className="d-grid gap-2">
+                        {recurringMembershipPlans.map((plan) => (
+                          <div key={`${plan.name}-${plan.months}`} className="rounded-3 border p-3" style={{ borderColor: "#DDE9DF", background: "#FBFFFC" }}>
+                            <div className="d-flex justify-content-between align-items-start gap-2">
+                              <div>
+                                <strong style={{ color: "#0F172A" }}>{plan.name}</strong>
+                                <span className="d-block text-muted" style={{ fontSize: "12px" }}>{plan.months} month{plan.months > 1 ? "s" : ""} access · {plan.priority || "Standard Booking"}</span>
+                              </div>
+                              <strong className="text-success">₹{Number(plan.price).toLocaleString("en-IN")}</strong>
+                            </div>
+                            <div className="d-flex flex-wrap gap-2 mt-2 text-muted" style={{ fontSize: "11px" }}>
+                              <span><i className="fas fa-check-circle text-success me-1" />{plan.discount || "Flexible Plan"}</span>
+                              <span><i className="fas fa-headset text-success me-1" />{plan.support || "Basic Support"}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
                   {/* Moved Compact Location & Map Card (Positioned directly below Book Slot) */}
                   <div className="pro-card mt-4">

@@ -184,8 +184,19 @@ const VenueOrderConfirm = () => {
   };
 
   const bookingId = useMemo(() => {
-    return `KI-${Math.floor(100000 + Math.random() * 900000)}`;
-  }, []);
+    const bookingDate = selectedDate ? new Date(selectedDate) : new Date();
+    const datePart = [
+      String(bookingDate.getFullYear()).slice(-2),
+      String(bookingDate.getMonth() + 1).padStart(2, "0"),
+      String(bookingDate.getDate()).padStart(2, "0"),
+    ].join("");
+    const serialNumber = String(Date.now()).slice(-6);
+    return `KI-BK-${datePart}${serialNumber}`;
+  }, [selectedDate]);
+
+  const selectedSlotsLabel = selectedTimeSlots.length > 0
+    ? selectedTimeSlots.map((slot: any) => `${slot.startTime} - ${slot.endTime}`).join(", ")
+    : "No Slots";
 
   const [copied, setCopied] = useState(false);
 
@@ -384,8 +395,8 @@ const VenueOrderConfirm = () => {
                       </span>
                       <div>
                         <span className="text-muted d-block" style={{ fontSize: "9px", textTransform: "uppercase", fontWeight: "600" }}>Time Slots</span>
-                        <span className="fw-bold text-dark d-block text-truncate" style={{ fontSize: "12px", maxWidth: "130px" }}>
-                          {selectedTimeSlots.length > 0 ? `${selectedTimeSlots[0].startTime} - ${selectedTimeSlots[0].endTime}` : "No Slots"}
+                        <span className="fw-bold text-dark d-block" style={{ fontSize: "12px", lineHeight: "1.45", maxHeight: "54px", overflowY: "auto", paddingRight: "2px" }}>
+                          {selectedSlotsLabel}
                         </span>
                       </div>
                     </div>
@@ -515,6 +526,10 @@ const VenueOrderConfirm = () => {
                 </div>
 
                 <div className="d-flex flex-column gap-2 mb-2" style={{ fontSize: "13px" }}>
+                  <div className="d-flex align-items-start justify-content-between py-1.2 border-bottom" style={{ borderColor: "#F1F5F9" }}>
+                    <span className="text-muted">Booking ID</span>
+                    <span className="fw-bold text-dark text-end" style={{ maxWidth: "180px", wordBreak: "break-all" }}>{bookingId}</span>
+                  </div>
                   
                   <div className="d-flex align-items-start justify-content-between py-1.2 border-bottom" style={{ borderColor: "#F1F5F9" }}>
                     <span className="text-muted">Venue Name</span>
@@ -531,9 +546,7 @@ const VenueOrderConfirm = () => {
                   <div className="d-flex align-items-start justify-content-between py-1.2 border-bottom" style={{ borderColor: "#F1F5F9" }}>
                     <span className="text-muted">Time Slots</span>
                     <span className="fw-bold text-dark text-end" style={{ maxWidth: "160px" }}>
-                      {selectedTimeSlots.length > 0 ? (
-                        selectedTimeSlots.map((slot: any) => `${slot.startTime} - ${slot.endTime}`).join(", ")
-                      ) : "No Slots Selected"}
+                      {selectedSlotsLabel}
                     </span>
                   </div>
 

@@ -126,6 +126,23 @@ const buildMenu = (role) => {
   return items;
 };
 
+const notificationSection = (notification) => {
+  const searchableText = [notification.type, notification.title, notification.message]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+  if (searchableText.includes("booking")) return "bookings";
+  if (searchableText.includes("venue admin")) return "venue-admin";
+  if (searchableText.includes("venue")) return "venues";
+  if (searchableText.includes("coach")) return "coaches";
+  if (searchableText.includes("trainer")) return "personal-training";
+  if (searchableText.includes("enquir")) return "enquiries";
+  if (searchableText.includes("event")) return "events";
+  if (searchableText.includes("blog")) return "blog";
+  if (searchableText.includes("user")) return "users";
+  return "dashboard";
+};
+
 /* ── Styles (inline, scoped to sidebar) ──────────────────── */
 const S = {
   sidebar: (collapsed) => ({
@@ -274,7 +291,17 @@ const MainLayout = () => {
   const currentKey =
     location.pathname.split("/").filter(Boolean).pop() || "dashboard";
   const role = localStorage.getItem("role");
-  const menuItems = buildMenu(role);
+  const unreadSectionCounts = notifications.reduce((counts, notification) => {
+    if (!notification.is_read) {
+      const section = notificationSection(notification);
+      counts[section] = (counts[section] || 0) + 1;
+    }
+    return counts;
+  }, {});
+  const menuItems = buildMenu(role).map((item) => ({
+    ...item,
+    unreadCount: unreadSectionCounts[item.key] || 0,
+  }));
   const isMobile = typeof window !== "undefined" && window.innerWidth <= 768;
 
   useEffect(() => {
@@ -298,15 +325,22 @@ const MainLayout = () => {
     setMobileMenuOpen(false);
   };
   const openNotifications = async () => {
-    const nextOpen = !notificationsOpen;
-    setNotificationsOpen(nextOpen);
-    const unreadIds = notifications.filter((item) => !item.is_read).map((item) => item._id);
-    if (nextOpen && unreadIds.length) {
+    setNotificationsOpen(!notificationsOpen);
+  };
+
+  const notificationDestination = (notification) => {
+    return `/${notificationSection(notification)}`;
+  };
+
+  const openNotification = async (notification) => {
+    if (!notification.is_read) {
       try {
-        await axios.put(`${API_URL}/notifications/read`, { ids: unreadIds }, { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
-        setNotifications((items) => items.map((item) => unreadIds.includes(item._id) ? { ...item, is_read: true } : item));
+        await axios.put(`${API_URL}/notifications/read`, { ids: [notification._id] }, { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
+        setNotifications((items) => items.map((item) => item._id === notification._id ? { ...item, is_read: true } : item));
       } catch (_) {}
     }
+    setNotificationsOpen(false);
+    navigate(notificationDestination(notification));
   };
 
   return (
@@ -380,7 +414,7 @@ const MainLayout = () => {
                   title={collapsed ? item.label : ""}
                 >
                   <span style={S.navIcon(active || hovered)}>{item.icon}</span>
-                  {!collapsed && <span style={S.navLabel}>{item.label}</span>}
+                  {!collapsed && <span style={{ ...S.navLabel, display: "flex", alignItems: "center", gap: 8 }}><span>{item.label}</span>{item.unreadCount > 0 && <span className="admin-sidebar-notification-count">{item.unreadCount > 9 ? "9+" : item.unreadCount}</span>}</span>}
                 </button>
               );
             })}
@@ -494,7 +528,7 @@ const MainLayout = () => {
             <div className="admin-notification-wrap">
               <button type="button" className="admin-notification-bell" aria-label="Notifications" aria-expanded={notificationsOpen} onClick={openNotifications}>
                 <BellOutlined />
-                {notifications.filter((item) => !item.is_read).length > 0 && <span className="admin-notification-count">{notifications.filter((item) => !item.is_read).length > 9 ? "9+" : notifications.filter((item) => !item.is_read).length}</span>}
+                <span className="admin-notification-count" title="Unread notifications">{notifications.filter((item) => !item.is_read).length > 9 ? "9+" : notifications.filter((item) => !item.is_read).length}</span>
               </button>
               {notificationsOpen && <div className="admin-notification-panel">
                 <div className="admin-notification-panel-head">
@@ -506,7 +540,7 @@ const MainLayout = () => {
                     const label = notification.title || "New update";
                     const initial = label.charAt(0).toUpperCase();
                     const timestamp = notification.createdAt ? new Date(notification.createdAt).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" }) : "Just now";
-                    return <div key={notification._id} className={`admin-notification-item${notification.is_read ? "" : " is-unread"}`}>
+                    return <div key={notification._id} className={`admin-notification-item${notification.is_read ? "" : " is-unread"}`} role="button" tabIndex={0} onClick={() => openNotification(notification)} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") openNotification(notification); }}>
                       <span className="admin-notification-icon">{initial}</span>
                       <div className="admin-notification-copy"><div><b>{label}</b><time>{timestamp}</time></div><p>{notification.message}</p></div>
                     </div>;

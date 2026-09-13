@@ -9,6 +9,13 @@ import axios from 'axios';
 import { API_URL } from '../utils/ApiUrl';
 import Swal from 'sweetalert2';
 
+const slotEndDateTime = (startDate, endDate, startTime, endTime) => {
+    const start = new Date(`${startDate}T${startTime}`);
+    const end = new Date(`${endDate}T${endTime}`);
+    if (startDate === endDate && end < start) end.setDate(end.getDate() + 1);
+    return { start, end };
+};
+
 export default function AddCoachTrainerSlot() {
     const id = useParams()
     const [formData, setFormData] = useState({
@@ -62,10 +69,9 @@ export default function AddCoachTrainerSlot() {
         }
 
         // Optionally check if the start date and time is before the end date and time
-        const startDateTime = new Date(`${start_date}T${start_time}`);
-        const endDateTime = new Date(`${end_date}T${end_time}`);
+        const { start: startDateTime, end: endDateTime } = slotEndDateTime(start_date, end_date, start_time, end_time);
 
-        if (startDateTime >= endDateTime) {
+        if (startDateTime >= endDateTime || start_time === end_time) {
             alert("Start date/time must be before the end date/time!");
             return;
         }
@@ -88,7 +94,11 @@ export default function AddCoachTrainerSlot() {
                     Swal.showLoading();
                 }
             });
-            let response = await axios.post(`${API_URL}/coach-slot/add/${id._id}`, newSlot);
+            let response = await axios.post(`${API_URL}/coach-slot/add/${id._id}`, newSlot, {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
+            });
             loadingSwal.close();
             if (response.data.success) {
                 Swal.fire({
@@ -110,7 +120,7 @@ export default function AddCoachTrainerSlot() {
             Swal.fire({
                 icon: "error",
                 title: "Error",
-                text: "Failed to add slot. Please try again later.",
+                text: error?.response?.data?.message || "Failed to add slot. Please try again later.",
             });
         }
 
@@ -135,10 +145,9 @@ export default function AddCoachTrainerSlot() {
         }
 
         // Optionally check if the start date and time is before the end date and time
-        const startDateTime = new Date(`${start_date}T${start_time}`);
-        const endDateTime = new Date(`${end_date}T${end_time}`);
+        const { start: startDateTime, end: endDateTime } = slotEndDateTime(start_date, end_date, start_time, end_time);
 
-        if (startDateTime >= endDateTime) {
+        if (startDateTime >= endDateTime || start_time === end_time) {
             alert("Start date/time must be before the end date/time!");
             return;
         }
@@ -162,7 +171,11 @@ export default function AddCoachTrainerSlot() {
                     Swal.showLoading();
                 }
             });
-            let response = await axios.put(`${API_URL}/coach-slot/delete`, newSlot);
+            let response = await axios.put(`${API_URL}/coach-slot/delete`, newSlot, {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
+            });
             loadingSwal.close();
             if (response?.data?.success) {
                 Swal.fire({
@@ -212,7 +225,7 @@ export default function AddCoachTrainerSlot() {
                 return slot.slots.map(item => ({
                     title: item.isBooked ? 'Booked Slot' : 'Available Slot',
                     start: new Date(`${slot.start_date.split('T')[0]}T${item.start_time}:00`),
-                    end: new Date(`${slot.start_date.split('T')[0]}T${item.end_time}:00`),
+                    end: slotEndDateTime(slot.start_date.split('T')[0], slot.start_date.split('T')[0], item.start_time, item.end_time).end,
                     price: `Price: ${item.price}`,
                     isBooked: item.isBooked,
                     backgroundColor: item.isBooked ? 'black' : 'gray',

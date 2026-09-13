@@ -230,6 +230,7 @@ exports.getVendorSettlements = async (req, res) => {
 
     const bookings = await Booking.find({
       paymentStatus: { $in: SUCCESSFUL_PAYMENT_STATUSES },
+      manual_booking: { $ne: true },
     })
       .populate("vendor_id", "first_name last_name mobile email")
       .populate("venue_id", "name city")

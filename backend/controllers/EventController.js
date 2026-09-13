@@ -20,6 +20,8 @@ exports.createEvent = async (req, res) => {
       price,
       organized_by,
       terms_and_conditions,
+      near_by_location,
+      status,
     } = req.body;
     let user = req.user.userID
     if (!user) {
@@ -90,6 +92,8 @@ exports.createEvent = async (req, res) => {
         price: price !== undefined ? price : null,
         organized_by: organized_by || "",
         terms_and_conditions: terms_and_conditions || "",
+        near_by_location: near_by_location || "",
+        status: status !== undefined ? Boolean(status) : true,
       });
 
       await event.save();

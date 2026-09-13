@@ -38,6 +38,8 @@ const userDetailsAtPaymentSchema = new mongoose.Schema(
     },
     vendor_id: {type:String},
     total_price: { type: Number },
+    coupon_code: { type: String, default: "" },
+    discount_amount: { type: Number, default: 0 },
     payable_amount: { type: Number },
     payment_type: { type: String, enum: ["full", "partial"], default: "full" },
     payment_order_id: { type: String, index: true },

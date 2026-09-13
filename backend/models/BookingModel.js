@@ -89,6 +89,14 @@ manual_booking: {
   type: Boolean,
   default: false,
 },
+manual_amount_received: {
+  type: Number,
+  default: 0,
+},
+platform_amount_received: {
+  type: Number,
+  default: 0,
+},
 manual_notes: {
   type: String,
   default: "",

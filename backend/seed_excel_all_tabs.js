@@ -152,6 +152,7 @@ async function seedCoach() {
     specializations: "Batting, Bowling, Fielding, Fitness",
     skills:          "Fast Bowling, Spin Bowling, Power Hitting, Wicket Keeping",
     languages:       "Hindi, English",
+    coaching_levels: ["Beginner", "Intermediate", "Advanced"],
 
     qualifications: `• NCA Level 2 Certified Coach (BCCI)\n\n• B.P.Ed from Devi Ahilya University, Indore\n\n• Former Madhya Pradesh Ranji Trophy Player (2011–2019)\n\n• Under-19 State Team Captain (2008)`,
 
@@ -230,6 +231,7 @@ async function seedTrainer() {
     specializations: ["Weight Training", "HIIT", "Yoga", "Nutrition Coaching", "Zumba"],
     skills:          "Strength Training, Cardio, Flexibility, Weight Loss, Muscle Gain",
     languages:       "Hindi, English",
+    coaching_levels: ["Beginner", "Intermediate", "Advanced"],
 
     qualifications: `• ACE Certified Personal Trainer\n\n• Diploma in Sports Nutrition — Indore Sports Academy\n\n• Certified Yoga Instructor (RYT-200)\n\n• HIIT & Functional Training Specialist\n\n• B.Sc. Physical Education — DAVV, Indore`,
 

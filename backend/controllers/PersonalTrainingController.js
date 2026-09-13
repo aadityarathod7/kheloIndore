@@ -5,6 +5,12 @@ const mail = require("../helper/sendMail");
 const mailContent = require("../middlewares/mail-content");
 const { sendCustomMessage } = require("../helper/bhashMessaging");
 const crypto = require("crypto");
+const { normaliseCoachTrainerCategory } = require("../config/venueCategories");
+
+const normaliseLanguages = (languages) => {
+  const values = Array.isArray(languages) ? languages : String(languages || "").split(",");
+  return [...new Set(values.map((language) => String(language).trim()).filter(Boolean))];
+};
 
 const withoutPrivateTrainerDetails = (trainer) => {
   const publicTrainer = trainer.toObject ? trainer.toObject() : { ...trainer };
@@ -17,6 +23,14 @@ const withoutPrivateTrainerDetails = (trainer) => {
 
 exports.createPersonalTrainer = async (req, res) => {
   try {
+
+    if (req.body.languages !== undefined) {
+      req.body.languages = normaliseLanguages(req.body.languages);
+    }
+
+    if (req.body.category) {
+      req.body.category = normaliseCoachTrainerCategory(req.body.category) || req.body.category;
+    }
 
     let { first_name, last_name, email, mobile } = req.body;
  let user = req.user.userID
@@ -52,7 +66,7 @@ exports.createPersonalTrainer = async (req, res) => {
         .json({ message: "Email must contain an '@' symbol." });
     }
 
-    const existingMobile = await PersonalTrainer.findOne({ mobile: mobile });
+    const existingMobile = await PersonalTrainer.findOne({ mobile: mobile, status: { $ne: false } });
     if (existingMobile) {
       return res
         .status(400)
@@ -144,6 +158,14 @@ exports.updatePersonalTrainer = async (req, res) => {
     }
     const { id } = req.params;
     const detail = req.body;
+
+    if (detail.languages !== undefined) {
+      detail.languages = normaliseLanguages(detail.languages);
+    }
+
+    if (detail.category) {
+      detail.category = normaliseCoachTrainerCategory(detail.category) || detail.category;
+    }
 
     const personalTrainerData = await PersonalTrainer.findById(id);
 
@@ -628,6 +650,9 @@ exports.completeTrainerProfile = async (req, res) => {
     if (!req.query.token || req.query.token !== trainer.profile_completion_token) {
       return res.status(403).json({ success: false, message: "Invalid or expired profile completion link" });
     }
+    if (detail.languages !== undefined) {
+      detail.languages = normaliseLanguages(detail.languages);
+    }
     const allowed = [
       "gender", "age", "date_of_birth", "price", "category", "trainer_type",
       "near_by_location", "experience", "availability", "specializations", "bio",
@@ -703,6 +728,14 @@ exports.updatePersonalTrainers = async (req, res) => {
   try {
     const { trainerId } = req.params; // Trainer ID from URL parameters
     const updateData = req.body; // Update data from request body
+
+    if (updateData.languages !== undefined) {
+      updateData.languages = normaliseLanguages(updateData.languages);
+    }
+
+    if (updateData.category) {
+      updateData.category = normaliseCoachTrainerCategory(updateData.category) || updateData.category;
+    }
 
     const isSuperAdmin = req.user?.role === "Super Admin";
 
@@ -790,7 +823,7 @@ exports.updatePersonalTrainers = async (req, res) => {
             user_id: admin._id,
             title: "Trainer Approval Required",
             message: `Personal Trainer ${trainer.first_name} ${trainer.last_name} has updated their details and is awaiting verification.`,
-            type: "info",
+            type: "trainer_approval",
             entity_id: trainer._id
           });
         }

@@ -22,6 +22,148 @@ const CoachBooking = require("../models/CoachBookingModel");
 const PersonalTrainerBooking = require("../models/PersonalTrainerBookingModel");
 const blogModel = require('../models/BlogModel');
 const Event = require('../models/EventModel');
+
+const superAdminAccountModels = {
+  user: User,
+  coach: Coach,
+  trainer: PersonalTrainer,
+  admin: Admin,
+};
+
+const getSuperAdminAccountModel = (accountType) =>
+  superAdminAccountModels[String(accountType || "").toLowerCase()];
+
+const syncProviderPassword = async (account, accountType, password) => {
+  const role = accountType === "coach" ? "Coach" : "Personal Trainer";
+  const serviceModel = accountType === "coach" ? Coach : PersonalTrainer;
+  const identities = [
+    ...(account.email ? [{ email: account.email }] : []),
+    ...(account.mobile ? [{ mobile: account.mobile }] : []),
+  ];
+  if (!identities.length) return;
+
+  await serviceModel.updateMany({ $or: identities }, { password });
+  await User.updateMany({ role, $or: identities }, { password });
+};
+
+// Archives an account instead of deleting it. Booking/history documents and
+// profile data remain in MongoDB, while the account can no longer sign in.
+exports.archiveAccount = async (req, res) => {
+  try {
+    const accountType = String(req.params.accountType || "").toLowerCase();
+    const AccountModel = getSuperAdminAccountModel(accountType);
+    if (!AccountModel || !mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ success: false, message: "Invalid account type or account ID." });
+    }
+
+    const account = await AccountModel.findById(req.params.id);
+    if (!account) return res.status(404).json({ success: false, message: "Account not found." });
+    if (accountType === "admin" && account.role === "Super Admin") {
+      return res.status(400).json({ success: false, message: "A Super Admin account cannot be archived here." });
+    }
+
+    const inactiveValues = accountType === "admin"
+      ? { status: false }
+      : { status: false, ...(accountType === "user" ? {} : { is_admin_access: 2 }) };
+    await AccountModel.findByIdAndUpdate(account._id, inactiveValues);
+
+    if (accountType === "coach" || accountType === "trainer") {
+      const role = accountType === "coach" ? "Coach" : "Personal Trainer";
+      const identities = [
+        ...(account.email ? [{ email: account.email }] : []),
+        ...(account.mobile ? [{ mobile: account.mobile }] : []),
+      ];
+      if (identities.length) await User.updateMany({ role, $or: identities }, { status: false, is_admin_access: 2 });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Account archived. Its data and booking history have been retained.",
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// Super Admin can set a temporary generated password or a manually supplied
+// password for any managed account. Passwords are always stored as bcrypt hashes.
+exports.setManagedAccountPassword = async (req, res) => {
+  try {
+    const accountType = String(req.params.accountType || "").toLowerCase();
+    const AccountModel = getSuperAdminAccountModel(accountType);
+    if (!AccountModel || !mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ success: false, message: "Invalid account type or account ID." });
+    }
+
+    const account = await AccountModel.findById(req.params.id);
+    if (!account) return res.status(404).json({ success: false, message: "Account not found." });
+    if (accountType === "admin" && account.role === "Super Admin") {
+      return res.status(400).json({ success: false, message: "Use the Super Admin's own password flow for this account." });
+    }
+
+    const requestedPassword = String(req.body.new_password || "").trim();
+    const generatedPassword = requestedPassword || `KI-${require("crypto").randomBytes(6).toString("base64url")}`;
+    if (generatedPassword.length < 8) {
+      return res.status(400).json({ success: false, message: "Password must be at least 8 characters long." });
+    }
+
+    const password = await bcrypt.hash(generatedPassword, 10);
+    account.password = password;
+    account.otp = undefined;
+    await account.save();
+    if (accountType === "coach" || accountType === "trainer") {
+      await syncProviderPassword(account, accountType, password);
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Password updated successfully.",
+      ...(requestedPassword ? {} : { temporaryPassword: generatedPassword }),
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// Sends a short-lived, single-purpose password-reset link on behalf of Super
+// Admin. The recipient chooses their own password; it is never emailed.
+exports.sendManagedAccountResetLink = async (req, res) => {
+  try {
+    const accountType = String(req.params.accountType || "").toLowerCase();
+    const AccountModel = getSuperAdminAccountModel(accountType);
+    if (!AccountModel || !mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ success: false, message: "Invalid account type or account ID." });
+    }
+    const account = await AccountModel.findById(req.params.id);
+    if (!account?.email) return res.status(400).json({ success: false, message: "This account does not have a registered email address." });
+
+    const resendCooldownMs = 60 * 1000;
+    const elapsed = account.password_reset_sent_at ? Date.now() - new Date(account.password_reset_sent_at).getTime() : resendCooldownMs;
+    if (elapsed < resendCooldownMs) {
+      return res.status(429).json({
+        success: false,
+        message: "A password link was already sent. Please wait before sending another one.",
+        retryAfterSeconds: Math.ceil((resendCooldownMs - elapsed) / 1000),
+      });
+    }
+
+    const token = jwt.sign({
+      accountId: account._id.toString(),
+      accountType,
+      superAdminReset: true,
+    }, JWT_SECRET, { expiresIn: "30m" });
+    const websiteUrl = (process.env.WEBSITE_URL || "https://kheloindore.in").replace(/\/$/, "");
+    const resetLink = `${process.env.ADMIN_URL || `${websiteUrl}/admin`}?resetToken=${encodeURIComponent(token)}`;
+    const recipientName = `${account.first_name || ""} ${account.last_name || ""}`.trim() || "there";
+    const html = `<div style="font-family:Arial,sans-serif;line-height:1.6;color:#1f2937;max-width:600px;margin:auto"><h2>Khelo Indore password reset</h2><p>Hello ${recipientName},</p><p>A Super Admin requested a password reset for your account. Click the button below to set a new password. This link expires in 30 minutes.</p><p style="margin:28px 0"><a href="${resetLink}" style="background:#097e52;color:#fff;text-decoration:none;padding:12px 20px;border-radius:6px;font-weight:700">Reset password</a></p><p>If you did not expect this email, please contact Khelo Indore support.</p></div>`;
+    await mail.sendEmailConfirm({ recipientEmail: account.email, subject: "Reset your Khelo Indore password", html });
+    account.password_reset_sent_at = new Date();
+    await account.save();
+    return res.status(200).json({ success: true, message: "Password reset link sent to the registered email address.", retryAfterSeconds: 60 });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
 //signup By SuperADmin
 exports.signupBySuperAdmin = async (req, res) => {
   try {
@@ -62,6 +204,7 @@ exports.signupBySuperAdmin = async (req, res) => {
 
     // Check if email or mobile already exists
     const existingUser = await User.findOne({
+      status: { $ne: false },
       $or: [{ email }, { mobile }],
     });
 
@@ -220,6 +363,7 @@ exports.signup = async (req, res, next) => {
 
     // Check if user already exists
     const existingUser = await User.findOne({
+      status: { $ne: false },
       $or: [{ mobile }, { email }],
     });
 
@@ -685,10 +829,10 @@ exports.loginWithPassword = async (req, res) => {
       });
     }
 
-    if (user.status === false && user.is_admin_access === 2) {
+    if (user.status === false) {
       return res.status(403).json({
         success: false,
-        message: "Your account is deactivated or rejected. Please contact the administrator."
+        message: "Your account is inactive. Please contact the administrator."
       });
     }
     // Block only if explicitly deactivated/rejected by Super Admin (is_admin_access === 2)
@@ -745,7 +889,7 @@ exports.loginWithPassword = async (req, res) => {
 
 exports.loginUserWithMobile = async (req, res) => {
   try {
-    const { mobile } = req.body;
+    const { mobile, delivery_channel } = req.body;
     if (!mobile) {
       return res.status(400).json({
         success: false,
@@ -823,7 +967,11 @@ exports.loginUserWithMobile = async (req, res) => {
 
     let delivery;
     try {
-      delivery = await sendOtp({ mobile, otp });
+      const requestedChannel = String(delivery_channel || "").trim().toLowerCase();
+      if (requestedChannel && !["sms", "whatsapp"].includes(requestedChannel)) {
+        return res.status(400).json({ success: false, message: "Unsupported OTP delivery channel." });
+      }
+      delivery = await sendOtp({ mobile, otp, channels: requestedChannel || undefined });
     } catch (deliveryError) {
       
       return res.status(502).json({
@@ -1203,6 +1351,9 @@ exports.UpdateUser = async (req, res) => {
         message: "Mobile number must be exactly 10 digits.",
       });
     }
+    if (email && !/^\S+@\S+\.\S+$/.test(email)) {
+      return res.status(400).json({ success: false, message: "Please enter a valid email address." });
+    }
 
     // Validate zipcode (example validation for a 5-digit zipcode)
     if (zipcode && !/^\d{6}$/.test(zipcode)) {
@@ -1218,6 +1369,20 @@ exports.UpdateUser = async (req, res) => {
         success: false,
         message: "No user found with the given ID.",
       });
+    }
+
+    if (email || mobile) {
+      const duplicate = await User.findOne({
+        _id: { $ne: id },
+        status: { $ne: false },
+        $or: [
+          ...(email ? [{ email: String(email).trim().toLowerCase() }] : []),
+          ...(mobile ? [{ mobile: Number(mobile) }] : []),
+        ],
+      });
+      if (duplicate) {
+        return res.status(400).json({ success: false, message: "Email address or mobile number is already in use." });
+      }
     }
 
     // Update fields if provided, otherwise keep the existing user data
@@ -1237,6 +1402,8 @@ exports.UpdateUser = async (req, res) => {
       {
         first_name: updated_first_name,
         last_name: updated_last_name,
+        email: updated_email,
+        mobile: updated_mobile,
         status: updated_status,
         zipcode: updated_zipcode,
         state: updated_state,
@@ -1488,9 +1655,11 @@ if (!Array.isArray(req.files.uploadFile) || req.files.uploadFile.length === 0) {
 
     const files = Array.isArray(req.files.uploadFile) ? req.files.uploadFile : [req.files.uploadFile];
 
-    // Enforce 500kb limit on images
+    // Profile photographs can be up to 5MB; other image types retain the
+    // existing compact CMS upload limit.
     for (const file of files) {
-      if (file.mimetype.startsWith("image/") && file.size > 500 * 1024) {
+      const maxImageBytes = type === "user" ? 5 * 1024 * 1024 : 500 * 1024;
+      if (file.mimetype.startsWith("image/") && file.size > maxImageBytes) {
         // Clean up files written to disk in this request
         for (const f of files) {
           try {
@@ -1499,7 +1668,7 @@ if (!Array.isArray(req.files.uploadFile) || req.files.uploadFile.length === 0) {
         }
         return res.status(400).json({
           status: false,
-          message: `Image "${file.originalname}" exceeds the maximum allowed size of 500KB (Size: ${(file.size / 1024).toFixed(1)}KB). Please compress it and try again.`,
+          message: `Image "${file.originalname}" exceeds the maximum allowed size of ${type === "user" ? "5MB" : "500KB"} (Size: ${(file.size / 1024).toFixed(1)}KB). Please compress it and try again.`,
         });
       }
     }
@@ -1620,6 +1789,10 @@ exports.updateProfileSettting = async (req, res) => {
   try {
     const id = req.params.id;
 
+    if (String(req.user?.userID) !== String(id)) {
+      return res.status(403).json({ success: false, message: "You can update only your own profile." });
+    }
+
     // Check if request body is empty
     if (!req.body || Object.keys(req.body).length === 0) {
       return res.status(400).json({
@@ -1637,6 +1810,7 @@ exports.updateProfileSettting = async (req, res) => {
       state,
       zipcode,
       user_info,
+      favourite_sports,
       status,
       profile_image,
     } = req.body;
@@ -1646,6 +1820,15 @@ exports.updateProfileSettting = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: "Zipcode must be a valid positive number.",
+      });
+    }
+
+    if (favourite_sports !== undefined &&
+      (!Array.isArray(favourite_sports) || favourite_sports.length > 3 ||
+        favourite_sports.some((sport) => typeof sport !== "string" || !sport.trim()))) {
+      return res.status(400).json({
+        success: false,
+        message: "Please select up to three favourite sports.",
       });
     }
 
@@ -1668,8 +1851,13 @@ exports.updateProfileSettting = async (req, res) => {
       state: state || user.state,
       zipcode: zipcode || user.zipcode,
       user_info: user_info || user.user_info,
+      favourite_sports: favourite_sports !== undefined
+        ? [...new Set(favourite_sports.map((sport) => sport.trim()))].slice(0, 3)
+        : user.favourite_sports,
       status: status !== undefined ? status : user.status, // Preserve existing status if not explicitly updated
-      profile_image:profile_image || user.profile_image
+      profile_image: Array.isArray(profile_image)
+        ? profile_image
+        : (typeof profile_image === "string" && profile_image ? [{ src: profile_image }] : user.profile_image)
     };
 
     // Update the user
@@ -1991,11 +2179,35 @@ exports.venueAdminlist = async (req, res) => {
       });
     }
 
+    const venueOwners = users.map((user) => user._id);
+    const venues = venueOwners.length
+      ? await Venue1.find({ vendor_id: { $in: venueOwners } }).select("vendor_id provider_public_id category categories")
+      : [];
+    const venueSummaryByAdmin = venues.reduce((summary, venue) => {
+      const adminId = String(venue.vendor_id);
+      if (!summary[adminId]) summary[adminId] = { venue_count: 0, venue_ids: [], venue_categories: new Set() };
+      summary[adminId].venue_count += 1;
+      summary[adminId].venue_ids.push(venue.provider_public_id || String(venue._id));
+      if (venue.category) summary[adminId].venue_categories.add(venue.category);
+      (venue.categories || []).filter(Boolean).forEach((category) => summary[adminId].venue_categories.add(category));
+      return summary;
+    }, {});
+    const data = users.map((user) => {
+      const userData = user.toObject();
+      const summary = venueSummaryByAdmin[String(user._id)];
+      return {
+        ...userData,
+        venue_count: summary?.venue_count || 0,
+        venue_ids: summary?.venue_ids || [],
+        venue_categories: summary ? Array.from(summary.venue_categories).sort() : [],
+      };
+    });
+
     return res.status(200).json({
       success: true,
       message: `${userRole} fetched the list successfully.`,
       count: count,
-      data: users,
+      data,
     });
 
   } catch (error) {
@@ -2004,6 +2216,34 @@ exports.venueAdminlist = async (req, res) => {
       message: 'Error fetching venue admin list',
       error: error.message,
     });
+  }
+};
+
+// Super Admin dashboard data for one Venue Admin. The data source is the
+// venue's vendor_id, not a frontend-derived list.
+exports.getVenueAdminVenues = async (req, res) => {
+  try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ success: false, message: "Invalid Venue Admin ID." });
+    }
+    const venueAdmin = await User.findOne({ _id: req.params.id, role: "Venue Admin" })
+      .select("first_name last_name email mobile status");
+    if (!venueAdmin) return res.status(404).json({ success: false, message: "Venue Admin not found." });
+
+    const venues = await Venue1.find({ vendor_id: venueAdmin._id })
+      .select("provider_public_id name category categories address city status verification_status createdAt")
+      .sort({ createdAt: -1 });
+    const categories = Array.from(new Set(venues.flatMap((venue) => [venue.category, ...(venue.categories || [])]).filter(Boolean))).sort();
+
+    return res.status(200).json({
+      success: true,
+      venue_admin: venueAdmin,
+      count: venues.length,
+      categories,
+      venues,
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
   }
 };
 
@@ -2068,8 +2308,14 @@ exports.forgotPassword = async (req, res) => {
       return res.status(400).json({ message: "Email is required" });
     }
 
-    // Find user by email
-    const user = await User.findOne({ email });
+    // Partner accounts are stored in their own collections, so resolve the
+    // account type before issuing a reset token.
+    const accountMatches = [
+      ["PersonalTrainer", await PersonalTrainer.findOne({ email })],
+      ["Coach", await Coach.findOne({ email })],
+      ["User", await User.findOne({ email })], // includes Venue Admin
+    ];
+    const [accountType, user] = accountMatches.find(([, account]) => account) || [];
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
@@ -2083,7 +2329,7 @@ exports.forgotPassword = async (req, res) => {
     user.otp = otp; // Store OTP in the user document
     await user.save(); 
     // Generate JWT token with email only (OTP stays server-side in the DB)
-    const token = jwt.sign({ email }, JWT_SECRET, { expiresIn: "10m" });
+    const token = jwt.sign({ email, accountType }, JWT_SECRET, { expiresIn: "10m" });
 
     // Generate email content
     const html = mailContent.generateResetPasswordMailContent(
@@ -2122,10 +2368,11 @@ exports.verifyOtp = async (req, res) => {
     // Verify and decode the JWT token
     const decoded = jwt.verify(token, JWT_SECRET);
 
-    const { email } = decoded; // Extract email from the decoded token
+    const { email, accountType } = decoded; // Extract account details from the reset token
 
-    // Find the user by email
-    const user = await User.findOne({ email });
+    const modelByAccountType = { PersonalTrainer, Coach, User };
+    const AccountModel = modelByAccountType[accountType] || User;
+    const user = await AccountModel.findOne({ email });
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
@@ -2135,8 +2382,8 @@ exports.verifyOtp = async (req, res) => {
       return res.status(400).json({ message: "Invalid OTP" });
     }
 
-    // OTP validation success, you can proceed to reset password or any other operation
-    res.status(200).json({success: true, message: "OTP verified successfully" });
+    const resetToken = jwt.sign({ email, accountType, resetVerified: true }, JWT_SECRET, { expiresIn: "10m" });
+    res.status(200).json({success: true, message: "OTP verified successfully", resetToken });
   } catch (error) {
     
     res.status(500).json({success: false, message: "Internal server error" });
@@ -2165,10 +2412,14 @@ exports.resetPassword = async (req, res) => {
       return res.status(400).json({ message: "Invalid or expired token" });
     }
 
-    const { email } = decoded;
+    const { email, accountType, resetVerified, superAdminReset, accountId } = decoded;
+    if (!resetVerified && !superAdminReset) {
+      return res.status(403).json({ message: "Verify the OTP before resetting your password." });
+    }
 
-    // Find the user by email
-    const user = await User.findOne({ email });
+    const modelByAccountType = { PersonalTrainer, Coach, User, trainer: PersonalTrainer, coach: Coach, user: User, admin: Admin };
+    const AccountModel = modelByAccountType[accountType] || User;
+    const user = superAdminReset ? await AccountModel.findById(accountId) : await AccountModel.findOne({ email });
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
@@ -2181,6 +2432,9 @@ exports.resetPassword = async (req, res) => {
  
     // Save the updated user
     await user.save();
+    if (superAdminReset && (accountType === "coach" || accountType === "trainer")) {
+      await syncProviderPassword(user, accountType, user.password);
+    }
 
     res.status(200).json({ success: true,message: "Password reset successfully" });
   } catch (error) {

@@ -22,6 +22,7 @@ import { API_URL } from "../utils/ApiUrl";
 import { Pagination, Tooltip } from "antd";
 import { Popover, Input, Select } from "antd";
 import { FilterOutlined } from "@ant-design/icons";
+import PasswordResetLinkButton from "../components/PasswordResetLinkButton";
 import axios from "axios";
 
 function PersonalTraininglist() {
@@ -175,7 +176,7 @@ function PersonalTraininglist() {
   const handleDeactivate = async (row) => {
     const result = await Swal.fire({
       title: "Deactivate Trainer?",
-      text: "This will hide the trainer from the public website.",
+      text: "This removes sign-in and public access but keeps profile and booking history.",
       icon: "warning",
       showCancelButton: true,
       confirmButtonText: "Yes, deactivate",
@@ -184,15 +185,15 @@ function PersonalTraininglist() {
     if (!result.isConfirmed) return;
     try {
       await axios.post(
-        `${API_URL}/admin/rejectTrainer/${row._id}`,
-        { reason: "Deactivated by admin" },
+        `${API_URL}/super-admin/accounts/trainer/${row._id}/archive`,
+        {},
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         }
       );
-      Swal.fire("Deactivated!", "Personal Trainer has been deactivated.", "success");
+      Swal.fire("Archived!", "Trainer profile and booking history have been retained.", "success");
       fetchData();
     } catch (error) {
       Swal.fire("Error", error.response?.data?.message || "Failed to deactivate.", "error");
@@ -489,6 +490,7 @@ function PersonalTraininglist() {
                             />
                           </Link>
                         </Tooltip>
+                        {isSuperAdmin && <PasswordResetLinkButton accountType="trainer" account={row} />}
                         <Tooltip
                           title={
                             <span style={{ whiteSpace: "pre-line" }}>

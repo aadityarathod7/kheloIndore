@@ -280,6 +280,7 @@
 .admin-notification-bell { position: relative; display: grid; place-items: center; width: 42px; height: 42px; border: 1px solid #e2e8f0; border-radius: 12px; background: #f8fafc; color: #334155; font-size: 19px; cursor: pointer; transition: .2s ease; }
 .admin-notification-bell:hover, .admin-notification-bell[aria-expanded="true"] { background: #ecfdf5; border-color: #86efac; color: #097e52; transform: translateY(-1px); }
 .admin-notification-count { position: absolute; top: -6px; right: -7px; min-width: 19px; height: 19px; padding: 0 5px; display: grid; place-items: center; border: 2px solid #fff; border-radius: 999px; background: #ef4444; color: #fff; font-size: 10px; font-weight: 800; line-height: 1; }
+.admin-sidebar-notification-count { min-width: 18px; height: 18px; padding: 0 5px; display: inline-grid; place-items: center; border-radius: 999px; background: #ef4444; color: #fff; font-size: 10px; font-weight: 800; line-height: 1; }
 .admin-notification-panel { position: absolute; z-index: 300; right: 0; top: 52px; width: min(390px, calc(100vw - 28px)); overflow: hidden; border: 1px solid #dbe5df; border-radius: 16px; background: #fff; box-shadow: 0 20px 45px rgba(15, 23, 42, .18); animation: notification-pop .18s ease-out; }
 .admin-notification-panel-head { display: flex; align-items: center; justify-content: space-between; padding: 16px 18px; color: #fff; background: linear-gradient(135deg, #097e52, #0b6546); }
 .admin-notification-panel-head strong { display: block; font: 800 16px Inter, sans-serif; }

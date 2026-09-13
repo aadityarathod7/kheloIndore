@@ -28,6 +28,7 @@ const {
   UpdateCategory,
   DeleteCategory,
   FetchCategoryByParentCategory,
+  FetchProviderCategories,
 } = require("../controllers/CategoryController");
 
 //BLOG
@@ -48,12 +49,14 @@ const {
   SingleVenue,
   getVenueForAdmin,
   updateVenue,
+  approveVenuePendingUpdate,
   deleteVenue,
   addVenue,
   getVenue,
   getVenueById,
   getVenuesByVendorType,
   getVenueByAdminId,
+  getVenueCategories,
   createVendor,
   getVendors,
   getVenueNew,
@@ -96,11 +99,15 @@ const {
   updateProfileSettting,
   updateAdminStatus,
   venueAdminlist,
+  getVenueAdminVenues,
   userlist,
   fetchAllUsers,
   resetPassword,
   verifyOtp,
   forgotPassword, 
+  archiveAccount,
+  setManagedAccountPassword,
+  sendManagedAccountResetLink,
 } = require("../controllers/AdminController");
 
 const { activeVenue } = require("../controllers/SuperAdminController");
@@ -156,6 +163,7 @@ const {
 const {
   createContactUs,
   fetchContactUs,
+  resolveContactUs,
 } = require("../controllers/ContactUsController");
 
 // for user
@@ -175,7 +183,11 @@ route.put("/super-admin/update-user/:id", auth, requireRole("Super Admin"), Upda
 route.put("/super-admin/update-admin-status", auth, requireRole("Super Admin"), updateAdminStatus);
 route.get("/super-admin/user-list", auth, requireRole("Super Admin"), userlist)
 route.get("/super-admin/venuadmin-list", auth, requireRole("Super Admin"), venueAdminlist)
+route.get("/super-admin/venue-admin/:id/venues", auth, requireRole("Super Admin"), getVenueAdminVenues);
 route.get("/super-admin/all-list", auth, requireRole("Super Admin"), fetchAllUsers)
+route.post("/super-admin/accounts/:accountType/:id/archive", auth, requireRole("Super Admin"), archiveAccount);
+route.put("/super-admin/accounts/:accountType/:id/password", auth, requireRole("Super Admin"), setManagedAccountPassword);
+route.post("/super-admin/accounts/:accountType/:id/reset-link", auth, requireRole("Super Admin"), sendManagedAccountResetLink);
 // Swap
 route.post("/codeAndCocktailsEmail", codeAndCocktailsEmail);
 
@@ -210,11 +222,13 @@ route.get("/venue/fetch", fetchVenue);
 route.get("/venue/individual/:id", SingleVenue);
 route.get("/venue/admin/individual/:id", auth, getVenueForAdmin);
 route.put("/venue/edit/:id", auth, updateVenue);
+route.put("/venue/:id/approve-update", auth, requireRole("Super Admin"), approveVenuePendingUpdate);
 route.delete("/venue/delete/:id", auth, deleteVenue);
 route.get("/venue/fetch/vendor-type", getVenuesByVendorType);
 route.post("/vendor/create", auth, requireRole("Super Admin"), createVendor);
 route.get("/vendor/get", getVendors);
 route.get("/venue/get/admin-id/:id", getVenueByAdminId);
+route.get("/venue/categories", getVenueCategories);
 route.patch("/venues/:id", auth, requireRole("Super Admin"), toggleVenueStatus);
 //super admin
 route.post("/venue/active/:id", auth, requireRole("Super Admin"), activeVenue);
@@ -246,6 +260,7 @@ route.post("/web/coach/onboarding/:id", sendOnboardingProfileLink);
 route.post("/category/create", auth, requireRole("Super Admin"), AddCategory);
 
 route.get("/category/fetch", FetchCategory);
+route.get("/category/provider-catalog", FetchProviderCategories);
 route.get("/category/fetch-ind/:id",auth, getSingleCategory);
 route.put("/category/update/:id", auth, requireRole("Super Admin"), UpdateCategory);
 route.delete("/category/delete/:id", auth, requireRole("Super Admin"), DeleteCategory);
@@ -305,6 +320,7 @@ route.get("/enquiry/fetchAll", fetchContactUs);
 //Contact US
 route.post("/contactUs/create", createContactUs);
 route.get("/contactUs/fetchAll", fetchContactUs);
+route.put("/contactUs/:id/resolve", auth, requireRole("Super Admin"), resolveContactUs);
 
 //Dashboard
 const {

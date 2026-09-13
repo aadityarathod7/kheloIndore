@@ -62,14 +62,14 @@ const Events = () => {
       .ki-events-page .event-card-title { color: #17222d !important; line-height: 1.3; }
       .ki-events-page .event-filter-chip { background: #fff; border: 1px solid #d8e0e8; color: #475569; }
       .ki-events-page .event-filter-chip.is-active { background: #16a34a; border-color: #16a34a; color: #fff; }
-      .ki-events-page .events-hero { background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%); min-height: 330px; overflow: hidden; }
-      .ki-events-page .events-hero-art { position: absolute; right: -60px; top: 0; bottom: 0; width: 55%; background: url('/assets/img/bg/banner-illustration.png') left center / cover no-repeat; opacity: .84; mask-image: linear-gradient(to left, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%); -webkit-mask-image: linear-gradient(to left, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%); }
+      .ki-events-page .events-hero { background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%); min-height: 0; overflow: hidden; }
+      .ki-events-page .events-hero-art { position: absolute; right: -60px; top: 0; bottom: 0; width: 55%; background: url('/assets/img/bg/events-hero.png') center / cover no-repeat; opacity: .86; mask-image: linear-gradient(to left, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%); -webkit-mask-image: linear-gradient(to left, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%); }
       .ki-events-page .events-hero-title { color: #0f172a !important; font-size: clamp(36px, 4vw, 52px); letter-spacing: -1.3px; }
       .ki-events-page .events-content { padding-top: 42px; position: relative; z-index: 2; }
       @media (max-width: 991px) { .ki-events-page .events-hero { min-height: 270px; } .ki-events-page .events-hero-art { opacity: .3; width: 80%; } }
       @media (max-width: 575px) { .ki-events-page .events-hero { min-height: 0; padding-top: 88px !important; padding-bottom: 50px !important; } .ki-events-page .events-hero-title { font-size: 36px; } .ki-events-page .events-content { padding-top: 28px; } .ki-events-page .event-category-scroll { flex-wrap: nowrap !important; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; } .ki-events-page .event-category-scroll::-webkit-scrollbar { display: none; } .ki-events-page .event-category-scroll .event-filter-chip { white-space: nowrap; flex: 0 0 auto; } .ki-events-page .event-mobile-filter-card .form-control, .ki-events-page .event-mobile-filter-card .form-select { min-height: 44px; } }
     `}</style>
-    <section className="events-hero position-relative" style={{ paddingTop: "155px", paddingBottom: "82px" }}>
+    <section className="events-hero standard-page-hero position-relative" style={{ paddingTop: "110px", paddingBottom: "40px" }}>
       <div className="events-hero-art" />
       <div className="container position-relative" style={{ zIndex: 1 }}>
         <span className="d-block mb-2" style={{ color: "#22c55e", fontSize: 13, fontWeight: 800, letterSpacing: "1.5px" }}>BOOK. PLAY. ENJOY</span>

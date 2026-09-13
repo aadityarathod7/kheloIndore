@@ -143,6 +143,11 @@ const publicRoutes = [
     route: Route,
   },
   {
+    path: routes.trainerSearch,
+    element: <BlogList />,
+    route: Route,
+  },
+  {
     path: routes.blogListSidebarRight,
     element: <BlogListSidebarRight />,
     route: Route,

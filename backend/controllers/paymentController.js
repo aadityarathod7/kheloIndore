@@ -1261,7 +1261,7 @@ const processBookingRefund = async ({ booking, reason }) => {
 
 const coachPayment = async (req, res) => {
   try {
-    const { user_id, coachId, start_date, end_date, start_time, end_time, payment_type } = req.body;
+    const { user_id, coachId, start_date, end_date, start_time, end_time, payment_type, coupon_code } = req.body;
 
     // Validate the request body
     if (!user_id || !coachId || !start_date || !end_date || !start_time || !end_time) {
@@ -1338,14 +1338,17 @@ const coachPayment = async (req, res) => {
       // Move to the next day
       currentDate.setDate(currentDate.getDate() + 1);
     }
+    const couponCode = String(coupon_code || "").trim().toUpperCase();
+    const discountAmount = couponCode === "KHELO100" ? Math.min(100, totalBookedPrice) : 0;
+    const discountedTotal = totalBookedPrice - discountAmount;
     const expirationTime = new Date().getTime() + 10 * 60 * 1000;
     // Proceed to payment if all slots are available
     const merchantTransactionId = `${user_id}-${Date.now()}`;
     // Partial payment = 50% advance; full payment = 100%
     const payableAmount =
       paymentType === "partial"
-        ? Math.round(totalBookedPrice * PARTIAL_PAYMENT_PERCENT)
-        : totalBookedPrice;
+        ? Math.round(discountedTotal * PARTIAL_PAYMENT_PERCENT)
+        : discountedTotal;
     const cashfreeOrder = await createCashfreeOrder({
       orderId: merchantTransactionId,
       amount: payableAmount,
@@ -1373,7 +1376,9 @@ const coachPayment = async (req, res) => {
         detail.slots.map((slot) => slot._id.toString())
       ), // Store the slot IDs
       packageType: "monthly", // Assuming the packageType is fixed or passed in the request
-      total_price: totalBookedPrice,
+      total_price: discountedTotal,
+      coupon_code: couponCode || undefined,
+      discount_amount: discountAmount,
       payment_type: paymentType,
       payable_amount: payableAmount,
       payment_order_id: merchantTransactionId,
@@ -1710,7 +1715,7 @@ const getCoachBookingByUserId = async (req, res) => {
 
 const personalTrainerPayment = async (req, res) => {
   try {
-    const { user_id, trainerId, start_date, end_date, start_time, end_time, payment_type } = req.body;
+    const { user_id, trainerId, start_date, end_date, start_time, end_time, payment_type, coupon_code } = req.body;
 // Personal_trainer_id
     // Validate the request body
     if (!user_id || !trainerId || !start_date || !end_date || !start_time || !end_time) {
@@ -1787,14 +1792,17 @@ const personalTrainerPayment = async (req, res) => {
       // Move to the next day
       currentDate.setDate(currentDate.getDate() + 1);
     }
+    const couponCode = String(coupon_code || "").trim().toUpperCase();
+    const discountAmount = couponCode === "KHELO100" ? Math.min(100, totalBookedPrice) : 0;
+    const discountedTotal = totalBookedPrice - discountAmount;
     const expirationTime = new Date().getTime() + 10 * 60 * 1000;
     // Proceed to payment if all slots are available
     const merchantTransactionId = `${user_id}-${Date.now()}`;
     // Partial payment = 50% advance; full payment = 100%
     const payableAmount =
       paymentType === "partial"
-        ? Math.round(totalBookedPrice * PARTIAL_PAYMENT_PERCENT)
-        : totalBookedPrice;
+        ? Math.round(discountedTotal * PARTIAL_PAYMENT_PERCENT)
+        : discountedTotal;
     const cashfreeOrder = await createCashfreeOrder({
       orderId: merchantTransactionId,
       amount: payableAmount,
@@ -1820,7 +1828,9 @@ const personalTrainerPayment = async (req, res) => {
         detail.slots.map((slot) => slot._id.toString())
       ), // Store the slot IDs
       packageType: "monthly", // Assuming the packageType is fixed or passed in the request
-      total_price: totalBookedPrice,
+      total_price: discountedTotal,
+      coupon_code: couponCode || undefined,
+      discount_amount: discountAmount,
       payment_type: paymentType,
       payable_amount: payableAmount,
       payment_order_id: merchantTransactionId,

@@ -32,6 +32,8 @@ interface CoachData {
   state: string;
   zipcode: string;
   _id: string;
+  category?: string;
+  category_type?: string;
 }
 
 interface BatchData {
@@ -41,6 +43,8 @@ interface BatchData {
   slots: SlotData[];
   startTime: string;
   endTime: string;
+  start_time: string;
+  end_time: string;
   price: number;
   isBooked: boolean;
   personCount: number;
@@ -52,6 +56,8 @@ interface SlotData {
   _id: string;
   startTime: string;
   endTime: string;
+  start_time: string;
+  end_time: string;
   price: number;
   isBooked: boolean;
   personCount: number;
@@ -78,22 +84,54 @@ const CoachTimeDate = (props: any) => {
   const [endDate, setEndDate] = useState<any>("");
   const [isNextButtonDisabledTwo, setIsNextButtonDisabledTwo] = useState(true);
   const [slotData, setSlotData] = useState<any[]>([]);
-  const [dateId, setDateId] = useState<any[]>([]);
-  const [timeSlot, setTimeSlot] = useState<any[]>([]);
+  const [dateId, setDateId] = useState<string | null>(null);
+  const [timeSlot, setTimeSlot] = useState<any>(null);
   const [selectedTimeSlots, setSelectedTimeSlots] = useState<SlotData[]>([]);
-  const [daysDifference, setDaysDifference] = useState<number>(1);
+  const [daysDifference, setDaysDifference] = useState<number>(0);
+  const [couponCode, setCouponCode] = useState("");
+  const [couponApplied, setCouponApplied] = useState(false);
+  const subtotal = selectedTimeSlots.reduce((sum, slot) => sum + Number(slot.price || 0), 0) * (daysDifference + 1);
+  const discountAmount = couponApplied ? Math.min(100, subtotal) : 0;
+  const totalAmount = Math.max(0, subtotal - discountAmount);
+
+  const applyCoupon = () => {
+    if (couponCode.trim().toUpperCase() === "KHELO100" && subtotal > 0) {
+      setCouponApplied(true);
+    } else {
+      setCouponApplied(false);
+      Swal.fire({ icon: "error", title: "Invalid coupon", text: "Use KHELO100 after selecting slots." });
+    }
+  };
 
   useEffect(() => {
     setIsNextButtonDisabled(selectedBatch === null);
   }, [selectedBatch]);
 
+  useEffect(() => {
+    setSelectedTimeSlots([]);
+    setTimeSlot(null);
+    setCouponCode("");
+    setCouponApplied(false);
+  }, [selectedBatch]);
+
   const handleRadioChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSelectedBatch(event.target.value);
+    // A batch is a new booking intent; never carry slots or dates over from
+    // a previous Monthly/Day-wise selection.
+    setStartDate("");
+    setEndDate("");
+    setDateId(null);
+    setTimeSlot([]);
+    setSelectedTimeSlots([]);
+    setDaysDifference(0);
   };
 
   const handleStartDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const date = event.target.value;
     setStartDate(date);
+    setDateId(null);
+    setTimeSlot([]);
+    setSelectedTimeSlots([]);
     if (selectedBatch) {
       // If batch is already selected, calculate the end date based on the start date and batch
       calculateEndDate(date, selectedBatch);
@@ -141,6 +179,8 @@ const CoachTimeDate = (props: any) => {
   // Handle end date change
   const handleEndDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setEndDate(event.target.value);
+    setTimeSlot([]);
+    setSelectedTimeSlots([]);
   };
 
   useEffect(() => {
@@ -178,16 +218,19 @@ const CoachTimeDate = (props: any) => {
       return slotStartDate === startDateToCheck;
     });
     
-    setDateId(matchedSlot ? matchedSlot.id : null)
+    setDateId(matchedSlot ? (matchedSlot.id || matchedSlot._id) : null)
   };
 
   useEffect(() => {
     findMatchedSlotId(startDate)
   }, [startDate])
 
-  const getSlotById = async (dateId: any) => {
+  const getSlotById = async (slotDateId: string | null) => {
+    if (!slotDateId) return;
+    setTimeSlot([]);
+    setSelectedTimeSlots([]);
     try {
-      const response = await axios.get(`${API_URL}/get-coach-slot-by-date/${dateId}`,
+      const response = await axios.get(`${API_URL}/get-coach-slot-by-date/${slotDateId}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -213,7 +256,7 @@ const CoachTimeDate = (props: any) => {
 
       setDaysDifference(days);
     } else {
-      setDaysDifference(1);
+      setDaysDifference(0);
     }
   };
 
@@ -288,27 +331,26 @@ const CoachTimeDate = (props: any) => {
   }, []);
 
   const handleBooking = async () => {
-    if (!userData) {
-      Swal.fire({
-        title: "Not Logged in",
-        text: "You need to be login to book a Trainer. Click OK to login.",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonText: "OK",
-        cancelButtonText: "Cancel",
-      }).then((result) => {
-        if (result.isConfirmed) {
-          navigate("/login");
-        }
-      });
-      return;
-    }
     if (selectedTimeSlots.length === 0 || !selectedBatch) {
       Swal.fire({
         title: "Error",
         text: "Please select any slot.",
         icon: "error",
         confirmButtonText: "OK",
+      });
+      return;
+    }
+
+    if (!userData) {
+      Swal.fire({
+        title: "Login to continue",
+        text: "Please log in or register to confirm your selected session and continue to payment.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Login / Register",
+        cancelButtonText: "Cancel",
+      }).then((result) => {
+        if (result.isConfirmed) navigate("/login", { state: { URL: window.location.pathname } });
       });
       return;
     }
@@ -320,7 +362,10 @@ const CoachTimeDate = (props: any) => {
       end_date: endDate,
       start_time: selectedTimeSlots.map(s => s.start_time).join(","),
       end_time: selectedTimeSlots.map(s => s.end_time).join(","),
-      total_price: selectedTimeSlots.reduce((sum, s) => sum + s.price, 0) * (daysDifference + 1),
+      subtotal_price: subtotal,
+      coupon_code: couponApplied ? "KHELO100" : "",
+      discount_amount: discountAmount,
+      total_price: totalAmount,
       packageType: selectedBatch,
     }
 
@@ -671,7 +716,7 @@ const CoachTimeDate = (props: any) => {
                 <div className="card time-date-card mb-4" style={{ padding: "24px", borderRadius: "16px", opacity: selectedBatch ? 1 : 0.5, pointerEvents: selectedBatch ? "auto" : "none" }}>
                   <h4 className="mb-4" style={{ color: "#0F172A", fontWeight: "700" }}>
                     <i className="feather-calendar me-2" style={{ color: "#22C55E" }} />
-                    Select Date Range
+                    {selectedBatch === '1 Day Session' ? 'Select Session Date' : 'Select Date Range'}
                   </h4>
                   <div className="row">
                     <div className="col-md-6 mb-3">
@@ -711,6 +756,17 @@ const CoachTimeDate = (props: any) => {
                       </button>
                     </div>
                   )}
+                </div>
+
+                {/* Important booking notice — kept in the same position as Trainer bookings. */}
+                <div className="card time-date-card mb-4" style={{ padding: "20px", borderRadius: "16px", background: "#FFFBEB", border: "1px solid #FDE68A" }}>
+                  <h4 className="mb-3" style={{ color: "#92400E", fontWeight: "700", fontSize: "15px" }}>
+                    <i className="feather-alert-triangle me-2" style={{ color: "#D97706" }} />
+                    Important Booking Notice
+                  </h4>
+                  <p style={{ color: "#78350F", fontSize: "13px", lineHeight: "1.6", margin: 0 }}>
+                    If you book this Coach/Trainer directly or through any platform other than Khelo Indore, Khelo Indore will not be responsible for any issues, disputes, or losses arising from such bookings.
+                  </p>
                 </div>
 
                 {/* Card 3: Available Time Slots */}
@@ -773,13 +829,6 @@ const CoachTimeDate = (props: any) => {
               </div>
               <div className="col-12 col-sm-12 col-md-12 col-lg-4">
                 <aside className="card booking-details" style={{ position: "sticky", top: "120px" }}>
-                  {/* Booking Disclaimer */}
-                  <div style={{ background: "#FFF7ED", border: "1px solid #FED7AA", borderRadius: "12px", padding: "14px 16px", marginBottom: "20px" }}>
-                    <p className="mb-0" style={{ fontSize: "12.5px", color: "#9A3412", lineHeight: "1.6", fontWeight: "500" }}>
-                      <i className="feather-alert-triangle me-1" />
-                      <strong>Important:</strong> If you book this Coach/Trainer directly or through any platform other than Khelo Indore, we will not be responsible for any issues, refunds or disputes related to that booking.
-                    </p>
-                  </div>
                   <h3 className="border-bottom">Booking Details</h3>
                   <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
                     <li style={{ padding: "12px 0", borderBottom: "1px dashed #E2E8F0", display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "6px" }}>
@@ -787,10 +836,12 @@ const CoachTimeDate = (props: any) => {
                       <strong style={{ color: "#0F172A", fontSize: "15px" }}>{selectedBatch || "Not selected"}</strong>
                     </li>
                     <li style={{ padding: "12px 0", borderBottom: "1px dashed #E2E8F0", display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "6px" }}>
-                      <span style={{ color: "#64748B", fontSize: "13px" }}>Date Range</span>
+                      <span style={{ color: "#64748B", fontSize: "13px" }}>{selectedBatch === '1 Day Session' ? 'Session Date' : 'Date Range'}</span>
                       <strong style={{ color: "#0F172A", fontSize: "15px" }}>
                         <i className="feather-calendar me-2" style={{ color: "#22C55E" }} />
-                        {startDate && endDate ? `${startDate} to ${endDate}` : "Select a date range"}
+                        {startDate && endDate
+                          ? selectedBatch === '1 Day Session' ? startDate : `${startDate} to ${endDate}`
+                          : selectedBatch === '1 Day Session' ? 'Select a session date' : 'Select a date range'}
                       </strong>
                     </li>
                     <li style={{ padding: "12px 0", borderBottom: "1px dashed #E2E8F0", display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "6px" }}>
@@ -803,11 +854,20 @@ const CoachTimeDate = (props: any) => {
                       </strong>
                     </li>
                   </ul>
+                  <div className="mt-3 mb-3">
+                    <label className="form-label mb-1" style={{ fontSize: "13px", fontWeight: 600 }}>Discount coupon</label>
+                    <div className="d-flex gap-2">
+                      <input className="form-control" value={couponCode} placeholder="Enter coupon code" onChange={(event) => { setCouponCode(event.target.value); setCouponApplied(false); }} />
+                      <button type="button" className="btn btn-success" style={{ padding: "8px 14px", whiteSpace: "nowrap" }} onClick={applyCoupon}>Apply</button>
+                    </div>
+                    <small style={{ color: couponApplied ? "#16A34A" : "#64748B" }}>{couponApplied ? "KHELO100 applied — ₹100 discount" : "Try KHELO100 for ₹100 off"}</small>
+                  </div>
                   <div className="d-grid mt-4">
                     <div style={{ background: "#F0FDF4", padding: "16px", borderRadius: "12px", border: "1px solid #DCFCE7", textAlign: "center" }}>
                       <span style={{ display: "block", color: "#166534", fontSize: "14px", fontWeight: "600", marginBottom: "4px" }}>Total Amount</span>
+                      {couponApplied && <span style={{ display: "block", color: "#64748B", fontSize: "13px", textDecoration: "line-through" }}>₹{subtotal}</span>}
                       <strong style={{ fontSize: "28px", color: "#16A34A", fontWeight: "800" }}>
-                        ₹{selectedTimeSlots.reduce((sum, s) => sum + s.price, 0) * (daysDifference + 1)}
+                        ₹{totalAmount}
                       </strong>
                     </div>
                   </div>

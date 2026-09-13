@@ -308,22 +308,6 @@ const VenueTimeDate = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!userData) {
-      Swal.fire({
-        title: "Not Logged In",
-        text: "You need to be logged in to book a venue. Click OK to login.",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonText: "OK",
-        cancelButtonText: "Cancel",
-      }).then((result) => {
-        if (result.isConfirmed) {
-          navigate("/login");
-        }
-      });
-      return;
-    }
-
     if (selectedSlots.length > 0 && selectedDate) {
       if (selectedSlots.length < 2) {
         Swal.fire({
@@ -353,6 +337,20 @@ const VenueTimeDate = () => {
           text: "The selected time slots must be consecutive. Please adjust your selection.",
           icon: "warning",
           confirmButtonText: "OK",
+        });
+        return;
+      }
+
+      if (!userData) {
+        Swal.fire({
+          title: "Login to continue",
+          text: "Please log in or register to confirm your selected slots and continue to payment.",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonText: "Login / Register",
+          cancelButtonText: "Cancel",
+        }).then((result) => {
+          if (result.isConfirmed) navigate("/login", { state: { URL: window.location.pathname } });
         });
         return;
       }
