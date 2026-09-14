@@ -90,20 +90,9 @@ const sendOtp = async ({ mobile, otp, channels: requestedChannels }) => {
   const results = await Promise.allSettled(
     channels.map((channel) => senders[channel]({ mobile, otp, message }))
   );
-  let delivered = results
+  const delivered = results
     .filter((result) => result.status === "fulfilled")
     .map((result) => result.value.channel);
-
-  // If WhatsApp was explicitly requested and failed, fall back to SMS automatically
-  if (!delivered.length && channels.length === 1 && channels[0] === "whatsapp") {
-    try {
-      await sendSms({ mobile, message });
-      delivered = ["sms"];
-      return { delivered, failed: ["whatsapp"], fallback: true };
-    } catch (smsErr) {
-      // Both failed, proceed to error aggregation below
-    }
-  }
 
   if (!delivered.length) {
     const errors = results.map((result, index) => {
