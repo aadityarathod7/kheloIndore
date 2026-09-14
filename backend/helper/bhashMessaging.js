@@ -26,8 +26,8 @@ const describeProviderError = (error) => {
 
 const ensureBhashAccepted = (response, channel) => {
   const providerMessage = String(response.data || "").trim();
-  if (/api\s+not\s+activated|error|invalid|failed|not\s+authorized|insufficient|blocked/i.test(providerMessage)) {
-    throw new Error(`BhashSMS rejected the ${channel}: ${providerMessage}`);
+  if (!providerMessage || !providerMessage.startsWith("S.") || /api\s+not\s+activated|error|invalid|failed|not\s+authorized|insufficient|blocked/i.test(providerMessage)) {
+    throw new Error(`BhashSMS rejected the ${channel}: ${providerMessage || "Empty response from provider"}`);
   }
 };
 
@@ -51,13 +51,18 @@ const sendSms = async ({ mobile, message }) => {
 };
 
 const sendWhatsApp = async ({ mobile, otp }) => {
+  const user = process.env.BHASH_WHATSAPP_USER || required("BHASH_SMS_USER");
+  const pass = process.env.BHASH_WHATSAPP_PASSWORD || required("BHASH_SMS_PASSWORD");
+  const sender = process.env.BHASH_WHATSAPP_SENDER_ID || "BUZWAP";
+  const text = process.env.BHASH_WHATSAPP_OTP_TEMPLATE || "kheloindore_otp";
+
   const response = await axios.get(process.env.BHASH_WHATSAPP_API_URL || SMS_API_URL, {
     params: {
-      user: required("BHASH_SMS_USER"),
-      pass: required("BHASH_SMS_PASSWORD"),
-      sender: required("BHASH_WHATSAPP_SENDER_ID"),
+      user,
+      pass,
+      sender,
       phone: bhashSmsPhoneNumber(mobile),
-      text: required("BHASH_WHATSAPP_OTP_TEMPLATE"),
+      text,
       priority: "wa",
       stype: "auth",
       Params: String(otp),
@@ -85,9 +90,20 @@ const sendOtp = async ({ mobile, otp, channels: requestedChannels }) => {
   const results = await Promise.allSettled(
     channels.map((channel) => senders[channel]({ mobile, otp, message }))
   );
-  const delivered = results
+  let delivered = results
     .filter((result) => result.status === "fulfilled")
     .map((result) => result.value.channel);
+
+  // If WhatsApp was explicitly requested and failed, fall back to SMS automatically
+  if (!delivered.length && channels.length === 1 && channels[0] === "whatsapp") {
+    try {
+      await sendSms({ mobile, message });
+      delivered = ["sms"];
+      return { delivered, failed: ["whatsapp"], fallback: true };
+    } catch (smsErr) {
+      // Both failed, proceed to error aggregation below
+    }
+  }
 
   if (!delivered.length) {
     const errors = results.map((result, index) => {

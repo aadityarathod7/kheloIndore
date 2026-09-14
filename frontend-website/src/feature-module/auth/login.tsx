@@ -86,9 +86,10 @@ const Login = () => {
               popup: "swal-light-toast-shadow"
             }
           });
+          const deliveredVia = response.data?.deliveryChannels?.includes("whatsapp") ? "WhatsApp" : "SMS";
           Toast.fire({
             icon: "success",
-            title: `OTP sent via ${channel === "whatsapp" ? "WhatsApp" : "SMS"}.`,
+            title: `OTP sent via ${deliveredVia}.`,
           });
         } else {
           Swal.fire({
