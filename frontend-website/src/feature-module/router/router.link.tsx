@@ -665,6 +665,20 @@ const publicRoutes = [
   },
 ];
 
+function AdminRedirect() {
+  React.useEffect(() => {
+    const isLocal =
+      window.location.hostname === "localhost" ||
+      window.location.hostname === "127.0.0.1" ||
+      window.location.hostname.startsWith("192.168.");
+    const adminUrl = isLocal
+      ? `${window.location.protocol}//${window.location.hostname}:3001/admin`
+      : "/admin";
+    window.location.assign(adminUrl);
+  }, []);
+  return null;
+}
+
 const withoutHeaderRoutes = [
   {
     path: routes.comingSoon,
@@ -722,19 +736,5 @@ const withoutHeaderRoutes = [
     route: Route,
   },
 ];
-
-const AdminRedirect = () => {
-  React.useEffect(() => {
-    const isLocal =
-      window.location.hostname === "localhost" ||
-      window.location.hostname === "127.0.0.1" ||
-      window.location.hostname.startsWith("192.168.");
-    const adminUrl = isLocal
-      ? `${window.location.protocol}//${window.location.hostname}:3001/admin`
-      : "/admin";
-    window.location.assign(adminUrl);
-  }, []);
-  return null;
-};
 
 export { publicRoutes, withoutHeaderRoutes };
