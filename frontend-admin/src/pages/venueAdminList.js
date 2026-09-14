@@ -208,21 +208,23 @@ export default function VenueAdminList() {
             <div className="cnt">
                 <Form.Group as={Row} className="mb-3 align-items-center">
                     {role === 'Super Admin' && (
+                        <>
                             <Col sm={4}>
-                            <Form.Control
-                                type="text"
-                                placeholder="Search..."
-                                className="search-input"
-                                value={searchValue}
-                                onChange={handleSearch}
-                            />
-                        </Col>
-                        <Col sm={3}>
-                            <Form.Select value={filterCategory} onChange={(event) => { setFilterCategory(event.target.value); setCurrentPage(1); }}>
-                                <option value="all">All venue categories</option>
-                                {venueCategories.map((category) => <option key={category} value={category}>{category}</option>)}
-                            </Form.Select>
-                        </Col>
+                                <Form.Control
+                                    type="text"
+                                    placeholder="Search..."
+                                    className="search-input"
+                                    value={searchValue}
+                                    onChange={handleSearch}
+                                />
+                            </Col>
+                            <Col sm={3}>
+                                <Form.Select value={filterCategory} onChange={(event) => { setFilterCategory(event.target.value); setCurrentPage(1); }}>
+                                    <option value="all">All venue categories</option>
+                                    {venueCategories.map((category) => <option key={category} value={category}>{category}</option>)}
+                                </Form.Select>
+                            </Col>
+                        </>
                     )}
                     <Col sm={5} className="d-flex justify-content-end align-items-center">
                         <div>
