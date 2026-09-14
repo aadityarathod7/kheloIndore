@@ -1,36 +1,35 @@
-import React, { useEffect } from 'react';
-import { Outlet, useNavigate } from 'react-router-dom';
+import React from 'react';
+import { Navigate, Outlet } from 'react-router-dom';
+
+const ALLOWED_ADMIN_ROLES = ['Super Admin', 'Venue Admin', 'Coach', 'Personal Trainer'];
 
 const CheckValidate = () => {
-  const navigate = useNavigate();
+  const token = localStorage.getItem('token');
 
+  if (!token) {
+    return <Navigate to="/" replace />;
+  }
 
-
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    let expired = false;
-    let role = '';
-    try {
-      const payload = token ? JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))) : null;
-      expired = !payload?.exp || payload.exp * 1000 <= Date.now();
-      role = payload?.role || '';
-    } catch {
-      expired = true;
+  let isValidAdmin = false;
+  try {
+    const parts = token.split('.');
+    if (parts.length === 3) {
+      const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+      const isExpired = Boolean(!payload?.exp || payload.exp * 1000 <= Date.now());
+      const role = payload?.role;
+      if (!isExpired && ALLOWED_ADMIN_ROLES.includes(role)) {
+        isValidAdmin = true;
+      }
     }
-    if (!token || expired) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('id');
-      localStorage.removeItem('role');
-      navigate('/');
-      return;
-    }
+  } catch {
+    isValidAdmin = false;
+  }
 
-    // The public website shares this origin/localStorage. A normal User token
-    // must never unlock the partner/admin dashboard just by visiting /admin.
-    if (!['Super Admin', 'Venue Admin', 'Coach', 'Personal Trainer'].includes(role)) {
-      window.location.replace('/');
-    }
-  }, [navigate]);
+  // The public website shares this origin/localStorage. A normal User token
+  // must never unlock the partner/admin dashboard when visiting /admin.
+  if (!isValidAdmin) {
+    return <Navigate to="/" replace />;
+  }
 
   return (
     <div>

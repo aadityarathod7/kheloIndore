@@ -35,7 +35,7 @@ const useAutoLogout = () => {
     localStorage.removeItem("id");
     localStorage.removeItem("role");
     localStorage.removeItem("userName");
-    window.location.href = "/";
+    window.location.href = "/admin";
   };
   useEffect(() => {
     const resetTimer = () => {
@@ -86,8 +86,10 @@ const { Header, Content } = Layout;
 const SIDEBAR_W = 240;
 const SIDEBAR_COLLAPSED_W = 72;
 
-/* ── Sidebar menu definition ─────────────────────────────── */
 const buildMenu = (role) => {
+  if (!["Super Admin", "Venue Admin", "Coach", "Personal Trainer"].includes(role)) {
+    return [];
+  }
   const items = [];
   if (["Venue Admin", "Coach", "Personal Trainer"].includes(role)) {
     items.push({ key: "dashboard", icon: <AiOutlineDashboard />, label: "Dashboard" });

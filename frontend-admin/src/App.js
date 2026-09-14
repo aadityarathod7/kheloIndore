@@ -62,13 +62,11 @@ function App() {
   return (
     <Router basename="/admin">
       <Routes>
-        <Route path="/" element={<Loginadmin />} />
-        <Route path="*" element={<Loginadmin />} />
         <Route path="/approve-admin/:id" element={<Approve />} />
         <Route path="/approve-coach-trainer/:id" element={<CoachTrainerApprove />} />
 
-        <Route path="/" element={<CheckValidate />}>
-          <Route path="/" element={<MainLayout />}>
+        <Route element={<CheckValidate />}>
+          <Route element={<MainLayout />}>
             {/* <Route path="/" element={<UserLogin />} /> */}
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/earnings" element={<Earnings />} />
@@ -163,6 +161,10 @@ function App() {
             {/* <Route path="/venue-admin-dashboard/venues/edit/:_id" element={<UpdateVenue />} /> */}
           </Route>
         </Route>
+
+        <Route path="/" element={<Loginadmin />} />
+        <Route path="/login" element={<Loginadmin />} />
+        <Route path="*" element={<Loginadmin />} />
       </Routes>
     </Router>
   );

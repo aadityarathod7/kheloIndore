@@ -35,11 +35,14 @@ function Loginadmin() {
     const token = localStorage.getItem('token');
     if (token) {
       try {
-        const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
-        if (['Super Admin', 'Venue Admin', 'Coach', 'Personal Trainer'].includes(payload?.role)) {
-          navigate('/dashboard');
-        } else {
-          window.location.replace('/');
+        const parts = token.split('.');
+        if (parts.length === 3) {
+          const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+          const isExpired = Boolean(!payload?.exp || payload.exp * 1000 <= Date.now());
+          if (!isExpired && ['Super Admin', 'Venue Admin', 'Coach', 'Personal Trainer'].includes(payload?.role)) {
+            navigate('/dashboard');
+            return;
+          }
         }
       } catch {
         // An invalid token is handled by the normal login form / route guard.
