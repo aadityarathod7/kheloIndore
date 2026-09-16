@@ -31,6 +31,29 @@ const VenueOrderConfirm = () => {
 
   const { state } = useLocation();
   const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
+
+  const storedConfirmation = useMemo(() => {
+    try {
+      const item = sessionStorage.getItem("activeBookingConfirmation") || sessionStorage.getItem("pendingBooking");
+      if (item) {
+        const parsed = JSON.parse(item);
+        if (parsed?.state) return parsed.state;
+        return parsed;
+      }
+    } catch {
+      // Ignore storage parse error
+    }
+    return null;
+  }, []);
+
+  const effectiveState = state || storedConfirmation || {};
+
+  useEffect(() => {
+    if (state && Object.keys(state).length > 0) {
+      sessionStorage.setItem("activeBookingConfirmation", JSON.stringify(state));
+    }
+  }, [state]);
 
   const [venueData, setVenueData] = useState<VenueData | null>(null);
   const {
@@ -41,8 +64,7 @@ const VenueOrderConfirm = () => {
     newSelectedTimeId,
     formatSeletedDate,
     data,
-  } = state || {};
-  const { id } = useParams<{ id: string }>();
+  } = effectiveState;
   // Derive these values directly from route state. Keeping the derived array
   // in component state caused a new array on every render and an infinite
   // setState/useEffect loop.
@@ -144,6 +166,38 @@ const VenueOrderConfirm = () => {
       });
       return;
     }
+    const authToken = localStorage.getItem("token");
+    if (!authToken) {
+      sessionStorage.setItem("pendingBooking", JSON.stringify({
+        targetUrl: `/sports-venue/venue-confirm/${id}`,
+        venueId: id,
+        state: effectiveState,
+        type: "venue",
+        timestamp: Date.now(),
+      }));
+
+      Swal.fire({
+        title: "Login to continue",
+        text: "Please log in to complete your booking and payment.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Login / Register",
+        cancelButtonText: "Cancel",
+        confirmButtonColor: "#22C55E",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          navigate("/login", {
+            state: {
+              URL: `/sports-venue/venue-confirm/${id}`,
+              bookingState: effectiveState,
+              returnTo: `/sports-venue/venue-confirm/${id}`,
+            },
+          });
+        }
+      });
+      return;
+    }
+
     try {
       const response = await axios.post(`${API_URL}/venue/payment`, {
         user_id: userId,
@@ -152,9 +206,11 @@ const VenueOrderConfirm = () => {
         slotsBooked: slotId,
         total_price: total_Price,
         payment_type: paymentType,
-      }, { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
+      }, { headers: { Authorization: `Bearer ${authToken}` } });
 
       if (response?.data?.paymentSessionId) {
+        sessionStorage.removeItem("pendingBooking");
+        sessionStorage.removeItem("activeBookingConfirmation");
         await openCashfreeCheckout(response.data.paymentSessionId);
       } else {
         throw new Error(response?.data?.message || "Unable to start Cashfree checkout.");

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import ImageWithBasePath from "../../core/data/img/ImageWithBasePath";
-import { Link, useParams, useNavigate } from "react-router-dom";
+import { Link, useParams, useNavigate, useLocation } from "react-router-dom";
 import { all_routes } from "../router/all_routes";
 import axios from "axios";
 import { API_URL, IMG_URL } from "../../ApiUrl";
@@ -25,42 +25,41 @@ type TimeSlot = {
   slots: any;
 };
 
-interface VenueData {
-  name: string;
-  address: string;
-  city: string;
-  state: string;
-  zipCode: string;
-  amenities: string;
-  activities: string;
-  category: string;
-  images: any;
-  src: string;
-  _id: string;
-  price_per_hr: number;
-  vendor_type?: string;
-}
-
 interface JwtPayload {
-  first_name: string;
   userID: string;
+  email: string;
+  role: string;
 }
 
 interface FormatedDate {
-  id: any;
-  date: any;
+  date: string;
+  id: string;
 }
 
 interface Slots {
-  price: any;
+  slot_id: string;
   startTime: string;
   endTime: string;
-  isBooked?: boolean;
+  isBooked: boolean;
   isOfflineBlocked?: boolean;
-  isChecked?: boolean;
+  price: number;
+  isChecked: boolean;
+  selectedVenue: any;
 }
 
-const timeToMinutes = (value: string) => {
+interface VenueData {
+  _id: string;
+  name: string;
+  price_per_hr: number;
+  address: string;
+  admin_id: string;
+  images: any;
+  venue_type?: string;
+  category?: string;
+  contact_number?: string;
+}
+
+const timeToMinutes = (value: string): number => {
   const match = String(value || "").trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/i);
   if (!match) return -1;
   let hours = Number(match[1]);
@@ -73,6 +72,35 @@ const timeToMinutes = (value: string) => {
 
 const VenueTimeDate = () => {
   const routes = all_routes;
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
+
+  // Check for any pending booking saved in session or route state
+  const savedPending = useMemo(() => {
+    try {
+      const item = sessionStorage.getItem("pendingBooking");
+      if (item) {
+        const parsed = JSON.parse(item);
+        if (parsed?.venueId === id || parsed?.state?.venueData?._id === id || parsed?.targetUrl?.includes(id)) {
+          return parsed;
+        }
+      }
+    } catch {
+      // Ignore storage parse error
+    }
+    return null;
+  }, [id]);
+
+  const initialDate = useMemo(() => {
+    const rawDate = location.state?.selectedDate || savedPending?.selectedDate || savedPending?.state?.selectedDate;
+    if (rawDate) {
+      const d = new Date(rawDate);
+      if (!Number.isNaN(d.getTime())) return d;
+    }
+    return new Date();
+  }, [location.state, savedPending]);
+
   const [venueData, setVenueData] = useState<VenueData | null>(null);
   const [bookData, setBookData] = useState<BookData[]>([]);
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
@@ -81,13 +109,10 @@ const VenueTimeDate = () => {
 
   const [dateData, setDateData] = useState([]);
   const [formateDateData, setFormateDateData] = useState<FormatedDate[]>([]);
-  const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date | null>(initialDate);
   const [selectedDateId, setSelectedDateId] = useState<any>();
   const [slots, setSlots] = useState<Slots[]>([]);
   const timeFormat: "12" | "24" = "12";
-
-  const navigate = useNavigate();
-  const { id } = useParams<{ id: string }>();
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -139,11 +164,21 @@ const VenueTimeDate = () => {
     }));
     setFormateDateData(formattedDate);
 
-    // Auto-select initial date if available
+    // Auto-select initial date if available, preserving previous selection if any
     if (formattedDate && formattedDate.length > 0 && !selectedDateId) {
-      setSelectedDateId(formattedDate[0].id);
-      if (formattedDate[0].date) {
-        setSelectedDate(new Date(formattedDate[0].date));
+      const matchDoc = selectedDate
+        ? formattedDate.find((f: any) => f.date && new Date(f.date).toDateString() === selectedDate.toDateString())
+        : null;
+      if (matchDoc) {
+        setSelectedDateId(matchDoc.id);
+        if (matchDoc.date) {
+          setSelectedDate(new Date(matchDoc.date));
+        }
+      } else {
+        setSelectedDateId(formattedDate[0].id);
+        if (formattedDate[0].date) {
+          setSelectedDate(new Date(formattedDate[0].date));
+        }
       }
     }
   }, [dateData]);
@@ -201,7 +236,20 @@ const VenueTimeDate = () => {
     }
   };
 
-  const [selectedSlotTimes, setSelectedSlotTimes] = useState<string[]>([]);
+  const initialSelectedTimes = useMemo(() => {
+    if (location.state?.selectedSlots && Array.isArray(location.state.selectedSlots)) {
+      return location.state.selectedSlots.map((s: any) => s.startTime);
+    }
+    if (savedPending?.selectedSlotTimes && Array.isArray(savedPending.selectedSlotTimes)) {
+      return savedPending.selectedSlotTimes;
+    }
+    if (savedPending?.state?.selectedSlots && Array.isArray(savedPending.state.selectedSlots)) {
+      return savedPending.state.selectedSlots.map((s: any) => s.startTime);
+    }
+    return [];
+  }, [location.state, savedPending]);
+
+  const [selectedSlotTimes, setSelectedSlotTimes] = useState<string[]>(initialSelectedTimes);
 
   const handleSlotClick = (startTime: string) => {
     if (selectedSlotTimes.includes(startTime)) {
@@ -341,20 +389,6 @@ const VenueTimeDate = () => {
         return;
       }
 
-      if (!userData) {
-        Swal.fire({
-          title: "Login to continue",
-          text: "Please log in or register to confirm your selected slots and continue to payment.",
-          icon: "warning",
-          showCancelButton: true,
-          confirmButtonText: "Login / Register",
-          cancelButtonText: "Cancel",
-        }).then((result) => {
-          if (result.isConfirmed) navigate("/login", { state: { URL: window.location.pathname } });
-        });
-        return;
-      }
-
       const slotsBooked = selectedSlots
         .map((s: any) => s.slot_id || s._id || s.id)
         .filter(Boolean);
@@ -369,16 +403,55 @@ const VenueTimeDate = () => {
         date: dbDateStr,
       };
 
-      navigate(`/sports-venue/venue-confirm/${id}`, {
-        state: {
-          venueData,
+      const bookingState = {
+        venueData,
+        selectedDate,
+        timeSlots: slots,
+        bookData,
+        newSelectedTimeId: subtotalPrice,
+        data: dataPayload,
+        selectedSlots,
+        selectedSlotTimes,
+        selectedDateId,
+      };
+
+      const targetUrl = `/sports-venue/venue-confirm/${id}`;
+
+      if (!userData) {
+        sessionStorage.setItem("pendingBooking", JSON.stringify({
+          targetUrl,
+          venueId: id,
+          selectedSlotTimes,
           selectedDate,
-          timeSlots: slots,
-          bookData,
-          newSelectedTimeId: subtotalPrice,
-          data: dataPayload,
-          selectedSlots,
-        },
+          state: bookingState,
+          type: "venue",
+          timestamp: Date.now(),
+        }));
+
+        Swal.fire({
+          title: "Login to continue",
+          text: "Please log in or register to confirm your selected slots and continue to payment.",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonText: "Login / Register",
+          cancelButtonText: "Cancel",
+          confirmButtonColor: "#22C55E",
+        }).then((result) => {
+          if (result.isConfirmed) {
+            navigate("/login", {
+              state: {
+                URL: targetUrl,
+                bookingState,
+                returnTo: targetUrl,
+              },
+            });
+          }
+        });
+        return;
+      }
+
+      navigate(targetUrl, {
+        state: bookingState,
       });
     } else {
       Swal.fire({

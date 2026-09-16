@@ -301,20 +301,6 @@ const TrainingTimeDate = (props: any) => {
       return;
     }
 
-    if (!userData) {
-      Swal.fire({
-        title: 'Login to continue',
-        text: 'Please log in or register to confirm your selected session and continue to payment.',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Login / Register',
-        cancelButtonText: 'Cancel'
-      }).then((result) => {
-        if (result.isConfirmed) navigate("/login", { state: { URL: window.location.pathname } });
-      });
-      return;
-    }
-
     const bookingData = {
       user_id: userData?.userID,
       trainerId: id,
@@ -329,13 +315,55 @@ const TrainingTimeDate = (props: any) => {
       packageType: selectedBatch,
     };
 
+    const bookingState = {
+      bookingData,
+      selectedTimeSlot: selectedTimeSlots[0],
+      selectedTimeSlots,
+      startDate,
+      endDate,
+      selectedBatch,
+      subtotal,
+      couponApplied,
+      discountAmount,
+      totalAmount,
+    };
+
+    const targetUrl = `/trainers/training-order-confirm/${id}`;
+
+    if (!userData) {
+      sessionStorage.setItem("pendingBooking", JSON.stringify({
+        targetUrl,
+        trainerId: id,
+        state: bookingState,
+        type: "training",
+        timestamp: Date.now(),
+      }));
+
+      Swal.fire({
+        title: "Login to continue",
+        text: "Please log in or register to confirm your selected session and continue to payment.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Login / Register",
+        cancelButtonText: "Cancel",
+        confirmButtonColor: "#22C55E",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          navigate("/login", {
+            state: {
+              URL: targetUrl,
+              bookingState,
+              returnTo: targetUrl,
+            },
+          });
+        }
+      });
+      return;
+    }
+
     try {
-      navigate(`/trainers/training-order-confirm/${id}`, {
-        state: {
-          bookingData,
-          selectedTimeSlot: selectedTimeSlots[0],
-          selectedTimeSlots,
-        },
+      navigate(targetUrl, {
+        state: bookingState,
       });
     } catch (error) {
       

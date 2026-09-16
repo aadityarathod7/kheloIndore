@@ -15,7 +15,8 @@ const VerifyOTP = () => {
   const route = all_routes;
   const navigate = useNavigate(); // Use useNavigate hook
   const location = useLocation();
-  const returnTo = location.state?.returnTo;
+  const returnTo = location.state?.returnTo || location.state?.URL;
+  const bookingState = location.state?.bookingState;
   const [otp, setOTP] = useState('');
   const [error, setError] = useState('');
   const [token, setToken] = useState('');
@@ -77,7 +78,7 @@ useEffect(()=>{
         // localStorage.setItem('token', response.data.token);
 
         Swal.fire('Success!', 'Signup Successful!', 'success');
-        navigate('/login', { state: { URL: returnTo } });
+        navigate('/login', { state: { URL: returnTo, bookingState, returnTo } });
       } else {
         Swal.fire('Error!', 'Invalid OTP. Please try again.', 'error');
       }
