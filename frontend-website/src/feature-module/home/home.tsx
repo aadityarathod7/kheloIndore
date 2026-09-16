@@ -47,7 +47,7 @@ interface Trainer {
   src: string;
   category: string;
   near_by_location: string;
-  specializations: string;
+  specializations: any;
   trainer_type: string;
   experience?: number;
   rating?: number;
@@ -833,24 +833,33 @@ const Home = () => {
     let count = 0;
     const categoryName = selectedTimeframe?.name;
     const sportName = selectedSport?.name?.toLowerCase();
-    const locationName = selectedLocationSort?.name;
+    const locationName = selectedLocationSort?.name?.toLowerCase();
 
     if (categoryName === "Sports Venue") {
       count = venues.filter(v => {
-        const matchLocation = !locationName || v.near_by_location?.toLowerCase()?.includes(locationName.toLowerCase()) || locationName.toLowerCase()?.includes(v.near_by_location?.toLowerCase());
-        const matchSport = !sportName || v.category?.toLowerCase()?.includes(sportName) || v.activities?.toLowerCase()?.includes(sportName);
+        const venueLoc = String(v.near_by_location || "").toLowerCase();
+        const matchLocation = !locationName || venueLoc.includes(locationName) || locationName.includes(venueLoc);
+        const matchSport = !sportName || String(v.category || "").toLowerCase().includes(sportName) || String(v.activities || "").toLowerCase().includes(sportName);
         return matchLocation && matchSport;
       }).length;
     } else if (categoryName === "Coaches") {
       count = coaches.filter(c => {
-        const matchLocation = !locationName || c.near_by_location?.toLowerCase()?.includes(locationName.toLowerCase()) || locationName.toLowerCase()?.includes(c.near_by_location?.toLowerCase());
-        const matchSport = !sportName || c.category?.toLowerCase()?.includes(sportName);
+        const coachLoc = String(c.near_by_location || "").toLowerCase();
+        const matchLocation = !locationName || coachLoc.includes(locationName) || locationName.includes(coachLoc);
+        const specStr = Array.isArray(c.specializations)
+          ? c.specializations.join(" ").toLowerCase()
+          : String(c.specializations || "").toLowerCase();
+        const matchSport = !sportName || String(c.category || "").toLowerCase().includes(sportName) || specStr.includes(sportName);
         return matchLocation && matchSport;
       }).length;
     } else if (categoryName === "Trainer") {
       count = trainer.filter(t => {
-        const matchLocation = !locationName || t.near_by_location?.toLowerCase()?.includes(locationName.toLowerCase()) || locationName.toLowerCase()?.includes(t.near_by_location?.toLowerCase());
-        const matchSport = !sportName || t.category?.toLowerCase()?.includes(sportName) || t.specializations?.toLowerCase()?.includes(sportName);
+        const trainerLoc = String(t.near_by_location || "").toLowerCase();
+        const matchLocation = !locationName || trainerLoc.includes(locationName) || locationName.includes(trainerLoc);
+        const specStr = Array.isArray(t.specializations)
+          ? t.specializations.join(" ").toLowerCase()
+          : String(t.specializations || "").toLowerCase();
+        const matchSport = !sportName || String(t.category || "").toLowerCase().includes(sportName) || specStr.includes(sportName);
         return matchLocation && matchSport;
       }).length;
     }
