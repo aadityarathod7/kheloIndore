@@ -82,6 +82,10 @@ const CoachTimeDate = (props: any) => {
   const [isNextButtonDisabled, setIsNextButtonDisabled] = useState(true);
   const [startDate, setStartDate] = useState<any>("");
   const [endDate, setEndDate] = useState<any>("");
+  const todayStr = React.useMemo(() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  }, []);
   const [isNextButtonDisabledTwo, setIsNextButtonDisabledTwo] = useState(true);
   const [slotData, setSlotData] = useState<any[]>([]);
   const [dateId, setDateId] = useState<string | null>(null);
@@ -127,7 +131,10 @@ const CoachTimeDate = (props: any) => {
   };
 
   const handleStartDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const date = event.target.value;
+    let date = event.target.value;
+    if (date && date < todayStr) {
+      date = todayStr;
+    }
     setStartDate(date);
     setDateId(null);
     setTimeSlot([]);
@@ -725,6 +732,7 @@ const CoachTimeDate = (props: any) => {
                         type="date"
                         className="form-control"
                         id="startDate"
+                        min={todayStr}
                         value={startDate || ''}
                         onChange={handleStartDateChange}
                         style={{ padding: "12px", borderRadius: "10px", border: "1px solid #E2E8F0" }}
@@ -736,6 +744,7 @@ const CoachTimeDate = (props: any) => {
                         type="date"
                         className="form-control"
                         id="endDate"
+                        min={startDate || todayStr}
                         value={endDate || ''}
                         onChange={handleEndDateChange}
                         disabled={selectedBatch !== 'Custom'}

@@ -763,6 +763,66 @@ export default function VenueByCategory() {
   const [sortBy, setSortBy] = useState<string>("popular");
   const [searchQuery, setSearchQuery] = useState<string>("");
 
+  // Today's date in local YYYY-MM-DD format (prevents selecting past dates)
+  const todayStr = useMemo(() => {
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }, []);
+
+  // 30-minute time slot options across 24 hours
+  const HALF_HOUR_OPTIONS = useMemo(() => {
+    const slots: { value: string; label: string }[] = [];
+    for (let h = 0; h < 24; h++) {
+      for (let m = 0; m < 60; m += 30) {
+        const val = `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+        const period = h >= 12 ? "PM" : "AM";
+        const displayH = h % 12 === 0 ? 12 : h % 12;
+        const label = `${String(displayH).padStart(2, "0")}:${String(m).padStart(2, "0")} ${period}`;
+        slots.push({ value: val, label });
+      }
+    }
+    return slots;
+  }, []);
+
+  // Format HH:mm into 12h AM/PM for badges/display
+  const formatTime12h = (time24: string): string => {
+    if (!time24) return "";
+    const [hStr, mStr] = time24.split(":");
+    const h = parseInt(hStr, 10);
+    const m = parseInt(mStr, 10);
+    if (isNaN(h) || isNaN(m)) return time24;
+    const period = h >= 12 ? "PM" : "AM";
+    const displayH = h % 12 === 0 ? 12 : h % 12;
+    return `${String(displayH).padStart(2, "0")}:${String(m).padStart(2, "0")} ${period}`;
+  };
+
+  // Helper to calculate +30 minutes automatically
+  const addThirtyMinutes = (timeStr: string): string => {
+    if (!timeStr) return "";
+    const [hStr, mStr] = timeStr.split(":");
+    let h = parseInt(hStr, 10);
+    let m = parseInt(mStr, 10) + 30;
+    if (m >= 60) {
+      h = (h + 1) % 24;
+      m -= 60;
+    }
+    return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+  };
+
+  // When From time changes, automatically set To time to +30 minutes
+  const handleStartTimeChange = (val: string) => {
+    setStartTime(val);
+    if (val) {
+      const autoEnd = addThirtyMinutes(val);
+      setEndTime(autoEnd);
+    } else {
+      setEndTime("");
+    }
+  };
+
   useEffect(() => {
     if (categorySelected) {
       setSelectedSport(categorySelected.toLowerCase());
@@ -1197,11 +1257,41 @@ export default function VenueByCategory() {
                   <div className="d-grid gap-2">
                     <div>
                       <label className="form-label mb-1" style={{ fontSize: "11px", fontWeight: "600", color: "#475569" }}>From</label>
-                      <input type="date" value={startDate} onChange={(event) => { const value = event.target.value; setStartDate(value); if (endDate && value && endDate < value) setEndDate(""); }} className="form-control" style={{ height: "42px", borderRadius: "10px", borderColor: "#E2E8F0", fontSize: "12px" }} />
+                      <input
+                        type="date"
+                        value={startDate}
+                        min={todayStr}
+                        onChange={(event) => {
+                          const value = event.target.value;
+                          if (value && value < todayStr) {
+                            setStartDate(todayStr);
+                          } else {
+                            setStartDate(value);
+                          }
+                          if (endDate && value && endDate < value) setEndDate("");
+                        }}
+                        className="form-control"
+                        style={{ height: "42px", borderRadius: "10px", borderColor: "#E2E8F0", fontSize: "12px" }}
+                      />
                     </div>
                     <div>
                       <label className="form-label mb-1" style={{ fontSize: "11px", fontWeight: "600", color: "#475569" }}>To</label>
-                      <input type="date" value={endDate} min={startDate || undefined} onChange={(event) => setEndDate(event.target.value)} className="form-control" style={{ height: "42px", borderRadius: "10px", borderColor: "#E2E8F0", fontSize: "12px" }} />
+                      <input
+                        type="date"
+                        value={endDate}
+                        min={startDate || todayStr}
+                        onChange={(event) => {
+                          const value = event.target.value;
+                          const effectiveMin = startDate || todayStr;
+                          if (value && value < effectiveMin) {
+                            setEndDate(effectiveMin);
+                          } else {
+                            setEndDate(value);
+                          }
+                        }}
+                        className="form-control"
+                        style={{ height: "42px", borderRadius: "10px", borderColor: "#E2E8F0", fontSize: "12px" }}
+                      />
                     </div>
                   </div>
                 </div>
@@ -1214,11 +1304,38 @@ export default function VenueByCategory() {
                   <div className="row g-2">
                     <div className="col-6">
                       <label className="form-label mb-1" style={{ fontSize: "11px", fontWeight: "600", color: "#475569" }}>From</label>
-                      <input type="time" value={startTime} onChange={(event) => { const value = event.target.value; setStartTime(value); if (endTime && value && endTime <= value) setEndTime(""); }} className="form-control" style={{ height: "42px", borderRadius: "10px", borderColor: "#E2E8F0", fontSize: "12px" }} />
+                      <select
+                        value={startTime}
+                        onChange={(event) => handleStartTimeChange(event.target.value)}
+                        className="form-select"
+                        style={{ height: "42px", borderRadius: "10px", borderColor: "#E2E8F0", fontSize: "12px", color: startTime ? "#1E293B" : "#64748B" }}
+                      >
+                        <option value="">--:--</option>
+                        {HALF_HOUR_OPTIONS.map((opt) => (
+                          <option key={`start-${opt.value}`} value={opt.value}>
+                            {opt.label}
+                          </option>
+                        ))}
+                      </select>
                     </div>
                     <div className="col-6">
                       <label className="form-label mb-1" style={{ fontSize: "11px", fontWeight: "600", color: "#475569" }}>To</label>
-                      <input type="time" value={endTime} min={startTime || undefined} onChange={(event) => setEndTime(event.target.value)} className="form-control" style={{ height: "42px", borderRadius: "10px", borderColor: "#E2E8F0", fontSize: "12px" }} />
+                      <select
+                        value={endTime}
+                        onChange={(event) => setEndTime(event.target.value)}
+                        className="form-select"
+                        style={{ height: "42px", borderRadius: "10px", borderColor: "#E2E8F0", fontSize: "12px", color: endTime ? "#1E293B" : "#64748B" }}
+                      >
+                        <option value="">--:--</option>
+                        {HALF_HOUR_OPTIONS.map((opt) => {
+                          const isDisabled = startTime ? opt.value <= startTime : false;
+                          return (
+                            <option key={`end-${opt.value}`} value={opt.value} disabled={isDisabled}>
+                              {opt.label}
+                            </option>
+                          );
+                        })}
+                      </select>
                     </div>
                   </div>
                 </div>
@@ -1291,7 +1408,7 @@ export default function VenueByCategory() {
                       )}
                       {(startTime || endTime) && (
                         <span className="badge rounded-pill d-inline-flex align-items-center ki-filter-badge" style={{ backgroundColor: "#F0FDF4", color: "#15803D", border: "1px solid #BBF7D0", fontSize: "11px", fontWeight: "600", padding: "4px 8px" }}>
-                          <i className="feather-clock me-1" /> {startTime || "Any time"} - {endTime || "Any time"}
+                          <i className="feather-clock me-1" /> {startTime ? formatTime12h(startTime) : "Any time"} - {endTime ? formatTime12h(endTime) : "Any time"}
                           <button type="button" className="btn-close btn-close-sm ms-1" style={{ fontSize: "8px" }} onClick={() => { setStartTime(""); setEndTime(""); }} aria-label="Remove" />
                         </span>
                       )}
@@ -1330,10 +1447,77 @@ export default function VenueByCategory() {
                 </div>
                 <div className="ki-mobile-filter-row" aria-label="Venue filters">
                   <div className="ki-mobile-filter-control"><CustomDropdown options={locationOptions} value={locationName} onChange={setLocationName} placeholder="Location" icon="feather-map-pin" /></div>
-                  <div className="ki-mobile-filter-control"><input type="date" value={startDate} onChange={(event) => { const value = event.target.value; setStartDate(value); if (endDate && value && endDate < value) setEndDate(""); }} className="form-control" aria-label="From date" /></div>
-                  <div className="ki-mobile-filter-control"><input type="date" value={endDate} min={startDate || undefined} onChange={(event) => setEndDate(event.target.value)} className="form-control" aria-label="To date" /></div>
-                  <div className="ki-mobile-filter-control"><input type="time" value={startTime} onChange={(event) => { const value = event.target.value; setStartTime(value); if (endTime && value && endTime <= value) setEndTime(""); }} className="form-control" aria-label="From time" /></div>
-                  <div className="ki-mobile-filter-control"><input type="time" value={endTime} min={startTime || undefined} onChange={(event) => setEndTime(event.target.value)} className="form-control" aria-label="To time" /></div>
+                  <div className="ki-mobile-filter-control">
+                    <input
+                      type="date"
+                      value={startDate}
+                      min={todayStr}
+                      onChange={(event) => {
+                        const value = event.target.value;
+                        if (value && value < todayStr) {
+                          setStartDate(todayStr);
+                        } else {
+                          setStartDate(value);
+                        }
+                        if (endDate && value && endDate < value) setEndDate("");
+                      }}
+                      className="form-control"
+                      aria-label="From date"
+                    />
+                  </div>
+                  <div className="ki-mobile-filter-control">
+                    <input
+                      type="date"
+                      value={endDate}
+                      min={startDate || todayStr}
+                      onChange={(event) => {
+                        const value = event.target.value;
+                        const effectiveMin = startDate || todayStr;
+                        if (value && value < effectiveMin) {
+                          setEndDate(effectiveMin);
+                        } else {
+                          setEndDate(value);
+                        }
+                      }}
+                      className="form-control"
+                      aria-label="To date"
+                    />
+                  </div>
+                  <div className="ki-mobile-filter-control">
+                    <select
+                      value={startTime}
+                      onChange={(event) => handleStartTimeChange(event.target.value)}
+                      className="form-select"
+                      aria-label="From time"
+                      style={{ fontSize: "12px", color: startTime ? "#1E293B" : "#64748B" }}
+                    >
+                      <option value="">From Time</option>
+                      {HALF_HOUR_OPTIONS.map((opt) => (
+                        <option key={`m-start-${opt.value}`} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="ki-mobile-filter-control">
+                    <select
+                      value={endTime}
+                      onChange={(event) => setEndTime(event.target.value)}
+                      className="form-select"
+                      aria-label="To time"
+                      style={{ fontSize: "12px", color: endTime ? "#1E293B" : "#64748B" }}
+                    >
+                      <option value="">To Time</option>
+                      {HALF_HOUR_OPTIONS.map((opt) => {
+                        const isDisabled = startTime ? opt.value <= startTime : false;
+                        return (
+                          <option key={`m-end-${opt.value}`} value={opt.value} disabled={isDisabled}>
+                            {opt.label}
+                          </option>
+                        );
+                      })}
+                    </select>
+                  </div>
                   <button type="button" className="ki-mobile-filter-reset btn btn-outline-secondary btn-sm d-flex align-items-center gap-1" style={{ fontSize: "12px" }} onClick={handleResetFilters}>
                     <i className="feather-refresh-cw" style={{ fontSize: "12px" }} /> Reset
                   </button>
