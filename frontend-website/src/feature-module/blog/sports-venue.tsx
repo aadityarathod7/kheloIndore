@@ -4,6 +4,7 @@ import axios from "axios";
 import { API_URL, IMG_URL } from "../../ApiUrl";
 import Loader from "../loader/loader";
 import { toCategorySlug, VENUE_CATEGORIES } from "../../constants/categories";
+import { jwtDecode } from "jwt-decode";
 
 const categoryImageOverrides: Record<string, string> = {
   archery: "https://images.unsplash.com/photo-1712350840799-eed8c91053ce?auto=format&fit=crop&w=1000&q=85",
@@ -94,10 +95,44 @@ const BlogListSidebarLeft = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedAlphabet, setSelectedAlphabet] = useState("All");
+  const [userFavSports, setUserFavSports] = useState<string[]>(() => {
+    try {
+      const cached = localStorage.getItem("userFavouriteSports");
+      return cached ? JSON.parse(cached) : [];
+    } catch {
+      return [];
+    }
+  });
 
   useEffect(() => {
     window.scrollTo(0, 0);
     document.title = "Sports Venues - Categories";
+  }, []);
+
+  useEffect(() => {
+    const fetchFavs = () => {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+      try {
+        const { userID } = jwtDecode<{ userID: string | number }>(token);
+        if (!userID) return;
+        axios.get(`${API_URL}/user/fetch-user-by-id/${userID}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }).then((res) => {
+          const favs = res.data?.data?.favourite_sports || [];
+          setUserFavSports(favs);
+          localStorage.setItem("userFavouriteSports", JSON.stringify(favs));
+        }).catch((err) => {
+          console.debug("Failed to fetch favourite sports", err);
+        });
+      } catch (err) {
+        console.debug("Failed to decode token", err);
+      }
+    };
+
+    fetchFavs();
+    window.addEventListener("userProfileUpdated", fetchFavs);
+    return () => window.removeEventListener("userProfileUpdated", fetchFavs);
   }, []);
 
   useEffect(() => {
@@ -183,11 +218,31 @@ const BlogListSidebarLeft = () => {
   };
   const categoryCounts = classifyVenues(venues);
 
+  const isCategoryFav = (catName: string) => {
+    if (!userFavSports || userFavSports.length === 0) return false;
+    return userFavSports.some((s) => {
+      const sportLower = s.toLowerCase().trim();
+      const catLower = catName.toLowerCase().trim();
+      if (catLower.includes(sportLower) || sportLower.includes(catLower)) return true;
+      if (sportLower === "cricket" && (catLower === "turf" || catLower.includes("cricket"))) return true;
+      if (sportLower === "turf" && (catLower === "cricket" || catLower.includes("turf"))) return true;
+      if (sportLower === "football" && catLower.includes("soccer")) return true;
+      if (sportLower === "swimming" && (catLower.includes("pool") || catLower.includes("swimming"))) return true;
+      return false;
+    });
+  };
+
   const alphabetLetters = Array.from("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
   const filteredCategories = categories
     .filter((cat) => cat.name.toLowerCase().includes(searchQuery.toLowerCase()))
     .filter((cat) => selectedAlphabet === "All" || cat.name.toUpperCase().startsWith(selectedAlphabet))
-    .sort((first, second) => first.name.localeCompare(second.name));
+    .sort((first, second) => {
+      const firstFav = isCategoryFav(first.name);
+      const secondFav = isCategoryFav(second.name);
+      if (firstFav && !secondFav) return -1;
+      if (!firstFav && secondFav) return 1;
+      return first.name.localeCompare(second.name);
+    });
 
   return (
     <div>
@@ -267,6 +322,27 @@ const BlogListSidebarLeft = () => {
                 })}
               </div>
               <div className="row g-4">
+                {userFavSports.length > 0 && selectedAlphabet === "All" && !searchQuery && (
+                  <div className="col-12 mb-1">
+                    <div
+                      className="p-3 rounded-3 d-flex align-items-center justify-content-between flex-wrap gap-2 shadow-sm"
+                      style={{ background: "linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 100%)", border: "1px solid #86EFAC" }}
+                    >
+                      <div className="d-flex align-items-center gap-2">
+                        <i className="fas fa-trophy text-success fs-5" />
+                        <div>
+                          <strong style={{ color: "#166534", fontSize: "14px" }}>Recommended for You:</strong>
+                          <span className="ms-1" style={{ color: "#15803D", fontSize: "13px" }}>
+                            Your favourite sports ({userFavSports.join(", ")}) are prioritized on top.
+                          </span>
+                        </div>
+                      </div>
+                      <Link to="/user/user-profile" className="btn btn-sm btn-success rounded-pill px-3 py-1 fw-bold" style={{ fontSize: "12px", backgroundColor: "#16A34A", border: "none" }}>
+                        Edit Sports
+                      </Link>
+                    </div>
+                  </div>
+                )}
                 {filteredCategories.length === 0 ? (
                   <div className="col-12 text-center py-5">
                     <div className="mb-3">
@@ -311,6 +387,26 @@ const BlogListSidebarLeft = () => {
                             inset: 0
                           }}
                         />
+
+                        {/* Favourite Sport Highlight Badge */}
+                        {isCategoryFav(cat.name) && (
+                          <span
+                            className="position-absolute top-0 end-0 m-3 badge rounded-pill d-inline-flex align-items-center gap-1"
+                            style={{
+                              background: "linear-gradient(135deg, #16A34A 0%, #15803D 100%)",
+                              color: "#FFFFFF",
+                              fontSize: "11px",
+                              fontWeight: "700",
+                              padding: "6px 12px",
+                              boxShadow: "0 4px 12px rgba(22, 163, 74, 0.45)",
+                              zIndex: 2,
+                              letterSpacing: "0.3px",
+                              border: "1px solid rgba(255, 255, 255, 0.4)"
+                            }}
+                          >
+                            <i className="fas fa-star text-warning" style={{ fontSize: "10px" }} /> Top Match
+                          </span>
+                        )}
                         
                         {/* Category Info */}
                         <div className="position-absolute bottom-0 start-0 p-4 text-start">

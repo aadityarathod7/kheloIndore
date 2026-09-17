@@ -430,7 +430,14 @@ const Home = () => {
   const [selectedSport, setSelectedSport] = useState<{ name: string } | null>(null);
   const [showAllCategories, setShowAllCategories] = useState(false);
   const [categoryProviderTab, setCategoryProviderTab] = useState<CategoryProviderTab>("venue");
-  const [favouriteSports, setFavouriteSports] = useState<string[]>([]);
+  const [favouriteSports, setFavouriteSports] = useState<string[]>(() => {
+    try {
+      const cached = localStorage.getItem("userFavouriteSports");
+      return cached ? JSON.parse(cached) : [];
+    } catch {
+      return [];
+    }
+  });
 
   const navigate = useNavigate();
 
@@ -439,23 +446,31 @@ const Home = () => {
   }, []);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) return;
+    const fetchUserFavs = () => {
+      const token = localStorage.getItem("token");
+      if (!token) return;
 
-    try {
-      const { userID } = jwtDecode<{ userID: string | number }>(token);
-      if (!userID) return;
+      try {
+        const { userID } = jwtDecode<{ userID: string | number }>(token);
+        if (!userID) return;
 
-      axios.get(`${API_URL}/user/fetch-user-by-id/${userID}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      }).then((response) => {
-        setFavouriteSports(response.data?.data?.favourite_sports || []);
-      }).catch(() => {
-        // The standard homepage remains available if the profile cannot be fetched.
-      });
-    } catch {
-      // Ignore an invalid or expired stored token.
-    }
+        axios.get(`${API_URL}/user/fetch-user-by-id/${userID}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }).then((response) => {
+          const favs = response.data?.data?.favourite_sports || [];
+          setFavouriteSports(favs);
+          localStorage.setItem("userFavouriteSports", JSON.stringify(favs));
+        }).catch((err) => {
+          console.debug("Home fetchUserFavs error", err);
+        });
+      } catch (err) {
+        console.debug("Home decode token error", err);
+      }
+    };
+
+    fetchUserFavs();
+    window.addEventListener("userProfileUpdated", fetchUserFavs);
+    return () => window.removeEventListener("userProfileUpdated", fetchUserFavs);
   }, []);
 
   useEffect(() => {
@@ -902,16 +917,45 @@ const Home = () => {
     });
   };
 
-  const prioritiseFavouriteSports = <T extends { category: string }>(items: T[]) => {
+  const matchesFavouriteSport = (itemOrCategory: any, sport: string) => {
+    if (!itemOrCategory || !sport) return false;
+    const s = sport.toLowerCase().trim();
+    const cat = (typeof itemOrCategory === "string" ? itemOrCategory : (itemOrCategory.category || "")).toLowerCase();
+    const game = (typeof itemOrCategory === "object" ? (itemOrCategory.gameType || "") : "").toLowerCase();
+    const name = (typeof itemOrCategory === "object" ? (itemOrCategory.name || "") : "").toLowerCase();
+    const vendorType = (typeof itemOrCategory === "object" ? (itemOrCategory.vendor_type || "") : "").toLowerCase();
+    const activities = (typeof itemOrCategory === "object" ? (itemOrCategory.activities || "") : "").toLowerCase();
+
+    // Direct match
+    if (cat.includes(s) || s.includes(cat)) return true;
+    if (game.includes(s) || s.includes(game)) return true;
+    if (name.includes(s)) return true;
+    if (vendorType.includes(s)) return true;
+    if (activities.includes(s)) return true;
+
+    // Smart Aliases
+    if (s === "cricket" && (cat.includes("turf") || name.includes("turf") || game.includes("turf"))) return true;
+    if (s === "turf" && (cat.includes("cricket") || name.includes("cricket") || game.includes("cricket"))) return true;
+    if (s === "football" && (cat.includes("soccer") || name.includes("soccer") || cat.includes("futsal") || name.includes("futsal"))) return true;
+    if (s === "swimming" && (cat.includes("pool") || name.includes("pool"))) return true;
+    if (s === "swimming pool" && (cat.includes("swimming") || name.includes("swimming"))) return true;
+    if (s === "table tennis" && (cat.includes("tt") || name.includes("tt") || cat.includes("ping pong"))) return true;
+    if (s === "gym" && (cat.includes("fitness") || name.includes("fitness") || cat.includes("workout"))) return true;
+    if (s === "snooker" && (cat.includes("pool") || name.includes("pool") || cat.includes("billiards"))) return true;
+
+    return false;
+  };
+
+  const isMatchingAnyFavouriteSport = (item: any) => {
+    return favouriteSports.some((sport) => matchesFavouriteSport(item, sport));
+  };
+
+  const prioritiseFavouriteSports = <T,>(items: T[]) => {
     if (!favouriteSports.length) return items;
-
-    const matchesFavourite = (category: string) => favouriteSports.some((sport) => {
-      const categoryValue = String(category || "").toLowerCase();
-      const sportValue = sport.toLowerCase();
-      return categoryValue.includes(sportValue) || sportValue.includes(categoryValue);
-    });
-
-    return [...items.filter((item) => matchesFavourite(item.category)), ...items.filter((item) => !matchesFavourite(item.category))];
+    return [
+      ...items.filter((item) => isMatchingAnyFavouriteSport(item)),
+      ...items.filter((item) => !isMatchingAnyFavouriteSport(item)),
+    ];
   };
 
   const visibleVenues = prioritiseFavouriteSports(venues).slice(0, 6);
@@ -953,11 +997,17 @@ const Home = () => {
         .filter((category) => ["venue", "coach", "trainer"].includes(providerType) || providerCategoryGroups.length === 0 || category.count > 0);
 
       result[providerType] = ["venue", "coach", "trainer"].includes(providerType)
-        ? cards
+        ? cards.sort((first, second) => {
+            const firstFav = favouriteSports.some((s) => matchesFavouriteSport(first.name, s));
+            const secondFav = favouriteSports.some((s) => matchesFavouriteSport(second.name, s));
+            if (firstFav && !secondFav) return -1;
+            if (!firstFav && secondFav) return 1;
+            return 0;
+          })
         : cards.sort((first, second) => second.count - first.count || first.name.localeCompare(second.name));
       return result;
     }, { venue: [], coach: [], trainer: [] } as Record<CategoryProviderTab, CategoryCard[]>);
-  }, [apiCategories, venues, coaches, trainer]);
+  }, [apiCategories, venues, coaches, trainer, favouriteSports]);
 
   const categoryCards = categoryCardsByProvider[categoryProviderTab];
 
@@ -1611,11 +1661,35 @@ const Home = () => {
                               />
                             )}
                           </Link>
-                          <div className="fav-item-venues news-sports" style={{ top: "12px", left: "12px" }}>
+                          <div className="fav-item-venues news-sports" style={{ top: "12px", left: "12px", display: "flex", gap: "6px" }}>
                             <span className="tag tag-blue" style={{ display: "inline-flex", alignItems: "center", gap: "6px", minHeight: "28px", padding: "4px 12px", background: "#FFFFFF", color: "#16A34A", fontWeight: "700", borderRadius: "999px", fontSize: "10px", lineHeight: 1, letterSpacing: "0.04em", textTransform: "uppercase", whiteSpace: "nowrap", boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)", border: "1px solid rgba(22, 163, 74, 0.1)" }}>
                               <i className={getCategoryIcon(venue.vendor_type)} style={{ fontSize: "11px" }} />
                               {venue.vendor_type.replace("_", " ")}
                             </span>
+                            {isMatchingAnyFavouriteSport(venue) && (
+                              <span
+                                className="tag tag-green"
+                                style={{
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  gap: "4px",
+                                  minHeight: "28px",
+                                  padding: "4px 10px",
+                                  background: "#16A34A",
+                                  color: "#FFFFFF",
+                                  fontWeight: "700",
+                                  borderRadius: "999px",
+                                  fontSize: "10px",
+                                  lineHeight: 1,
+                                  letterSpacing: "0.04em",
+                                  textTransform: "uppercase",
+                                  whiteSpace: "nowrap",
+                                  boxShadow: "0 2px 8px rgba(22, 163, 74, 0.3)"
+                                }}
+                              >
+                                <i className="fas fa-star" style={{ fontSize: "9px" }} /> Top Match
+                              </span>
+                            )}
                           </div>
                         </div>
                         <div className="listing-content home-venue news-content p-3" style={{ textAlign: "left" }}>

@@ -6,6 +6,7 @@ import { jwtDecode} from "jwt-decode";
 import { API_URL, IMG_URL } from "../../ApiUrl";
 import axios from "axios";
 import Swal from "sweetalert2";
+import { toCategorySlug } from "../../constants/categories";
 
 interface JwtPayload {
   userID: string | number;
@@ -17,6 +18,7 @@ interface UserData{
   email: string;
   mobile: string;
   booking_count: number;
+  favourite_sports?: string[];
 }
 
 interface ApiBooking {
@@ -493,6 +495,27 @@ const UserDashboard = () => {
               <span className="simple-dashboard-eyebrow">MY ACCOUNT</span>
               <h1>Hello, {userData?.first_name || "Player"}</h1>
               <p>Everything you need to manage your Khelo Indore bookings in one place.</p>
+              {userData?.favourite_sports && userData.favourite_sports.length > 0 && (
+                <div className="d-flex align-items-center flex-wrap gap-2 mt-2">
+                  <span style={{ fontSize: "12px", fontWeight: "700", color: "#16A34A", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                    <i className="fas fa-trophy text-warning me-1" /> My Top Sports:
+                  </span>
+                  {userData.favourite_sports.map((sport) => (
+                    <Link
+                      key={sport}
+                      to={`/sports-venue/${toCategorySlug(sport)}`}
+                      className="badge rounded-pill text-decoration-none d-inline-flex align-items-center gap-1"
+                      style={{ background: "#DCFCE7", color: "#15803D", border: "1px solid #BBF7D0", fontSize: "12px", padding: "5px 12px", fontWeight: "600" }}
+                      title={`Explore ${sport} venues`}
+                    >
+                      {sport} <i className="fas fa-arrow-right" style={{ fontSize: "9px" }} />
+                    </Link>
+                  ))}
+                  <Link to={`${routes.userProfile}#favourite-sports-section`} className="text-muted small ms-1 text-decoration-none" title="Edit favourite sports">
+                    <i className="fas fa-pencil-alt" style={{ fontSize: "11px" }} />
+                  </Link>
+                </div>
+              )}
             </div>
             <div className="simple-dashboard-actions">
               <Link to={routes.userBookings} className="simple-dashboard-primary-action">
@@ -594,22 +617,97 @@ const UserDashboard = () => {
                         const vendorType = (v.vendor_type || "venue").replace(/\s+/g, "-").toLowerCase();
                         const venueNameSlug = (v.name || "venue").replace(/\s+/g, "-").toLowerCase();
                         const venueUrl = `/sports-venue/${vendorType}/${venueNameSlug}/${vId}`;
-                        const imgSrc = v.images && v.images[0]
-                          ? (typeof v.images[0] === "string"
-                              ? (v.images[0].startsWith("http") ? v.images[0] : `${IMG_URL}${v.images[0]}`)
-                              : (v.images[0].src || v.images[0].url || "").startsWith("http")
-                                ? (v.images[0].src || v.images[0].url)
-                                : `${IMG_URL}${v.images[0].src || v.images[0].url || ""}`)
-                          : "/assets/img/venues/venue-01.jpg";
+
+                        const getVenueCoverImage = (venue: FavouriteVenue): string => {
+                          let rawImg: any = venue.images;
+                          if (typeof rawImg === "string") {
+                            try {
+                              if (rawImg.startsWith("[") || rawImg.startsWith("{")) {
+                                rawImg = JSON.parse(rawImg);
+                              }
+                            } catch {
+                              // keep raw string
+                            }
+                          }
+
+                          let path = "";
+                          if (Array.isArray(rawImg) && rawImg.length > 0) {
+                            const first = rawImg[0];
+                            path = typeof first === "string" ? first : (first?.src || first?.url || "");
+                          } else if (typeof rawImg === "string") {
+                            path = rawImg;
+                          }
+
+                          if (path && (path.startsWith("http://") || path.startsWith("https://"))) {
+                            return path;
+                          }
+
+                          if (path) {
+                            const clean = path.startsWith("/") ? path : `/${path}`;
+                            return `${IMG_URL}${clean}`;
+                          }
+
+                          const text = `${venue.name || ""} ${venue.vendor_type || ""} ${venue.category || ""}`.toLowerCase();
+                          if (text.includes("foot") || text.includes("soccer")) {
+                            return "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=800&auto=format&fit=crop&q=80";
+                          }
+                          if (text.includes("cricket") || text.includes("turf") || text.includes("box")) {
+                            return "https://images.unsplash.com/photo-1531415074868-036b1c57e32b?w=800&auto=format&fit=crop&q=80";
+                          }
+                          if (text.includes("badminton")) {
+                            return "https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=800&auto=format&fit=crop&q=80";
+                          }
+                          if (text.includes("tennis") || text.includes("pickleball")) {
+                            return "https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?w=800&auto=format&fit=crop&q=80";
+                          }
+                          if (text.includes("swim") || text.includes("pool")) {
+                            return "https://images.unsplash.com/photo-1519315901367-f34ff9154487?w=800&auto=format&fit=crop&q=80";
+                          }
+                          if (text.includes("gym") || text.includes("fitness")) {
+                            return "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&auto=format&fit=crop&q=80";
+                          }
+                          return "/assets/img/venues/venues-01.jpg";
+                        };
+
+                        const getFallbackImage = (venue: FavouriteVenue): string => {
+                          const text = `${venue.name || ""} ${venue.vendor_type || ""} ${venue.category || ""}`.toLowerCase();
+                          if (text.includes("foot") || text.includes("soccer")) {
+                            return "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=800&auto=format&fit=crop&q=80";
+                          }
+                          if (text.includes("cricket") || text.includes("turf") || text.includes("box")) {
+                            return "https://images.unsplash.com/photo-1531415074868-036b1c57e32b?w=800&auto=format&fit=crop&q=80";
+                          }
+                          if (text.includes("badminton")) {
+                            return "https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=800&auto=format&fit=crop&q=80";
+                          }
+                          if (text.includes("tennis") || text.includes("pickleball")) {
+                            return "https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?w=800&auto=format&fit=crop&q=80";
+                          }
+                          if (text.includes("swim") || text.includes("pool")) {
+                            return "https://images.unsplash.com/photo-1519315901367-f34ff9154487?w=800&auto=format&fit=crop&q=80";
+                          }
+                          if (text.includes("gym") || text.includes("fitness")) {
+                            return "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&auto=format&fit=crop&q=80";
+                          }
+                          return "/assets/img/venues/venues-01.jpg";
+                        };
+
+                        const coverImg = getVenueCoverImage(v);
+                        const fallbackImg = getFallbackImage(v);
 
                         return (
                           <div key={String(vId || index)} className="simple-fav-item">
                             <Link to={venueUrl} className="simple-fav-thumb-link" title={`View ${v.name || "Venue"}`}>
                               <img
-                                src={imgSrc || "/assets/img/venues/venue-01.jpg"}
+                                src={coverImg}
                                 alt={v.name || "Venue"}
                                 onError={(e) => {
-                                  (e.target as HTMLImageElement).src = "/assets/img/venues/venue-01.jpg";
+                                  const target = e.currentTarget;
+                                  if (target.src !== fallbackImg) {
+                                    target.src = fallbackImg;
+                                  } else {
+                                    target.src = "/assets/img/venues/venues-01.jpg";
+                                  }
                                 }}
                               />
                             </Link>

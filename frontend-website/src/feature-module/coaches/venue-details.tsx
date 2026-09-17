@@ -49,15 +49,78 @@ interface MembershipPlan {
   support?: string;
 }
 
-const getVenueImgUrl = (images: any, index = 0): string => {
-  const fallback = "https://images.unsplash.com/photo-1517649763962-0c623266010b?w=800&auto=format&fit=crop&q=80";
-  if (!images || !Array.isArray(images) || images.length === 0) return fallback;
-  const item = images[index] !== undefined ? images[index] : images[0];
-  if (!item) return fallback;
-  const str = typeof item === "string" ? item : (item.src || item.url || "");
-  if (!str) return fallback;
-  if (str.startsWith("http://") || str.startsWith("https://")) return str;
-  return `${IMG_URL}${str}`;
+const getSportFallbackImage = (venueName?: string, venueType?: string, category?: string, index = 0): string => {
+  const text = `${venueName || ""} ${venueType || ""} ${category || ""}`.toLowerCase();
+
+  if (text.includes("foot") || text.includes("soccer")) {
+    const footballImgs = [
+      "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=1200&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=1200&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1518091043644-c1d4457512c6?w=1200&auto=format&fit=crop&q=80",
+    ];
+    return footballImgs[index % footballImgs.length];
+  }
+  if (text.includes("cricket") || text.includes("turf") || text.includes("box")) {
+    const cricketImgs = [
+      "https://images.unsplash.com/photo-1531415074868-036b1c57e32b?w=1200&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=1200&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1624526267942-ab0ff8a3e972?w=1200&auto=format&fit=crop&q=80",
+    ];
+    return cricketImgs[index % cricketImgs.length];
+  }
+  if (text.includes("badminton")) {
+    const badmintonImgs = [
+      "https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=1200&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1613918431703-aa503e9f7ca4?w=1200&auto=format&fit=crop&q=80",
+    ];
+    return badmintonImgs[index % badmintonImgs.length];
+  }
+  if (text.includes("tennis") || text.includes("pickleball")) {
+    return "https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?w=1200&auto=format&fit=crop&q=80";
+  }
+  if (text.includes("swim") || text.includes("pool")) {
+    return "https://images.unsplash.com/photo-1519315901367-f34ff9154487?w=1200&auto=format&fit=crop&q=80";
+  }
+  if (text.includes("gym") || text.includes("fitness")) {
+    return "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1200&auto=format&fit=crop&q=80";
+  }
+  if (text.includes("basketball")) {
+    return "https://images.unsplash.com/photo-1546519638-68e109498ffc?w=1200&auto=format&fit=crop&q=80";
+  }
+  if (text.includes("volleyball")) {
+    return "https://images.unsplash.com/photo-1612872087720-bb876e2e67d1?w=1200&auto=format&fit=crop&q=80";
+  }
+
+  return "https://images.unsplash.com/photo-1517649763962-0c623266010b?w=1200&auto=format&fit=crop&q=80";
+};
+
+const getVenueImgUrl = (images: any, index = 0, venueName = "", venueType = "", category = ""): string => {
+  let raw: any = images;
+  if (typeof raw === "string") {
+    try {
+      if (raw.startsWith("[") || raw.startsWith("{")) {
+        raw = JSON.parse(raw);
+      }
+    } catch {
+      // keep raw string
+    }
+  }
+
+  let str = "";
+  if (Array.isArray(raw) && raw.length > 0) {
+    const item = raw[index] !== undefined ? raw[index] : raw[0];
+    str = typeof item === "string" ? item : (item?.src || item?.url || "");
+  } else if (typeof raw === "string") {
+    str = raw;
+  }
+
+  if (str) {
+    if (str.startsWith("http://") || str.startsWith("https://")) return str;
+    const clean = str.startsWith("/") ? str : `/${str}`;
+    return `${IMG_URL}${clean}`;
+  }
+
+  return getSportFallbackImage(venueName, venueType, category, index);
 };
 
 const getVenueVideoUrl = (video: any): string => {
@@ -483,16 +546,26 @@ const VenueDetails = () => {
                     <div className="bento-hero-main">
                       {/* Ambient Blurred Background */}
                       <img
-                        src={getVenueImgUrl(venueData?.images, 0)}
+                        src={getVenueImgUrl(venueData?.images, 0, venueData?.name, venueType, venueData?.category)}
                         alt="Ambient backdrop"
                         className="ambient-bg"
+                        onError={(e) => {
+                          const target = e.currentTarget;
+                          const fallback = getSportFallbackImage(venueData?.name, venueType, venueData?.category, 0);
+                          if (target.src !== fallback) target.src = fallback;
+                        }}
                       />
                       {/* Full Uncropped Main Image */}
                       <img
-                        src={getVenueImgUrl(venueData?.images, 0)}
-                        alt={venueData?.name}
+                        src={getVenueImgUrl(venueData?.images, 0, venueData?.name, venueType, venueData?.category)}
+                        alt={venueData?.name || "Sports Venue"}
                         className="full-hero-img"
                         onClick={() => handleImageClick(0)}
+                        onError={(e) => {
+                          const target = e.currentTarget;
+                          const fallback = getSportFallbackImage(venueData?.name, venueType, venueData?.category, 0);
+                          if (target.src !== fallback) target.src = fallback;
+                        }}
                       />
                       {/* Featured Badge */}
                       <div className="position-absolute top-0 start-0 p-3" style={{ zIndex: 10 }}>
@@ -532,28 +605,48 @@ const VenueDetails = () => {
                     <div className="col-md-4 d-flex flex-column gap-3">
                       <div className="bento-hero-thumb">
                         <img
-                          src={getVenueImgUrl(venueData?.images, 1)}
+                          src={getVenueImgUrl(venueData?.images, 1, venueData?.name, venueType, venueData?.category)}
                           alt="Ambient thumbnail 1"
                           className="ambient-bg"
+                          onError={(e) => {
+                            const target = e.currentTarget;
+                            const fallback = getSportFallbackImage(venueData?.name, venueType, venueData?.category, 1);
+                            if (target.src !== fallback) target.src = fallback;
+                          }}
                         />
                         <img
-                          src={getVenueImgUrl(venueData?.images, 1)}
+                          src={getVenueImgUrl(venueData?.images, 1, venueData?.name, venueType, venueData?.category)}
                           alt="Venue thumbnail 1"
                           className="full-hero-img"
                           onClick={() => handleImageClick(1)}
+                          onError={(e) => {
+                            const target = e.currentTarget;
+                            const fallback = getSportFallbackImage(venueData?.name, venueType, venueData?.category, 1);
+                            if (target.src !== fallback) target.src = fallback;
+                          }}
                         />
                       </div>
                       <div className="bento-hero-thumb">
                         <img
-                          src={getVenueImgUrl(venueData?.images, 2)}
+                          src={getVenueImgUrl(venueData?.images, 2, venueData?.name, venueType, venueData?.category)}
                           alt="Ambient thumbnail 2"
                           className="ambient-bg"
+                          onError={(e) => {
+                            const target = e.currentTarget;
+                            const fallback = getSportFallbackImage(venueData?.name, venueType, venueData?.category, 2);
+                            if (target.src !== fallback) target.src = fallback;
+                          }}
                         />
                         <img
-                          src={getVenueImgUrl(venueData?.images, 2)}
+                          src={getVenueImgUrl(venueData?.images, 2, venueData?.name, venueType, venueData?.category)}
                           alt="Venue thumbnail 2"
                           className="full-hero-img"
                           onClick={() => handleImageClick(2)}
+                          onError={(e) => {
+                            const target = e.currentTarget;
+                            const fallback = getSportFallbackImage(venueData?.name, venueType, venueData?.category, 2);
+                            if (target.src !== fallback) target.src = fallback;
+                          }}
                         />
                       </div>
                     </div>
@@ -1257,9 +1350,14 @@ const VenueDetails = () => {
                 onClick={(e) => e.stopPropagation()}
               >
                 <img
-                  src={getVenueImgUrl(venueData?.images, lightboxIndex)}
+                  src={getVenueImgUrl(venueData?.images, lightboxIndex, venueData?.name, venueType, venueData?.category)}
                   alt="Lightbox View"
                   className="img-fluid rounded-3 shadow-2xl"
+                  onError={(e) => {
+                    const target = e.currentTarget;
+                    const fallback = getSportFallbackImage(venueData?.name, venueType, venueData?.category, lightboxIndex);
+                    if (target.src !== fallback) target.src = fallback;
+                  }}
                   style={{ 
                     maxHeight: "70vh", 
                     maxWidth: "100%", 
@@ -1327,9 +1425,14 @@ const VenueDetails = () => {
                       }}
                     >
                       <img 
-                        src={getVenueImgUrl(venueData.images, idx)} 
+                        src={getVenueImgUrl(venueData.images, idx, venueData?.name, venueType, venueData?.category)} 
                         alt="thumbnail"
                         style={{ width: "100%", height: "100%", objectFit: "cover" }} 
+                        onError={(e) => {
+                          const target = e.currentTarget;
+                          const fallback = getSportFallbackImage(venueData?.name, venueType, venueData?.category, idx);
+                          if (target.src !== fallback) target.src = fallback;
+                        }}
                       />
                     </button>
                   ))}
