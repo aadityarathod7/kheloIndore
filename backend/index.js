@@ -26,7 +26,7 @@ app.use("/pdf", express.static(path.join(__dirname, "public/pdf")));
 app.use(securityHeaders);
 app.use(cors(corsOptions));
 // Cap JSON/urlencoded payloads to stop oversized request abuse
-app.use(express.json({ limit: "2mb" }));
+app.use(express.json({ limit: "2mb", verify: (req, res, buffer) => { req.rawBody = buffer.toString("utf8"); } }));
 app.use(express.urlencoded({ extended: true, limit: "2mb" }));
 app.use("/admin", express.static(path.join(__dirname, "public/admin/build/")));
 app.use("/", express.static(path.join(__dirname, "public/site/build/")));

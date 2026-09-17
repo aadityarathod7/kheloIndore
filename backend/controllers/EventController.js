@@ -69,6 +69,21 @@ exports.createEvent = async (req, res) => {
           .json({ success: false, message: "Location is required" });
       }
 
+      if (!near_by_location) {
+        return res
+          .status(400)
+          .json({ success: false, message: "Nearby location is required" });
+      }
+
+      const startDate = new Date(start_date);
+      const endDate = new Date(end_date);
+      if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) {
+        return res.status(400).json({ success: false, message: "Please provide valid event dates" });
+      }
+      if (endDate < startDate) {
+        return res.status(400).json({ success: false, message: "End date cannot be before start date" });
+      }
+
       // Check for event name uniqueness
       const existingEvent = await Event.findOne({
         event_name: event_name.trim(),

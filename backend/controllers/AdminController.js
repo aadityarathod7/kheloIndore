@@ -811,12 +811,16 @@ exports.loginWithPassword = async (req, res) => {
     const mobileNum = Number(mobile);
 
     // Find user in all roles
-    let user = await PersonalTrainer.findOne({ mobile: mobileNum }) || 
-               await Coach.findOne({ mobile: mobileNum }) || 
-               await User.findOne({ mobile: mobileNum }) ||
-               await PersonalTrainer.findOne({ mobile }) || 
-               await Coach.findOne({ mobile }) || 
-               await User.findOne({ mobile });
+    // Archived profiles intentionally keep their original contact details for
+    // history/audit purposes. Exclude them here so a newly registered account
+    // using the same mobile can sign in normally.
+    const activeAccount = { status: { $ne: false } };
+    let user = await PersonalTrainer.findOne({ mobile: mobileNum, ...activeAccount }) ||
+               await Coach.findOne({ mobile: mobileNum, ...activeAccount }) ||
+               await User.findOne({ mobile: mobileNum, ...activeAccount }) ||
+               await PersonalTrainer.findOne({ mobile, ...activeAccount }) ||
+               await Coach.findOne({ mobile, ...activeAccount }) ||
+               await User.findOne({ mobile, ...activeAccount });
 
               //  let user = await User.findOne({ mobile }) || 
               //  await Coach.findOne({ mobile }) || 

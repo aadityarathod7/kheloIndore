@@ -106,6 +106,9 @@ const coachSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    cashfree_vendor_id: { type: String, trim: true, default: "" },
+    cashfree_vendor_status: { type: String, trim: true, default: "NOT_ONBOARDED" },
+    cashfree_vendor_updated_at: { type: Date, default: null },
     isUpdated: {
       type: Boolean,
       default: false,

@@ -132,6 +132,10 @@ async function seedCoach() {
   const existing = await Coach.findOne({ email: "rahul.sharma.coach@kheloindore.in" });
   if (existing) {
     existing.is_admin_access = 1;
+    // Backfill levels for records that existed before this field was added.
+    if (!Array.isArray(existing.coaching_levels) || existing.coaching_levels.length === 0) {
+      existing.coaching_levels = ["Beginner", "Intermediate", "Advanced"];
+    }
     await existing.save();
     
     return existing;
@@ -226,6 +230,13 @@ async function seedTrainer() {
   const existing = await Trainer.findOne({ email: "priya.fitness@kheloindore.in" });
   if (existing) {
     existing.is_admin_access = 1;
+    // Backfill levels for trainer records created before this field was added.
+    if (!Array.isArray(existing.coaching_levels) || existing.coaching_levels.length === 0) {
+      existing.coaching_levels = ["Beginner", "Intermediate", "Advanced"];
+    }
+    if (!Array.isArray(existing.training_levels) || existing.training_levels.length === 0) {
+      existing.training_levels = existing.coaching_levels;
+    }
     await existing.save();
     
     return existing;
@@ -276,6 +287,7 @@ async function seedTrainer() {
     skills:          "Strength Training, Cardio, Flexibility, Weight Loss, Muscle Gain",
     languages:       "Hindi, English",
     coaching_levels: ["Beginner", "Intermediate", "Advanced"],
+    training_levels: ["Beginner", "Intermediate", "Advanced"],
 
     qualifications: `• ACE Certified Personal Trainer\n
 • Diploma in Sports Nutrition — Indore Sports Academy\n

@@ -394,11 +394,12 @@ route.get("/dashboard/amountReviews",auth, getMoneyReviews);
 route.get("/user-growth-graph",auth,userGrowthGraph);
 
 // Provider Earnings Dashboard APIs
-const { getEarningsSummary, getMonthlyEarnings, getRecentBookings, getVendorSettlements, recordVendorPayout } = require("../controllers/EarningsController");
+const { getEarningsSummary, getMonthlyEarnings, getRecentBookings, getVendorSettlements, recordVendorPayout, getProviderBreakdown } = require("../controllers/EarningsController");
 route.get("/earnings/summary", auth, getEarningsSummary);
 route.get("/earnings/monthly", auth, getMonthlyEarnings);
 route.get("/earnings/recent-bookings", auth, getRecentBookings);
 route.get("/earnings/vendor-settlements", auth, getVendorSettlements);
+route.get("/earnings/provider-breakdown", auth, getProviderBreakdown);
 route.post("/earnings/vendor-payouts", auth, recordVendorPayout);
 const {
   addLoaction,
@@ -427,7 +428,7 @@ route.put("/coach-slot/update/:coachId/:slotId/:coachSlotId", auth, updateCoachS
 route.put("/coach-slot/update/:coachSlotId", auth, updateCoachSlotByIdNew);
 route.put("/cancel-coach-slot/:id", auth, updateCoachSlotBooking);
 route.delete("/coach-slot/delete/:coachSlotId", auth, deleteCoachBatch);
-route.get("/get-all-coach-slot/:coachId",auth, getAllCoachesSlotsByCoachId);
+route.get("/get-all-coach-slot/:coachId", getAllCoachesSlotsByCoachId);
 route.get("/coach-slot/fetch/:id",auth, getCoachBatchSlots);
 route.get("/coach/batches/:id", fetchAllCoachBatches); 
 route.get("/get-coach-slot-by-date/:id",fetchCoachSlotByDateId); 
@@ -455,6 +456,10 @@ route.put("/pt/cancelbooking/:id", auth, cancelPtSlotBooking);
 route.get("/pt/booking/get",auth, getPTBooking);
 //Phonepe
 const { venuePayment, venuePaymentStatus, coachPaymentStatus, coachPayment, personalTrainerPayment, personalTrainerPaymentStatus,getVenueBookingByUserId,getCoachBookingByUserId,getPersonalTrainerBookingByUserId, getVenueCoachPTBookingByUserId,venueRefund,getAllRefunds }  = require("../controllers/paymentController");
+const { onboardCashfreeVendor, cashfreeSplitWebhook, getCashfreeSplits } = require("../controllers/CashfreeSplitController");
+route.post("/webhooks/cashfree/easy-split", cashfreeSplitWebhook);
+route.post("/super-admin/cashfree/vendors/:providerType/:id", auth, requireRole("Super Admin"), onboardCashfreeVendor);
+route.get("/super-admin/cashfree/splits", auth, requireRole("Super Admin"), getCashfreeSplits);
 route.post('/venue/payment', auth, venuePayment);
 route.all('/get/venue/payment/status/:txnId', venuePaymentStatus);
 route.get('/get/booking/by/:userId', getVenueBookingByUserId);

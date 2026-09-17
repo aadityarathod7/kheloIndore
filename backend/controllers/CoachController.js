@@ -333,20 +333,25 @@ exports.updateCoach = async (req, res) => {
         message: "Empty Body",
       });
     }
-    const { experience, availability, specializations, bio } = detail;
+    const { experience, availability, specializations, bio, coaching_levels } = detail;
     const token = req.header("Authorization").replace("Bearer ", "");
 
     const decoded = await jwt.verify(token, process.env.JWT_AUTH, { algorithms: ["HS256"] });
 
     const id = decoded.userID;
+    const updatePayload = {
+      experience: experience,
+      availability: availability ? JSON.stringify(availability) : null,
+      specializations: specializations ? specializations : [],
+      bio: bio || "",
+    };
+    if (Array.isArray(coaching_levels)) {
+      updatePayload.coaching_levels = coaching_levels;
+    }
+
     const updatedCoach = await Coach.findByIdAndUpdate(
       id,
-      {
-        experience: experience,
-        availability: availability ? JSON.stringify(availability) : null,
-        specializations: specializations ? specializations : [],
-        bio: bio || "",
-      },
+      updatePayload,
       { new: true }
     );
 
