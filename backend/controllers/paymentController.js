@@ -31,12 +31,22 @@ const Refund = require("../models/RefundModel");
 const CASHFREE_API_VERSION = process.env.CASHFREE_API_VERSION || "2023-08-01";
 const getCashfreeBaseUrl = () => process.env.CASHFREE_BASE_URL || (process.env.CASHFREE_ENV === "production" ? "https://api.cashfree.com/pg" : "https://sandbox.cashfree.com/pg");
 
-const getCashfreeHeaders = () => ({
-  accept: "application/json",
-  "Content-Type": "application/json",
-  "x-api-version": CASHFREE_API_VERSION,
-  "x-client-id": process.env.CASHFREE_APP_ID,
-});
+const getCashfreeCredentials = () => {
+  const appId = (process.env.CASHFREE_APP_ID || process.env.CASHFREE_CLIENT_ID || "").trim();
+  const secretKey = (process.env.CASHFREE_SECRET_KEY || process.env.CASHFREE_CLIENT_SECRET || process.env.CASHFREE_SECRET || "").trim();
+  return { appId, secretKey };
+};
+
+const getCashfreeHeaders = () => {
+  const { appId, secretKey } = getCashfreeCredentials();
+  return {
+    accept: "application/json",
+    "Content-Type": "application/json",
+    "x-api-version": CASHFREE_API_VERSION,
+    "x-client-id": appId,
+    "x-client-secret": secretKey,
+  };
+};
 
 const safeRedirect = (res, targetUrl) => {
   let finalUrl = targetUrl || process.env.REDIRECT_URL || "https://kheloindore.in/user/user-bookings";
@@ -61,8 +71,7 @@ const getCashfreeCustomerDetails = async (userId) => {
 };
 
 const createCashfreeOrder = async ({ orderId, amount, userId, service }) => {
-  const appId = process.env.CASHFREE_APP_ID;
-  const secretKey = process.env.CASHFREE_SECRET_KEY;
+  const { appId, secretKey } = getCashfreeCredentials();
   let baseRedirectUrl = process.env.REDIRECT_API_URL || "http://localhost:4000";
   if (!baseRedirectUrl.startsWith("http://") && !baseRedirectUrl.startsWith("https://")) {
     baseRedirectUrl = `https://${baseRedirectUrl}`;
@@ -113,8 +122,7 @@ const createCashfreeOrder = async ({ orderId, amount, userId, service }) => {
 };
 
 const getCashfreePaymentStatus = async (orderId) => {
-  const appId = process.env.CASHFREE_APP_ID;
-  const secretKey = process.env.CASHFREE_SECRET_KEY;
+  const { appId, secretKey } = getCashfreeCredentials();
   if (!appId || !secretKey) {
     return {
       data: {
