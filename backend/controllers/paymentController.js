@@ -297,6 +297,7 @@ const venuePayment = async (req, res) => {
       venue_id,
       date: bookingDate,
       slotsBooked: normalizedSlotsBooked,
+      slotsBook: normalizedSlotsBooked,
       vendor_id,
       total_price: totalBookedPrice,
       payment_type: paymentType,
@@ -313,7 +314,7 @@ const venuePayment = async (req, res) => {
       expirationTime: expirationTime,
     });
   } catch (error) {
-    
+    console.error("Venue Payemnt initialization Failed:",error.message);
     res.status(500).json({
       success: false,
       message: "Unable to initialize payment. Please try again."
