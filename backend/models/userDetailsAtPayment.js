@@ -48,8 +48,8 @@ const userDetailsAtPaymentSchema = new mongoose.Schema(
       },
     ],
     slotsBook: {
-      type: [String], // Change to accept an array of strings (dates)
-      required: true
+      type: [String],
+      default: [],
     },
   },
   { timestamps: true }

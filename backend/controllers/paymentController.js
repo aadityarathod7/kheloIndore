@@ -36,8 +36,15 @@ const getCashfreeHeaders = () => ({
   "Content-Type": "application/json",
   "x-api-version": CASHFREE_API_VERSION,
   "x-client-id": process.env.CASHFREE_APP_ID,
-  "x-client-secret": process.env.CASHFREE_SECRET_KEY,
 });
+
+const safeRedirect = (res, targetUrl) => {
+  let finalUrl = targetUrl || process.env.REDIRECT_URL || "https://kheloindore.in/user/user-bookings";
+  if (!finalUrl.startsWith("http://") && !finalUrl.startsWith("https://")) {
+    finalUrl = `https://${finalUrl}`;
+  }
+  return res.redirect(finalUrl);
+};
 
 const getCashfreeCustomerDetails = async (userId) => {
   const user = await User.findById(userId).lean();
@@ -297,6 +304,7 @@ const venuePayment = async (req, res) => {
       venue_id,
       date: bookingDate,
       slotsBooked: normalizedSlotsBooked,
+      slotsBook: normalizedSlotsBooked.map((s) => String(s)),
       vendor_id,
       total_price: totalBookedPrice,
       payment_type: paymentType,
@@ -879,9 +887,14 @@ const workingvenuePaymentStatus = async (req, res) => {
 
 const venuePaymentStatus = async (req, res) => {
   const { txnId } = req.params;
-  
 
   try {
+    // 1. If booking already created, safely redirect directly (prevents 404 on reload or duplicate callbacks)
+    const existing = await Booking.findOne({ merchantTransaction_id: txnId });
+    if (existing) {
+      return safeRedirect(res, process.env.REDIRECT_URL);
+    }
+
     const result = await getCashfreePaymentStatus(txnId);
 
     if (!result.data || !result.data.data) {
@@ -889,13 +902,24 @@ const venuePaymentStatus = async (req, res) => {
     }
 
     const { transactionId, amount, state, responseCode, merchantTransactionId } = result.data.data;
-    
-    
+    const effectiveOrderId = merchantTransactionId || txnId;
+    const userId = effectiveOrderId ? effectiveOrderId.split('-')[0] : null;
 
-    const userId = merchantTransactionId.split('-')[0];
+    let user = await UserDetailsAtPayments.findOne({ payment_order_id: effectiveOrderId }).sort({ createdAt: -1 });
+    if (!user && txnId !== effectiveOrderId) {
+      user = await UserDetailsAtPayments.findOne({ payment_order_id: txnId }).sort({ createdAt: -1 });
+    }
+    if (!user && userId && ObjectId.isValid(userId)) {
+      user = await UserDetailsAtPayments.findOne({ user_id: new ObjectId(userId) }).sort({ createdAt: -1 });
+    }
 
-    const user = await UserDetailsAtPayments.findOne({ payment_order_id: txnId }).sort({ createdAt: -1 }) || await UserDetailsAtPayments.findOne({ user_id: userId }).sort({ createdAt: -1 });
-    if (!user) return res.status(404).json({ error: "User not found for the transaction" });
+    if (!user) {
+      const existingTxn = await Transaction.findOne({ merchantTransaction_id: txnId });
+      if (existingTxn) {
+        return safeRedirect(res, process.env.REDIRECT_URL);
+      }
+      return res.status(404).json({ error: "User not found for the transaction" });
+    }
 
     const { user_id, date, venue_id, slotsBooked, vendor_id, payment_type } = user;
     const venueData = await Venue1.findById(venue_id);
@@ -966,14 +990,6 @@ const venuePaymentStatus = async (req, res) => {
         try { await browser.close(); } catch (e) {}
       }
     }
-
-    const safeRedirect = (res, targetUrl) => {
-      let finalUrl = targetUrl || "https://kheloindore.in/user/user-bookings";
-      if (!finalUrl.startsWith("http://") && !finalUrl.startsWith("https://")) {
-        finalUrl = `https://${finalUrl}`;
-      }
-      return res.redirect(finalUrl);
-    };
 
     // Payment Success Logic
     if (result.data.success == true || state === "COMPLETED" || responseCode === "PAYMENT_SUCCESS") {
@@ -1405,6 +1421,12 @@ const coachPaymentStatus = async (req, res) => {
       return res.status(400).json({ success: false, message: "Invalid merchant transaction ID" });
     }
 
+    // 1. If booking already created, safely redirect directly (prevents 404 on reload or duplicate callbacks)
+    const existingBooking = await CoachBooking.findOne({ merchantTransaction_id: merchantTransactionId });
+    if (existingBooking) {
+      return safeRedirect(res, process.env.REDIRECT_URL);
+    }
+
     const result = await getCashfreePaymentStatus(merchantTransactionId);
 
     if (!result.data || !result.data.data) {
@@ -1420,8 +1442,15 @@ const coachPaymentStatus = async (req, res) => {
     }
 
     // Fetch user details
-    const user = await UserDetailsAtPayments.findOne({ payment_order_id: merchantTransactionId }).sort({ createdAt: -1 }) || await UserDetailsAtPayments.findOne({ user_id: userId }).sort({ createdAt: -1 });
+    let user = await UserDetailsAtPayments.findOne({ payment_order_id: merchantTransactionId }).sort({ createdAt: -1 });
+    if (!user && ObjectId.isValid(userId)) {
+      user = await UserDetailsAtPayments.findOne({ user_id: new ObjectId(userId) }).sort({ createdAt: -1 });
+    }
     if (!user) {
+      const existingTxn = await Transaction.findOne({ merchantTransaction_id: merchantTransactionId });
+      if (existingTxn) {
+        return safeRedirect(res, process.env.REDIRECT_URL);
+      }
       return res.status(404).json({ success: false, message: "No payment details found for user" });
     }
 
@@ -1853,6 +1882,12 @@ const personalTrainerPaymentStatus = async (req, res) => {
       return res.status(400).json({ success: false, message: "Invalid merchant transaction ID" });
     }
 
+    // 1. If booking already created, safely redirect directly (prevents 404 on reload or duplicate callbacks)
+    const existingBooking = await PersonalTrainerBooking.findOne({ merchantTransaction_id: merchantTransactionId });
+    if (existingBooking) {
+      return safeRedirect(res, process.env.REDIRECT_URL);
+    }
+
     const result = await getCashfreePaymentStatus(merchantTransactionId);
 
     if (!result.data || !result.data.data) {
@@ -1867,8 +1902,15 @@ const personalTrainerPaymentStatus = async (req, res) => {
       return res.status(400).json({ success: false, message: "Invalid user ID" });
     }
 
-    const user = await UserDetailsAtPayments.findOne({ payment_order_id: merchantTransactionId }).sort({ createdAt: -1 }) || await UserDetailsAtPayments.findOne({ user_id: userId }).sort({ createdAt: -1 });
+    let user = await UserDetailsAtPayments.findOne({ payment_order_id: merchantTransactionId }).sort({ createdAt: -1 });
+    if (!user && ObjectId.isValid(userId)) {
+      user = await UserDetailsAtPayments.findOne({ user_id: new ObjectId(userId) }).sort({ createdAt: -1 });
+    }
     if (!user) {
+      const existingTxn = await Transaction.findOne({ merchantTransaction_id: merchantTransactionId });
+      if (existingTxn) {
+        return safeRedirect(res, process.env.REDIRECT_URL);
+      }
       return res.status(404).json({ success: false, message: "No payment details found for user" });
     }
 
