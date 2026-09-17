@@ -119,9 +119,7 @@ const VenueAdminCRM = () => {
         payment_mode: paymentMode,
         notes: notes,
       };
-      const res = await axios.post(`${API_URL}/booking/manual/add`, payload, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      });
+      const res = await axios.post(`${API_URL}/booking/manual/add`, payload);
       Swal.fire({
         icon: "success",
         title: "Booking Added!",
@@ -323,10 +321,10 @@ const VenueAdminCRM = () => {
                     />
                   </Form.Group>
 
-                  <h5 className="mb-3 fw-bold mt-4">4. Direct / Offline Payment</h5>
+                  <h5 className="mb-3 fw-bold mt-4">4. Payment (optional)</h5>
                   <Row>
                     <Col md={6} className="mb-3">
-                      <Form.Label className="fw-semibold">Amount received by venue</Form.Label>
+                      <Form.Label className="fw-semibold">Amount Paid</Form.Label>
                       <Form.Control
                         type="number"
                         placeholder={`₹${totalSelectedPrice || 0}`}
@@ -334,7 +332,7 @@ const VenueAdminCRM = () => {
                         onChange={(e) => setAmountPaid(e.target.value)}
                       />
                       <Form.Text className="text-muted">
-                        This is recorded separately from Khelo Indore online collections.
+                        Leave empty to mark as pending.
                       </Form.Text>
                     </Col>
                     <Col md={6} className="mb-3">

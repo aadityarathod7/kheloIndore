@@ -11,8 +11,17 @@ import Swal from "sweetalert2";
 import axios from "axios";
 import { API_URL } from "../utils/ApiUrl";
 import Select from "react-select";
-import LanguageSelector from "../components/LanguageSelector";
+import CreatableSelect from "react-select/creatable";
 import "../Coaches.css";
+
+const ALL_LANGUAGES = [
+  "Hindi", "English", "Marathi", "Gujarati", "Bengali", "Telugu", "Tamil",
+  "Kannada", "Malayalam", "Odia", "Punjabi", "Assamese", "Maithili",
+  "Sanskrit", "Urdu", "Sindhi", "Kashmiri", "Konkani", "Manipuri",
+  "Nepali", "Bodo", "Dogri", "Santali", "French", "Spanish", "German",
+  "Russian", "Chinese", "Japanese", "Korean", "Arabic"
+];
+const LANGUAGE_OPTIONS = ALL_LANGUAGES.map(lang => ({ label: lang, value: lang }));
 
 const AddPT = () => {
   const [formData, setFormData] = useState({
@@ -454,9 +463,18 @@ const AddPT = () => {
           </Row>
           <Row>
             <Col sm={12} className="mb-3">
-              <LanguageSelector
-                value={formData.languages}
-                onChange={(languages) => setFormData((current) => ({ ...current, languages }))}
+              <h6>Languages Known</h6>
+              <CreatableSelect
+                isMulti
+                options={LANGUAGE_OPTIONS}
+                value={(formData.languages || []).map(lang => ({ label: lang, value: lang }))}
+                onChange={(selectedOptions) => {
+                  setFormData(current => ({
+                    ...current,
+                    languages: selectedOptions ? selectedOptions.map(item => item.value) : []
+                  }));
+                }}
+                placeholder="Select or type languages..."
               />
             </Col>  <Col sm={3}>
               <h6>State</h6>

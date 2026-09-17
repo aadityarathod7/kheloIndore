@@ -13,8 +13,6 @@ import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { API_URL, IMG_URL } from "../../ApiUrl";
 import Swal from "sweetalert2";
-import { jwtDecode } from "jwt-decode";
-import { COACH_TRAINER_CATEGORIES, toCategorySlug, VENUE_CATEGORIES } from "../../constants/categories";
 
 interface Coach {
   first_name: string;
@@ -47,7 +45,7 @@ interface Trainer {
   src: string;
   category: string;
   near_by_location: string;
-  specializations: any;
+  specializations: string;
   trainer_type: string;
   experience?: number;
   rating?: number;
@@ -127,20 +125,7 @@ const categoryStyle = (category: string) => {
   return { color: "#16A34A", bg: "#DCFCE7" };
 };
 
-const singulariseCategoryWord = (word: string) => {
-  if (word.endsWith("ies")) return `${word.slice(0, -3)}y`;
-  if (/(ches|shes|xes|zes|ses)$/.test(word)) return word.slice(0, -2);
-  if (word.endsWith("s") && !word.endsWith("ss") && !word.endsWith("is")) return word.slice(0, -1);
-  return word;
-};
-
-const normaliseCategory = (value: string) => value
-  .trim()
-  .toLowerCase()
-  .replace(/[_-]+/g, " ")
-  .split(/\s+/)
-  .map(singulariseCategoryWord)
-  .join(" ");
+const normaliseCategory = (value: string) => value.trim().toLowerCase().replace(/[_-]+/g, " ").replace(/\s+/g, " ");
 
 const isUsableCategory = (value: unknown) => {
   const category = String(value || "").trim();
@@ -430,47 +415,11 @@ const Home = () => {
   const [selectedSport, setSelectedSport] = useState<{ name: string } | null>(null);
   const [showAllCategories, setShowAllCategories] = useState(false);
   const [categoryProviderTab, setCategoryProviderTab] = useState<CategoryProviderTab>("venue");
-  const [favouriteSports, setFavouriteSports] = useState<string[]>(() => {
-    try {
-      const cached = localStorage.getItem("userFavouriteSports");
-      return cached ? JSON.parse(cached) : [];
-    } catch {
-      return [];
-    }
-  });
 
   const navigate = useNavigate();
 
   useEffect(() => {
     document.title = "Home";
-  }, []);
-
-  useEffect(() => {
-    const fetchUserFavs = () => {
-      const token = localStorage.getItem("token");
-      if (!token) return;
-
-      try {
-        const { userID } = jwtDecode<{ userID: string | number }>(token);
-        if (!userID) return;
-
-        axios.get(`${API_URL}/user/fetch-user-by-id/${userID}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        }).then((response) => {
-          const favs = response.data?.data?.favourite_sports || [];
-          setFavouriteSports(favs);
-          localStorage.setItem("userFavouriteSports", JSON.stringify(favs));
-        }).catch((err) => {
-          console.debug("Home fetchUserFavs error", err);
-        });
-      } catch (err) {
-        console.debug("Home decode token error", err);
-      }
-    };
-
-    fetchUserFavs();
-    window.addEventListener("userProfileUpdated", fetchUserFavs);
-    return () => window.removeEventListener("userProfileUpdated", fetchUserFavs);
   }, []);
 
   useEffect(() => {
@@ -552,14 +501,17 @@ const Home = () => {
     { name: "Dewas Naka" },
   ]);
 
-  const [sportsOptions, setSportsOptions] = useState<{ name: string }[]>(VENUE_CATEGORIES.map((name) => ({ name })));
-
-  useEffect(() => {
-    const categories = selectedTimeframe?.name === "Sports Venue"
-      ? VENUE_CATEGORIES
-      : COACH_TRAINER_CATEGORIES;
-    setSportsOptions(categories.map((name) => ({ name })));
-  }, [selectedTimeframe]);
+  const [sportsOptions, setSportsOptions] = useState<{ name: string }[]>([
+    { name: "Cricket" },
+    { name: "Football" },
+    { name: "Badminton" },
+    { name: "Tennis" },
+    { name: "Swimming" },
+    { name: "Basketball" },
+    { name: "Volleyball" },
+    { name: "Gym & Fitness" },
+    { name: "Table Tennis" },
+  ]);
 
   useEffect(() => {
     const cleanLocation = (loc: string): string => {
@@ -576,11 +528,15 @@ const Home = () => {
     };
 
     const locationsSet = new Set<string>();
+    const sportsSet = new Set<string>();
 
     // Collect from venues
     venues.forEach(v => {
       if (v.near_by_location) {
         locationsSet.add(cleanLocation(v.near_by_location));
+      }
+      if (v.category) {
+        sportsSet.add(v.category.trim());
       }
     });
 
@@ -589,12 +545,18 @@ const Home = () => {
       if (c.near_by_location) {
         locationsSet.add(cleanLocation(c.near_by_location));
       }
+      if (c.category) {
+        sportsSet.add(c.category.trim());
+      }
     });
 
     // Collect from trainers
     trainer.forEach(t => {
       if (t.near_by_location) {
         locationsSet.add(cleanLocation(t.near_by_location));
+      }
+      if (t.category) {
+        sportsSet.add(t.category.trim());
       }
     });
 
@@ -608,6 +570,37 @@ const Home = () => {
       setSortOptions(uniqueSorted);
     }
 
+    // Filter, sort, and map sports
+    const uniqueSports = Array.from(sportsSet)
+      .map(sport => {
+        const cleaned = sport.trim();
+        // Skip invalid characters, hyphens, and empty entries
+        if (cleaned === "-" || cleaned === "_" || cleaned.length < 2) return null;
+
+        // Capitalize each word (Title Case)
+        let formatted = cleaned.split(" ")
+          .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+          .join(" ");
+
+        // Fix common spelling errors
+        if (formatted.toLowerCase() === "swiming") formatted = "Swimming";
+
+        return { name: formatted };
+      })
+      .filter((s): s is { name: string } => s !== null);
+
+    // Deduplicate
+    const uniqueSportsMap = new Map();
+    uniqueSports.forEach(s => {
+      uniqueSportsMap.set(s.name.toLowerCase(), s);
+    });
+
+    const finalSports = Array.from(uniqueSportsMap.values())
+      .sort((a, b) => a.name.localeCompare(b.name));
+
+    if (finalSports.length > 0) {
+      setSportsOptions(finalSports);
+    }
   }, [venues, coaches, trainer]);
 
   const popularSearches = useMemo(() => {
@@ -848,33 +841,24 @@ const Home = () => {
     let count = 0;
     const categoryName = selectedTimeframe?.name;
     const sportName = selectedSport?.name?.toLowerCase();
-    const locationName = selectedLocationSort?.name?.toLowerCase();
+    const locationName = selectedLocationSort?.name;
 
     if (categoryName === "Sports Venue") {
       count = venues.filter(v => {
-        const venueLoc = String(v.near_by_location || "").toLowerCase();
-        const matchLocation = !locationName || venueLoc.includes(locationName) || locationName.includes(venueLoc);
-        const matchSport = !sportName || String(v.category || "").toLowerCase().includes(sportName) || String(v.activities || "").toLowerCase().includes(sportName);
+        const matchLocation = !locationName || v.near_by_location?.toLowerCase()?.includes(locationName.toLowerCase()) || locationName.toLowerCase()?.includes(v.near_by_location?.toLowerCase());
+        const matchSport = !sportName || v.category?.toLowerCase()?.includes(sportName) || v.activities?.toLowerCase()?.includes(sportName);
         return matchLocation && matchSport;
       }).length;
     } else if (categoryName === "Coaches") {
       count = coaches.filter(c => {
-        const coachLoc = String(c.near_by_location || "").toLowerCase();
-        const matchLocation = !locationName || coachLoc.includes(locationName) || locationName.includes(coachLoc);
-        const specStr = Array.isArray(c.specializations)
-          ? c.specializations.join(" ").toLowerCase()
-          : String(c.specializations || "").toLowerCase();
-        const matchSport = !sportName || String(c.category || "").toLowerCase().includes(sportName) || specStr.includes(sportName);
+        const matchLocation = !locationName || c.near_by_location?.toLowerCase()?.includes(locationName.toLowerCase()) || locationName.toLowerCase()?.includes(c.near_by_location?.toLowerCase());
+        const matchSport = !sportName || c.category?.toLowerCase()?.includes(sportName);
         return matchLocation && matchSport;
       }).length;
     } else if (categoryName === "Trainer") {
       count = trainer.filter(t => {
-        const trainerLoc = String(t.near_by_location || "").toLowerCase();
-        const matchLocation = !locationName || trainerLoc.includes(locationName) || locationName.includes(trainerLoc);
-        const specStr = Array.isArray(t.specializations)
-          ? t.specializations.join(" ").toLowerCase()
-          : String(t.specializations || "").toLowerCase();
-        const matchSport = !sportName || String(t.category || "").toLowerCase().includes(sportName) || specStr.includes(sportName);
+        const matchLocation = !locationName || t.near_by_location?.toLowerCase()?.includes(locationName.toLowerCase()) || locationName.toLowerCase()?.includes(t.near_by_location?.toLowerCase());
+        const matchSport = !sportName || t.category?.toLowerCase()?.includes(sportName) || t.specializations?.toLowerCase()?.includes(sportName);
         return matchLocation && matchSport;
       }).length;
     }
@@ -898,7 +882,7 @@ const Home = () => {
         if (selectedTimeframe?.name === "Coaches") {
           navigate("/coaches", { state: { selectedLocationSort, selectedSport } });
         } else if (selectedTimeframe?.name === "Trainer") {
-          navigate("/trainers/search", { state: { selectedLocationSort, selectedSport } });
+          navigate("/trainers", { state: { selectedLocationSort, selectedSport } });
         } else if (selectedTimeframe?.name === "Sports Venue") {
           const sportSlug = selectedSport?.name
             ? selectedSport.name.toLowerCase().replace(/&/g, "and").replace(/\s+/g, "-")
@@ -917,50 +901,9 @@ const Home = () => {
     });
   };
 
-  const matchesFavouriteSport = (itemOrCategory: any, sport: string) => {
-    if (!itemOrCategory || !sport) return false;
-    const s = sport.toLowerCase().trim();
-    const cat = (typeof itemOrCategory === "string" ? itemOrCategory : (itemOrCategory.category || "")).toLowerCase();
-    const game = (typeof itemOrCategory === "object" ? (itemOrCategory.gameType || "") : "").toLowerCase();
-    const name = (typeof itemOrCategory === "object" ? (itemOrCategory.name || "") : "").toLowerCase();
-    const vendorType = (typeof itemOrCategory === "object" ? (itemOrCategory.vendor_type || "") : "").toLowerCase();
-    const activities = (typeof itemOrCategory === "object" ? (itemOrCategory.activities || "") : "").toLowerCase();
-
-    // Direct match
-    if (cat.includes(s) || s.includes(cat)) return true;
-    if (game.includes(s) || s.includes(game)) return true;
-    if (name.includes(s)) return true;
-    if (vendorType.includes(s)) return true;
-    if (activities.includes(s)) return true;
-
-    // Smart Aliases
-    if (s === "cricket" && (cat.includes("turf") || name.includes("turf") || game.includes("turf"))) return true;
-    if (s === "turf" && (cat.includes("cricket") || name.includes("cricket") || game.includes("cricket"))) return true;
-    if (s === "football" && (cat.includes("soccer") || name.includes("soccer") || cat.includes("futsal") || name.includes("futsal"))) return true;
-    if (s === "swimming" && (cat.includes("pool") || name.includes("pool"))) return true;
-    if (s === "swimming pool" && (cat.includes("swimming") || name.includes("swimming"))) return true;
-    if (s === "table tennis" && (cat.includes("tt") || name.includes("tt") || cat.includes("ping pong"))) return true;
-    if (s === "gym" && (cat.includes("fitness") || name.includes("fitness") || cat.includes("workout"))) return true;
-    if (s === "snooker" && (cat.includes("pool") || name.includes("pool") || cat.includes("billiards"))) return true;
-
-    return false;
-  };
-
-  const isMatchingAnyFavouriteSport = (item: any) => {
-    return favouriteSports.some((sport) => matchesFavouriteSport(item, sport));
-  };
-
-  const prioritiseFavouriteSports = <T,>(items: T[]) => {
-    if (!favouriteSports.length) return items;
-    return [
-      ...items.filter((item) => isMatchingAnyFavouriteSport(item)),
-      ...items.filter((item) => !isMatchingAnyFavouriteSport(item)),
-    ];
-  };
-
-  const visibleVenues = prioritiseFavouriteSports(venues).slice(0, 6);
-  const visibleCoaches = prioritiseFavouriteSports(coaches).slice(0, 6);
-  const visibleTrainers = prioritiseFavouriteSports(trainer).slice(0, 6);
+  const visibleVenues = venues.slice(0, 6);
+  const visibleCoaches = coaches.slice(0, 6);
+  const visibleTrainers = trainer.slice(0, 6);
 
 
   const categoryCardsByProvider = useMemo<Record<CategoryProviderTab, CategoryCard[]>>(() => {
@@ -976,38 +919,25 @@ const Home = () => {
         .map((value) => value.trim())
         .filter(isUsableCategory));
       const liveCategoryNames = providerCategoryGroups.flat();
-      const sourceNames = providerType === "venue"
-        ? VENUE_CATEGORIES
-        : providerType === "coach" || providerType === "trainer"
-          ? COACH_TRAINER_CATEGORIES
-          : Array.from(new Map([
-            ...apiCategories.map((category) => category.category_name),
-            ...liveCategoryNames,
-          ].filter(isUsableCategory).map((name) => [normaliseCategory(name), name])).values());
+      const sourceNames = Array.from(new Map([
+        ...apiCategories.map((category) => category.category_name),
+        ...liveCategoryNames,
+      ].filter(isUsableCategory).map((name) => [normaliseCategory(name), name])).values());
 
-      const cards = sourceNames
+      result[providerType] = sourceNames
         .map((name) => {
           const key = normaliseCategory(name);
           const count = providerCategoryGroups.filter((names) => names.some((liveName) => {
             const liveKey = normaliseCategory(liveName);
             return liveKey === key;
           })).length;
-          return { name, slug: toCategorySlug(name), count, icon: getCategoryIcon(name), ...categoryStyle(name) };
+          return { name, slug: key.replace(/\s+/g, "-"), count, icon: getCategoryIcon(name), ...categoryStyle(name) };
         })
-        .filter((category) => ["venue", "coach", "trainer"].includes(providerType) || providerCategoryGroups.length === 0 || category.count > 0);
-
-      result[providerType] = ["venue", "coach", "trainer"].includes(providerType)
-        ? cards.sort((first, second) => {
-            const firstFav = favouriteSports.some((s) => matchesFavouriteSport(first.name, s));
-            const secondFav = favouriteSports.some((s) => matchesFavouriteSport(second.name, s));
-            if (firstFav && !secondFav) return -1;
-            if (!firstFav && secondFav) return 1;
-            return 0;
-          })
-        : cards.sort((first, second) => second.count - first.count || first.name.localeCompare(second.name));
+        .filter((category) => providerCategoryGroups.length === 0 || category.count > 0)
+        .sort((first, second) => second.count - first.count || first.name.localeCompare(second.name));
       return result;
     }, { venue: [], coach: [], trainer: [] } as Record<CategoryProviderTab, CategoryCard[]>);
-  }, [apiCategories, venues, coaches, trainer, favouriteSports]);
+  }, [apiCategories, venues, coaches, trainer]);
 
   const categoryCards = categoryCardsByProvider[categoryProviderTab];
 
@@ -1208,9 +1138,7 @@ const Home = () => {
                           className="ki-search-tag"
                           to={selectedTimeframe?.name === "Sports Venue" || !selectedTimeframe
                             ? `/sports-venue/${item.name.toLowerCase().replace(/\s+/g, "-")}`
-                            : selectedTimeframe.name === "Coaches"
-                              ? `/coaches/category/${toCategorySlug(item.name)}`
-                              : `/trainers/category/${toCategorySlug(item.name)}`}
+                            : selectedTimeframe.name === "Coaches" ? "/coaches" : "/trainers"}
                           state={selectedTimeframe?.name === "Sports Venue" || !selectedTimeframe
                             ? undefined
                             : { selectedSport: { name: item.name } }}
@@ -1248,13 +1176,13 @@ const Home = () => {
               <div className="col-6 col-lg-3 ki-stat-col">
                 <div className="ki-stat">
                   <div className="ki-stat-icon">
-                    <i className="feather-map-pin" />
+                    <i className="feather-users" />
                   </div>
                   <div className="ki-stat-info">
                     <h3 className="mb-0 ki-stat-num">
-                      {statsInView ? <CountUp end={50} suffix="+" duration={2.2} /> : "50+"}
+                      {statsInView ? <CountUp end={500} suffix="+" duration={2.2} /> : "500+"}
                     </h3>
-                    <p className="mb-0">Premium Venues <span>Across Indore</span></p>
+                    <p className="mb-0">Expert Coaches <span>Qualified &amp; Verified</span></p>
                   </div>
                 </div>
               </div>
@@ -1262,13 +1190,13 @@ const Home = () => {
               <div className="col-6 col-lg-3 ki-stat-col">
                 <div className="ki-stat">
                   <div className="ki-stat-icon">
-                    <i className="feather-users" />
+                    <i className="feather-map-pin" />
                   </div>
                   <div className="ki-stat-info">
                     <h3 className="mb-0 ki-stat-num">
-                      {statsInView ? <CountUp end={500} suffix="+" duration={2.2} /> : "500+"}
+                      {statsInView ? <CountUp end={50} suffix="+" duration={2.2} /> : "50+"}
                     </h3>
-                    <p className="mb-0">Expert Coaches / Trainers <span>Qualified &amp; Verified</span></p>
+                    <p className="mb-0">Premium Venues <span>Across Indore</span></p>
                   </div>
                 </div>
               </div>
@@ -1324,7 +1252,7 @@ const Home = () => {
               How It <span style={{ color: "var(--ki-primary)" }}>Works</span>
             </h2>
             <p className="sub-title" style={{ color: "#606D76" }}>
-              Simplifying the booking process for venues, coaches, and trainers.
+              Simplifying the booking process for coaches, venues, and athletes.
             </p>
           </div>
           <div className="row justify-content-center ">
@@ -1465,9 +1393,7 @@ const Home = () => {
                     onClick={() => navigate(
                       categoryProviderTab === "venue"
                         ? `/sports-venue/${cat.slug}`
-                        : categoryProviderTab === "coach"
-                          ? `/coaches/category/${cat.slug}`
-                          : `/trainers/category/${cat.slug}`
+                        : `${categoryProviderTab === "coach" ? routes.coachesGrid : routes.blogList}?category=${encodeURIComponent(cat.name)}`
                     )}
                   >
                     <div
@@ -1661,35 +1587,11 @@ const Home = () => {
                               />
                             )}
                           </Link>
-                          <div className="fav-item-venues news-sports" style={{ top: "12px", left: "12px", display: "flex", gap: "6px" }}>
+                          <div className="fav-item-venues news-sports" style={{ top: "12px", left: "12px" }}>
                             <span className="tag tag-blue" style={{ display: "inline-flex", alignItems: "center", gap: "6px", minHeight: "28px", padding: "4px 12px", background: "#FFFFFF", color: "#16A34A", fontWeight: "700", borderRadius: "999px", fontSize: "10px", lineHeight: 1, letterSpacing: "0.04em", textTransform: "uppercase", whiteSpace: "nowrap", boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)", border: "1px solid rgba(22, 163, 74, 0.1)" }}>
                               <i className={getCategoryIcon(venue.vendor_type)} style={{ fontSize: "11px" }} />
                               {venue.vendor_type.replace("_", " ")}
                             </span>
-                            {isMatchingAnyFavouriteSport(venue) && (
-                              <span
-                                className="tag tag-green"
-                                style={{
-                                  display: "inline-flex",
-                                  alignItems: "center",
-                                  gap: "4px",
-                                  minHeight: "28px",
-                                  padding: "4px 10px",
-                                  background: "#16A34A",
-                                  color: "#FFFFFF",
-                                  fontWeight: "700",
-                                  borderRadius: "999px",
-                                  fontSize: "10px",
-                                  lineHeight: 1,
-                                  letterSpacing: "0.04em",
-                                  textTransform: "uppercase",
-                                  whiteSpace: "nowrap",
-                                  boxShadow: "0 2px 8px rgba(22, 163, 74, 0.3)"
-                                }}
-                              >
-                                <i className="fas fa-star" style={{ fontSize: "9px" }} /> Top Match
-                              </span>
-                            )}
                           </div>
                         </div>
                         <div className="listing-content home-venue news-content p-3" style={{ textAlign: "left" }}>
@@ -2451,7 +2353,7 @@ const Home = () => {
                   <ul className="list-unstyled mb-0" style={{ paddingLeft: 0 }}>
                     <li style={{ display: "flex", alignItems: "center", marginBottom: "12px", color: "#334155", fontSize: "14px", fontWeight: "500" }}>
                       <i className="fa-solid fa-circle-check" style={{ color: "#16A34A", marginRight: "8px", fontSize: "16px" }} />
-                      List Your Venue. Get More Bookings.
+                      ₹1,000,000 liability insurance
                     </li>
                     <li style={{ display: "flex", alignItems: "center", marginBottom: "12px", color: "#334155", fontSize: "14px", fontWeight: "500" }}>
                       <i className="fa-solid fa-circle-check" style={{ color: "#16A34A", marginRight: "8px", fontSize: "16px" }} />
@@ -2544,7 +2446,7 @@ const Home = () => {
                   <ul className="list-unstyled mb-0" style={{ paddingLeft: 0 }}>
                     <li style={{ display: "flex", alignItems: "center", marginBottom: "12px", color: "#334155", fontSize: "14px", fontWeight: "500" }}>
                       <i className="fa-solid fa-circle-check" style={{ color: "#EA580C", marginRight: "8px", fontSize: "16px" }} />
-                      Connect with candidates in Indore
+                      Connect with students in Indore
                     </li>
                     <li style={{ display: "flex", alignItems: "center", marginBottom: "12px", color: "#334155", fontSize: "14px", fontWeight: "500" }}>
                       <i className="fa-solid fa-circle-check" style={{ color: "#EA580C", marginRight: "8px", fontSize: "16px" }} />

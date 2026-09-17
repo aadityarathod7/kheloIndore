@@ -31,29 +31,6 @@ const VenueOrderConfirm = () => {
 
   const { state } = useLocation();
   const navigate = useNavigate();
-  const { id } = useParams<{ id: string }>();
-
-  const storedConfirmation = useMemo(() => {
-    try {
-      const item = sessionStorage.getItem("activeBookingConfirmation") || sessionStorage.getItem("pendingBooking");
-      if (item) {
-        const parsed = JSON.parse(item);
-        if (parsed?.state) return parsed.state;
-        return parsed;
-      }
-    } catch {
-      // Ignore storage parse error
-    }
-    return null;
-  }, []);
-
-  const effectiveState = state || storedConfirmation || {};
-
-  useEffect(() => {
-    if (state && Object.keys(state).length > 0) {
-      sessionStorage.setItem("activeBookingConfirmation", JSON.stringify(state));
-    }
-  }, [state]);
 
   const [venueData, setVenueData] = useState<VenueData | null>(null);
   const {
@@ -64,7 +41,8 @@ const VenueOrderConfirm = () => {
     newSelectedTimeId,
     formatSeletedDate,
     data,
-  } = effectiveState;
+  } = state || {};
+  const { id } = useParams<{ id: string }>();
   // Derive these values directly from route state. Keeping the derived array
   // in component state caused a new array on every render and an infinite
   // setState/useEffect loop.
@@ -166,38 +144,6 @@ const VenueOrderConfirm = () => {
       });
       return;
     }
-    const authToken = localStorage.getItem("token");
-    if (!authToken) {
-      sessionStorage.setItem("pendingBooking", JSON.stringify({
-        targetUrl: `/sports-venue/venue-confirm/${id}`,
-        venueId: id,
-        state: effectiveState,
-        type: "venue",
-        timestamp: Date.now(),
-      }));
-
-      Swal.fire({
-        title: "Login to continue",
-        text: "Please log in to complete your booking and payment.",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonText: "Login / Register",
-        cancelButtonText: "Cancel",
-        confirmButtonColor: "#22C55E",
-      }).then((result) => {
-        if (result.isConfirmed) {
-          navigate("/login", {
-            state: {
-              URL: `/sports-venue/venue-confirm/${id}`,
-              bookingState: effectiveState,
-              returnTo: `/sports-venue/venue-confirm/${id}`,
-            },
-          });
-        }
-      });
-      return;
-    }
-
     try {
       const response = await axios.post(`${API_URL}/venue/payment`, {
         user_id: userId,
@@ -206,11 +152,9 @@ const VenueOrderConfirm = () => {
         slotsBooked: slotId,
         total_price: total_Price,
         payment_type: paymentType,
-      }, { headers: { Authorization: `Bearer ${authToken}` } });
+      }, { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
 
       if (response?.data?.paymentSessionId) {
-        sessionStorage.removeItem("pendingBooking");
-        sessionStorage.removeItem("activeBookingConfirmation");
         await openCashfreeCheckout(response.data.paymentSessionId);
       } else {
         throw new Error(response?.data?.message || "Unable to start Cashfree checkout.");
@@ -240,19 +184,8 @@ const VenueOrderConfirm = () => {
   };
 
   const bookingId = useMemo(() => {
-    const bookingDate = selectedDate ? new Date(selectedDate) : new Date();
-    const datePart = [
-      String(bookingDate.getFullYear()).slice(-2),
-      String(bookingDate.getMonth() + 1).padStart(2, "0"),
-      String(bookingDate.getDate()).padStart(2, "0"),
-    ].join("");
-    const serialNumber = String(Date.now()).slice(-6);
-    return `KI-BK-${datePart}${serialNumber}`;
-  }, [selectedDate]);
-
-  const selectedSlotsLabel = selectedTimeSlots.length > 0
-    ? selectedTimeSlots.map((slot: any) => `${slot.startTime} - ${slot.endTime}`).join(", ")
-    : "No Slots";
+    return `KI-${Math.floor(100000 + Math.random() * 900000)}`;
+  }, []);
 
   const [copied, setCopied] = useState(false);
 
@@ -451,8 +384,8 @@ const VenueOrderConfirm = () => {
                       </span>
                       <div>
                         <span className="text-muted d-block" style={{ fontSize: "9px", textTransform: "uppercase", fontWeight: "600" }}>Time Slots</span>
-                        <span className="fw-bold text-dark d-block" style={{ fontSize: "12px", lineHeight: "1.45", maxHeight: "54px", overflowY: "auto", paddingRight: "2px" }}>
-                          {selectedSlotsLabel}
+                        <span className="fw-bold text-dark d-block text-truncate" style={{ fontSize: "12px", maxWidth: "130px" }}>
+                          {selectedTimeSlots.length > 0 ? `${selectedTimeSlots[0].startTime} - ${selectedTimeSlots[0].endTime}` : "No Slots"}
                         </span>
                       </div>
                     </div>
@@ -582,10 +515,6 @@ const VenueOrderConfirm = () => {
                 </div>
 
                 <div className="d-flex flex-column gap-2 mb-2" style={{ fontSize: "13px" }}>
-                  <div className="d-flex align-items-start justify-content-between py-1.2 border-bottom" style={{ borderColor: "#F1F5F9" }}>
-                    <span className="text-muted">Booking ID</span>
-                    <span className="fw-bold text-dark text-end" style={{ maxWidth: "180px", wordBreak: "break-all" }}>{bookingId}</span>
-                  </div>
                   
                   <div className="d-flex align-items-start justify-content-between py-1.2 border-bottom" style={{ borderColor: "#F1F5F9" }}>
                     <span className="text-muted">Venue Name</span>
@@ -602,7 +531,9 @@ const VenueOrderConfirm = () => {
                   <div className="d-flex align-items-start justify-content-between py-1.2 border-bottom" style={{ borderColor: "#F1F5F9" }}>
                     <span className="text-muted">Time Slots</span>
                     <span className="fw-bold text-dark text-end" style={{ maxWidth: "160px" }}>
-                      {selectedSlotsLabel}
+                      {selectedTimeSlots.length > 0 ? (
+                        selectedTimeSlots.map((slot: any) => `${slot.startTime} - ${slot.endTime}`).join(", ")
+                      ) : "No Slots Selected"}
                     </span>
                   </div>
 

@@ -14,7 +14,6 @@ interface Venues {
   amenities: string[];
   facilities: string[];
   category: string;
-  categories?: string[];
   _id: string;
   images: any;
   src: string;
@@ -25,7 +24,6 @@ interface Venues {
   gameType?: string;
   sports_details?: { sport?: string; size?: string; price_per_hr?: number }[];
   price_per_hr?: number;
-  is_featured_paid?: boolean;
   data?: any;
 }
 
@@ -63,6 +61,15 @@ const DATE_OPTIONS: DropdownOption[] = [
   { value: "tomorrow", label: "Tomorrow" },
   { value: "this-weekend", label: "This Weekend" },
   { value: "next-7-days", label: "Next 7 Days" },
+];
+
+const SLOT_OPTIONS: DropdownOption[] = [
+  { value: "all", label: "Select Time", shortLabel: "Select Time" },
+  { value: "all-full", label: "All Slots (6 AM - 11 PM)", shortLabel: "All Slots" },
+  { value: "morning", label: "Morning (06:00 AM - 12:00 PM)", shortLabel: "Morning" },
+  { value: "afternoon", label: "Afternoon (12:00 PM - 05:00 PM)", shortLabel: "Afternoon" },
+  { value: "evening", label: "Evening (05:00 PM - 09:00 PM)", shortLabel: "Evening" },
+  { value: "night", label: "Night (09:00 PM - 11:00 PM)", shortLabel: "Night" },
 ];
 
 // Custom Modern Theme Dropdown Component (replaces native OS select)
@@ -641,12 +648,6 @@ const GRASS_OPTIONS: DropdownOption[] = [
   { value: "artificial", label: "Artificial Turf" },
 ];
 
-const VENUE_SETTING_OPTIONS: DropdownOption[] = [{ value: "", label: "Any setting" }, { value: "open", label: "Open" }, { value: "covered", label: "Covered" }];
-const VENUE_LEVEL_OPTIONS: DropdownOption[] = [{ value: "", label: "Any level" }, { value: "ground-floor", label: "Ground Floor" }, { value: "terrace", label: "Terrace" }];
-const VENUE_CONDITION_OPTIONS: DropdownOption[] = [{ value: "", label: "Any condition" }, { value: "new", label: "New" }, { value: "old", label: "Old" }];
-const YES_NO_OPTIONS: DropdownOption[] = [{ value: "", label: "Any" }, { value: "yes", label: "Yes" }, { value: "no", label: "No" }];
-const AC_OPTIONS: DropdownOption[] = [{ value: "", label: "Any" }, { value: "ac", label: "AC" }, { value: "non-ac", label: "Non-AC" }];
-
 // Fallback amenity list (used only when the API returns no amenity data at all).
 // Values are slug keys matched against venue amenities/facilities via AMENITY_KEYWORDS.
 const FALLBACK_AMENITY_OPTIONS: DropdownOption[] = [
@@ -684,8 +685,6 @@ const SORT_OPTIONS: DropdownOption[] = [
   { value: "popular", label: "Popular" },
   { value: "price-low", label: "Price: Low to High" },
   { value: "price-high", label: "Price: High to Low" },
-  { value: "size-small", label: "Size: Small to Large" },
-  { value: "size-large", label: "Size: Large to Small" },
   { value: "rating-high", label: "Rating: High to Low" },
   { value: "newest", label: "Newest First" },
   { value: "name-az", label: "Name: A to Z" },
@@ -735,93 +734,15 @@ export default function VenueByCategory() {
     return "Standard";
   };
 
-  const formatVenueDimensions = (size: string) => {
-    const dimensions = String(size || "").match(/\d+(?:\.\d+)?/g) || [];
-    if (dimensions.length >= 3) return `${dimensions[0]}L × ${dimensions[1]}W × ${dimensions[2]}H`;
-    if (dimensions.length === 2) return `${dimensions[0]}L × ${dimensions[1]}W`;
-    return size || "Not specified";
-  };
-
   // Filter States
   const [selectedSport, setSelectedSport] = useState<string>(categorySelected ? categorySelected.toLowerCase() : "all");
   const [locationName, setLocationName] = useState<string>(() => routeState?.selectedLocationSort?.name || "");
-  const [startDate, setStartDate] = useState<string>("");
-  const [endDate, setEndDate] = useState<string>("");
-  const [startTime, setStartTime] = useState<string>("");
-  const [endTime, setEndTime] = useState<string>("");
+  const [selectedDate, setSelectedDate] = useState<string>("");
+  const [selectedSlot, setSelectedSlot] = useState<string>("all");
   const [selectedGrassType, setSelectedGrassType] = useState<string>("any");
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
-  const [venueSetting, setVenueSetting] = useState("");
-  const [venueLevel, setVenueLevel] = useState("");
-  const [venueCondition, setVenueCondition] = useState("");
-  const [soundSystem, setSoundSystem] = useState("");
-  const [airConditioning, setAirConditioning] = useState("");
-  const [cafeteria, setCafeteria] = useState("");
-  const [venueSize, setVenueSize] = useState("");
-  const [minPrice, setMinPrice] = useState("");
-  const [maxPrice, setMaxPrice] = useState("");
   const [sortBy, setSortBy] = useState<string>("popular");
   const [searchQuery, setSearchQuery] = useState<string>("");
-
-  // Today's date in local YYYY-MM-DD format (prevents selecting past dates)
-  const todayStr = useMemo(() => {
-    const d = new Date();
-    const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, "0");
-    const day = String(d.getDate()).padStart(2, "0");
-    return `${year}-${month}-${day}`;
-  }, []);
-
-  // 30-minute time slot options across 24 hours
-  const HALF_HOUR_OPTIONS = useMemo(() => {
-    const slots: { value: string; label: string }[] = [];
-    for (let h = 0; h < 24; h++) {
-      for (let m = 0; m < 60; m += 30) {
-        const val = `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
-        const period = h >= 12 ? "PM" : "AM";
-        const displayH = h % 12 === 0 ? 12 : h % 12;
-        const label = `${String(displayH).padStart(2, "0")}:${String(m).padStart(2, "0")} ${period}`;
-        slots.push({ value: val, label });
-      }
-    }
-    return slots;
-  }, []);
-
-  // Format HH:mm into 12h AM/PM for badges/display
-  const formatTime12h = (time24: string): string => {
-    if (!time24) return "";
-    const [hStr, mStr] = time24.split(":");
-    const h = parseInt(hStr, 10);
-    const m = parseInt(mStr, 10);
-    if (isNaN(h) || isNaN(m)) return time24;
-    const period = h >= 12 ? "PM" : "AM";
-    const displayH = h % 12 === 0 ? 12 : h % 12;
-    return `${String(displayH).padStart(2, "0")}:${String(m).padStart(2, "0")} ${period}`;
-  };
-
-  // Helper to calculate +30 minutes automatically
-  const addThirtyMinutes = (timeStr: string): string => {
-    if (!timeStr) return "";
-    const [hStr, mStr] = timeStr.split(":");
-    let h = parseInt(hStr, 10);
-    let m = parseInt(mStr, 10) + 30;
-    if (m >= 60) {
-      h = (h + 1) % 24;
-      m -= 60;
-    }
-    return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
-  };
-
-  // When From time changes, automatically set To time to +30 minutes
-  const handleStartTimeChange = (val: string) => {
-    setStartTime(val);
-    if (val) {
-      const autoEnd = addThirtyMinutes(val);
-      setEndTime(autoEnd);
-    } else {
-      setEndTime("");
-    }
-  };
 
   useEffect(() => {
     if (categorySelected) {
@@ -857,19 +778,8 @@ export default function VenueByCategory() {
         if (locationName) params.location = locationName;
         if (selectedGrassType && selectedGrassType !== "any") params.grassType = selectedGrassType;
         if (selectedAmenities.length > 0) params.amenities = selectedAmenities.join(",");
-        if (startDate) params.startDate = startDate;
-        if (endDate) params.endDate = endDate;
-        if (startTime) params.startTime = startTime;
-        if (endTime) params.endTime = endTime;
-        if (venueSetting) params.venueSetting = venueSetting;
-        if (venueLevel) params.venueLevel = venueLevel;
-        if (venueCondition) params.venueCondition = venueCondition;
-        if (soundSystem) params.soundSystem = soundSystem;
-        if (airConditioning) params.airConditioning = airConditioning;
-        if (cafeteria) params.cafeteria = cafeteria;
-        if (venueSize) params.venueSize = venueSize;
-        if (minPrice) params.minPrice = minPrice;
-        if (maxPrice) params.maxPrice = maxPrice;
+        if (selectedDate) params.date = selectedDate;
+        if (selectedSlot && selectedSlot !== "all") params.time = selectedSlot;
         if (sortBy && sortBy !== "popular") params.sort = sortBy;
         const response = await axios.get(`${API_URL}/web/venue/getVenue`, { params });
         const venuesData = response.data.venue || [];
@@ -887,7 +797,6 @@ export default function VenueByCategory() {
           near_by_location: venues.near_by_location,
           vendor_type: venues.vendor_type,
           price_per_hr: venues.price_per_hr,
-          is_featured_paid: Boolean(venues.is_featured_paid),
           google_location: venues.google_location,
           description: venues.description || "",
           gameType: venues.gameType,
@@ -900,7 +809,7 @@ export default function VenueByCategory() {
       }
     };
     fetchVenues();
-  }, [selectedSport, locationName, selectedGrassType, selectedAmenities, startDate, endDate, startTime, endTime, venueSetting, venueLevel, venueCondition, soundSystem, airConditioning, cafeteria, venueSize, minPrice, maxPrice, sortBy]);
+  }, [selectedSport, locationName, selectedGrassType, selectedAmenities, selectedDate, selectedSlot, sortBy]);
 
   // Amenity options are built from the real amenities/facilities the API returns
   // (falling back to common amenities only when the data has none).
@@ -985,20 +894,17 @@ export default function VenueByCategory() {
       if (selectedSport && selectedSport !== "all") {
         const vt = (t.vendor_type || "").toLowerCase().replace(/_/g, " ").trim();
         const cat = (t.category || "").toLowerCase().replace(/_/g, " ").trim();
-        const selectedCategories = Array.isArray(t.categories)
-          ? t.categories.map((category: string) => String(category).toLowerCase().replace(/[_-]/g, " ").trim())
-          : [];
+        const name = (t.name || "").toLowerCase();
 
         if (selectedSport === "other-sports") {
-          const matchesCategory = (keyword: string) => selectedCategories.some((category) => category.includes(keyword)) || vt.includes(keyword) || cat.includes(keyword);
-          const isCricket = matchesCategory("cricket") || matchesCategory("turf");
-          const isBadminton = matchesCategory("badminton");
-          const isSwimming = matchesCategory("swim");
-          const isFootball = matchesCategory("football");
-          const isPickleball = matchesCategory("pickle");
-          const isTennis = matchesCategory("tennis") && !matchesCategory("table tennis");
-          const isBasketball = matchesCategory("basketball");
-          const isTableTennis = matchesCategory("table tennis");
+          const isCricket = vt.includes("cricket") || cat.includes("cricket") || name.includes("cricket") || vt.includes("turf") || cat.includes("turf");
+          const isBadminton = vt.includes("badminton") || cat.includes("badminton") || name.includes("badminton");
+          const isSwimming = vt.includes("swim") || cat.includes("swim") || name.includes("swim");
+          const isFootball = vt.includes("football") || cat.includes("football") || name.includes("football");
+          const isPickleball = vt.includes("pickle") || cat.includes("pickle") || name.includes("pickle");
+          const isTennis = (vt.includes("tennis") || cat.includes("tennis") || name.includes("tennis")) && !vt.includes("table") && !cat.includes("table") && !name.includes("table");
+          const isBasketball = vt.includes("basketball") || cat.includes("basketball") || name.includes("basketball");
+          const isTableTennis = vt.includes("table tennis") || cat.includes("table tennis") || name.includes("table tennis");
 
           if (isCricket || isBadminton || isSwimming || isFootball || isPickleball || isTennis || isBasketball || isTableTennis) {
             return false;
@@ -1006,13 +912,10 @@ export default function VenueByCategory() {
         } else {
           const targetCat = selectedSport.replace(/-/g, " ").trim();
           const normalizedTarget = targetCat.replace(/&/g, "and");
-          const isTurfCategory = selectedSport === "cricket-grounds" || selectedSport === "turf";
-          const matches = [...selectedCategories, vt, cat]
+          const matches = [vt, cat, name]
             .filter(Boolean)
             .map((field) => field.replace(/&/g, "and").replace(/-/g, " "))
-            .some((field) => isTurfCategory
-              ? field.includes("cricket") || field.includes("turf")
-              : field.includes(normalizedTarget));
+            .some((field) => field.includes(normalizedTarget));
           if (!matches) return false;
         }
       }
@@ -1071,26 +974,15 @@ export default function VenueByCategory() {
   // Automatically reset to page 1 whenever filter parameters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [selectedSport, locationName, searchQuery, startDate, endDate, startTime, endTime, selectedGrassType, selectedAmenities, venueSetting, venueLevel, venueCondition, soundSystem, airConditioning, cafeteria, venueSize, minPrice, maxPrice, sortBy]);
+  }, [selectedSport, locationName, searchQuery, selectedDate, selectedSlot, selectedGrassType, selectedAmenities, sortBy]);
 
   const handleResetFilters = () => {
     setLocationName("");
     setSearchQuery("");
-    setStartDate("");
-    setEndDate("");
-    setStartTime("");
-    setEndTime("");
+    setSelectedDate("");
+    setSelectedSlot("all");
     setSelectedGrassType("any");
     setSelectedAmenities([]);
-    setVenueSetting("");
-    setVenueLevel("");
-    setVenueCondition("");
-    setSoundSystem("");
-    setAirConditioning("");
-    setCafeteria("");
-    setVenueSize("");
-    setMinPrice("");
-    setMaxPrice("");
     setCurrentPage(1);
   };
 
@@ -1098,10 +990,8 @@ export default function VenueByCategory() {
   const indexOfLastVenue = currentPage * venuesPerPage;
   const indexOfFirstVenue = indexOfLastVenue - venuesPerPage;
 
-  const featuredVenues = displayList.filter((venue) => venue.is_featured_paid).slice(0, 4);
-  const regularVenues = displayList.filter((venue) => !venue.is_featured_paid);
-  const currentVenues = regularVenues.slice(indexOfFirstVenue, indexOfLastVenue);
-  const totalPages = Math.max(1, Math.ceil(regularVenues.length / venuesPerPage));
+  const currentVenues = displayList.slice(indexOfFirstVenue, indexOfLastVenue);
+  const totalPages = Math.max(1, Math.ceil(displayList.length / venuesPerPage));
 
   const handlePageChange = (pageNumber: number) => {
     setCurrentPage(pageNumber);
@@ -1133,7 +1023,6 @@ export default function VenueByCategory() {
           .ki-mobile-filter-control > .position-relative { width: 100% !important; }
           .ki-mobile-filter-control .btn { height: 38px !important; border-radius: 10px !important; }
           .ki-mobile-filter-reset { height: 38px; flex: 0 0 auto; white-space: nowrap; border-radius: 10px !important; padding: 0 12px !important; }
-          .ki-featured-row { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
         }
       `}</style>
       
@@ -1249,95 +1138,29 @@ export default function VenueByCategory() {
                   />
                 </div>
 
-                {/* Filter 2: Date Range */}
+                {/* Filter 2: Date */}
                 <div className="mb-4">
                   <label className="form-label fw-bold text-dark d-flex align-items-center gap-1 mb-2" style={{ fontSize: "12px", color: "#1E293B", textTransform: "uppercase", letterSpacing: "0.6px" }}>
-                    <i className="feather-calendar text-success" style={{ fontSize: "13px" }} /> Date range
+                    <i className="feather-calendar text-success" style={{ fontSize: "13px" }} /> Date
                   </label>
-                  <div className="d-grid gap-2">
-                    <div>
-                      <label className="form-label mb-1" style={{ fontSize: "11px", fontWeight: "600", color: "#475569" }}>From</label>
-                      <input
-                        type="date"
-                        value={startDate}
-                        min={todayStr}
-                        onChange={(event) => {
-                          const value = event.target.value;
-                          if (value && value < todayStr) {
-                            setStartDate(todayStr);
-                          } else {
-                            setStartDate(value);
-                          }
-                          if (endDate && value && endDate < value) setEndDate("");
-                        }}
-                        className="form-control"
-                        style={{ height: "42px", borderRadius: "10px", borderColor: "#E2E8F0", fontSize: "12px" }}
-                      />
-                    </div>
-                    <div>
-                      <label className="form-label mb-1" style={{ fontSize: "11px", fontWeight: "600", color: "#475569" }}>To</label>
-                      <input
-                        type="date"
-                        value={endDate}
-                        min={startDate || todayStr}
-                        onChange={(event) => {
-                          const value = event.target.value;
-                          const effectiveMin = startDate || todayStr;
-                          if (value && value < effectiveMin) {
-                            setEndDate(effectiveMin);
-                          } else {
-                            setEndDate(value);
-                          }
-                        }}
-                        className="form-control"
-                        style={{ height: "42px", borderRadius: "10px", borderColor: "#E2E8F0", fontSize: "12px" }}
-                      />
-                    </div>
-                  </div>
+                  <MiniCalendarDropdown
+                    value={selectedDate}
+                    onChange={setSelectedDate}
+                  />
                 </div>
 
-                {/* Filter 3: Time Range */}
+                {/* Filter 3: Time */}
                 <div className="mb-4">
                   <label className="form-label fw-bold text-dark d-flex align-items-center gap-1 mb-2" style={{ fontSize: "12px", color: "#1E293B", textTransform: "uppercase", letterSpacing: "0.6px" }}>
-                    <i className="feather-clock text-success" style={{ fontSize: "13px" }} /> Time range
+                    <i className="feather-clock text-success" style={{ fontSize: "13px" }} /> Time
                   </label>
-                  <div className="row g-2">
-                    <div className="col-6">
-                      <label className="form-label mb-1" style={{ fontSize: "11px", fontWeight: "600", color: "#475569" }}>From</label>
-                      <select
-                        value={startTime}
-                        onChange={(event) => handleStartTimeChange(event.target.value)}
-                        className="form-select"
-                        style={{ height: "42px", borderRadius: "10px", borderColor: "#E2E8F0", fontSize: "12px", color: startTime ? "#1E293B" : "#64748B" }}
-                      >
-                        <option value="">--:--</option>
-                        {HALF_HOUR_OPTIONS.map((opt) => (
-                          <option key={`start-${opt.value}`} value={opt.value}>
-                            {opt.label}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="col-6">
-                      <label className="form-label mb-1" style={{ fontSize: "11px", fontWeight: "600", color: "#475569" }}>To</label>
-                      <select
-                        value={endTime}
-                        onChange={(event) => setEndTime(event.target.value)}
-                        className="form-select"
-                        style={{ height: "42px", borderRadius: "10px", borderColor: "#E2E8F0", fontSize: "12px", color: endTime ? "#1E293B" : "#64748B" }}
-                      >
-                        <option value="">--:--</option>
-                        {HALF_HOUR_OPTIONS.map((opt) => {
-                          const isDisabled = startTime ? opt.value <= startTime : false;
-                          return (
-                            <option key={`end-${opt.value}`} value={opt.value} disabled={isDisabled}>
-                              {opt.label}
-                            </option>
-                          );
-                        })}
-                      </select>
-                    </div>
-                  </div>
+                  <CustomDropdown
+                    options={SLOT_OPTIONS}
+                    value={selectedSlot}
+                    onChange={setSelectedSlot}
+                    placeholder="Select Time"
+                    icon="feather-clock"
+                  />
                 </div>
 
                 {/* Filter 4: Grass Type */}
@@ -1352,27 +1175,6 @@ export default function VenueByCategory() {
                     placeholder="Any Grass"
                     icon="feather-layers"
                   />
-                </div>
-
-                <div className="mb-4">
-                  <label className="form-label fw-bold text-dark mb-2" style={{ fontSize: "12px", textTransform: "uppercase", letterSpacing: "0.6px" }}>Venue details</label>
-                  <div className="d-grid gap-2">
-                    <CustomDropdown options={VENUE_SETTING_OPTIONS} value={venueSetting} onChange={setVenueSetting} placeholder="Open / Covered" icon="feather-sun" />
-                    <CustomDropdown options={VENUE_LEVEL_OPTIONS} value={venueLevel} onChange={setVenueLevel} placeholder="Ground Floor / Terrace" icon="feather-layers" />
-                    <CustomDropdown options={VENUE_CONDITION_OPTIONS} value={venueCondition} onChange={setVenueCondition} placeholder="New / Old" icon="feather-award" />
-                    <CustomDropdown options={YES_NO_OPTIONS} value={soundSystem} onChange={setSoundSystem} placeholder="Sound System" icon="feather-volume-2" />
-                    <CustomDropdown options={AC_OPTIONS} value={airConditioning} onChange={setAirConditioning} placeholder="AC / Non-AC" icon="feather-wind" />
-                    <CustomDropdown options={YES_NO_OPTIONS} value={cafeteria} onChange={setCafeteria} placeholder="Cafeteria" icon="feather-coffee" />
-                    <input type="text" value={venueSize} onChange={(event) => setVenueSize(event.target.value)} className="form-control" placeholder="Size (e.g. 5v5, 100 x 50 ft)" style={{ height: "42px", borderRadius: "10px", borderColor: "#E2E8F0", fontSize: "12px" }} />
-                  </div>
-                </div>
-
-                <div className="mb-4">
-                  <label className="form-label fw-bold text-dark mb-2" style={{ fontSize: "12px", textTransform: "uppercase", letterSpacing: "0.6px" }}>Price per hour</label>
-                  <div className="row g-2">
-                    <div className="col-6"><input type="number" min="0" value={minPrice} onChange={(event) => setMinPrice(event.target.value)} className="form-control" placeholder="Min ₹" style={{ height: "42px", borderRadius: "10px", borderColor: "#E2E8F0", fontSize: "12px" }} /></div>
-                    <div className="col-6"><input type="number" min="0" value={maxPrice} onChange={(event) => setMaxPrice(event.target.value)} className="form-control" placeholder="Max ₹" style={{ height: "42px", borderRadius: "10px", borderColor: "#E2E8F0", fontSize: "12px" }} /></div>
-                  </div>
                 </div>
 
                 {/* Filter 5: Amenities */}
@@ -1390,7 +1192,7 @@ export default function VenueByCategory() {
                 </div>
 
                 {/* Active Filters Summary */}
-                {(locationName || startDate || endDate || startTime || endTime || selectedGrassType !== "any" || selectedAmenities.length > 0) && (
+                {(locationName || selectedDate || selectedSlot !== "all" || selectedGrassType !== "any" || selectedAmenities.length > 0) && (
                   <div className="mt-4 pt-3 border-top" style={{ borderColor: "#F1F5F9" }}>
                     <p className="text-muted mb-2" style={{ fontSize: "11px", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.6px" }}>Active Filters</p>
                     <div className="d-flex flex-wrap gap-1">
@@ -1400,16 +1202,16 @@ export default function VenueByCategory() {
                           <button type="button" className="btn-close btn-close-sm ms-1" style={{ fontSize: "8px" }} onClick={() => setLocationName("")} aria-label="Remove" />
                         </span>
                       )}
-                      {(startDate || endDate) && (
+                      {selectedDate && (
                         <span className="badge rounded-pill d-inline-flex align-items-center ki-filter-badge" style={{ backgroundColor: "#F0FDF4", color: "#15803D", border: "1px solid #BBF7D0", fontSize: "11px", fontWeight: "600", padding: "4px 8px" }}>
-                          <i className="feather-calendar me-1" /> {startDate || "Any date"} - {endDate || "Any date"}
-                          <button type="button" className="btn-close btn-close-sm ms-1" style={{ fontSize: "8px" }} onClick={() => { setStartDate(""); setEndDate(""); }} aria-label="Remove" />
+                          <i className="feather-calendar me-1" /> {selectedDate}
+                          <button type="button" className="btn-close btn-close-sm ms-1" style={{ fontSize: "8px" }} onClick={() => setSelectedDate("")} aria-label="Remove" />
                         </span>
                       )}
-                      {(startTime || endTime) && (
+                      {selectedSlot && selectedSlot !== "all" && (
                         <span className="badge rounded-pill d-inline-flex align-items-center ki-filter-badge" style={{ backgroundColor: "#F0FDF4", color: "#15803D", border: "1px solid #BBF7D0", fontSize: "11px", fontWeight: "600", padding: "4px 8px" }}>
-                          <i className="feather-clock me-1" /> {startTime ? formatTime12h(startTime) : "Any time"} - {endTime ? formatTime12h(endTime) : "Any time"}
-                          <button type="button" className="btn-close btn-close-sm ms-1" style={{ fontSize: "8px" }} onClick={() => { setStartTime(""); setEndTime(""); }} aria-label="Remove" />
+                          <i className="feather-clock me-1" /> {SLOT_OPTIONS.find(o => o.value === selectedSlot)?.shortLabel || selectedSlot}
+                          <button type="button" className="btn-close btn-close-sm ms-1" style={{ fontSize: "8px" }} onClick={() => setSelectedSlot("all")} aria-label="Remove" />
                         </span>
                       )}
                       {selectedGrassType && selectedGrassType !== "any" && (
@@ -1447,109 +1249,13 @@ export default function VenueByCategory() {
                 </div>
                 <div className="ki-mobile-filter-row" aria-label="Venue filters">
                   <div className="ki-mobile-filter-control"><CustomDropdown options={locationOptions} value={locationName} onChange={setLocationName} placeholder="Location" icon="feather-map-pin" /></div>
-                  <div className="ki-mobile-filter-control">
-                    <input
-                      type="date"
-                      value={startDate}
-                      min={todayStr}
-                      onChange={(event) => {
-                        const value = event.target.value;
-                        if (value && value < todayStr) {
-                          setStartDate(todayStr);
-                        } else {
-                          setStartDate(value);
-                        }
-                        if (endDate && value && endDate < value) setEndDate("");
-                      }}
-                      className="form-control"
-                      aria-label="From date"
-                    />
-                  </div>
-                  <div className="ki-mobile-filter-control">
-                    <input
-                      type="date"
-                      value={endDate}
-                      min={startDate || todayStr}
-                      onChange={(event) => {
-                        const value = event.target.value;
-                        const effectiveMin = startDate || todayStr;
-                        if (value && value < effectiveMin) {
-                          setEndDate(effectiveMin);
-                        } else {
-                          setEndDate(value);
-                        }
-                      }}
-                      className="form-control"
-                      aria-label="To date"
-                    />
-                  </div>
-                  <div className="ki-mobile-filter-control">
-                    <select
-                      value={startTime}
-                      onChange={(event) => handleStartTimeChange(event.target.value)}
-                      className="form-select"
-                      aria-label="From time"
-                      style={{ fontSize: "12px", color: startTime ? "#1E293B" : "#64748B" }}
-                    >
-                      <option value="">From Time</option>
-                      {HALF_HOUR_OPTIONS.map((opt) => (
-                        <option key={`m-start-${opt.value}`} value={opt.value}>
-                          {opt.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="ki-mobile-filter-control">
-                    <select
-                      value={endTime}
-                      onChange={(event) => setEndTime(event.target.value)}
-                      className="form-select"
-                      aria-label="To time"
-                      style={{ fontSize: "12px", color: endTime ? "#1E293B" : "#64748B" }}
-                    >
-                      <option value="">To Time</option>
-                      {HALF_HOUR_OPTIONS.map((opt) => {
-                        const isDisabled = startTime ? opt.value <= startTime : false;
-                        return (
-                          <option key={`m-end-${opt.value}`} value={opt.value} disabled={isDisabled}>
-                            {opt.label}
-                          </option>
-                        );
-                      })}
-                    </select>
-                  </div>
+                  <div className="ki-mobile-filter-control"><MiniCalendarDropdown value={selectedDate} onChange={setSelectedDate} /></div>
+                  <div className="ki-mobile-filter-control"><CustomDropdown options={SLOT_OPTIONS} value={selectedSlot} onChange={setSelectedSlot} placeholder="Time" icon="feather-clock" /></div>
                   <button type="button" className="ki-mobile-filter-reset btn btn-outline-secondary btn-sm d-flex align-items-center gap-1" style={{ fontSize: "12px" }} onClick={handleResetFilters}>
                     <i className="feather-refresh-cw" style={{ fontSize: "12px" }} /> Reset
                   </button>
                 </div>
               </div>
-
-              {featuredVenues.length > 0 && (
-                <section className="mb-4" aria-label="Featured paid venues">
-                  <div className="d-flex align-items-center justify-content-between mb-2">
-                    <h2 className="mb-0" style={{ color: "#14532D", fontSize: "18px", fontWeight: "800" }}>
-                      <i className="feather-star me-2" style={{ color: "#F59E0B" }} /> Featured venues{locationName ? ` in ${locationName}` : " in Indore"}
-                    </h2>
-                    <span className="badge rounded-pill" style={{ background: "#FEF3C7", color: "#92400E", fontSize: "11px", fontWeight: "700" }}>PAID</span>
-                  </div>
-                  <div className="d-grid gap-3 ki-featured-row" style={{ gridTemplateColumns: "repeat(4, minmax(0, 1fr))" }}>
-                    {featuredVenues.map((venue) => (
-                      <Link
-                        key={venue._id}
-                        to={`/sports-venue/${venue.vendor_type ? venue.vendor_type.replace(/\s+/g, "-").toLowerCase() : "venue"}/${venue.name.replace(/\s+/g, "-").toLowerCase()}/${venue._id}`}
-                        className="text-decoration-none"
-                        style={{ minWidth: 0, border: "1px solid #FCD34D", borderRadius: "14px", background: "#FFFBEB", overflow: "hidden" }}
-                      >
-                        <img src={getVenueImage(venue.images)} alt={venue.name} style={{ width: "100%", height: "105px", objectFit: "cover" }} />
-                        <div className="p-3">
-                          <h3 className="mb-1 text-truncate" style={{ color: "#1F2937", fontSize: "15px", fontWeight: "800" }}>{venue.name}</h3>
-                          <p className="mb-0 text-truncate" style={{ color: "#64748B", fontSize: "12px" }}><i className="feather-map-pin me-1" />{venue.near_by_location || "Indore"}</p>
-                        </div>
-                      </Link>
-                    ))}
-                  </div>
-                </section>
-              )}
 
               {/* Cards Grid */}
               {currentVenues.length > 0 ? (
@@ -1615,8 +1321,8 @@ export default function VenueByCategory() {
                             <span style={{ fontSize: "12px", fontWeight: "700", color: "#17222D" }}>{Number(venue.rating) > 0 ? Number(venue.rating).toFixed(1) : "New"}</span>
                           </div>
                           <span style={{ fontSize: "12px", color: "#606D76", fontWeight: "600" }}>
-                            <span style={{ color: "#3CAB4B", fontSize: "10px", fontWeight: "800", letterSpacing: "0.3px", marginRight: "4px" }}>SIZE</span>
-                            {formatVenueDimensions(getVenueSize(venue))}
+                            <i className="feather-grid me-1" style={{ color: "#3CAB4B", fontSize: "11px" }} />
+                            {getVenueSize(venue)}
                           </span>
                         </div>
 
@@ -1631,12 +1337,24 @@ export default function VenueByCategory() {
                           </Link>
                         </h3>
 
-                        {/* Location */}
-                        <div className="d-flex align-items-center mb-2" style={{ fontSize: "12px" }}>
+                        {/* Location Pin & Map Link */}
+                        <div className="d-flex align-items-center justify-content-between mb-2" style={{ fontSize: "12px" }}>
                           <p className="mb-0 text-truncate" style={{ fontSize: "12px", color: "#606D76" }}>
                             <i className="feather-map-pin me-1" style={{ color: "#3CAB4B" }} />
                             {venue.near_by_location || "Indore"}, Indore
                           </p>
+                          {venue.google_location && (
+                            <a
+                              href={venue.google_location.startsWith("http") ? venue.google_location : `https://${venue.google_location}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              title="Open Google Maps"
+                              className="text-success ms-1 flex-shrink-0 d-inline-flex align-items-center"
+                              style={{ fontSize: "11px", fontWeight: "600" }}
+                            >
+                              Map <i className="feather-map-pin ms-0.5" style={{ fontSize: "11px" }} />
+                            </a>
+                          )}
                         </div>
 
                         {/* Price & Book Button */}

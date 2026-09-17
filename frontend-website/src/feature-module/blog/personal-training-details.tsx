@@ -273,7 +273,14 @@ const PersonalTrainingDetails = (props: any) => {
   }
 
   const checkToken = (Id: any) => {
-    navigate(`/trainers/training-timedate/${Id}`);
+    const token = localStorage.getItem('token')
+    if (token) {
+      navigate(`/trainers/training-timedate/${Id}`);
+    } else {
+      navigate("/login",
+        { state: { URL: location.pathname } }
+      )
+    }
   }
 
   return (

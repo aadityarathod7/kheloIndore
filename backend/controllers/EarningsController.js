@@ -8,9 +8,6 @@ const User = require("../models/UserModel");
 require("../models/Venue1");
 const Refund = require("../models/RefundModel");
 const VendorPayout = require("../models/VendorPayoutModel");
-const Venue = require("../models/Venue1");
-const Coach = require("../models/CoachModel");
-const PersonalTrainer = require("../models/PersonalTrainingModel");
 
 const SUCCESSFUL_PAYMENT_STATUSES = ["PAYMENT_SUCCESS", "SUCCESS", "PAID"];
 
@@ -147,80 +144,6 @@ exports.getEarningsSummary = async (req, res) => {
   }
 };
 
-// GET /api/earnings/provider-breakdown
-// A Super Admin-only drill-down of successful bookings and collections by
-// individual venue, coach, or personal trainer.
-exports.getProviderBreakdown = async (req, res) => {
-  try {
-    if (req.user.role !== "Super Admin") {
-      return res.status(403).json({ success: false, message: "Only Super Admins can view provider earnings." });
-    }
-
-    const requestedType = String(req.query.providerType || "all").toLowerCase();
-    if (!["all", "venue", "coach", "trainer"].includes(requestedType)) {
-      return res.status(400).json({ success: false, message: "providerType must be venue, coach, trainer, or all." });
-    }
-
-    const paidQuery = { paymentStatus: { $in: SUCCESSFUL_PAYMENT_STATUSES } };
-    const [venueBookings, coachBookings, trainerBookings] = await Promise.all([
-      requestedType === "coach" || requestedType === "trainer" ? [] : Booking.find(paidQuery).populate("venue_id", "name city").populate("vendor_id", "first_name last_name email mobile"),
-      requestedType === "venue" || requestedType === "trainer" ? [] : CoachBooking.find(paidQuery).populate("coachId", "first_name last_name full_name email mobile"),
-      requestedType === "venue" || requestedType === "coach" ? [] : PersonalTrainerBooking.find(paidQuery).populate("pt_id", "first_name last_name full_name email mobile"),
-    ]);
-
-    const grouped = new Map();
-    const addBookings = async (bookings, type, providerField) => {
-      const revenueBookings = await attachNetAmounts(bookings);
-      revenueBookings.forEach(({ booking, paid, refunded, net }) => {
-        const provider = booking[providerField];
-        const id = provider?._id ? String(provider._id) : String(booking[providerField] || "unassigned");
-        const key = `${type}:${id}`;
-        if (!grouped.has(key)) {
-          const firstName = provider?.first_name || "";
-          const lastName = provider?.last_name || "";
-          const fallbackName = type === "venue" ? "Venue not assigned" : `${type === "coach" ? "Coach" : "Trainer"} not assigned`;
-          grouped.set(key, {
-            key,
-            providerId: id,
-            providerType: type,
-            providerName: type === "venue" ? provider?.name || fallbackName : provider?.full_name || `${firstName} ${lastName}`.trim() || fallbackName,
-            contact: provider?.email || provider?.mobile || "—",
-            city: type === "venue" ? provider?.city || "—" : "—",
-            bookings: 0,
-            grossCollections: 0,
-            refundedAmount: 0,
-            netCollections: 0,
-          });
-        }
-        const row = grouped.get(key);
-        row.bookings += 1;
-        row.grossCollections += paid;
-        row.refundedAmount += refunded;
-        row.netCollections += net;
-      });
-    };
-
-    await Promise.all([
-      addBookings(venueBookings, "venue", "venue_id"),
-      addBookings(coachBookings, "coach", "coachId"),
-      addBookings(trainerBookings, "trainer", "pt_id"),
-    ]);
-
-    const data = [...grouped.values()]
-      .map((row) => ({
-        ...row,
-        grossCollections: Number(row.grossCollections.toFixed(2)),
-        refundedAmount: Number(row.refundedAmount.toFixed(2)),
-        netCollections: Number(row.netCollections.toFixed(2)),
-      }))
-      .sort((a, b) => b.netCollections - a.netCollections);
-
-    return res.status(200).json({ success: true, data });
-  } catch (error) {
-    return res.status(500).json({ success: false, message: "Unable to load provider earnings.", error: error.message });
-  }
-};
-
 // GET /api/earnings/monthly
 exports.getMonthlyEarnings = async (req, res) => {
   try {
@@ -307,7 +230,6 @@ exports.getVendorSettlements = async (req, res) => {
 
     const bookings = await Booking.find({
       paymentStatus: { $in: SUCCESSFUL_PAYMENT_STATUSES },
-      manual_booking: { $ne: true },
     })
       .populate("vendor_id", "first_name last_name mobile email")
       .populate("venue_id", "name city")

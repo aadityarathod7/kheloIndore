@@ -32,7 +32,6 @@ function BookingList({ listType }) {
   const [loading, setLoading] = useState(true);
   const [searchText, setSearchText] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-  const [paymentSource, setPaymentSource] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [csvData, setCsvData] = useState([]);
@@ -71,11 +70,11 @@ function BookingList({ listType }) {
 
   useEffect(() => {
     fetchData();
-  }, [currentPage, searchQuery, paymentSource]);
+  }, [currentPage, searchQuery]);
 
   const fetchData = async () => {
     try {
-      const apiUrl = `${API_URL}/booking/get?page=${currentPage}&limit=${itemsPerPage}&search=${searchQuery}&paymentSource=${paymentSource}`;
+      const apiUrl = `${API_URL}/booking/get?page=${currentPage}&limit=${itemsPerPage}&search=${searchQuery}`;
       const response = await fetch(apiUrl, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -517,11 +516,6 @@ function BookingList({ listType }) {
           </Col>
           {/* )} */}
           <Col sm={6} className="d-flex justify-content-end align-items-center">
-            <div className="me-3 d-flex gap-2 align-items-center" aria-label="Payment source filter">
-              <Form.Check inline type="radio" label="All" name="paymentSource" checked={paymentSource === "all"} onChange={() => setPaymentSource("all")} />
-              <Form.Check inline type="radio" label="Khelo Indore" name="paymentSource" checked={paymentSource === "platform"} onChange={() => setPaymentSource("platform")} />
-              <Form.Check inline type="radio" label="Venue direct" name="paymentSource" checked={paymentSource === "manual"} onChange={() => setPaymentSource("manual")} />
-            </div>
             <CSVLink data={csvData} filename={"Bookings_list.csv"}>
               <button className="down-button my-0">Download</button>
             </CSVLink>
@@ -679,19 +673,7 @@ function BookingList({ listType }) {
                           <td className="admin-booking-slots">{slotTimesArray.join(", ")}</td>
                         )}
                         <td>{row.info.venue_id.vendor_type}</td>
-                        <td>
-                          {row.info.manual_booking ? (
-                            <>
-                              <div>Venue direct: ₹{row.info.manual_amount_received || 0}</div>
-                              <small className="text-muted">Khelo Indore: ₹0</small>
-                            </>
-                          ) : (
-                            <>
-                              <div>Khelo Indore: ₹{row.info.platform_amount_received || row.info.total_price || 0}</div>
-                              <small className="text-muted">Venue direct: ₹0</small>
-                            </>
-                          )}
-                        </td>
+                        <td>{row.info.total_price}</td>
                         <td>{formatDate(row.info.date)}</td>
                         <td
                           className="admin-booking-status"

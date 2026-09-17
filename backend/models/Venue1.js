@@ -22,15 +22,6 @@ const venueSchema = new mongoose.Schema(
     other_contact_number: String,
     category: String,
     price_per_hr: Number,
-    is_featured_paid: { type: Boolean, default: false },
-    venue_setting: { type: String, enum: ["open", "covered", ""] },
-    venue_level: { type: String, enum: ["ground-floor", "terrace", ""] },
-    venue_condition: { type: String, enum: ["new", "old", ""] },
-    opening_date: { type: Date, default: null },
-    has_sound_system: { type: Boolean, default: null },
-    air_conditioning: { type: String, enum: ["ac", "non-ac", ""] },
-    has_cafeteria: { type: Boolean, default: null },
-    venue_size: { type: String, default: "" },
     description: String,
     stateId: String,
     googleCoordinates: {
@@ -44,18 +35,6 @@ const venueSchema = new mongoose.Schema(
     additionalNotes: { type: String, default: "" },
     capacity: { type: Number}, // Max people allowed
     package_type:[String],
-    // Long-term memberships for recurring facilities such as Gym and Swimming Pool.
-    membership_plans: {
-      type: [{
-        name: { type: String, trim: true },
-        months: { type: Number, min: 1 },
-        price: { type: Number, min: 0 },
-        priority: { type: String, trim: true, default: "Standard Booking" },
-        discount: { type: String, trim: true, default: "Flexible Plan" },
-        support: { type: String, trim: true, default: "Basic Support" },
-      }],
-      default: [],
-    },
     status: {
       type: Boolean,
       default: true,
@@ -105,8 +84,6 @@ const venueSchema = new mongoose.Schema(
     type: Number,
     default:0
   },
-  awaiting_approval: { type: Boolean, default: false },
-  pending_update: { type: mongoose.Schema.Types.Mixed, default: null },
   categories: {
     type: [String],
     default: []

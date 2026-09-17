@@ -28,7 +28,6 @@ const mongoose = require('mongoose');
 const { ObjectId } = require("mongoose").Types;
 const personalTrainer = require("../models/PersonalTrainingModel")
 const Refund = require("../models/RefundModel");
-const { requestSplit } = require("./CashfreeSplitController");
 
 const CASHFREE_API_VERSION = process.env.CASHFREE_API_VERSION || "2023-08-01";
 const getCashfreeBaseUrl = () => process.env.CASHFREE_BASE_URL || (process.env.CASHFREE_ENV === "production" ? "https://api.cashfree.com/pg" : "https://sandbox.cashfree.com/pg");
@@ -187,20 +186,6 @@ const getPuppeteerLaunchOptions = () => {
   return options;
 };
 
-const scheduleCashfreeSplit = ({ orderId, bookingId, providerType, providerId, grossAmount }) => {
-  const timer = setTimeout(() => {
-    requestSplit({
-      orderId,
-      bookingId,
-      providerType,
-      providerId,
-      grossAmount,
-      platformPercentage: Number(process.env.CASHFREE_PLATFORM_FEE_PERCENT || 15),
-    }).catch((splitError) => console.error(`Cashfree ${providerType} split failed:`, splitError.message));
-  }, 2 * 60 * 1000);
-  if (typeof timer.unref === "function") timer.unref();
-};
-
 const venuePayment = async (req, res) => {
   try {
     const { user_id, venue_id, date, slotsBooked, total_price, payment_type } = req.body;
@@ -312,10 +297,6 @@ const venuePayment = async (req, res) => {
       venue_id,
       date: bookingDate,
       slotsBooked: normalizedSlotsBooked,
-      // The pending-payment schema also uses slotsBook for the shared
-      // coach/trainer flow. Keep both representations for venue bookings so
-      // its required validation cannot reject a valid venue payment request.
-      slotsBook: normalizedSlotsBooked,
       vendor_id,
       total_price: totalBookedPrice,
       payment_type: paymentType,
@@ -332,7 +313,7 @@ const venuePayment = async (req, res) => {
       expirationTime: expirationTime,
     });
   } catch (error) {
-    console.error("Venue payment initialization failed:", error.message);
+    
     res.status(500).json({
       success: false,
       message: "Unable to initialize payment. Please try again."
@@ -1028,7 +1009,6 @@ const venuePaymentStatus = async (req, res) => {
         transaction_id: transactionId,
         merchantTransaction_id: txnId,
         paymentStatus: responseCode,
-        slotsBook: slotsBooked.map(String),
         paymentState: state,
         vendor_id,
         pdf_url: pdfUrl,
@@ -1036,11 +1016,6 @@ const venuePaymentStatus = async (req, res) => {
         payment_type: payment_type || "full",
         payable_amount: payment_type === "partial" ? amount/100 : null,
       });
-      // Cashfree Easy Split requires the successful payment to be captured
-      // first, then its split API must be called after a short delay. This is
-      // intentionally non-blocking: a booking remains successful if the
-      // settlement service is temporarily unavailable and can be retried.
-      scheduleCashfreeSplit({ orderId: txnId, bookingId: newBooking._id, providerType: "venue", providerId: vendor_id, grossAmount: amount / 100 });
       // Delete UserDetailsAtPayment
       await UserDetailsAtPayments.deleteOne({ user_id: userId });
 
@@ -1286,7 +1261,7 @@ const processBookingRefund = async ({ booking, reason }) => {
 
 const coachPayment = async (req, res) => {
   try {
-    const { user_id, coachId, start_date, end_date, start_time, end_time, payment_type, coupon_code } = req.body;
+    const { user_id, coachId, start_date, end_date, start_time, end_time, payment_type } = req.body;
 
     // Validate the request body
     if (!user_id || !coachId || !start_date || !end_date || !start_time || !end_time) {
@@ -1363,17 +1338,14 @@ const coachPayment = async (req, res) => {
       // Move to the next day
       currentDate.setDate(currentDate.getDate() + 1);
     }
-    const couponCode = String(coupon_code || "").trim().toUpperCase();
-    const discountAmount = couponCode === "KHELO100" ? Math.min(100, totalBookedPrice) : 0;
-    const discountedTotal = totalBookedPrice - discountAmount;
     const expirationTime = new Date().getTime() + 10 * 60 * 1000;
     // Proceed to payment if all slots are available
     const merchantTransactionId = `${user_id}-${Date.now()}`;
     // Partial payment = 50% advance; full payment = 100%
     const payableAmount =
       paymentType === "partial"
-        ? Math.round(discountedTotal * PARTIAL_PAYMENT_PERCENT)
-        : discountedTotal;
+        ? Math.round(totalBookedPrice * PARTIAL_PAYMENT_PERCENT)
+        : totalBookedPrice;
     const cashfreeOrder = await createCashfreeOrder({
       orderId: merchantTransactionId,
       amount: payableAmount,
@@ -1401,9 +1373,7 @@ const coachPayment = async (req, res) => {
         detail.slots.map((slot) => slot._id.toString())
       ), // Store the slot IDs
       packageType: "monthly", // Assuming the packageType is fixed or passed in the request
-      total_price: discountedTotal,
-      coupon_code: couponCode || undefined,
-      discount_amount: discountAmount,
+      total_price: totalBookedPrice,
       payment_type: paymentType,
       payable_amount: payableAmount,
       payment_order_id: merchantTransactionId,
@@ -1576,7 +1546,6 @@ const slotDates = `${formattedStartDate} to ${formattedEndDate}`;
                 slotsBook,
                 paymentState: state,
               });
-              scheduleCashfreeSplit({ orderId: merchantTransactionId, bookingId: newBooking._id, providerType: "coach", providerId: coachId, grossAmount: amount / 100 });
     // After successful payment, update slots to booked
     for (const slotId of slotsBook) {
       const coachSlot = await CoachSlot.findOne({ coachId: coachId, start_date: new Date(start_date) });
@@ -1741,7 +1710,7 @@ const getCoachBookingByUserId = async (req, res) => {
 
 const personalTrainerPayment = async (req, res) => {
   try {
-    const { user_id, trainerId, start_date, end_date, start_time, end_time, payment_type, coupon_code } = req.body;
+    const { user_id, trainerId, start_date, end_date, start_time, end_time, payment_type } = req.body;
 // Personal_trainer_id
     // Validate the request body
     if (!user_id || !trainerId || !start_date || !end_date || !start_time || !end_time) {
@@ -1818,17 +1787,14 @@ const personalTrainerPayment = async (req, res) => {
       // Move to the next day
       currentDate.setDate(currentDate.getDate() + 1);
     }
-    const couponCode = String(coupon_code || "").trim().toUpperCase();
-    const discountAmount = couponCode === "KHELO100" ? Math.min(100, totalBookedPrice) : 0;
-    const discountedTotal = totalBookedPrice - discountAmount;
     const expirationTime = new Date().getTime() + 10 * 60 * 1000;
     // Proceed to payment if all slots are available
     const merchantTransactionId = `${user_id}-${Date.now()}`;
     // Partial payment = 50% advance; full payment = 100%
     const payableAmount =
       paymentType === "partial"
-        ? Math.round(discountedTotal * PARTIAL_PAYMENT_PERCENT)
-        : discountedTotal;
+        ? Math.round(totalBookedPrice * PARTIAL_PAYMENT_PERCENT)
+        : totalBookedPrice;
     const cashfreeOrder = await createCashfreeOrder({
       orderId: merchantTransactionId,
       amount: payableAmount,
@@ -1854,9 +1820,7 @@ const personalTrainerPayment = async (req, res) => {
         detail.slots.map((slot) => slot._id.toString())
       ), // Store the slot IDs
       packageType: "monthly", // Assuming the packageType is fixed or passed in the request
-      total_price: discountedTotal,
-      coupon_code: couponCode || undefined,
-      discount_amount: discountAmount,
+      total_price: totalBookedPrice,
       payment_type: paymentType,
       payable_amount: payableAmount,
       payment_order_id: merchantTransactionId,
@@ -2006,7 +1970,6 @@ const slotDates = `${formattedStartDate} to ${formattedEndDate}`;
             payment_type: payment_type || "full",
             payable_amount: payment_type === "partial" ? amount/100 : null,
           });
-          scheduleCashfreeSplit({ orderId: merchantTransactionId, bookingId: newBooking._id, providerType: "trainer", providerId: trainerId, grossAmount: amount / 100 });
 
            for (const slotId of slotsBook) {
             const ptSlot = await PersonalTrainerSlot.findOne({

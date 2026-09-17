@@ -30,10 +30,6 @@ const contactSchema = new mongoose.Schema(
       type: String,
     
     },
-    ticket_number: { type: String, unique: true, sparse: true, index: true },
-    status: { type: String, enum: ["Open", "Resolved"], default: "Open" },
-    resolved_at: { type: Date, default: null },
-    resolved_by: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
   },
   { timestamps: true }
 );

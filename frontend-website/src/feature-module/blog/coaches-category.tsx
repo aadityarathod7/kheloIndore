@@ -3,44 +3,6 @@ import { Link } from "react-router-dom";
 import axios from "axios";
 import { API_URL, IMG_URL } from "../../ApiUrl";
 import Loader from "../loader/loader";
-import { COACH_TRAINER_CATEGORIES, toCategorySlug } from "../../constants/categories";
-
-// Keep Coach category artwork consistent with the Sports Venues category page.
-const categoryImageOverrides: Record<string, string> = {
-  archery: "https://images.unsplash.com/photo-1712350840799-eed8c91053ce?auto=format&fit=crop&w=1000&q=85",
-  badminton: "https://images.unsplash.com/photo-1775993167393-f2add1f8eec2?auto=format&fit=crop&w=1000&q=85",
-  baseball: "https://images.unsplash.com/photo-1624422670211-28788f86d43f?auto=format&fit=crop&w=1000&q=85",
-  basketball: "https://images.unsplash.com/photo-1546519638-68e109498ffc?auto=format&fit=crop&w=1000&q=85",
-  bowling: "https://images.unsplash.com/photo-1541000778043-8fba815a9484?auto=format&fit=crop&w=1000&q=85",
-  boxing: "https://images.unsplash.com/photo-1602457471243-7f43e539097f?auto=format&fit=crop&w=1000&q=85",
-  chess: "https://images.unsplash.com/photo-1528819622765-d6bcf132f793?auto=format&fit=crop&w=1000&q=85",
-  cricket: "https://images.unsplash.com/photo-1595210382266-2d0077c1f541?auto=format&fit=crop&w=1000&q=85",
-  dance: "https://images.unsplash.com/photo-1508700929628-666bc8bd84ea?auto=format&fit=crop&w=1000&q=85",
-  football: "https://images.unsplash.com/photo-1606470542032-a9caa0be6e97?auto=format&fit=crop&w=1000&q=85",
-  golf: "https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?auto=format&fit=crop&w=1000&q=85",
-  gym: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=1000&q=85",
-  hockey: "https://images.unsplash.com/photo-1515703407324-5f753afd8be8?auto=format&fit=crop&w=1000&q=85",
-  karate: "https://images.unsplash.com/photo-1555597673-b21d5c935865?auto=format&fit=crop&w=1000&q=85",
-  skating: "https://images.unsplash.com/photo-1520045892732-304bc3ac5d8e?auto=format&fit=crop&w=1000&q=85",
-  tennis: "https://images.unsplash.com/photo-1622279457486-62dcc4a431d6?auto=format&fit=crop&w=1000&q=85",
-  volleyball: "https://images.unsplash.com/photo-1612872087720-bb876e2e67d1?auto=format&fit=crop&w=1000&q=85",
-  swimming: "https://images.unsplash.com/photo-1560090963-4fde545b73de?auto=format&fit=crop&w=1000&q=85",
-  yoga: "https://images.unsplash.com/photo-1545389336-cf090694435e?auto=format&fit=crop&w=1000&q=85",
-  "go-kart": "https://images.unsplash.com/photo-1542296332-2e4473faf563?auto=format&fit=crop&w=1000&q=85",
-  horse: "https://images.unsplash.com/photo-1553284965-83fd3e82fa5a?auto=format&fit=crop&w=1000&q=85",
-  kabaddi: "https://images.unsplash.com/photo-1595210382266-2d0077c1f541?auto=format&fit=crop&w=1000&q=85",
-  martial: "https://images.unsplash.com/photo-1555597673-b21d5c935865?auto=format&fit=crop&w=1000&q=85",
-  pickleball: "https://images.unsplash.com/photo-1622279457486-62dcc4a431d6?auto=format&fit=crop&w=1000&q=85",
-  playstation: "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&w=1000&q=85",
-  pool: "https://images.unsplash.com/photo-1560090963-4fde545b73de?auto=format&fit=crop&w=1000&q=85",
-  "rock climbing": "https://images.unsplash.com/photo-1564769625905-50e93615e769?auto=format&fit=crop&w=1000&q=85",
-  shooting: "https://images.unsplash.com/photo-1510925758641-869d353cecc7?auto=format&fit=crop&w=1000&q=85",
-  snooker: "https://images.unsplash.com/photo-1511882150382-421056c89033?auto=format&fit=crop&w=1000&q=85",
-  squash: "https://images.unsplash.com/photo-1622279457486-62dcc4a431d6?auto=format&fit=crop&w=1000&q=85",
-  taekwondo: "https://images.unsplash.com/photo-1589487391730-58f20eb2c308?auto=format&fit=crop&w=1000&q=85",
-  "table tennis": "https://images.unsplash.com/photo-1534158914592-062992fbe900?auto=format&fit=crop&w=1000&q=85",
-  zumba: "https://images.unsplash.com/photo-1508700929628-666bc8bd84ea?auto=format&fit=crop&w=1000&q=85",
-};
 
 const cleanCategoryName = (name) => {
   const lower = name.toLowerCase().trim();
@@ -72,11 +34,10 @@ const matchCategory = (cat, trainerType, specializations, q) => {
 
   return c === target || c.includes(target) || t === target || t.includes(target) || specs.includes(target);
 };
+import { getCategoryIcon, getCategoryStyle } from "../../utils/categoryVisual";
 
 const getCategoryImage = (imgStr?: string, categoryName = "") => {
   const name = categoryName.toLowerCase().trim();
-  const matchingOverride = Object.entries(categoryImageOverrides).find(([keyword]) => name.includes(keyword));
-  if (matchingOverride) return matchingOverride[1];
   if (!imgStr || imgStr.includes("photo-1517649763962-0c623266010b")) {
     if (name.includes("karate")) {
       return "https://images.unsplash.com/photo-1555597673-b21d5c935865?q=80&w=800&auto=format&fit=crop";
@@ -120,10 +81,22 @@ const CoachesCategory = () => {
     document.title = "Coaches - Categories";
   }, []);
 
+  const slugify = (text: string) => {
+    return text
+      .toLowerCase()
+      .trim()
+      .replace(/[^\w\s-]/g, "")
+      .replace(/[\s_-]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const coachesRes = await axios.get(`${API_URL}/web/fetch-all-coaches`);
+        const [coachesRes, catRes] = await Promise.all([
+          axios.get(`${API_URL}/web/fetch-all-coaches`),
+          axios.get(`${API_URL}/category/fetch`)
+        ]);
 
         const coachData = coachesRes.data.data || [];
         const mappedCoaches = coachData.map((c: any) => ({
@@ -133,12 +106,17 @@ const CoachesCategory = () => {
         }));
         setCoaches(mappedCoaches);
 
-        setCategories(COACH_TRAINER_CATEGORIES.map((name) => ({
-          id: toCategorySlug(name),
-          name,
-          slug: toCategorySlug(name),
-          image: getCategoryImage(undefined, name),
-        })));
+        const dbCategories = catRes.data.categories || [];
+        const mappedCategories = dbCategories.map((c: any) => {
+          const cleanedName = cleanCategoryName(c.category_name);
+          return {
+            id: c._id,
+            name: cleanedName,
+            slug: slugify(cleanedName),
+            image: getCategoryImage(c.images && c.images[0], c.category_name)
+          };
+        });
+        setCategories(mappedCategories);
         setLoading(false);
       } catch (error) {
         setLoading(false);
@@ -177,8 +155,8 @@ const CoachesCategory = () => {
       ) : (
         <>
           {/* Hero Section */}
-          <div className="hero-booking-section standard-page-hero" style={{ background: "linear-gradient(135deg, #F0FDF4 0%, #ECFDF5 100%)", paddingTop: "110px", paddingBottom: "40px", position: "relative", overflow: "hidden", borderBottom: "1px solid #E5E7EB" }}>
-            <div className="hero-artwork-blend" style={{ position: "absolute", right: "-60px", top: 0, bottom: 0, width: "55%", backgroundImage: "url('/assets/img/bg/coach-hero.png')", backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat", maskImage: "linear-gradient(to left, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%)", WebkitMaskImage: "linear-gradient(to left, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%)", opacity: 0.78 }}></div>
+          <div className="hero-booking-section" style={{ background: "linear-gradient(135deg, #F0FDF4 0%, #ECFDF5 100%)", paddingTop: "110px", paddingBottom: "40px", position: "relative", overflow: "hidden", borderBottom: "1px solid #E5E7EB" }}>
+            <div className="hero-artwork-blend" style={{ position: "absolute", right: "-60px", top: 0, bottom: 0, width: "55%", backgroundImage: "url('/assets/img/bg/banner-illustration.png')", backgroundSize: "cover", backgroundPosition: "left center", backgroundRepeat: "no-repeat", maskImage: "linear-gradient(to left, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%)", WebkitMaskImage: "linear-gradient(to left, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%)", opacity: 0.9 }}></div>
             
             <div className="container" style={{ position: "relative", zIndex: 2 }}>
               <div className="row align-items-center">
@@ -187,7 +165,7 @@ const CoachesCategory = () => {
                   <h1 className="d-flex align-items-center flex-wrap" style={{ fontSize: "56px", fontWeight: "800", color: "#0F172A", lineHeight: "1.1", marginBottom: "16px" }}>
                     <span style={{ color: "#22C55E" }}>Coaches</span>
                   </h1>
-                  <p style={{ color: "#64748B", fontSize: "20px", marginBottom: "24px", fontWeight: "500", maxWidth: "480px" }}>Book the right coach for your favourite sport</p>
+                  <p style={{ color: "#64748B", fontSize: "20px", marginBottom: "24px", fontWeight: "500", maxWidth: "480px" }}>Select a sport category to view listings and book your coach</p>
                   
                   {/* Category Search Input */}
                   <div className="mb-4 position-relative" style={{ maxWidth: "480px" }}>
@@ -263,6 +241,7 @@ const CoachesCategory = () => {
                         />
                         
                         {/* Category Info */}
+                        <div className="position-absolute top-0 start-0 m-3 rounded-circle d-flex align-items-center justify-content-center" style={{ width: 48, height: 48, ...getCategoryStyle(cat.name) }}><i className={getCategoryIcon(cat.name)} style={{ fontSize: 20 }} /></div>
                         <div className="position-absolute bottom-0 start-0 p-4 text-start">
                           <h3 className="ki-category-title">
                             {cat.name}

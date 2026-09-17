@@ -4,6 +4,7 @@ import { FiUpload } from "react-icons/fi";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
+import { Editor } from "@tinymce/tinymce-react";
 import slugify from "slugify"; // Import slugify
 import { API_URL } from "../utils/ApiUrl";
 
@@ -40,9 +41,7 @@ export default function Createblog() {
     // Validation checks
     let validationErrors = {};
     if (!formData.blog_title) validationErrors.blog_title = "Title is required.";
-    if (!formData.meta_description.trim()) validationErrors.meta_description = "Meta description is required.";
-    if (!formData.blog_description.trim()) validationErrors.blog_description = "Blog description is required.";
-    if (!formData.slug_url.trim()) validationErrors.slug_url = "Slug URL is required.";
+    if (!formData.meta_description) validationErrors.meta_description = "Description is required.";
     if (!formData.blog_image) validationErrors.blog_image = "Image is required.";
 
     // If there are validation errors, set the error state and return
@@ -68,8 +67,7 @@ export default function Createblog() {
     try {
       const response = await axios.post(`${API_URL}/blog/create`, payload, {
         headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          "Content-Type": "application/json", // Ensure content type is JSON
         },
       });
 
@@ -86,7 +84,7 @@ export default function Createblog() {
       Swal.fire({
         icon: "error",
         title: "Error",
-        text: error.response?.data?.message || "Unable to create the blog. Please try again.",
+        text: error.response.data.message,
       });
     }
   };
@@ -219,19 +217,12 @@ export default function Createblog() {
                 <Form.Label>
                   Meta Description<span style={{ color: "red" }}>*</span>
                 </Form.Label>
-                <Form.Control
-                  as="textarea"
-                  rows={5}
-                  name="meta_description"
+                <Editor
                   value={formData.meta_description}
-                  onChange={handleChange}
-                  maxLength={320}
-                  placeholder="Write a concise search-engine description (160 characters recommended)"
-                  isInvalid={!!errors.meta_description}
+                  onEditorChange={(value) => setFormData({ ...formData, meta_description: value })}
+                  placeholder="Enter Meta Description"
+                  init={{ height: 180, menubar: false, plugins: "lists link image code", toolbar: "undo redo | blocks | bold italic | bullist numlist | link image | code" }}
                 />
-                <Form.Text className="text-muted">
-                  {formData.meta_description.length}/160 characters recommended
-                </Form.Text>
               </Form.Group>
 
               {errors.meta_description && (
@@ -335,16 +326,13 @@ export default function Createblog() {
             <Col md={8}>
               <Form.Group>
                 <Form.Label>
-                  Description<span style={{ color: "red" }}>*</span>
+                  Description
                 </Form.Label>
-                <Form.Control
-                  as="textarea"
-                  rows={12}
-                  name="blog_description"
+                <Editor
                   value={formData.blog_description}
-                  onChange={handleChange}
-                  placeholder="Enter blog description"
-                  isInvalid={!!errors.blog_description}
+                  onEditorChange={(value) => setFormData({ ...formData, blog_description: value })}
+                  placeholder="Enter description here"
+                  init={{ height: 360, menubar: false, plugins: "lists link image code", toolbar: "undo redo | blocks | bold italic | alignleft aligncenter alignright | bullist numlist | link image | code", block_formats: "Paragraph=p; Heading 2=h2; Heading 3=h3; Heading 4=h4" }}
                 />
               </Form.Group>
 

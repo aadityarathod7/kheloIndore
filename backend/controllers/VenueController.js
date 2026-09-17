@@ -8,7 +8,6 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/UserModel");
 const Vendor = require("../models/VendorTypeModel");
 const mail = require("../helper/sendMail");
-const { VENUE_CATEGORIES, normaliseVenueCategory } = require("../config/venueCategories");
 
 const mailContent = require("../middlewares/mail-content");
 require('dotenv').config();
@@ -167,10 +166,6 @@ exports.updateVenue = async (req, res) => {
       return res.status(400).json({ message: "Please enter the venue name" });
     }
 
-    if (update.category) {
-      update.category = normaliseVenueCategory(update.category) || update.category;
-    }
-
     // Check if a venue with the same name already exists (excluding the current venue)
     const existingVenue = await Venue1.findOne({
       name: update.name,
@@ -178,35 +173,6 @@ exports.updateVenue = async (req, res) => {
     });
     if (existingVenue) {
       return res.status(400).json({ message: "Venue name already exists" });
-    }
-
-    const existingVenueRecord = await Venue1.findById(id);
-    if (!existingVenueRecord) {
-      return res.status(400).json({ message: "Venue not found" });
-    }
-    if (req.user?.role === "Venue Admin") {
-      if (String(existingVenueRecord.vendor_id) !== String(req.user.userID)) {
-        return res.status(403).json({ success: false, message: "You can update only your own venue." });
-      }
-
-      // Keep the approved venue live while the changed form is reviewed.
-      existingVenueRecord.pending_update = update;
-      existingVenueRecord.awaiting_approval = true;
-      existingVenueRecord.updated_at = new Date();
-      await existingVenueRecord.save();
-
-      const Notification = require("../models/NotificationModel");
-      const superAdmins = await User.find({ role: "Super Admin" }).select("_id");
-      if (superAdmins.length) {
-        await Notification.insertMany(superAdmins.map((admin) => ({
-          user_id: admin._id,
-          title: "Venue update approval required",
-          message: `${existingVenueRecord.name} has submitted profile changes for approval.`,
-          type: "venue_update_approval",
-          entity_id: existingVenueRecord._id,
-        })));
-      }
-      return res.status(200).json({ success: true, pendingApproval: true, message: "Changes submitted for Super Admin approval." });
     }
 
     // Proceed with the update if validations pass
@@ -218,35 +184,6 @@ exports.updateVenue = async (req, res) => {
   } catch (error) {
     
     res.status(500).json({ message: "Unable to update the venue" });
-  }
-};
-
-exports.approveVenuePendingUpdate = async (req, res) => {
-  try {
-    if (req.user?.role !== "Super Admin") {
-      return res.status(403).json({ success: false, message: "Only Super Admin can approve venue changes." });
-    }
-    const venue = await Venue1.findById(req.params.id);
-    if (!venue?.awaiting_approval || !venue.pending_update) {
-      return res.status(400).json({ success: false, message: "No pending venue update found." });
-    }
-    const update = { ...venue.pending_update };
-    delete update._id;
-    delete update.vendor_id;
-    delete update.provider_public_id;
-    Object.assign(venue, update, { pending_update: null, awaiting_approval: false, updated_at: new Date() });
-    await venue.save();
-    const Notification = require("../models/NotificationModel");
-    await Notification.create({
-      user_id: venue.vendor_id,
-      title: "Venue update approved",
-      message: `${venue.name} profile changes have been approved and are now live.`,
-      type: "venue_update_result",
-      entity_id: venue._id,
-    });
-    return res.status(200).json({ success: true, message: "Venue changes approved and published.", data: venue });
-  } catch (error) {
-    return res.status(500).json({ success: false, message: error.message });
   }
 };
 
@@ -299,20 +236,10 @@ exports.addVenue = async (req, res) => {
       contact_number,
       other_contact_number,
       price_per_hr,
-      is_featured_paid,
-      venue_setting,
-      venue_level,
-      venue_condition,
-      opening_date,
-      has_sound_system,
-      air_conditioning,
-      has_cafeteria,
-      venue_size,
       description,
       open_at,
       close_at,
       package_type,
-      membership_plans,
       vendor_type,
       vendor_details,
       categories,
@@ -365,8 +292,6 @@ exports.addVenue = async (req, res) => {
       });
     }
 
-    const canonicalCategory = normaliseVenueCategory(category) || category;
-
     if (!contact_number || !/^\d{10}$/.test(contact_number)) {
       return res.status(400).json({
         status: 400,
@@ -399,7 +324,7 @@ exports.addVenue = async (req, res) => {
       state,
       zipcode,
       images,
-      category: canonicalCategory,
+      category,
       vendor_id,
       amenities,
       near_by_location,
@@ -414,20 +339,10 @@ exports.addVenue = async (req, res) => {
       contact_number,
       other_contact_number,
       price_per_hr,
-      is_featured_paid,
-      venue_setting,
-      venue_level,
-      venue_condition,
-      opening_date,
-      has_sound_system,
-      air_conditioning,
-      has_cafeteria,
-      venue_size,
       description,
       open_at,
       close_at,
       package_type,
-      membership_plans,
       vendor_type,
       data,
       created_by: user,
@@ -518,10 +433,6 @@ exports.addVenue = async (req, res) => {
     });
   }
 };
-
-exports.getVenueCategories = (_req, res) => {
-  return res.status(200).json({ success: true, categories: VENUE_CATEGORIES });
-};
 // new by sunil
 exports.getVenueNew = async (req, res) => {
   // Make legacy venue rows usable immediately, even before a server restart/backfill.
@@ -540,7 +451,7 @@ exports.getVenueNew = async (req, res) => {
       let queryConditions = {};
   
       // Add column-specific search conditions dynamically
-      const searchFields = ["name", "provider_public_id", "category", "address", "status"];
+      const searchFields = ["name", "category", "address", "status"];
       searchFields.forEach((field) => {
         if (req.query[field]) {
           if (field === "status") {
@@ -556,14 +467,10 @@ exports.getVenueNew = async (req, res) => {
         const searchRegex = new RegExp(search, "i");
         queryConditions["$or"] = [
           { name: searchRegex },
-          { provider_public_id: searchRegex },
           { category: searchRegex },
           { address: searchRegex },
           { status: search === "true" },
         ];
-        if (mongoose.Types.ObjectId.isValid(search)) {
-          queryConditions["$or"].push({ _id: new mongoose.Types.ObjectId(search) });
-        }
       }
   
       const newVenueDB = await Venue1.find(queryConditions).sort({
@@ -815,14 +722,6 @@ const parseSlotTime = (t) => {
   return h * 60 + min;
 };
 
-// Converts values such as "100 x 50 ft" or "5v5" into a comparable size score.
-const venueSizeScore = (venue) => {
-  const rawSize = String(venue.venue_size || "").trim();
-  const numbers = rawSize.match(/\d+(?:\.\d+)?/g)?.map(Number) || [];
-  if (numbers.length === 0) return null;
-  return numbers.length > 1 ? numbers.reduce((total, value) => total * value, 1) : numbers[0];
-};
-
 // Computes [from, to) date range for a date filter value ("YYYY-MM-DD" or keyword)
 const computeSlotDateRange = (dateKey) => {
   const startOfDay = (d) => {
@@ -867,7 +766,7 @@ const computeSlotDateRange = (dateKey) => {
 // web 
 exports.getVenue = async (req, res) => {
   try {
-    const { search, sport, location, grassType, amenities, venueSetting, venueLevel, venueCondition, soundSystem, airConditioning, cafeteria, venueSize, minPrice, maxPrice, date, startDate, endDate, time, startTime, endTime, sort } = req.query;
+    const { search, sport, location, grassType, amenities, date, time, sort } = req.query;
 
     // Filter out venues whose owners are deactivated or unapproved
     const activeVendors = await User.find({ status: { $ne: false } }).select("_id");
@@ -908,8 +807,7 @@ exports.getVenue = async (req, res) => {
       queryConditions["$and"].push(cond);
     };
 
-    // 1. Sport filter: category selections are authoritative. Legacy fields
-    // remain as a fallback for older venues that do not have categories yet.
+    // 1. Sport filter: match vendor_type / category / name
     if (sport && sport !== "all") {
       const cleanSport = String(sport).replace(/&/g, "and").trim();
       const parts = cleanSport.split(/[\s-]+/).filter(Boolean).map(escapeRegex);
@@ -917,10 +815,9 @@ exports.getVenue = async (req, res) => {
         const flexibleRegex = new RegExp(parts.join("[\\s-]*"), "i");
         addAnd({
           $or: [
-            { categories: flexibleRegex },
-            { "sports_details.sport": flexibleRegex },
             { vendor_type: flexibleRegex },
             { category: flexibleRegex },
+            { name: flexibleRegex },
           ],
         });
       }
@@ -964,87 +861,35 @@ exports.getVenue = async (req, res) => {
       }
     }
 
-    // 5. Venue attribute and price filters.
-    if (venueSetting) queryConditions.venue_setting = venueSetting;
-    if (venueLevel) queryConditions.venue_level = venueLevel;
-    if (venueCondition === "new" || venueCondition === "old") {
-      const oneYearAgo = new Date();
-      oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
-      queryConditions.opening_date = venueCondition === "new" ? { $gte: oneYearAgo } : { $lt: oneYearAgo };
-    }
-    if (soundSystem === "yes" || soundSystem === "no") queryConditions.has_sound_system = soundSystem === "yes";
-    if (airConditioning) queryConditions.air_conditioning = airConditioning;
-    if (cafeteria === "yes" || cafeteria === "no") queryConditions.has_cafeteria = cafeteria === "yes";
-    if (venueSize) queryConditions.venue_size = new RegExp(escapeRegex(venueSize), "i");
-    if (minPrice || maxPrice) {
-      const priceRange = {};
-      const minimum = Number(minPrice);
-      const maximum = Number(maxPrice);
-      if (Number.isFinite(minimum) && minimum >= 0) priceRange.$gte = minimum;
-      if (Number.isFinite(maximum) && maximum >= 0) priceRange.$lte = maximum;
-      if (Object.keys(priceRange).length > 0) queryConditions.price_per_hr = priceRange;
-    }
-
     let newVenueDB = await Venue1.find(queryConditions);
 
-    // 6. Date / Time filter: keep only venues that have slots in the requested window.
-    // startTime and endTime are used by the website's From / To time controls.
-    if (date || startDate || endDate || time || startTime || endTime) {
+    // 5. Date / Time filter: keep only venues that have slots in the requested window
+    if (date || time) {
       const slotQuery = {};
-      if (startDate || endDate) {
-        const dateRange = {};
-        if (startDate) {
-          const from = new Date(`${startDate}T00:00:00`);
-          if (!Number.isNaN(from.getTime())) dateRange.$gte = from;
-        }
-        if (endDate) {
-          const to = new Date(`${endDate}T00:00:00`);
-          if (!Number.isNaN(to.getTime())) {
-            to.setDate(to.getDate() + 1);
-            dateRange.$lt = to;
-          }
-        }
-        if (Object.keys(dateRange).length > 0) slotQuery.date = dateRange;
-      } else if (date) {
+      if (date) {
         const range = computeSlotDateRange(date);
         if (range) slotQuery.date = { $gte: range.from, $lt: range.to };
       }
       const timeWindow = time ? SLOT_TIME_WINDOWS[time] : null;
-      const requestedStart = startTime ? parseSlotTime(startTime) : null;
-      const requestedEnd = endTime ? parseSlotTime(endTime) : null;
       const slotDocs = await Slot.find(slotQuery).select("venue_id slots");
       const venueIds = new Set();
       slotDocs.forEach((doc) => {
         if (!doc.venue_id || !Array.isArray(doc.slots)) return;
         const matchesWindow = doc.slots.some((s) => {
-          const startMin = parseSlotTime(s.startTime);
-          const endMin = parseSlotTime(s.endTime);
-          if (startMin === null || endMin === null) return false;
-          if (requestedStart !== null && startMin < requestedStart) return false;
-          if (requestedEnd !== null && endMin > requestedEnd) return false;
           if (!timeWindow) return true;
-          return startMin >= timeWindow.start && startMin < timeWindow.end;
+          const startMin = parseSlotTime(s.startTime);
+          return startMin !== null && startMin >= timeWindow.start && startMin < timeWindow.end;
         });
         if (matchesWindow) venueIds.add(doc.venue_id.toString());
       });
       newVenueDB = newVenueDB.filter((v) => venueIds.has(v._id.toString()));
     }
 
-    // 7. Sort: price low -> high, price high -> low, otherwise newest first
+    // 6. Sort: price low -> high, price high -> low, otherwise newest first
     if (sort === "price-low") {
       newVenueDB.sort((a, b) => (a.price_per_hr || Infinity) - (b.price_per_hr || Infinity));
     } else if (sort === "price-high") {
       newVenueDB.sort((a, b) => (b.price_per_hr || 0) - (a.price_per_hr || 0));
-    } else if (sort === "size-small" || sort === "size-large") {
-      const direction = sort === "size-small" ? 1 : -1;
-      newVenueDB.sort((a, b) => {
-        const first = venueSizeScore(a);
-        const second = venueSizeScore(b);
-        if (first === null && second === null) return 0;
-        if (first === null) return 1;
-        if (second === null) return -1;
-        return (first - second) * direction;
-      });
     } else {
       newVenueDB.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     }

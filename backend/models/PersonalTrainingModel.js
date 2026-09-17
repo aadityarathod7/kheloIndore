@@ -20,7 +20,6 @@ const PersonalTrainerSchema = new mongoose.Schema(
     password: {
       type: String,
     },
-    password_reset_sent_at: { type: Date, default: null },
     demo_password: { 
       type: String
      },
@@ -114,9 +113,6 @@ const PersonalTrainerSchema = new mongoose.Schema(
     trainer_type: {
       type: String,
     },
-    cashfree_vendor_id: { type: String, trim: true, default: "" },
-    cashfree_vendor_status: { type: String, trim: true, default: "NOT_ONBOARDED" },
-    cashfree_vendor_updated_at: { type: Date, default: null },
     price: Number,
     gallery: {
       type: Array,

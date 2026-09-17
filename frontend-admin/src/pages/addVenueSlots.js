@@ -33,32 +33,6 @@ const applyTime = (date, time) => {
     return result;
 };
 
-const applySlotEndTime = (date, startTime, endTime) => {
-    const start = applyTime(date, startTime);
-    const end = applyTime(date, endTime);
-    if (!start || !end) return null;
-    if (end <= start) end.setDate(end.getDate() + 1);
-    return end;
-};
-
-const buildHalfHourSlots = (startTime, endTime, price, offlineBlocked) => {
-    const start = new Date(`2023-01-01T${startTime}:00`);
-    const end = new Date(`2023-01-01T${endTime}:00`);
-    if (end <= start) end.setDate(end.getDate() + 1);
-    const slotsArray = [];
-    for (let current = new Date(start); current < end; current = new Date(current.getTime() + 30 * 60 * 1000)) {
-        const next = new Date(Math.min(current.getTime() + 30 * 60 * 1000, end.getTime()));
-        slotsArray.push({
-            startTime: `${String(current.getHours()).padStart(2, '0')}:${String(current.getMinutes()).padStart(2, '0')}`,
-            endTime: `${String(next.getHours()).padStart(2, '0')}:${String(next.getMinutes()).padStart(2, '0')}`,
-            price: Number(price) / 2,
-            isBooked: offlineBlocked,
-            isOfflineBlocked: offlineBlocked,
-        });
-    }
-    return slotsArray;
-};
-
 const halfHourTimes = Array.from({ length: 48 }, (_, index) => {
     const hours = String(Math.floor(index / 2)).padStart(2, '0');
     const minutes = index % 2 === 0 ? '00' : '30';
@@ -179,8 +153,8 @@ export default function AddVenueSlots() {
 
             return slot.slots.flatMap((innerSlot) => {
                 const eventStartTime = applyTime(slotDate, innerSlot?.startTime);
-                const eventEndTime = applySlotEndTime(slotDate, innerSlot?.startTime, innerSlot?.endTime);
-                if (!eventStartTime || !eventEndTime) {
+                const eventEndTime = applyTime(slotDate, innerSlot?.endTime);
+                if (!eventStartTime || !eventEndTime || eventEndTime <= eventStartTime) {
                     
                     return [];
                 }
@@ -258,13 +232,31 @@ export default function AddVenueSlots() {
         const endDate = parseSlotDate(dateTo);
 
         const startDateTime = applyTime(startDate, startTime);
-        const endDateTime = applySlotEndTime(startDate, startTime, endTime);
-        if (!startDate || !endDate || !startDateTime || !endDateTime || startTime === endTime || startDate > endDate || price === "" || Number(price) < 0) {
+        const endDateTime = applyTime(startDate, endTime);
+        if (!startDate || !endDate || !startDateTime || !endDateTime || endDateTime <= startDateTime || startDate > endDate || price === "" || Number(price) < 0) {
             Swal.fire({ icon: "error", title: "Invalid slot details", text: "Choose a date, start time, later end time, and valid price." });
             return;
         }
 
-        const slotsArray = buildHalfHourSlots(startTime, endTime, price, offlineBlocked);
+        const slotsArray = [];
+        let current = new Date(`2023-01-01T${startTime}:00`);
+        const end = new Date(`2023-01-01T${endTime}:00`);
+        while (current < end) {
+            const next = new Date(current.getTime() + 30 * 60 * 1000);
+            const startHours = current.getHours().toString().padStart(2, '0');
+            const startMins = current.getMinutes().toString().padStart(2, '0');
+            const endHours = next.getHours().toString().padStart(2, '0');
+            const endMins = next.getMinutes().toString().padStart(2, '0');
+            
+            slotsArray.push({
+                startTime: `${startHours}:${startMins}`,
+                endTime: `${endHours}:${endMins}`,
+                price: price / 2,
+                isBooked: offlineBlocked,
+                isOfflineBlocked: offlineBlocked
+            });
+            current = next;
+        }
 
         const payload = {
             dateFrom: formData.dateFrom,
@@ -460,7 +452,7 @@ export default function AddVenueSlots() {
         const startDate = parseSlotDate(dateFrom);
         const endDate = parseSlotDate(dateTo);
 
-        if (!startDate || !endDate || !startTime || !endTime || startTime === endTime || startDate > endDate || price === "" || Number(price) < 0) {
+        if (!startDate || !endDate || !startTime || !endTime || startTime >= endTime || startDate > endDate || price === "" || Number(price) < 0) {
             Swal.fire({ icon: "error", title: "Invalid slot details", text: "Choose a date range, start time, later end time, and valid price." });
             return;
         }
@@ -475,7 +467,26 @@ export default function AddVenueSlots() {
             },
         });
 
-        const slotsArray = buildHalfHourSlots(startTime, endTime, price, offlineBlocked);
+        const slotsArray = [];
+        let current = new Date(`2023-01-01T${startTime}:00`);
+        const end = new Date(`2023-01-01T${endTime}:00`);
+        
+        while (current < end) {
+            const next = new Date(current.getTime() + 30 * 60 * 1000);
+            const startHours = current.getHours().toString().padStart(2, '0');
+            const startMins = current.getMinutes().toString().padStart(2, '0');
+            const endHours = next.getHours().toString().padStart(2, '0');
+            const endMins = next.getMinutes().toString().padStart(2, '0');
+            
+            slotsArray.push({
+                startTime: `${startHours}:${startMins}`,
+                endTime: `${endHours}:${endMins}`,
+                price: price / 2,
+                isBooked: offlineBlocked,
+                isOfflineBlocked: offlineBlocked
+            });
+            current = next;
+        }
 
         const payload = {
             dateFrom: formData.dateFrom,
@@ -516,7 +527,7 @@ export default function AddVenueSlots() {
                 <div className="slot-legend"><span><i className="legend-available" />Available</span><span><i className="legend-booked" />Booked</span><span><i className="legend-blocked" />Offline block</span></div>
             </div>
 
-            <p className="slot-action-hint">Click an empty 30-minute time to add a slot. Select 00:00 as the end time for a slot that ends at midnight.</p>
+            <p className="slot-action-hint">Click an empty 30-minute time to add a slot. Click an existing slot to change its price or block it for an offline booking.</p>
 
             <Form className="quick-slot-form" onSubmit={(e) => { e.preventDefault(); handleAddSlot(false); }}>
                 <strong>Quick add</strong>
@@ -594,13 +605,11 @@ export default function AddVenueSlots() {
                     slotDuration="00:30:00"
                     slotLabelInterval="00:30:00"
                     snapDuration="00:30:00"
-                    slotLabelFormat={{ hour: '2-digit', minute: '2-digit', hour12: false }}
-                    eventTimeFormat={{ hour: '2-digit', minute: '2-digit', hour12: false }}
                     allDaySlot={false}
                     eventContent={(arg) => {
                         const { event } = arg;
-                        const startTime = event.start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
-                        const endTime = event.end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+                        const startTime = event.start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                        const endTime = event.end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                         const slotLabel = event.extendedProps.isOfflineBlocked ? 'Offline blocked' : (event.extendedProps.isBooked ? 'Booked online' : event.title);
 
                         return {
@@ -708,21 +717,13 @@ export default function AddVenueSlots() {
                                     </Form.Group>
                                     <Form.Group controlId="formStartTime">
                                         <Form.Label>Start Time</Form.Label>
-                                        <Form.Select
+                                        <Form.Control
+                                            type="time"
                                             name="startTime"
                                             value={formData.startTime}
-                                            onChange={(event) => {
-                                                const startTime = event.target.value;
-                                                setFormData((previous) => ({
-                                                    ...previous,
-                                                    startTime,
-                                                    endTime: startTime ? calculateEndTime(startTime) : "",
-                                                }));
-                                            }}
-                                        >
-                                            <option value="">Select start time</option>
-                                            {halfHourTimes.map((time) => <option key={time} value={time}>{time}</option>)}
-                                        </Form.Select>
+                                            onChange={handleFormChange}
+                                            disabled={currentView !== 'dayGridMonth'}
+                                        />
                                     </Form.Group>
                                     <Form.Group controlId="formEndTime">
                                         <Form.Label>End Time</Form.Label>

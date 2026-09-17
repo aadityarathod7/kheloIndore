@@ -7,7 +7,6 @@ import { API_URL } from "../utils/ApiUrl";
 import { Pagination } from 'antd';
 import { Popover, Input} from 'antd';
 import { FilterOutlined } from '@ant-design/icons';
-import axios from "axios";
 
 function Enquirylist() {
   const [data, setData] = useState([]);
@@ -72,28 +71,6 @@ function Enquirylist() {
     setCurrentPage(page);
   };
 
-  const handleResolve = async (row) => {
-    const confirmation = await Swal.fire({
-      title: `Resolve ${row.ticket_number || "this enquiry"}?`,
-      text: "This marks the enquiry as resolved.",
-      icon: "question",
-      showCancelButton: true,
-      confirmButtonText: "Resolve",
-    });
-    if (!confirmation.isConfirmed) return;
-    try {
-      await axios.put(
-        `${API_URL}/contactUs/${row._id}/resolve`,
-        {},
-        { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
-      );
-      await fetchData();
-      Swal.fire("Resolved", "The enquiry has been marked as resolved.", "success");
-    } catch (error) {
-      Swal.fire("Error", error.response?.data?.message || "Unable to resolve this enquiry.", "error");
-    }
-  };
-
   const handleColumnFilter = (columnName, value) => {
     setCurrentPage(1); 
     setSearchQuery('');
@@ -109,11 +86,7 @@ function Enquirylist() {
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = data
     .filter((row) =>
-      [row.ticket_number, row.first_name, row.last_name, row.full_name, row.email, row.mobile, row.subject]
-        .filter(Boolean)
-        .join(" ")
-        .toLowerCase()
-        .includes(searchText.toLowerCase())
+      row.first_name.toLowerCase().includes(searchText.toLowerCase())
     )
     .slice(indexOfFirstItem, indexOfLastItem);
 
@@ -149,9 +122,8 @@ function Enquirylist() {
             <Table className="custom-table">
               <thead>
                 <tr>
-                  <th style={{ width: "6%" }}>S.No.</th>
-                  <th style={{ width: "13%" }}>Ticket No.</th>
-                  <th style={{ width: "13%" }}>
+                  <th style={{ width: "7%" }}>S.No.</th>
+                  <th style={{ width: "14%" }}>
                   Name{' '}
                   <Popover
                       placement="bottom"
@@ -162,7 +134,7 @@ function Enquirylist() {
                       {/* <FilterOutlined style={{ cursor: 'pointer' }} /> */}
                     </Popover>
                   </th>
-                  <th style={{ width: "14%" }}>
+                  <th style={{ width: "17%" }}>
                   Email{' '}
                   {/* <Popover
                       placement="bottom"
@@ -173,7 +145,7 @@ function Enquirylist() {
                       <FilterOutlined style={{ cursor: 'pointer' }} />
                     </Popover> */}
                   </th>
-                  <th style={{ width: "12%" }}>
+                  <th style={{ width: "17%" }}>
                   Phone Number{' '}
                   {/* <Popover
                       placement="bottom"
@@ -184,7 +156,7 @@ function Enquirylist() {
                       <FilterOutlined style={{ cursor: 'pointer' }} />
                   </Popover> */}
                   </th>
-                  <th style={{ width: "12%" }}>
+                  <th style={{ width: "15%" }}>
                   Subject{' '}
                   {/* <Popover
                       placement="bottom"
@@ -195,16 +167,13 @@ function Enquirylist() {
                       <FilterOutlined style={{ cursor: 'pointer' }} />
                   </Popover> */}
                   </th>
-                  <th style={{ width: "14%" }}>Comment</th>
-                  <th style={{ width: "8%" }}>Status</th>
-                  <th style={{ width: "8%" }}>Action</th>
+                  <th style={{ width: "30%" }}>Comment</th>
                 </tr>
               </thead>
               <tbody>
                 {currentItems.map((row, index) => (
                   <tr key={row._id}>
                     <td>{index + 1 + indexOfFirstItem}</td>
-                    <td><strong>{row.ticket_number || "—"}</strong></td>
                 
                     <td>
   {row.full_name ? 
@@ -216,7 +185,7 @@ function Enquirylist() {
                     <td>{row.mobile}</td>
                     <td>{row.subject}</td>
                     <td>
-                      {(row.comments || "").length > 30 ? (
+                      {row.comments.length > 30 ? (
                         <>
                           {`${row.comments.substring(0, 30)}... `}
                           <span
@@ -237,23 +206,8 @@ function Enquirylist() {
                           </span>
                         </>
                       ) : (
-                        row.comments || "—"
+                        row.comments
                       )}
-                    </td>
-                    <td>
-                      <span className={`badge ${row.status === "Resolved" ? "bg-success" : "bg-warning text-dark"}`}>
-                        {row.status || "Open"}
-                      </span>
-                    </td>
-                    <td>
-                      <button
-                        type="button"
-                        className="btn btn-sm btn-outline-success"
-                        disabled={row.status === "Resolved"}
-                        onClick={() => handleResolve(row)}
-                      >
-                        {row.status === "Resolved" ? "Resolved" : "Resolve"}
-                      </button>
                     </td>
                   </tr>
                 ))}

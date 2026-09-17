@@ -76,8 +76,6 @@ const AddVenue = () => {
     contact_number: "",
     other_contact_number: "",
     price_per_hr: "",
-    is_featured_paid: false,
-    opening_date: "",
     capacity: "",
     description: "",
     status: true,
@@ -92,7 +90,6 @@ const AddVenue = () => {
     categories: [],
     videos: [],
     sports_details: [],
-    membership_plans: [],
   });
 
   const amenitiesOptions = [
@@ -455,6 +452,9 @@ const AddVenue = () => {
     }
     if (!formData.name.trim()) {
       validationErrors.name = " Venue Name is required";
+    }
+    if (!formData.gameType.trim()) {
+      validationErrors.gameType = " Game Type is required";
     }
     if (!formData.address.trim()) {
       validationErrors.address = " Address is required";
@@ -1006,7 +1006,7 @@ const AddVenue = () => {
               <Col md={4}>
                 <Form.Group controlId="formVendore" className="mb-2">
                   <Form.Label className="heading">
-                    Game Type <span style={{ color: "red" }}>*</span>
+                    Category Type <span style={{ color: "red" }}>*</span>
                   </Form.Label>
                   <Select
                     isMulti
@@ -1383,27 +1383,24 @@ const AddVenue = () => {
             </Row>
             <Row>
               <Col md={4}>
-                <Form.Group controlId="formOpeningDate" className="mb-2">
-                  <Form.Label className="heading">Venue Opening Month & Year</Form.Label>
+                <Form.Group controlId="formName" className="mb-2">
+                  <Form.Label className="heading">
+                    Game Type
+                    <span style={{ color: "red" }}>*</span>
+                  </Form.Label>
                   <Form.Control
-                    type="month"
-                    name="opening_date"
-                    value={formData.opening_date}
+                    type="text"
+                    placeholder="Enter Game Type"
+                    name="gameType"
+                    value={formData.gameType}
+                    isInvalid={!!errors.gameType}
                     onChange={handleChange}
+                    className="add-venue-form-custom-class"
                   />
-                  <Form.Text className="text-muted" style={{ fontSize: "11px" }}>
-                    Used to identify new and old venues in public listing filters.
-                  </Form.Text>
+                  <Form.Control.Feedback type="invalid">
+                    {errors.gameType}
+                  </Form.Control.Feedback>
                 </Form.Group>
-              </Col>
-              <Col md={4} className="d-flex align-items-center">
-                <Form.Check
-                  type="switch"
-                  id="featuredPaidVenue"
-                  label="Featured paid listing"
-                  checked={Boolean(formData.is_featured_paid)}
-                  onChange={(event) => setFormData((current) => ({ ...current, is_featured_paid: event.target.checked }))}
-                />
               </Col>
               <Col md={4}>
                 <Form.Group controlId="formPricePerHr" className="mb-2">
@@ -1448,39 +1445,6 @@ const AddVenue = () => {
               </Col>
 
             </Row>
-            {/(gym|swimming)/i.test(formData.vendor_type || "") && (
-              <Row className="mb-3">
-                <Col md={12}>
-                  <div className="border rounded p-3 bg-light">
-                    <div className="d-flex justify-content-between align-items-center mb-2">
-                      <div>
-                        <Form.Label className="heading mb-0">Recurring Membership Plans</Form.Label>
-                        <div className="text-muted" style={{ fontSize: "12px" }}>Optional plans for Gym and Swimming facilities.</div>
-                      </div>
-                      <button
-                        type="button"
-                        className="btn btn-sm btn-outline-success"
-                        onClick={() => setFormData((current) => ({
-                          ...current,
-                          membership_plans: [...(current.membership_plans || []), { name: "Monthly", months: 1, price: "", priority: "Standard Booking", discount: "Flexible Plan", support: "Basic Support" }],
-                        }))}
-                      >
-                        + Add plan
-                      </button>
-                    </div>
-                    {(formData.membership_plans || []).map((plan, index) => (
-                      <Row className="g-2 align-items-end mb-2" key={`${plan.name}-${index}`}>
-                        <Col md={3}><Form.Control placeholder="Plan name" value={plan.name || ""} onChange={(e) => setFormData((current) => { const plans = [...current.membership_plans]; plans[index] = { ...plans[index], name: e.target.value }; return { ...current, membership_plans: plans }; })} /></Col>
-                        <Col md={2}><Form.Control type="number" min="1" placeholder="Months" value={plan.months || ""} onChange={(e) => setFormData((current) => { const plans = [...current.membership_plans]; plans[index] = { ...plans[index], months: Number(e.target.value) }; return { ...current, membership_plans: plans }; })} /></Col>
-                        <Col md={2}><Form.Control type="number" min="0" placeholder="Price (₹)" value={plan.price || ""} onChange={(e) => setFormData((current) => { const plans = [...current.membership_plans]; plans[index] = { ...plans[index], price: Number(e.target.value) }; return { ...current, membership_plans: plans }; })} /></Col>
-                        <Col md={3}><Form.Control placeholder="Priority booking benefit" value={plan.priority || ""} onChange={(e) => setFormData((current) => { const plans = [...current.membership_plans]; plans[index] = { ...plans[index], priority: e.target.value }; return { ...current, membership_plans: plans }; })} /></Col>
-                        <Col md={2}><button type="button" className="btn btn-sm btn-outline-danger w-100" onClick={() => setFormData((current) => ({ ...current, membership_plans: current.membership_plans.filter((_, planIndex) => planIndex !== index) }))}>Remove</button></Col>
-                      </Row>
-                    ))}
-                  </div>
-                </Col>
-              </Row>
-            )}
             <Row>
 
 

@@ -120,7 +120,6 @@ export const all_routes = {
   sharedCoachProfile: "/coaches/shared/:token",
   coachesByCategory: "/coaches/category/:type",
   personalTrainingByCategory: "/trainers/category/:type",
-  trainerSearch: "/trainers/search",
   blogDetails: "/blog/venue-details/:id",
   personalTrainingDetails: "/trainers/trainer/:name/:id",
   sharedTrainerProfile: "/personal-training/shared/:token",

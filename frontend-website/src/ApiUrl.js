@@ -15,13 +15,8 @@ const isLocal =
   window.location.hostname === "127.0.0.1" || 
   window.location.hostname.startsWith("192.168.");
 
-// Local frontend testing should use the QA backend instead of requiring a
-// separately running local API server. Set REACT_APP_API_ORIGIN to override
-// this target for another approved environment.
-const localApiOrigin = process.env.REACT_APP_API_ORIGIN || "https://kheloindore.in";
-
 const apiOrigin = isLocal
-  ? localApiOrigin
+  ? `${window.location.protocol}//${window.location.hostname}:4000`
   : `${window.location.protocol}//${window.location.hostname}`;
 
 export const API_URL = `${apiOrigin}/api`;

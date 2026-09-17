@@ -4,7 +4,6 @@ import { all_routes } from "../router/all_routes";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { API_URL } from "../../ApiUrl";
-import { jwtDecode } from "jwt-decode";
 
 const Login = () => {
   const route = all_routes;
@@ -27,76 +26,13 @@ const Login = () => {
   const [mobileApiError, setMobileApiError] = useState("");
   const [otpApiError, setOtpApiError] = useState("");
   const [agreedToTerms, setAgreedToTerms] = useState(false);
-  const [deliveryChannel, setDeliveryChannel] = useState<"whatsapp" | "sms">("whatsapp");
 
   const { URL } = location.state || {};
-
-  const handleAuthRedirect = (userObj?: any, tokenStr?: string) => {
-    let currentUserId = userObj?.userID || userObj?.id || userObj?._id || "";
-    if (!currentUserId) {
-      const activeToken = tokenStr || localStorage.getItem("token");
-      if (activeToken) {
-        try {
-          const decoded: any = jwtDecode(activeToken);
-          currentUserId = decoded?.userID || decoded?.id || "";
-        } catch {
-          // Ignore token decode error
-        }
-      }
-    }
-
-    // 1. Check for pending booking from location.state or sessionStorage
-    let pendingBooking: any = location.state?.bookingState
-      ? { targetUrl: location.state?.URL || location.state?.returnTo, state: location.state.bookingState }
-      : null;
-
-    if (!pendingBooking) {
-      try {
-        const storedStr = sessionStorage.getItem("pendingBooking");
-        if (storedStr) {
-          const parsed = JSON.parse(storedStr);
-          if (parsed && (parsed.targetUrl || parsed.state)) {
-            pendingBooking = parsed;
-          }
-        }
-      } catch {
-        // Ignore storage parse error
-      }
-    }
-
-    if (pendingBooking && pendingBooking.targetUrl) {
-      sessionStorage.removeItem("pendingBooking");
-
-      const nextBookingState = { ...(pendingBooking.state || {}) };
-      if (currentUserId) {
-        if (nextBookingState.data) {
-          nextBookingState.data = { ...nextBookingState.data, user_id: currentUserId };
-        }
-        if (nextBookingState.bookingData) {
-          nextBookingState.bookingData = { ...nextBookingState.bookingData, user_id: currentUserId };
-        }
-      }
-
-      navigate(pendingBooking.targetUrl, {
-        state: nextBookingState,
-        replace: true,
-      });
-      return;
-    }
-
-    // 2. Fall back to URL or home
-    const fallbackUrl = location.state?.URL || location.state?.returnTo || location.state?.from?.pathname;
-    if (fallbackUrl) {
-      navigate(fallbackUrl, { replace: true });
-    } else {
-      navigate("/", { replace: true });
-    }
-  };
 
   useEffect(() => {
     const loginToken = localStorage.getItem("token");
     if (loginToken) {
-      handleAuthRedirect(undefined, loginToken);
+      navigate("/");
     }
   }, [navigate]);
 
@@ -112,7 +48,7 @@ const Login = () => {
     setMobileNumber(numericValue);
   };
 
-  const handleSendOtp = (e?: React.FormEvent, channel: "whatsapp" | "sms" = deliveryChannel) => {
+  const handleSendOtp = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
 
     const mobileRegex = /^[6-9]\d{9}$/;
@@ -123,12 +59,10 @@ const Login = () => {
 
     setLoading(true);
     setMobileApiError("");
-    setDeliveryChannel(channel);
 
     axios
       .post(`${API_URL}/user/login/mobile`, {
         mobile: mobileNumber,
-        delivery_channel: channel,
       })
       .then((response) => {
         setLoading(false);
@@ -149,10 +83,9 @@ const Login = () => {
               popup: "swal-light-toast-shadow"
             }
           });
-          const deliveredVia = response.data?.deliveryChannels?.includes("whatsapp") ? "WhatsApp" : "SMS";
           Toast.fire({
             icon: "success",
-            title: `OTP sent via ${deliveredVia}.`,
+            title: "OTP sent to your mobile number.",
           });
         } else {
           Swal.fire({
@@ -206,11 +139,7 @@ const Login = () => {
           localStorage.setItem("user", JSON.stringify(userData));
         }
 
-        const isBookingPending = Boolean(
-          location.state?.bookingState || sessionStorage.getItem("pendingBooking")
-        );
-
-        if (!isProfileCompleted && !URL && !isBookingPending) {
+        if (!isProfileCompleted) {
           Swal.fire({
             title: "Welcome to Khelo Indore!",
             text: "Please complete your profile to continue.",
@@ -240,7 +169,11 @@ const Login = () => {
             icon: "success",
             title: "Logged In Successfully!",
           });
-          handleAuthRedirect(userData, authToken);
+          if (URL) {
+            navigate(URL);
+          } else {
+            navigate("/");
+          }
         }
       })
       .catch((error) => {
@@ -292,7 +225,7 @@ const Login = () => {
           <p className="text-muted m-0" style={{ fontSize: "12.5px", color: "#64748B" }}>
             {step === "MOBILE"
               ? "Enter your mobile number to get OTP"
-              : `Enter 6-digit code sent via ${deliveryChannel === "whatsapp" ? "WhatsApp" : "SMS"} to +91 ${mobileNumber}`}
+              : `Enter 6-digit code sent to +91 ${mobileNumber}`}
           </p>
         </div>
 
@@ -360,25 +293,19 @@ const Login = () => {
               </label>
             </div>
 
-            <div className="d-grid gap-2">
-              <button
-                type="button"
-                className="btn btn-submit w-100 fw-bold"
-                disabled={loading || mobileNumber.length !== 10 || !agreedToTerms}
-                onClick={() => handleSendOtp(undefined, "whatsapp")}
-              >
-                {loading && deliveryChannel === "whatsapp" ? <span><i className="fas fa-spinner fa-spin me-2" /> Requesting OTP...</span> : <><i className="fab fa-whatsapp me-2" />Request OTP on WhatsApp</>}
-              </button>
-              <button
-                type="button"
-                className="btn btn-outline-secondary w-100 fw-bold"
-                disabled={loading || mobileNumber.length !== 10 || !agreedToTerms}
-                onClick={() => handleSendOtp(undefined, "sms")}
-              >
-                {loading && deliveryChannel === "sms" ? <span><i className="fas fa-spinner fa-spin me-2" /> Sending OTP...</span> : <><i className="fas fa-comment-sms me-2" />OTP on SMS</>}
-              </button>
-            </div>
-            <p className="text-center text-muted mb-0 mt-2" style={{ fontSize: "12px" }}>Don&apos;t use WhatsApp or didn&apos;t receive it? Choose OTP on SMS.</p>
+            <button
+              type="submit"
+              className="btn btn-submit w-100 fw-bold"
+              disabled={loading || mobileNumber.length !== 10 || !agreedToTerms}
+            >
+              {loading ? (
+                <span>
+                  <i className="fas fa-spinner fa-spin me-2" /> Sending OTP...
+                </span>
+              ) : (
+                "Send OTP"
+              )}
+            </button>
           </form>
         ) : (
           <form onSubmit={handleVerifyOtp}>
@@ -446,7 +373,7 @@ const Login = () => {
                 type="button"
                 className="btn btn-link btn-sm text-secondary text-decoration-none"
                 style={{ fontSize: "13px" }}
-                  onClick={() => handleSendOtp(undefined, deliveryChannel)}
+                onClick={handleSendOtp}
                 disabled={loading}
               >
                 Didn&apos;t receive OTP? <span className="text-success fw-bold">Resend OTP</span>
@@ -484,7 +411,7 @@ const Login = () => {
           </div>
           
           <div className="d-flex flex-column gap-2">
-            <Link to="/register" state={{ URL, bookingState: location.state?.bookingState, returnTo: location.state?.returnTo }} className="d-flex align-items-center justify-content-between text-decoration-none p-2 rounded-3" style={{
+            <Link to="/register" className="d-flex align-items-center justify-content-between text-decoration-none p-2 rounded-3" style={{
               background: "#FFFFFF",
               border: "1px solid #E2E8F0",
               color: "#0F172A",

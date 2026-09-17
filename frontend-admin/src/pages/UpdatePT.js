@@ -8,7 +8,15 @@ import axios from "axios";
 import { API_URL, Image_URL } from "../utils/ApiUrl";
 import "../Coaches.css";
 import Select from "react-select";
-import LanguageSelector from "../components/LanguageSelector";
+import CreatableSelect from "react-select/creatable";
+
+const ALL_LANGUAGES = [
+  "Hindi", "English", "Marathi", "Gujarati", "Bengali", "Telugu", "Tamil",
+  "Kannada", "Malayalam", "Odia", "Punjabi", "Assamese", "Maithili",
+  "Sanskrit", "Urdu", "Sindhi", "Kashmiri", "Konkani", "Manipuri",
+  "Nepali", "Bodo", "Dogri", "Santali", "French", "Spanish", "German",
+  "Russian", "Chinese", "Japanese", "Korean", "Arabic"
+];
 
 const UpdatepersonalTrainer  = () => {
   const [userRole, setUserRole] = React.useState("");
@@ -88,6 +96,7 @@ const UpdatepersonalTrainer  = () => {
     "Saturday",
     "Sunday",
   ];
+  const LANGUAGE_OPTIONS = ALL_LANGUAGES.map(lang => ({ label: lang, value: lang }));
   const TRAINING_MODE_OPTIONS = ["Online", "Offline", "Both"];
   const AGE_GROUP_OPTIONS = ["Kids", "Teenagers", "Adults", "Seniors"];
   const TRAINING_FORMAT_OPTIONS = ["Individual Training", "Group Training"];
@@ -672,9 +681,18 @@ const UpdatepersonalTrainer  = () => {
               </div>
             </Col>
             <Col sm={6} className="mb-3">
-              <LanguageSelector
-                value={formData.languages}
-                onChange={(languages) => setFormData((current) => ({ ...current, languages }))}
+              <Form.Label>Languages known</Form.Label>
+              <CreatableSelect
+                isMulti
+                options={LANGUAGE_OPTIONS}
+                value={(formData.languages || []).map(lang => ({ label: lang, value: lang }))}
+                onChange={(selectedOptions) => {
+                  setFormData(prev => ({
+                    ...prev,
+                    languages: selectedOptions ? selectedOptions.map(item => item.value) : []
+                  }));
+                }}
+                placeholder="Select or type languages..."
               />
             </Col>
             <Col sm={6} className="mb-3">

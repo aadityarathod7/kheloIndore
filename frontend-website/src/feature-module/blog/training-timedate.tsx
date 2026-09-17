@@ -33,8 +33,6 @@ interface SlotData {
   _id: string;
   startTime: string;
   endTime: string;
-  start_time: string;
-  end_time: string;
   price: number;
   isBooked: boolean;
 }
@@ -61,63 +59,24 @@ const TrainingTimeDate = (props: any) => {
   const [isNextButtonDisabled, setIsNextButtonDisabled] = useState(true);
   const [startDate, setStartDate] = useState<any>("");
   const [endDate, setEndDate] = useState<any>("");
-  const todayStr = React.useMemo(() => {
-    const d = new Date();
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-  }, []);
   const [isNextButtonDisabledTwo, setIsNextButtonDisabledTwo] = useState(true);
   const [slotData, setSlotData] = useState<any[]>([]);
-  const [dateId, setDateId] = useState<string | null>(null);
-  const [timeSlot, setTimeSlot] = useState<any>(null);
+  const [dateId, setDateId] = useState<any[]>([]);
+  const [timeSlot, setTimeSlot] = useState<any[]>([]);
   const [selectedTimeSlots, setSelectedTimeSlots] = useState<SlotData[]>([]);
-  const [daysDifference, setDaysDifference] = useState<number>(0);
-  const [couponCode, setCouponCode] = useState("");
-  const [couponApplied, setCouponApplied] = useState(false);
-  const subtotal = selectedTimeSlots.reduce((sum, slot) => sum + Number(slot.price || 0), 0) * (daysDifference + 1);
-  const discountAmount = couponApplied ? Math.min(100, subtotal) : 0;
-  const totalAmount = Math.max(0, subtotal - discountAmount);
-
-  const applyCoupon = () => {
-    if (couponCode.trim().toUpperCase() === "KHELO100" && subtotal > 0) {
-      setCouponApplied(true);
-    } else {
-      setCouponApplied(false);
-      Swal.fire({ icon: "error", title: "Invalid coupon", text: "Use KHELO100 after selecting slots." });
-    }
-  };
+  const [daysDifference, setDaysDifference] = useState<number>(1);
 
   useEffect(() => {
     setIsNextButtonDisabled(selectedBatch === null);
   }, [selectedBatch]);
 
-  useEffect(() => {
-    setSelectedTimeSlots([]);
-    setTimeSlot(null);
-    setCouponCode("");
-    setCouponApplied(false);
-  }, [selectedBatch]);
-
   const handleRadioChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSelectedBatch(event.target.value);
-    // Start each batch with a clean booking state so previous Monthly slots
-    // cannot be charged in a Day-wise session.
-    setStartDate("");
-    setEndDate("");
-    setDateId(null);
-    setTimeSlot([]);
-    setSelectedTimeSlots([]);
-    setDaysDifference(0);
   };
 
   const handleStartDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    let date = event.target.value;
-    if (date && date < todayStr) {
-      date = todayStr;
-    }
+    const date = event.target.value;
     setStartDate(date);
-    setDateId(null);
-    setTimeSlot([]);
-    setSelectedTimeSlots([]);
     if (selectedBatch) {
       // If batch is already selected, calculate the end date based on the start date and batch
       calculateEndDate(date, selectedBatch);
@@ -165,8 +124,6 @@ const TrainingTimeDate = (props: any) => {
   // Handle end date change
   const handleEndDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setEndDate(event.target.value);
-    setTimeSlot([]);
-    setSelectedTimeSlots([]);
   };
 
   useEffect(() => {
@@ -204,19 +161,16 @@ const TrainingTimeDate = (props: any) => {
       return slotStartDate === startDateToCheck;
     });
     
-    setDateId(matchedSlot ? (matchedSlot.id || matchedSlot._id) : null)
+    setDateId(matchedSlot ? matchedSlot.id : null)
   };
 
   useEffect(() => {
     findMatchedSlotId(startDate)
   }, [startDate])
 
-  const getSlotById = async (slotDateId: string | null) => {
-    if (!slotDateId) return;
-    setTimeSlot([]);
-    setSelectedTimeSlots([]);
+  const getSlotById = async (dateId: any) => {
     try {
-      const response = await axios.get(`${API_URL}/get-pt-slot-by-date/${slotDateId}`,
+      const response = await axios.get(`${API_URL}/get-pt-slot-by-date/${dateId}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -242,7 +196,7 @@ const TrainingTimeDate = (props: any) => {
 
       setDaysDifference(days);
     } else {
-      setDaysDifference(0);
+      setDaysDifference(1);
     }
   };
 
@@ -282,6 +236,22 @@ const TrainingTimeDate = (props: any) => {
   }, [id]);
 
   useEffect(() => {
+    const fetchSlotId = async () => {
+      try {
+        const response = await axios.get(
+          `${API_URL}/pt/batch/slot/${selectedBatch?.id}`
+        );
+        const slotDataId = response.data.data;
+        setSlotData(slotDataId);
+      } catch {
+        // The request failure is handled by the surrounding UI state.
+      }
+    };
+    fetchSlotId();
+  }, [selectedBatch]);
+
+
+  useEffect(() => {
     const getTokenFromStorage = () => {
       const token = localStorage.getItem("token");
       if (token) {
@@ -296,6 +266,22 @@ const TrainingTimeDate = (props: any) => {
 
   const handleBooking = async () => {
 
+    if (!userData) {
+
+      Swal.fire({
+        title: 'Not Logged in',
+        text: 'You need to be logged in to book a Trainer. Click OK to login.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'OK',
+        cancelButtonText: 'Cancel'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          navigate("/login");
+        }
+      });
+      return;
+    }
     if (selectedTimeSlots.length === 0 || !selectedBatch) {
       alert("Please select a batch and a time slot.");
       return;
@@ -308,62 +294,17 @@ const TrainingTimeDate = (props: any) => {
       end_date: endDate,
       start_time: selectedTimeSlots.map(s => s.start_time).join(","),
       end_time: selectedTimeSlots.map(s => s.end_time).join(","),
-      subtotal_price: subtotal,
-      coupon_code: couponApplied ? "KHELO100" : "",
-      discount_amount: discountAmount,
-      total_price: totalAmount,
+      total_price: selectedTimeSlots.reduce((sum, s) => sum + s.price, 0) * (daysDifference + 1),
       packageType: selectedBatch,
     };
 
-    const bookingState = {
-      bookingData,
-      selectedTimeSlot: selectedTimeSlots[0],
-      selectedTimeSlots,
-      startDate,
-      endDate,
-      selectedBatch,
-      subtotal,
-      couponApplied,
-      discountAmount,
-      totalAmount,
-    };
-
-    const targetUrl = `/trainers/training-order-confirm/${id}`;
-
-    if (!userData) {
-      sessionStorage.setItem("pendingBooking", JSON.stringify({
-        targetUrl,
-        trainerId: id,
-        state: bookingState,
-        type: "training",
-        timestamp: Date.now(),
-      }));
-
-      Swal.fire({
-        title: "Login to continue",
-        text: "Please log in or register to confirm your selected session and continue to payment.",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonText: "Login / Register",
-        cancelButtonText: "Cancel",
-        confirmButtonColor: "#22C55E",
-      }).then((result) => {
-        if (result.isConfirmed) {
-          navigate("/login", {
-            state: {
-              URL: targetUrl,
-              bookingState,
-              returnTo: targetUrl,
-            },
-          });
-        }
-      });
-      return;
-    }
-
     try {
-      navigate(targetUrl, {
-        state: bookingState,
+      navigate(`/trainers/training-order-confirm/${id}`, {
+        state: {
+          bookingData,
+          selectedTimeSlot: selectedTimeSlots[0],
+          selectedTimeSlots,
+        },
       });
     } catch (error) {
       
@@ -693,7 +634,7 @@ const TrainingTimeDate = (props: any) => {
                 <div className="card time-date-card mb-4" style={{ padding: "24px", borderRadius: "16px", opacity: selectedBatch ? 1 : 0.5, pointerEvents: selectedBatch ? "auto" : "none" }}>
                   <h4 className="mb-4" style={{ color: "#0F172A", fontWeight: "700" }}>
                     <i className="feather-calendar me-2" style={{ color: "#22C55E" }} />
-                    {selectedBatch === '1 Day Session' ? 'Select Session Date' : 'Select Date Range'}
+                    Select Date Range
                   </h4>
                   <div className="row">
                     <div className="col-md-6 mb-3">
@@ -702,7 +643,6 @@ const TrainingTimeDate = (props: any) => {
                         type="date"
                         className="form-control"
                         id="startDate"
-                        min={todayStr}
                         value={startDate || ''}
                         onChange={handleStartDateChange}
                         style={{ padding: "12px", borderRadius: "10px", border: "1px solid #E2E8F0" }}
@@ -714,7 +654,6 @@ const TrainingTimeDate = (props: any) => {
                         type="date"
                         className="form-control"
                         id="endDate"
-                        min={startDate || todayStr}
                         value={endDate || ''}
                         onChange={handleEndDateChange}
                         disabled={selectedBatch !== 'Custom'}
@@ -815,12 +754,10 @@ const TrainingTimeDate = (props: any) => {
                       <strong style={{ color: "#0F172A", fontSize: "15px" }}>{selectedBatch || "Not selected"}</strong>
                     </li>
                     <li style={{ padding: "12px 0", borderBottom: "1px dashed #E2E8F0", display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "6px" }}>
-                      <span style={{ color: "#64748B", fontSize: "13px" }}>{selectedBatch === '1 Day Session' ? 'Session Date' : 'Date Range'}</span>
+                      <span style={{ color: "#64748B", fontSize: "13px" }}>Date Range</span>
                       <strong style={{ color: "#0F172A", fontSize: "15px" }}>
                         <i className="feather-calendar me-2" style={{ color: "#22C55E" }} />
-                        {startDate && endDate
-                          ? selectedBatch === '1 Day Session' ? startDate : `${startDate} to ${endDate}`
-                          : selectedBatch === '1 Day Session' ? 'Select a session date' : 'Select a date range'}
+                        {startDate && endDate ? `${startDate} to ${endDate}` : "Select a date range"}
                       </strong>
                     </li>
                     <li style={{ padding: "12px 0", borderBottom: "1px dashed #E2E8F0", display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "6px" }}>
@@ -833,20 +770,11 @@ const TrainingTimeDate = (props: any) => {
                       </strong>
                     </li>
                   </ul>
-                  <div className="mt-3 mb-3">
-                    <label className="form-label mb-1" style={{ fontSize: "13px", fontWeight: 600 }}>Discount coupon</label>
-                    <div className="d-flex gap-2">
-                      <input className="form-control" value={couponCode} placeholder="Enter coupon code" onChange={(event) => { setCouponCode(event.target.value); setCouponApplied(false); }} />
-                      <button type="button" className="btn btn-success" style={{ padding: "8px 14px", whiteSpace: "nowrap" }} onClick={applyCoupon}>Apply</button>
-                    </div>
-                    <small style={{ color: couponApplied ? "#16A34A" : "#64748B" }}>{couponApplied ? "KHELO100 applied — ₹100 discount" : "Try KHELO100 for ₹100 off"}</small>
-                  </div>
                   <div className="d-grid mt-4">
                     <div style={{ background: "#F0FDF4", padding: "16px", borderRadius: "12px", border: "1px solid #DCFCE7", textAlign: "center" }}>
                       <span style={{ display: "block", color: "#166534", fontSize: "14px", fontWeight: "600", marginBottom: "4px" }}>Total Amount</span>
-                      {couponApplied && <span style={{ display: "block", color: "#64748B", fontSize: "13px", textDecoration: "line-through" }}>₹{subtotal}</span>}
                       <strong style={{ fontSize: "28px", color: "#16A34A", fontWeight: "800" }}>
-                        ₹{totalAmount}
+                        ₹{selectedTimeSlots.reduce((sum, s) => sum + s.price, 0) * (daysDifference + 1)}
                       </strong>
                     </div>
                   </div>

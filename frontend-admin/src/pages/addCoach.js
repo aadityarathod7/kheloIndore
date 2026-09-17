@@ -6,7 +6,16 @@ import "../../src/User.css";
 import Swal from "sweetalert2";
 import { API_URL } from '../utils/ApiUrl';
 import { useNavigate } from 'react-router-dom';
-import LanguageSelector from "../components/LanguageSelector";
+import CreatableSelect from "react-select/creatable";
+
+const ALL_LANGUAGES = [
+  "Hindi", "English", "Marathi", "Gujarati", "Bengali", "Telugu", "Tamil", 
+  "Kannada", "Malayalam", "Odia", "Punjabi", "Assamese", "Maithili", 
+  "Sanskrit", "Urdu", "Sindhi", "Kashmiri", "Konkani", "Manipuri", 
+  "Nepali", "Bodo", "Dogri", "Santali", "French", "Spanish", "German", 
+  "Russian", "Chinese", "Japanese", "Korean", "Arabic"
+];
+const LANGUAGE_OPTIONS = ALL_LANGUAGES.map(lang => ({ label: lang, value: lang }));
 
 const AddCoach = () => {
   const [formData, setFormData] = useState({
@@ -208,10 +217,21 @@ const AddCoach = () => {
 
           <Row className="mt-3">
             <Col md={12}>
-               <LanguageSelector
-                 value={formData.languages}
-                 onChange={(languages) => setFormData((current) => ({ ...current, languages }))}
-               />
+               <Form.Group controlId="formLanguages">
+                 <Form.Label>Languages Known</Form.Label>
+                 <CreatableSelect
+                   isMulti
+                   options={LANGUAGE_OPTIONS}
+                   value={(formData.languages || []).map(lang => ({ label: lang, value: lang }))}
+                   onChange={(selectedOptions) => {
+                     setFormData(current => ({
+                       ...current,
+                       languages: selectedOptions ? selectedOptions.map(item => item.value) : []
+                     }));
+                   }}
+                   placeholder="Select or type languages..."
+                 />
+              </Form.Group>
             </Col>
           </Row>
 

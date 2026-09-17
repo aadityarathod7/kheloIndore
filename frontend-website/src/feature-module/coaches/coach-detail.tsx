@@ -373,7 +373,14 @@ const CoachDetail = (props: any) => {
   // }
 
   const checkToken = (Id: any) => {
-    navigate(`/coaches/coach-timedate/${Id}`);
+    const token = localStorage.getItem('token')
+    if (token) {
+      navigate(`/coaches/coach-timedate/${Id}`);
+    } else {
+      navigate("/login",
+        { state: { URL: location.pathname } }
+      )
+    }
   }
 
   return (

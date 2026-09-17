@@ -2,12 +2,6 @@ const mongoose = require("mongoose");
 const CoachSlot = require("../models/CoachSlotsModel");
 const Coach = require("../models/CoachModel");
 
-const timeToMinutes = (time) => {
-  const match = String(time || "").match(/^([01]\d|2[0-3]):([0-5]\d)$/);
-  return match ? Number(match[1]) * 60 + Number(match[2]) : null;
-};
-const formatMinutes = (minutes) => `${String(Math.floor((minutes % 1440) / 60)).padStart(2, "0")}:${String(minutes % 60).padStart(2, "0")}`;
-
 // Create new coach slot
 
 exports.actualcreateCoachSlot = async (req, res) => {
@@ -69,11 +63,6 @@ exports.createCoachSlot = async (req, res) => {
         message: "Please provide start_date, end_date, start_time, and end_time",
       });
     }
-    const startMinutes = timeToMinutes(start_time);
-    const endMinutes = timeToMinutes(end_time);
-    if (startMinutes === null || endMinutes === null || startMinutes === endMinutes) {
-      return res.status(400).json({ success: false, message: "Use valid HH:mm times with different start and end times. 00:00 is supported as midnight." });
-    }
 
     // Convert start_date and end_date to Date objects
     const startDate = new Date(start_date);
@@ -101,15 +90,21 @@ exports.createCoachSlot = async (req, res) => {
     // Helper function to generate slots for a single day
     const generateSlotsForDay = (date) => {
       const slots = [];
-      const overnightEnd = endMinutes <= startMinutes ? endMinutes + 1440 : endMinutes;
-      for (let currentMinute = startMinutes; currentMinute < overnightEnd; currentMinute += 30) {
-        const nextMinute = Math.min(currentMinute + 30, overnightEnd);
+      const startTimeParts = start_time.split(":");
+      const endTimeParts = end_time.split(":");
+
+      let currentHour = parseInt(startTimeParts[0], 10);
+      const endHour = parseInt(endTimeParts[0], 10);
+
+      while (currentHour < endHour) {
+        const nextHour = currentHour + 1;
         slots.push({
-          start_time: formatMinutes(currentMinute),
-          end_time: formatMinutes(nextMinute),
+          start_time: `${currentHour.toString().padStart(2, "0")}:00`,
+          end_time: `${nextHour.toString().padStart(2, "0")}:00`,
           price: pricePerHour,
           isBooked: false,
         });
+        currentHour = nextHour;
       }
       return slots;
     };
@@ -720,3 +715,4 @@ exports.updateCoachSlotBooking = async (req, res) => {
     });
   }
 };
+

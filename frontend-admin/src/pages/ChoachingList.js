@@ -13,7 +13,6 @@ import { API_URL } from '../utils/ApiUrl';
 import { Popover, Input, Select } from 'antd';
 import { FilterOutlined } from '@ant-design/icons';
 import axios from "axios";
-import PasswordResetLinkButton from "../components/PasswordResetLinkButton";
 
 
 function Coachlist() {
@@ -179,7 +178,7 @@ function Coachlist() {
   const handleDelete = async (row) => {
     const result = await Swal.fire({
       title: "Deactivate Coach?",
-      text: "This removes sign-in and public access but keeps profile and booking history.",
+      text: "This will hide the coach from the public website.",
       icon: "warning",
       showCancelButton: true,
       confirmButtonText: "Yes, deactivate",
@@ -188,15 +187,15 @@ function Coachlist() {
     if (!result.isConfirmed) return;
     try {
       await axios.post(
-        `${API_URL}/super-admin/accounts/coach/${row._id}/archive`,
-        {},
+        `${API_URL}/admin/rejectCoach/${row._id}`,
+        { reason: "Deactivated by admin" },
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         }
       );
-      Swal.fire("Archived!", "Coach profile and booking history have been retained.", "success");
+      Swal.fire("Deactivated!", "Coach profile has been deactivated.", "success");
       fetchData();
     } catch (error) {
       Swal.fire("Error", error.response?.data?.message || "Failed to deactivate.", "error");
@@ -430,7 +429,6 @@ function Coachlist() {
                             />
                           </Link>
                         </Tooltip>
-                        {isSuperAdmin && <PasswordResetLinkButton accountType="coach" account={row} />}
                         <Tooltip
                           title={
                             <span style={{ whiteSpace: "pre-line" }}>

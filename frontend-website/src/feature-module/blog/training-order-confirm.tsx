@@ -28,30 +28,7 @@ const TrainingOrderConfirm = (props: any) => {
   const idData = useParams();
   const id = idData.id;
   const location = useLocation();
-
-  const storedConfirmation = useMemo(() => {
-    try {
-      const item = sessionStorage.getItem("activeBookingConfirmation") || sessionStorage.getItem("pendingBooking");
-      if (item) {
-        const parsed = JSON.parse(item);
-        if (parsed?.state) return parsed.state;
-        return parsed;
-      }
-    } catch {
-      // Ignore storage parse error
-    }
-    return null;
-  }, []);
-
-  const effectiveState = location.state || storedConfirmation || {};
-
-  useEffect(() => {
-    if (location.state && Object.keys(location.state).length > 0) {
-      sessionStorage.setItem("activeBookingConfirmation", JSON.stringify(location.state));
-    }
-  }, [location.state]);
-
-  const { bookingData } = effectiveState;
+  const { bookingData } = location.state || {};
   const [paymentType, setPaymentType] = useState<string>("full");
   
 
@@ -75,52 +52,30 @@ const TrainingOrderConfirm = (props: any) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    // alert("Order is Confirmed");
+    // navigate(`/coaches/coach-payment/${id}`, {
+    //   state: {  selectedBatch, selectedTimeSlot, subtotal},
+    // });
 
-    const authToken = localStorage.getItem("token");
-    if (!authToken) {
-      sessionStorage.setItem("pendingBooking", JSON.stringify({
-        targetUrl: `/trainers/training-order-confirm/${id}`,
-        trainerId: id,
-        state: effectiveState,
-        type: "training",
-        timestamp: Date.now(),
-      }));
-
-      Swal.fire({
-        title: "Login to continue",
-        text: "Please log in to complete your booking and payment.",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonText: "Login / Register",
-        cancelButtonText: "Cancel",
-        confirmButtonColor: "#22C55E",
-      }).then((result) => {
-        if (result.isConfirmed) {
-          navigate("/login", {
-            state: {
-              URL: `/trainers/training-order-confirm/${id}`,
-              bookingState: effectiveState,
-              returnTo: `/trainers/training-order-confirm/${id}`,
-            },
-          });
-        }
-      });
-      return;
-    }
-
+    // Swal.fire({
+    //   title: 'Order Confirmed',
+    //   text: 'Your order is confirmed.',
+    //   icon: 'success',
+    //   confirmButtonText: 'OK'
+    // }).then(() => {
+    //   navigate(`/coaches/coach-payment/${id}`, {
+    //     state: { bookingData },
+    //   });
+    // });
     try {
       const response = await axios.post(
         `${API_URL}/personalTrainer/payment`,
         {
           ...bookingData,
           payment_type: paymentType,
-        },
-        { headers: { Authorization: `Bearer ${authToken}` } }
-      );
+        }, { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
 
       if (response?.data?.paymentSessionId) {
-        sessionStorage.removeItem("pendingBooking");
-        sessionStorage.removeItem("activeBookingConfirmation");
         await openCashfreeCheckout(response.data.paymentSessionId);
       } else {
         throw new Error(response?.data?.message || "Unable to start Cashfree checkout.");
