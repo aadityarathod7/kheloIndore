@@ -68,7 +68,12 @@ interface FavouriteVenue {
   _id?: string;
   id?: string | number;
   name?: string;
-  images?: Array<{ src?: string }>;
+  vendor_type?: string;
+  category?: string;
+  categories?: string[];
+  address?: string;
+  city?: string;
+  images?: Array<{ src?: string; url?: string } | string>;
 }
 
 const UserDashboard = () => {
@@ -552,9 +557,92 @@ const UserDashboard = () => {
                 {nextBooking ? <><p>{nextBooking.type}</p><div className="simple-dashboard-next-date"><i className="fas fa-calendar-alt" /> {formatDate(nextBooking.date)}</div></> : <p>Your upcoming sessions will appear here.</p>}
                 <Link to={routes.userBookings} className="simple-dashboard-primary-action">View schedule</Link>
               </article>
-              <article id="favourites-section" className="simple-dashboard-panel simple-dashboard-favourites-card">
-                <div><span className="simple-dashboard-stat-icon favourite"><i className="fas fa-heart" /></span><strong>{favLoading ? "—" : favouriteVenues.length}</strong></div>
-                <div><h2>Favourite venues</h2><p>Keep your go-to places within reach.</p><Link to={`${routes.userDashboard}?tab=favourites`}>Manage favourites <i className="fas fa-arrow-right" /></Link></div>
+              <article id="favourites-section" className="simple-dashboard-panel simple-dashboard-favourites-panel">
+                <div className="simple-fav-panel-header">
+                  <div className="d-flex align-items-center gap-2">
+                    <span className="simple-dashboard-stat-icon favourite">
+                      <i className="fas fa-heart" />
+                    </span>
+                    <div>
+                      <h2 className="mb-0">Favourite Venues</h2>
+                      <p className="mb-0 text-muted" style={{ fontSize: "12px" }}>Your saved venues</p>
+                    </div>
+                  </div>
+                  <span className="simple-fav-count-badge">
+                    {favLoading ? "…" : favouriteVenues.length}
+                  </span>
+                </div>
+
+                <div className="simple-fav-body mt-3">
+                  {favLoading ? (
+                    <div className="simple-fav-loading">
+                      <i className="fas fa-spinner fa-spin text-success me-2" />
+                      <span>Loading saved venues…</span>
+                    </div>
+                  ) : favouriteVenues.length === 0 ? (
+                    <div className="simple-fav-empty">
+                      <i className="far fa-heart" />
+                      <p>No favourite venues yet.</p>
+                      <Link to="/sports-venue" className="simple-fav-explore-link">
+                        Explore Venues <i className="fas fa-arrow-right ms-1" />
+                      </Link>
+                    </div>
+                  ) : (
+                    <div className="simple-fav-list">
+                      {favouriteVenues.map((v, index) => {
+                        const vId = v._id || v.id;
+                        const vendorType = (v.vendor_type || "venue").replace(/\s+/g, "-").toLowerCase();
+                        const venueNameSlug = (v.name || "venue").replace(/\s+/g, "-").toLowerCase();
+                        const venueUrl = `/sports-venue/${vendorType}/${venueNameSlug}/${vId}`;
+                        const imgSrc = v.images && v.images[0]
+                          ? (typeof v.images[0] === "string"
+                              ? (v.images[0].startsWith("http") ? v.images[0] : `${IMG_URL}${v.images[0]}`)
+                              : (v.images[0].src || v.images[0].url || "").startsWith("http")
+                                ? (v.images[0].src || v.images[0].url)
+                                : `${IMG_URL}${v.images[0].src || v.images[0].url || ""}`)
+                          : "/assets/img/venues/venue-01.jpg";
+
+                        return (
+                          <div key={String(vId || index)} className="simple-fav-item">
+                            <Link to={venueUrl} className="simple-fav-thumb-link" title={`View ${v.name || "Venue"}`}>
+                              <img
+                                src={imgSrc || "/assets/img/venues/venue-01.jpg"}
+                                alt={v.name || "Venue"}
+                                onError={(e) => {
+                                  (e.target as HTMLImageElement).src = "/assets/img/venues/venue-01.jpg";
+                                }}
+                              />
+                            </Link>
+
+                            <div className="simple-fav-info">
+                              <Link to={venueUrl} className="simple-fav-name" title={v.name}>
+                                {v.name || "Venue"}
+                              </Link>
+                              <span className="simple-fav-location">
+                                <i className="fas fa-map-marker-alt text-danger me-1" />
+                                {v.address ? (v.address.length > 25 ? `${v.address.slice(0, 25)}…` : v.address) : (v.city || "Indore")}
+                              </span>
+                            </div>
+
+                            <div className="simple-fav-actions">
+                              <Link to={venueUrl} className="simple-fav-view-btn" title="View Venue Page">
+                                <i className="fas fa-arrow-right" />
+                              </Link>
+                              <button
+                                type="button"
+                                className="simple-fav-remove-btn"
+                                onClick={(e) => handleRemoveFav(String(vId), e)}
+                                title="Remove from favourites"
+                              >
+                                <i className="far fa-trash-alt" />
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
               </article>
             </aside>
           </section>

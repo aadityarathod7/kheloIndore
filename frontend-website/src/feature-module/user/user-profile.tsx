@@ -40,6 +40,18 @@ interface UploadResponse {
   file_data: Array<{ src: string; fileName?: string; orgname?: string }>;
 }
 
+interface FavouriteVenue {
+  _id?: string;
+  id?: string | number;
+  name?: string;
+  vendor_type?: string;
+  category?: string;
+  categories?: string[];
+  address?: string;
+  city?: string;
+  images?: Array<{ src?: string; url?: string } | string>;
+}
+
 const UserProfile = () => {
   const routes = all_routes;
   const navigate = useNavigate();
@@ -63,6 +75,65 @@ const UserProfile = () => {
     favourite_sports: [],
     profile_image: [],
   });
+
+  const [favouriteVenues, setFavouriteVenues] = useState<FavouriteVenue[]>([]);
+  const [favLoading, setFavLoading] = useState<boolean>(true);
+
+  const loadFavVenues = async () => {
+    try {
+      const favIds: string[] = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith("fav_venue_") && localStorage.getItem(key) === "true") {
+          const vId = key.replace("fav_venue_", "");
+          if (vId) favIds.push(vId);
+        }
+      }
+
+      if (favIds.length > 0) {
+        const promises = favIds.map((vId) =>
+          axios.get(`${API_URL}/venue/individual/${vId}`).then((res) => res.data?.venue).catch(() => null)
+        );
+        const results = await Promise.all(promises);
+        setFavouriteVenues(results.filter((v): v is FavouriteVenue => v !== null));
+      } else {
+        setFavouriteVenues([]);
+      }
+    } catch {
+      // Handled
+    } finally {
+      setFavLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadFavVenues();
+  }, []);
+
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    if (searchParams.get("tab") === "favourites") {
+      setTimeout(() => {
+        const favElem = document.getElementById("favourites-section");
+        if (favElem) {
+          favElem.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      }, 350);
+    }
+  }, [location.search]);
+
+  const handleRemoveFav = (venueId: string | number, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    localStorage.removeItem(`fav_venue_${venueId}`);
+    setFavouriteVenues((prev) => prev.filter((v) => String(v.id || v._id) !== String(venueId)));
+    Swal.fire({
+      icon: "info",
+      title: '<span style="color: #1E293B; font-size: 18px; font-weight: 500; font-family: sans-serif;">Removed from Favourites</span>',
+      timer: 1500,
+      showConfirmButton: false,
+    });
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -404,10 +475,18 @@ const UserProfile = () => {
                     <i className="fas fa-calendar-alt me-2" />
                     <span>My Bookings</span>
                   </Link>
-                  <Link to={`${routes.userDashboard}?tab=favourites`} className="ki-tab-btn">
+                  <a
+                    href="#favourites-section"
+                    className="ki-tab-btn"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      const elem = document.getElementById("favourites-section");
+                      if (elem) elem.scrollIntoView({ behavior: "smooth", block: "center" });
+                    }}
+                  >
                     <i className="fas fa-heart text-danger me-2" />
                     <span>My Favourites</span>
-                  </Link>
+                  </a>
                   <Link to={routes.userProfile} className="ki-tab-btn active">
                     <i className="fas fa-user-edit me-2" />
                     <span>Profile Settings</span>
@@ -769,6 +848,107 @@ const UserProfile = () => {
                   </button>
                 </div>
               </div>
+            </div>
+
+            {/* My Favourite Venues Section */}
+            <div id="favourites-section" className="ki-profile-card mt-4">
+              <div className="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+                <div className="d-flex align-items-center gap-2">
+                  <div
+                    className="d-flex align-items-center justify-content-center"
+                    style={{ width: "38px", height: "38px", borderRadius: "10px", background: "#FFF0F3", color: "#DF4265", fontSize: "16px" }}
+                  >
+                    <i className="fas fa-heart" />
+                  </div>
+                  <div>
+                    <h5 className="mb-0 fw-bold text-dark" style={{ fontSize: "18px" }}>My Favourite Venues</h5>
+                    <p className="mb-0 text-muted" style={{ fontSize: "12px" }}>Your saved venues for quick booking</p>
+                  </div>
+                </div>
+                <span className="badge rounded-pill bg-danger-subtle text-danger px-3 py-2 fw-semibold" style={{ fontSize: "12px" }}>
+                  {favLoading ? "…" : `${favouriteVenues.length} Saved`}
+                </span>
+              </div>
+
+              {favLoading ? (
+                <div className="text-center py-4 text-muted">
+                  <i className="fas fa-spinner fa-spin text-success me-2" /> Loading favourite venues…
+                </div>
+              ) : favouriteVenues.length === 0 ? (
+                <div className="text-center py-4">
+                  <i className="far fa-heart fa-2x text-muted mb-2 d-block opacity-50" />
+                  <p className="text-muted small mb-2">You haven&apos;t added any venues to your favourites yet.</p>
+                  <Link to="/sports-venue" className="btn btn-sm btn-outline-success rounded-pill px-3">
+                    Explore Venues <i className="fas fa-arrow-right ms-1" />
+                  </Link>
+                </div>
+              ) : (
+                <div className="row g-3">
+                  {favouriteVenues.map((v, index) => {
+                    const vId = v._id || v.id;
+                    const vendorType = (v.vendor_type || "venue").replace(/\s+/g, "-").toLowerCase();
+                    const venueNameSlug = (v.name || "venue").replace(/\s+/g, "-").toLowerCase();
+                    const venueUrl = `/sports-venue/${vendorType}/${venueNameSlug}/${vId}`;
+                    const imgSrc = v.images && v.images[0]
+                      ? (typeof v.images[0] === "string"
+                          ? (v.images[0].startsWith("http") ? v.images[0] : `${IMG_URL}${v.images[0]}`)
+                          : (v.images[0].src || v.images[0].url || "").startsWith("http")
+                            ? (v.images[0].src || v.images[0].url)
+                            : `${IMG_URL}${v.images[0].src || v.images[0].url || ""}`)
+                      : "/assets/img/venues/venue-01.jpg";
+
+                    return (
+                      <div key={String(vId || index)} className="col-md-6 col-lg-4">
+                        <div
+                          className="p-3 rounded-3 border d-flex align-items-center justify-content-between h-100"
+                          style={{ backgroundColor: "#F8FAFC", borderColor: "#E2E8F0" }}
+                        >
+                          <div className="d-flex align-items-center gap-3 overflow-hidden">
+                            <Link to={venueUrl} style={{ width: "50px", height: "50px", borderRadius: "8px", overflow: "hidden", flexShrink: 0, display: "block" }}>
+                              <img
+                                src={imgSrc || "/assets/img/venues/venue-01.jpg"}
+                                alt={v.name || "Venue"}
+                                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                                onError={(e) => {
+                                  (e.target as HTMLImageElement).src = "/assets/img/venues/venue-01.jpg";
+                                }}
+                              />
+                            </Link>
+                            <div className="overflow-hidden">
+                              <h6 className="mb-0 text-truncate" style={{ fontSize: "14px", fontWeight: 700 }}>
+                                <Link to={venueUrl} className="text-decoration-none text-dark hover-success" title={v.name}>
+                                  {v.name || "Venue"}
+                                </Link>
+                              </h6>
+                              <p className="mb-0 text-muted text-truncate" style={{ fontSize: "12px" }}>
+                                <i className="fas fa-map-marker-alt me-1 text-danger" style={{ fontSize: "10px" }} />
+                                {v.address ? (v.address.length > 25 ? `${v.address.slice(0, 25)}…` : v.address) : (v.city || "Indore")}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="d-flex align-items-center gap-2 flex-shrink-0 ms-2">
+                            <button
+                              type="button"
+                              onClick={(e) => handleRemoveFav(String(vId), e)}
+                              title="Remove from Favourites"
+                              className="btn btn-sm text-danger border-0 p-1"
+                            >
+                              <i className="far fa-trash-alt" />
+                            </button>
+                            <Link
+                              to={venueUrl}
+                              className="btn btn-sm btn-success rounded-pill px-2.5 py-1 text-white text-decoration-none"
+                              style={{ fontSize: "11px", fontWeight: 600 }}
+                            >
+                              View
+                            </Link>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </div>
         </div>

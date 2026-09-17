@@ -620,6 +620,16 @@ const publicRoutes = [
     route: Route,
   },
   {
+    path: "/sports-venue/:id",
+    element: <VenueDetails />,
+    route: Route,
+  },
+  {
+    path: "/coaches/venue-details/:id",
+    element: <VenueDetails />,
+    route: Route,
+  },
+  {
     path: routes.userOngoing,
     element: <UserOngoing />,
     route: Route,
