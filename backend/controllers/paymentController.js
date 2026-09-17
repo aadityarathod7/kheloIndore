@@ -15,7 +15,6 @@ const mailContent = require("../middlewares/mail-content");
 const venuePdfContent = require("../middlewares/venue_pdf_invoice");
 const coachPdfContent = require("../middlewares/coach_pdf_invoice");
 const ptPdfContent = require("../middlewares/pt_pdf_invoice");
-var pdf = require("html-pdf");
 const path = require("path");
 const fs = require("fs");
 const { v4: uuidv4 } = require("uuid");
@@ -80,7 +79,8 @@ const createCashfreeOrder = async ({ orderId, amount, userId, service }) => {
     
     console.log(`Creating Cashfree order ${orderId} (Amount: ₹${amount})...`);
 
-    const expiryDate = new Date(Date.now() + 10 * 60 * 1000);
+    // Cashfree requires order_expiry_time to be > 15 minutes and < 30 days
+    const expiryDate = new Date(Date.now() + 30 * 60 * 1000);
     const order_expiry_time = expiryDate.toISOString();
 
     const response = await axios.post(`${getCashfreeBaseUrl()}/orders`, {
