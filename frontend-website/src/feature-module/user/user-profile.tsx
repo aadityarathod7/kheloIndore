@@ -21,6 +21,7 @@ interface ProfileData {
   city: string;
   zipcode: string;
   user_info: string;
+  favourite_sports: string[];
   profile_image: ProfileImage[];
 }
 
@@ -35,13 +36,70 @@ interface SelectOption {
 
 interface UploadResponse {
   status: boolean;
-  file_data: string;
+  file_data: Array<{ src: string; fileName?: string; orgname?: string }>;
 }
+
+interface FavouriteVenue {
+  _id?: string;
+  id?: string | number;
+  name?: string;
+  vendor_type?: string;
+  category?: string;
+  categories?: string[];
+  address?: string;
+  city?: string;
+  images?: Array<{ src?: string; url?: string } | string>;
+}
+
+interface SportOption {
+  name: string;
+  icon: string;
+  category: string;
+}
+
+const ALL_SELECTABLE_SPORTS: SportOption[] = [
+  { name: "Cricket", icon: "🏏", category: "Popular" },
+  { name: "Turf", icon: "🏟️", category: "Popular" },
+  { name: "Badminton", icon: "🏸", category: "Racquet" },
+  { name: "Football", icon: "⚽", category: "Popular" },
+  { name: "Tennis", icon: "🎾", category: "Racquet" },
+  { name: "Pickleball", icon: "🏓", category: "Racquet" },
+  { name: "Swimming Pool", icon: "🏊", category: "Fitness" },
+  { name: "Basketball", icon: "🏀", category: "Ball Sports" },
+  { name: "Table Tennis", icon: "🏓", category: "Racquet" },
+  { name: "Volleyball", icon: "🏐", category: "Ball Sports" },
+  { name: "Gym", icon: "🏋️", category: "Fitness" },
+  { name: "Yoga", icon: "🧘", category: "Fitness" },
+  { name: "Snooker", icon: "🎱", category: "Indoor" },
+  { name: "Pool Club", icon: "🎱", category: "Indoor" },
+  { name: "Squash", icon: "🎾", category: "Racquet" },
+  { name: "Bowling", icon: "🎳", category: "Indoor" },
+  { name: "Skating (Ice/Roller)", icon: "🛼", category: "Indoor" },
+  { name: "Kabaddi", icon: "🤼", category: "Popular" },
+  { name: "Hockey (Indoor/Outdoor)", icon: "🏑", category: "Ball Sports" },
+  { name: "Shooting", icon: "🎯", category: "Indoor" },
+  { name: "Archery", icon: "🏹", category: "Indoor" },
+  { name: "Boxing", icon: "🥊", category: "Fitness" },
+  { name: "Karate", icon: "🥋", category: "Fitness" },
+  { name: "Taekwondo", icon: "🥋", category: "Fitness" },
+  { name: "Chess Academy", icon: "♟️", category: "Indoor" },
+  { name: "Dance Academy", icon: "💃", category: "Fitness" },
+  { name: "Zumba Classes", icon: "💃", category: "Fitness" },
+  { name: "Golf Club", icon: "⛳", category: "Popular" },
+  { name: "Go-karting", icon: "🏎️", category: "Popular" },
+  { name: "Horse Riding", icon: "🏇", category: "Popular" },
+  { name: "Rock Climbing", icon: "🧗", category: "Fitness" },
+  { name: "PlayStation", icon: "🎮", category: "Indoor" },
+  { name: "Baseball", icon: "⚾", category: "Ball Sports" },
+  { name: "Sky Martial Arts", icon: "🥋", category: "Fitness" },
+  { name: "Other Sports", icon: "🏅", category: "Other" },
+];
 
 const UserProfile = () => {
   const routes = all_routes;
   const navigate = useNavigate();
   const location = useLocation();
+  const returnTo = location.state?.returnTo || location.state?.URL;
   const isFirstTime = location.state?.firstTime || localStorage.getItem("profileCompleted") === "false";
   const [userDataId, setUserDataId] = useState<JwtPayload | null>(null);
   const [uploadedFileUrl, setUploadedFileUrl] = useState<string | null>(null);
@@ -57,8 +115,68 @@ const UserProfile = () => {
     city: "",
     zipcode: "",
     user_info: "",
+    favourite_sports: [],
     profile_image: [],
   });
+
+  const [favouriteVenues, setFavouriteVenues] = useState<FavouriteVenue[]>([]);
+  const [favLoading, setFavLoading] = useState<boolean>(true);
+
+  const loadFavVenues = async () => {
+    try {
+      const favIds: string[] = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith("fav_venue_") && localStorage.getItem(key) === "true") {
+          const vId = key.replace("fav_venue_", "");
+          if (vId) favIds.push(vId);
+        }
+      }
+
+      if (favIds.length > 0) {
+        const promises = favIds.map((vId) =>
+          axios.get(`${API_URL}/venue/individual/${vId}`).then((res) => res.data?.venue).catch(() => null)
+        );
+        const results = await Promise.all(promises);
+        setFavouriteVenues(results.filter((v): v is FavouriteVenue => v !== null));
+      } else {
+        setFavouriteVenues([]);
+      }
+    } catch {
+      // Handled
+    } finally {
+      setFavLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadFavVenues();
+  }, []);
+
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    if (searchParams.get("tab") === "favourites") {
+      setTimeout(() => {
+        const favElem = document.getElementById("favourites-section");
+        if (favElem) {
+          favElem.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      }, 350);
+    }
+  }, [location.search]);
+
+  const handleRemoveFav = (venueId: string | number, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    localStorage.removeItem(`fav_venue_${venueId}`);
+    setFavouriteVenues((prev) => prev.filter((v) => String(v.id || v._id) !== String(venueId)));
+    Swal.fire({
+      icon: "info",
+      title: '<span style="color: #1E293B; font-size: 18px; font-weight: 500; font-family: sans-serif;">Removed from Favourites</span>',
+      timer: 1500,
+      showConfirmButton: false,
+    });
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -92,7 +210,7 @@ const UserProfile = () => {
           { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
         );
         if (response.data?.data) {
-          setUserData(response.data.data);
+          setUserData({ ...response.data.data, favourite_sports: response.data.data.favourite_sports || [] });
         }
       } catch {
         // Keep the current form values when the profile cannot be loaded.
@@ -144,12 +262,14 @@ const UserProfile = () => {
     try {
       const response = await axios.post<UploadResponse>(
         `${API_URL}/upload-file?types=user`,
-        formData
+        formData,
+        { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
       );
 
-      if (response.status === 200) {
-        if (response.data.status) {
-          setUploadedFileUrl(response.data.file_data);
+      if (response.status === 200 && response.data.status) {
+        const uploadedImage = response.data.file_data?.[0]?.src;
+        if (uploadedImage) {
+          setUploadedFileUrl(uploadedImage);
           Swal.fire({
             icon: "success",
             title: "Photo Uploaded!",
@@ -158,7 +278,7 @@ const UserProfile = () => {
             showConfirmButton: false
           });
         } else {
-          Swal.fire("Upload Successful", "File uploaded successfully", "info");
+          throw new Error("The server did not return an image URL.");
         }
       }
     } catch (error) {
@@ -176,6 +296,76 @@ const UserProfile = () => {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [sportSearch, setSportSearch] = useState("");
+  const [selectedSportTag, setSelectedSportTag] = useState("All");
+  const [savingSports, setSavingSports] = useState(false);
+
+  const toggleFavouriteSport = (sport: string) => {
+    const selectedSports = userData.favourite_sports || [];
+    if (selectedSports.some((s) => s.toLowerCase() === sport.toLowerCase())) {
+      setUserData((current) => ({
+        ...current,
+        favourite_sports: (current.favourite_sports || []).filter(
+          (item) => item.toLowerCase() !== sport.toLowerCase()
+        ),
+      }));
+      return;
+    }
+
+    if (selectedSports.length >= 3) {
+      Swal.fire({
+        icon: "warning",
+        title: "Maximum 3 Sports Allowed",
+        text: "You can select up to 3 favourite sports. Please unselect one from your slots above before choosing another.",
+        confirmButtonColor: "#22C55E",
+      });
+      return;
+    }
+
+    setUserData((current) => ({
+      ...current,
+      favourite_sports: [...(current.favourite_sports || []), sport],
+    }));
+  };
+
+  const handleSaveFavouriteSports = async () => {
+    if (!userId) {
+      Swal.fire("Login Required", "Please log in to save your favourite sports.", "warning");
+      return;
+    }
+    try {
+      setSavingSports(true);
+      const saveApiUrl = `${API_URL}/user/profile-setting/${userId}`;
+      await axios.put(
+        saveApiUrl,
+        {
+          first_name: userData.first_name,
+          last_name: userData.last_name,
+          email: userData.email,
+          favourite_sports: userData.favourite_sports || [],
+        },
+        { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
+      );
+      localStorage.setItem("userFavouriteSports", JSON.stringify(userData.favourite_sports || []));
+      window.dispatchEvent(new Event("userProfileUpdated"));
+
+      Swal.fire({
+        icon: "success",
+        title: "Sports Preferences Saved!",
+        text: "Your top 3 sports are saved. Venues, turfs, and coaches for these sports will now appear on top!",
+        timer: 2200,
+        showConfirmButton: false,
+      });
+    } catch {
+      Swal.fire({
+        icon: "error",
+        title: "Save Failed",
+        text: "Could not save favourite sports. Please try again.",
+      });
+    } finally {
+      setSavingSports(false);
+    }
+  };
 
   const handleSaveChange = async () => {
     if (!userData.first_name?.trim() || !userData.last_name?.trim() || !userData.email?.trim()) {
@@ -199,7 +389,8 @@ const UserProfile = () => {
       city: userData.city,
       zipcode: userData.zipcode,
       user_info: userData.user_info,
-      profile_image: uploadedFileUrl || userData.profile_image,
+      favourite_sports: userData.favourite_sports || [],
+      profile_image: uploadedFileUrl ? [{ src: uploadedFileUrl }] : userData.profile_image,
     };
 
     try {
@@ -208,16 +399,17 @@ const UserProfile = () => {
 
       await axios.put(saveApiUrl, payload, { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
       localStorage.setItem("profileCompleted", "true");
+      localStorage.setItem("userFavouriteSports", JSON.stringify(userData.favourite_sports || []));
       window.dispatchEvent(new Event("userProfileUpdated"));
 
       Swal.fire({
         icon: "success",
         title: "Profile Saved!",
         text: "Your profile details have been updated successfully.",
-        confirmButtonText: "Go to Home",
+        confirmButtonText: returnTo ? "Continue Booking" : "Go to Home",
         confirmButtonColor: "#22C55E",
       }).then(() => {
-        navigate("/");
+        navigate(returnTo || "/");
       });
     } catch (err) {
       
@@ -376,10 +568,30 @@ const UserProfile = () => {
                     <i className="fas fa-calendar-alt me-2" />
                     <span>My Bookings</span>
                   </Link>
-                  <Link to={`${routes.userDashboard}?tab=favourites`} className="ki-tab-btn">
+                  <a
+                    href="#favourite-sports-section"
+                    className="ki-tab-btn"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      const elem = document.getElementById("favourite-sports-section");
+                      if (elem) elem.scrollIntoView({ behavior: "smooth", block: "center" });
+                    }}
+                  >
+                    <i className="fas fa-trophy text-warning me-2" />
+                    <span>Favourite Sports</span>
+                  </a>
+                  <a
+                    href="#favourites-section"
+                    className="ki-tab-btn"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      const elem = document.getElementById("favourites-section");
+                      if (elem) elem.scrollIntoView({ behavior: "smooth", block: "center" });
+                    }}
+                  >
                     <i className="fas fa-heart text-danger me-2" />
                     <span>My Favourites</span>
-                  </Link>
+                  </a>
                   <Link to={routes.userProfile} className="ki-tab-btn active">
                     <i className="fas fa-user-edit me-2" />
                     <span>Profile Settings</span>
@@ -715,6 +927,381 @@ const UserProfile = () => {
                   </button>
                 </div>
               </div>
+            </div>
+
+            {/* My Top 3 Favourite Sports Section */}
+            <div id="favourite-sports-section" className="ki-profile-card mt-4">
+              <div className="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3 pb-3 border-bottom">
+                <div className="d-flex align-items-center gap-3">
+                  <div
+                    className="d-flex align-items-center justify-content-center flex-shrink-0"
+                    style={{ width: "44px", height: "44px", borderRadius: "12px", background: "linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%)", color: "#D97706", fontSize: "20px", boxShadow: "0 4px 12px rgba(245, 158, 11, 0.2)" }}
+                  >
+                    <i className="fas fa-trophy" />
+                  </div>
+                  <div>
+                    <h5 className="mb-1 fw-bold text-dark" style={{ fontSize: "19px" }}>
+                      My Top 3 Favourite Sports
+                    </h5>
+                    <p className="mb-0 text-muted" style={{ fontSize: "13px" }}>
+                      Select your 3 best sports. Venues, turfs, coaches, and trainers for these sports will be shown <strong>on top</strong> across the platform.
+                    </p>
+                  </div>
+                </div>
+                <div className="d-flex align-items-center gap-2">
+                  <span
+                    className={`badge rounded-pill px-3 py-2 fw-bold ${
+                      (userData.favourite_sports || []).length === 3
+                        ? "bg-success text-white"
+                        : (userData.favourite_sports || []).length > 0
+                          ? "bg-info-subtle text-info-emphasis"
+                          : "bg-warning-subtle text-warning-emphasis"
+                    }`}
+                    style={{ fontSize: "12.5px" }}
+                  >
+                    {(userData.favourite_sports || []).length === 3 && <i className="fas fa-check-circle me-1" />}
+                    {(userData.favourite_sports || []).length} of 3 Selected
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleSaveFavouriteSports}
+                    disabled={savingSports}
+                    className="btn btn-sm btn-success rounded-pill px-3 py-2 fw-bold d-inline-flex align-items-center gap-1 shadow-sm"
+                    style={{ backgroundColor: "#22C55E", border: "none", fontSize: "12.5px" }}
+                  >
+                    {savingSports ? (
+                      <><i className="fas fa-spinner fa-spin me-1" /> Saving...</>
+                    ) : (
+                      <><i className="fas fa-save me-1" /> Save Sports</>
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {/* 3 Ranked Slots Preview */}
+              <div className="row g-3 mb-4">
+                {[0, 1, 2].map((slotIndex) => {
+                  const rankLabels = ["1st Sport", "2nd Sport", "3rd Sport"];
+                  const rankMedals = ["🥇", "🥈", "🥉"];
+                  const currentSport = (userData.favourite_sports || [])[slotIndex];
+                  const sportObj = currentSport ? ALL_SELECTABLE_SPORTS.find((s) => s.name.toLowerCase() === currentSport.toLowerCase()) : null;
+
+                  return (
+                    <div className="col-md-4" key={slotIndex}>
+                      {currentSport ? (
+                        <div
+                          className="p-3 rounded-3 d-flex align-items-center justify-content-between position-relative shadow-sm"
+                          style={{
+                            background: "linear-gradient(135deg, #F0FDF4 0%, #ECFDF5 100%)",
+                            border: "2px solid #86EFAC",
+                            transition: "all 0.2s ease"
+                          }}
+                        >
+                          <div className="d-flex align-items-center gap-2 overflow-hidden">
+                            <span style={{ fontSize: "22px" }}>{sportObj?.icon || rankMedals[slotIndex]}</span>
+                            <div className="overflow-hidden">
+                              <span style={{ fontSize: "11px", fontWeight: "700", color: "#16A34A", textTransform: "uppercase", letterSpacing: "0.5px", display: "block" }}>
+                                {rankMedals[slotIndex]} {rankLabels[slotIndex]}
+                              </span>
+                              <strong className="text-dark text-truncate d-block" style={{ fontSize: "15px" }}>
+                                {currentSport}
+                              </strong>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => toggleFavouriteSport(currentSport)}
+                            className="btn btn-sm btn-light rounded-circle p-0 d-flex align-items-center justify-content-center text-muted"
+                            style={{ width: "26px", height: "26px", border: "1px solid #CBD5E1", flexShrink: 0 }}
+                            title={`Remove ${currentSport}`}
+                          >
+                            <i className="fas fa-times" style={{ fontSize: "11px" }} />
+                          </button>
+                        </div>
+                      ) : (
+                        <div
+                          className="p-3 rounded-3 d-flex align-items-center justify-content-center text-center text-muted"
+                          style={{
+                            background: "#F8FAFC",
+                            border: "2px dashed #CBD5E1",
+                            minHeight: "68px"
+                          }}
+                        >
+                          <span style={{ fontSize: "13px", fontWeight: "500", color: "#64748B" }}>
+                            {rankMedals[slotIndex]} + Select {rankLabels[slotIndex]}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Search & Tag Filter Bar */}
+              <div className="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+                <div className="position-relative flex-grow-1" style={{ maxWidth: "340px" }}>
+                  <input
+                    type="text"
+                    className="form-control rounded-pill pe-4"
+                    placeholder="Search sports (e.g. Cricket, Badminton)..."
+                    style={{ fontSize: "13px", paddingLeft: "36px", height: "38px" }}
+                    value={sportSearch}
+                    onChange={(e) => setSportSearch(e.target.value)}
+                  />
+                  <i className="fas fa-search position-absolute start-0 top-50 translate-middle-y ms-3 text-muted" style={{ fontSize: "12px" }} />
+                  {sportSearch && (
+                    <button
+                      type="button"
+                      onClick={() => setSportSearch("")}
+                      className="btn position-absolute end-0 top-50 translate-middle-y me-1 p-0 border-0 text-muted"
+                      style={{ width: "24px", height: "24px" }}
+                    >
+                      <i className="fas fa-times-circle" />
+                    </button>
+                  )}
+                </div>
+
+                <div className="d-flex flex-wrap gap-1">
+                  {["All", "Popular", "Racquet", "Ball Sports", "Fitness", "Indoor"].map((tag) => (
+                    <button
+                      key={tag}
+                      type="button"
+                      onClick={() => setSelectedSportTag(tag)}
+                      className={`btn btn-sm rounded-pill px-2.5 py-1 ${selectedSportTag === tag ? "btn-success" : "btn-outline-secondary"}`}
+                      style={{ fontSize: "12px", fontWeight: "600" }}
+                    >
+                      {tag}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Sports Grid Chips */}
+              <div className="d-flex flex-wrap gap-2" style={{ maxHeight: "260px", overflowY: "auto", padding: "4px" }}>
+                {ALL_SELECTABLE_SPORTS
+                  .filter((item) => {
+                    const matchesSearch = item.name.toLowerCase().includes(sportSearch.toLowerCase().trim());
+                    const matchesTag = selectedSportTag === "All" || item.category === selectedSportTag;
+                    return matchesSearch && matchesTag;
+                  })
+                  .map((sportItem) => {
+                    const isSelected = (userData.favourite_sports || []).some(
+                      (s) => s.toLowerCase() === sportItem.name.toLowerCase()
+                    );
+
+                    return (
+                      <button
+                        key={sportItem.name}
+                        type="button"
+                        onClick={() => toggleFavouriteSport(sportItem.name)}
+                        className={`btn btn-sm rounded-pill px-3 py-1.5 d-inline-flex align-items-center gap-2 transition-all ${
+                          isSelected ? "btn-success text-white shadow-sm" : "btn-outline-secondary bg-white text-dark"
+                        }`}
+                        style={{
+                          fontSize: "13px",
+                          fontWeight: isSelected ? "700" : "500",
+                          border: isSelected ? "1.5px solid #16A34A" : "1px solid #CBD5E1",
+                          transform: isSelected ? "scale(1.02)" : "none",
+                        }}
+                      >
+                        <span>{sportItem.icon}</span>
+                        <span>{sportItem.name}</span>
+                        {isSelected && <i className="fas fa-check-circle ms-1" style={{ fontSize: "12px" }} />}
+                      </button>
+                    );
+                  })}
+              </div>
+
+              <div className="mt-3 pt-3 border-top d-flex flex-wrap align-items-center justify-content-between gap-2">
+                <small className="text-muted">
+                  <i className="fas fa-info-circle me-1 text-success" />
+                  Your favourite sports update automatically across Khelo Indore. Matching venues, coaches, and academies will be shown on top.
+                </small>
+                <button
+                  type="button"
+                  onClick={handleSaveFavouriteSports}
+                  disabled={savingSports}
+                  className="btn btn-success btn-sm rounded-pill px-3 py-1.5 fw-bold"
+                  style={{ backgroundColor: "#22C55E", border: "none" }}
+                >
+                  {savingSports ? "Saving..." : "Save Favourite Sports"}
+                </button>
+              </div>
+            </div>
+
+            {/* My Favourite Venues Section */}
+            <div id="favourites-section" className="ki-profile-card mt-4">
+              <div className="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+                <div className="d-flex align-items-center gap-2">
+                  <div
+                    className="d-flex align-items-center justify-content-center"
+                    style={{ width: "38px", height: "38px", borderRadius: "10px", background: "#FFF0F3", color: "#DF4265", fontSize: "16px" }}
+                  >
+                    <i className="fas fa-heart" />
+                  </div>
+                  <div>
+                    <h5 className="mb-0 fw-bold text-dark" style={{ fontSize: "18px" }}>My Favourite Venues</h5>
+                    <p className="mb-0 text-muted" style={{ fontSize: "12px" }}>Your saved venues for quick booking</p>
+                  </div>
+                </div>
+                <span className="badge rounded-pill bg-danger-subtle text-danger px-3 py-2 fw-semibold" style={{ fontSize: "12px" }}>
+                  {favLoading ? "…" : `${favouriteVenues.length} Saved`}
+                </span>
+              </div>
+
+              {favLoading ? (
+                <div className="text-center py-4 text-muted">
+                  <i className="fas fa-spinner fa-spin text-success me-2" /> Loading favourite venues…
+                </div>
+              ) : favouriteVenues.length === 0 ? (
+                <div className="text-center py-4">
+                  <i className="far fa-heart fa-2x text-muted mb-2 d-block opacity-50" />
+                  <p className="text-muted small mb-2">You haven&apos;t added any venues to your favourites yet.</p>
+                  <Link to="/sports-venue" className="btn btn-sm btn-outline-success rounded-pill px-3">
+                    Explore Venues <i className="fas fa-arrow-right ms-1" />
+                  </Link>
+                </div>
+              ) : (
+                <div className="row g-3">
+                  {favouriteVenues.map((v, index) => {
+                    const vId = v._id || v.id;
+                    const vendorType = (v.vendor_type || "venue").replace(/\s+/g, "-").toLowerCase();
+                    const venueNameSlug = (v.name || "venue").replace(/\s+/g, "-").toLowerCase();
+                    const venueUrl = `/sports-venue/${vendorType}/${venueNameSlug}/${vId}`;
+                    const getVenueCoverImage = (venue: FavouriteVenue): string => {
+                      let rawImg: any = venue.images;
+                      if (typeof rawImg === "string") {
+                        try {
+                          if (rawImg.startsWith("[") || rawImg.startsWith("{")) {
+                            rawImg = JSON.parse(rawImg);
+                          }
+                        } catch {
+                          // keep raw string
+                        }
+                      }
+
+                      let path = "";
+                      if (Array.isArray(rawImg) && rawImg.length > 0) {
+                        const first = rawImg[0];
+                        path = typeof first === "string" ? first : (first?.src || first?.url || "");
+                      } else if (typeof rawImg === "string") {
+                        path = rawImg;
+                      }
+
+                      if (path && (path.startsWith("http://") || path.startsWith("https://"))) {
+                        return path;
+                      }
+
+                      if (path) {
+                        const clean = path.startsWith("/") ? path : `/${path}`;
+                        return `${IMG_URL}${clean}`;
+                      }
+
+                      const text = `${venue.name || ""} ${venue.vendor_type || ""} ${venue.category || ""}`.toLowerCase();
+                      if (text.includes("foot") || text.includes("soccer")) {
+                        return "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=800&auto=format&fit=crop&q=80";
+                      }
+                      if (text.includes("cricket") || text.includes("turf") || text.includes("box")) {
+                        return "https://images.unsplash.com/photo-1531415074868-036b1c57e32b?w=800&auto=format&fit=crop&q=80";
+                      }
+                      if (text.includes("badminton")) {
+                        return "https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=800&auto=format&fit=crop&q=80";
+                      }
+                      if (text.includes("tennis") || text.includes("pickleball")) {
+                        return "https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?w=800&auto=format&fit=crop&q=80";
+                      }
+                      if (text.includes("swim") || text.includes("pool")) {
+                        return "https://images.unsplash.com/photo-1519315901367-f34ff9154487?w=800&auto=format&fit=crop&q=80";
+                      }
+                      if (text.includes("gym") || text.includes("fitness")) {
+                        return "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&auto=format&fit=crop&q=80";
+                      }
+                      return "/assets/img/venues/venues-01.jpg";
+                    };
+
+                    const getFallbackImage = (venue: FavouriteVenue): string => {
+                      const text = `${venue.name || ""} ${venue.vendor_type || ""} ${venue.category || ""}`.toLowerCase();
+                      if (text.includes("foot") || text.includes("soccer")) {
+                        return "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=800&auto=format&fit=crop&q=80";
+                      }
+                      if (text.includes("cricket") || text.includes("turf") || text.includes("box")) {
+                        return "https://images.unsplash.com/photo-1531415074868-036b1c57e32b?w=800&auto=format&fit=crop&q=80";
+                      }
+                      if (text.includes("badminton")) {
+                        return "https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=800&auto=format&fit=crop&q=80";
+                      }
+                      if (text.includes("tennis") || text.includes("pickleball")) {
+                        return "https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?w=800&auto=format&fit=crop&q=80";
+                      }
+                      if (text.includes("swim") || text.includes("pool")) {
+                        return "https://images.unsplash.com/photo-1519315901367-f34ff9154487?w=800&auto=format&fit=crop&q=80";
+                      }
+                      if (text.includes("gym") || text.includes("fitness")) {
+                        return "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&auto=format&fit=crop&q=80";
+                      }
+                      return "/assets/img/venues/venues-01.jpg";
+                    };
+
+                    const coverImg = getVenueCoverImage(v);
+                    const fallbackImg = getFallbackImage(v);
+
+                    return (
+                      <div key={String(vId || index)} className="col-md-6 col-lg-4">
+                        <div
+                          className="p-3 rounded-3 border d-flex align-items-center justify-content-between h-100"
+                          style={{ backgroundColor: "#F8FAFC", borderColor: "#E2E8F0" }}
+                        >
+                          <div className="d-flex align-items-center gap-3 overflow-hidden">
+                            <Link to={venueUrl} style={{ width: "50px", height: "50px", borderRadius: "8px", overflow: "hidden", flexShrink: 0, display: "block", backgroundColor: "#E2E8F0" }}>
+                              <img
+                                src={coverImg}
+                                alt={v.name || "Venue"}
+                                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                                onError={(e) => {
+                                  const target = e.currentTarget;
+                                  if (target.src !== fallbackImg) {
+                                    target.src = fallbackImg;
+                                  } else {
+                                    target.src = "/assets/img/venues/venues-01.jpg";
+                                  }
+                                }}
+                              />
+                            </Link>
+                            <div className="overflow-hidden">
+                              <h6 className="mb-0 text-truncate" style={{ fontSize: "14px", fontWeight: 700 }}>
+                                <Link to={venueUrl} className="text-decoration-none text-dark hover-success" title={v.name}>
+                                  {v.name || "Venue"}
+                                </Link>
+                              </h6>
+                              <p className="mb-0 text-muted text-truncate" style={{ fontSize: "12px" }}>
+                                <i className="fas fa-map-marker-alt me-1 text-danger" style={{ fontSize: "10px" }} />
+                                {v.address ? (v.address.length > 25 ? `${v.address.slice(0, 25)}…` : v.address) : (v.city || "Indore")}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="d-flex align-items-center gap-2 flex-shrink-0 ms-2">
+                            <button
+                              type="button"
+                              onClick={(e) => handleRemoveFav(String(vId), e)}
+                              title="Remove from Favourites"
+                              className="btn btn-sm text-danger border-0 p-1"
+                            >
+                              <i className="far fa-trash-alt" />
+                            </button>
+                            <Link
+                              to={venueUrl}
+                              className="btn btn-sm btn-success rounded-pill px-2.5 py-1 text-white text-decoration-none"
+                              style={{ fontSize: "11px", fontWeight: 600 }}
+                            >
+                              View
+                            </Link>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </div>
         </div>

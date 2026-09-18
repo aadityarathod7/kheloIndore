@@ -109,7 +109,8 @@ const UpdateVenueAdmin = () => {
     try {
       const response = await axios.put(
         `${API_URL}/super-admin/update-user/${_id}`,
-        formData
+        formData,
+        { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
       );
       Swal.fire({
         icon: "success",
@@ -125,6 +126,19 @@ const UpdateVenueAdmin = () => {
 
   const handleCancel = () => {
     navigate("/venue-admin");
+  };
+
+  const sendPasswordResetLink = async () => {
+    try {
+      const response = await axios.post(
+        `${API_URL}/super-admin/accounts/user/${_id}/reset-link`,
+        {},
+        { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
+      );
+      Swal.fire("Reset link sent", response.data.message, "success");
+    } catch (error) {
+      Swal.fire("Error", error.response?.data?.message || "Unable to send the reset link.", "error");
+    }
   };
 
   const handleUpdateAccess = async (isAdminAccess) => {
@@ -233,7 +247,6 @@ const UpdateVenueAdmin = () => {
                   maxLength={50}
                   value={formData.email}
                   onChange={handleChange}
-                  disabled
                 />
               </Form.Group>
             </Col>
@@ -355,6 +368,14 @@ const UpdateVenueAdmin = () => {
               {
                 adminData?.is_admin_access === 1 || adminData?.is_admin_access === 2 ? (
                   <>
+                    <Button
+                      type="button"
+                      className="btn btn-outline-danger"
+                      style={{ marginRight: "10px" }}
+                      onClick={sendPasswordResetLink}
+                    >
+                      Send Reset Link
+                    </Button>
                     <Button
                       type="submit"
                       className="submit-button"

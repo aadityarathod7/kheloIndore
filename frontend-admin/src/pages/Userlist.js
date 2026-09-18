@@ -26,6 +26,7 @@ import { CSVLink } from "react-csv";
 import "../../src/Userlist.css";
 import "../Style/List.css";
 import Swal from "sweetalert2";
+import PasswordResetLinkButton from "../components/PasswordResetLinkButton";
 
 function Userlist() {
   const [userdata, setUserData] = useState([]);
@@ -104,16 +105,16 @@ function Userlist() {
 
   const handleDelete = async (row) => {
     try {
-      const apiUrl = `${API_URL}/user/delete/${row._id}`;
-      const response = await axios.delete(apiUrl, {
+      const apiUrl = `${API_URL}/super-admin/accounts/user/${row._id}/archive`;
+      const response = await axios.post(apiUrl, {}, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
       if (response.status === 200) {
         Swal.fire(
-          "Deactivated!",
-          "User has been deactivated.",
+          "Archived!",
+          "User access has been removed. Profile and booking history are retained.",
           "success"
         );
         fetchUserData();
@@ -272,6 +273,7 @@ function Userlist() {
                               <EditOutlined className="edit_icon" />
                             </Link>
                           </Tooltip>
+                          {role === 'Super Admin' && <PasswordResetLinkButton accountType="user" account={user} />}
                           {role === 'Super Admin' && (
                             user.status ?
                               <Tooltip title={`Deactivate`} arrow>

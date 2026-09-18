@@ -41,6 +41,7 @@ import AddVenueSlots from "./pages/addVenueSlots";
 import VenueAdminList from "./pages/venueAdminList";
 import AddVenueAdmin from "./pages/addVanueAdmin";
 import UpdateVenueAdmin from "./pages/updateVenueAdmin";
+import VenueAdminVenuesDashboard from "./pages/VenueAdminVenuesDashboard";
 import Approve from "./pages/approve";
 import AddCoach from "./pages/addCoach";
 import AddPersonalTrainer from "./pages/addTrainer";
@@ -61,13 +62,11 @@ function App() {
   return (
     <Router basename="/admin">
       <Routes>
-        <Route path="/" element={<Loginadmin />} />
-        <Route path="*" element={<Loginadmin />} />
         <Route path="/approve-admin/:id" element={<Approve />} />
         <Route path="/approve-coach-trainer/:id" element={<CoachTrainerApprove />} />
 
-        <Route path="/" element={<CheckValidate />}>
-          <Route path="/" element={<MainLayout />}>
+        <Route element={<CheckValidate />}>
+          <Route element={<MainLayout />}>
             {/* <Route path="/" element={<UserLogin />} /> */}
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/earnings" element={<Earnings />} />
@@ -84,6 +83,7 @@ function App() {
             <Route path="/venue-admin" element={<VenueAdminList />} />
             <Route path="/venue-admin/add" element={<AddVenueAdmin />} />
             <Route path="/venue-admin/update/:_id" element={<UpdateVenueAdmin />} />
+            <Route path="/venue-admin/:id/venues" element={<VenueAdminVenuesDashboard />} />
 
 
             <Route path="/venues" element={<Venuetable />} />
@@ -161,6 +161,10 @@ function App() {
             {/* <Route path="/venue-admin-dashboard/venues/edit/:_id" element={<UpdateVenue />} /> */}
           </Route>
         </Route>
+
+        <Route path="/" element={<Loginadmin />} />
+        <Route path="/login" element={<Loginadmin />} />
+        <Route path="*" element={<Loginadmin />} />
       </Routes>
     </Router>
   );

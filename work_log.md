@@ -62,8 +62,14 @@ This document lists the tasks and detailed code changes implemented dynamically 
 * **Auth Page Action Enhancements:** Overhauled credentials cards, submit triggers, and option button overlays in auth components.
 * **Status Badges Tab Panels:** Replaced plain text list values in bookings tables with glowing status pill indicators.
 
+* **Admin Route Protection & Role Isolation:**
+  - Fixed security vulnerability where a normal website user (`role: "User"`) visiting `/admin` was able to render the Admin Dashboard due to asynchronous `useEffect` checks and conflicting root routes.
+  - Implemented synchronous role-based route guard in `CheckValidate.js` denying access to non-admin roles and cleanly redirecting to `/admin` login.
+  - Fixed `Loginadmin.js` to ensure normal user tokens do not auto-redirect or trigger redirect loops.
+  - Corrected React Router v6 layout route hierarchy in `frontend-admin/src/App.js` and added clean redirects in `frontend-website/src/feature-module/router/router.link.tsx`.
+
 ---
-*Last updated: 2026-07-28 by Antigravity*
+*Last updated: 2026-09-14 by Antigravity*
 <!-- & "C:\Program Files\nodejs\npm.cmd" install --legacy-peer-deps -->
 
 Super Admin seed.

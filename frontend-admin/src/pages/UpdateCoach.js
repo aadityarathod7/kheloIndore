@@ -10,19 +10,10 @@ import { FiUpload, FiX } from "react-icons/fi";
 import Swal from "sweetalert2";
 import axios from "axios";
 import Select from "react-select";
-import CreatableSelect from "react-select/creatable";
+import LanguageSelector from "../components/LanguageSelector";
 import { API_URL } from "../utils/ApiUrl";
 import { Image_URL } from "../utils/ApiUrl";
 import "../Coaches.css";
-
-const ALL_LANGUAGES = [
-  "Hindi", "English", "Marathi", "Gujarati", "Bengali", "Telugu", "Tamil",
-  "Kannada", "Malayalam", "Odia", "Punjabi", "Assamese", "Maithili",
-  "Sanskrit", "Urdu", "Sindhi", "Kashmiri", "Konkani", "Manipuri",
-  "Nepali", "Bodo", "Dogri", "Santali", "French", "Spanish", "German",
-  "Russian", "Chinese", "Japanese", "Korean", "Arabic"
-];
-const LANGUAGE_OPTIONS = ALL_LANGUAGES.map(lang => ({ label: lang, value: lang }));
 
 const UpdateCoach = () => {
   const { _id } = useParams();
@@ -574,18 +565,9 @@ const UpdateCoach = () => {
           </Row>
           <Row>
             <Col sm={12} className="mb-3">
-              <h6>Languages Known</h6>
-              <CreatableSelect
-                isMulti
-                options={LANGUAGE_OPTIONS}
-                value={(input.languages || []).map(lang => ({ label: lang, value: lang }))}
-                onChange={(selectedOptions) => {
-                  setInput(current => ({
-                    ...current,
-                    languages: selectedOptions ? selectedOptions.map(item => item.value) : []
-                  }));
-                }}
-                placeholder="Select or type languages..."
+              <LanguageSelector
+                value={input.languages}
+                onChange={(languages) => setInput((current) => ({ ...current, languages }))}
               />
             </Col>
             {/* <Col sm={3}>

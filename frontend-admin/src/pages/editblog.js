@@ -4,7 +4,6 @@ import { FiUpload } from "react-icons/fi";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import Swal from "sweetalert2";
-import { Editor } from "@tinymce/tinymce-react";
 import { API_URL, Image_URL } from "../utils/ApiUrl";
 
 export default function EditBlog() {
@@ -91,6 +90,10 @@ export default function EditBlog() {
       newErrors.description = "Description is required.";
       valid = false;
     }
+    if (!editMetaDescription.trim()) {
+      newErrors.meta_description = "Meta description is required.";
+      valid = false;
+    }
     if (!blog_image) {
       newErrors.image = "Image is required.";
       valid = false;
@@ -125,7 +128,10 @@ export default function EditBlog() {
         `${API_URL}/blog/updateBlog?slug_url=${slugName}`,
         payload,
         {
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
         }
       );
 
@@ -243,12 +249,18 @@ export default function EditBlog() {
                 <Form.Label>
                   Meta Description <span style={{ color: "red" }}>*</span>
                 </Form.Label>
-                <Editor
+                <Form.Control
+                  as="textarea"
+                  rows={5}
                   value={editMetaDescription}
-                  onEditorChange={setEditMetaDescription}
-                  placeholder="Enter description here"
-                  init={{ height: 180, menubar: false, plugins: "lists link image code", toolbar: "undo redo | blocks | bold italic | bullist numlist | link image | code" }}
+                  onChange={(e) => setEditMetaDescription(e.target.value)}
+                  maxLength={320}
+                  placeholder="Write a concise search-engine description (160 characters recommended)"
+                  isInvalid={!!errors.meta_description}
                 />
+                <Form.Text className="text-muted">
+                  {editMetaDescription.length}/160 characters recommended
+                </Form.Text>
                 {errors.meta_description && (
                   <div className="text-danger" style={{ marginTop: "40px" }}>
                     {errors.meta_description}
@@ -340,11 +352,13 @@ export default function EditBlog() {
                 <Form.Label>
                   Description<span style={{ color: "red" }}>*</span>
                 </Form.Label>
-                <Editor
+                <Form.Control
+                  as="textarea"
+                  rows={12}
                   value={editDescription}
-                  onEditorChange={setEditDescription}
-                  placeholder="Enter description here"
-                  init={{ height: 360, menubar: false, plugins: "lists link image code", toolbar: "undo redo | blocks | bold italic | alignleft aligncenter alignright | bullist numlist | link image | code", block_formats: "Paragraph=p; Heading 2=h2; Heading 3=h3; Heading 4=h4" }}
+                  onChange={(e) => setEditDescription(e.target.value)}
+                  placeholder="Enter blog description"
+                  isInvalid={!!errors.description}
                 />
                 {errors.description && (
                   <div className="text-danger" style={{ marginTop: "40px" }}>

@@ -108,14 +108,19 @@ const AddEvent = () => {
     if (!formData.start_date.trim()) {
       validationErrors.start_date = "Start date is required";
     }
-
+    if (!formData.description.trim()) {
+      validationErrors.description = "Description is required";
+    }
     if (!formData.location.trim()) {
-      validationErrors.start_date = "Location is required";
+      validationErrors.location = "Location is required";
     }
 
 
     if (!formData.end_date.trim()) {
       validationErrors.end_date = "End date is required";
+    }
+    if (formData.start_date && formData.end_date && formData.end_date < formData.start_date) {
+      validationErrors.end_date = "End date cannot be before start date";
     }
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
@@ -123,11 +128,15 @@ const AddEvent = () => {
     }
     
     try {
-      const uploadResponses = await uploadImage(formData.images);
-      if (uploadResponses) {
-        const images = uploadResponses.data.file_data;
-        
-        const response = await axios.post(
+      // An event can be created without an image. Previously this code stopped
+      // here when no file was selected, with no feedback and no API request.
+      const uploadResponse = formData.images.length ? await uploadImage(formData.images) : null;
+      if (formData.images.length && !uploadResponse) {
+        throw new Error("Image upload failed. Please try again or remove the image.");
+      }
+      const images = uploadResponse?.data?.file_data || [];
+
+      const response = await axios.post(
           `${API_URL}/event/create`,
           {
             ...formData,
@@ -135,11 +144,11 @@ const AddEvent = () => {
           },
           {
             headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
           }
         );
-        
+      if (response.data?.success) {
         Swal.fire({
           icon: "success",
           title: "Success!",
@@ -147,13 +156,12 @@ const AddEvent = () => {
         }).then(() => {
           navigate("/events");
         });
+      } else {
+        throw new Error(response.data?.message || "Unable to create the event.");
       }
     } catch (error) {
       
-      const errorMessage =
-      error.response && error.response.data && error.response.data.message
-        ? error.response.data.message
-        : "Failed to add event. Please try again later.";
+      const errorMessage = error.response?.data?.message || error.message || "Failed to add event. Please try again later.";
       Swal.fire({
         
         icon: "error",
@@ -175,6 +183,11 @@ const AddEvent = () => {
       start_date: "",
       end_date: "",
       location: "",
+      price: "",
+      organized_by: "",
+      terms_and_conditions: "",
+      near_by_location: "",
+      description: "",
       images: [],
       status: true,
     });
@@ -220,9 +233,10 @@ const AddEvent = () => {
                   name="location"
                   value={formData.location}
                   onChange={handleChange}
+                  isInvalid={!!errors.location}
                 />
                   <Form.Control.Feedback type="invalid">
-                  {errors.event_name}
+                  {errors.location}
                 </Form.Control.Feedback>
               </Form.Group>
               <br></br>
@@ -338,7 +352,9 @@ const AddEvent = () => {
                   name="description"
                   value={formData.description}
                   onChange={handleChange}
+                  isInvalid={!!errors.description}
                 />
+                <Form.Control.Feedback type="invalid">{errors.description}</Form.Control.Feedback>
               </Form.Group>
             </Col>
           </Row>
@@ -383,7 +399,7 @@ const AddEvent = () => {
                       style={{ display: "none" }}
                       ref={fileInputRef}
                     />
-                    <button className="btn3" onClick={handleButtonClick}>
+                    <button type="button" className="btn3" onClick={handleButtonClick}>
                       Or Click to Select
                     </button>
                   </div>

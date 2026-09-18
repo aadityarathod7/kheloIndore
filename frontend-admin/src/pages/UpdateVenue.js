@@ -75,6 +75,8 @@ const UpdateVenue = () => {
     capacity: "",
     other_contact_number: "",
     price_per_hr: "",
+    is_featured_paid: false,
+    opening_date: "",
     description: "",
     status: true,
     vendor_details: {},
@@ -82,6 +84,7 @@ const UpdateVenue = () => {
     categories: [],
     videos: [],
     sports_details: [],
+    membership_plans: [],
     vendor_id: "",
     facilities: [],
     emailId: "",
@@ -289,6 +292,8 @@ const UpdateVenue = () => {
         capacity: prev?.capacity,
         other_contact_number: prev?.other_contact_number,
         price_per_hr: prev?.price_per_hr,
+        is_featured_paid: Boolean(prev?.is_featured_paid),
+        opening_date: prev?.opening_date ? new Date(prev.opening_date).toISOString().slice(0, 7) : "",
         description: prev?.description,
         status: prev?.status !== undefined ? prev?.status : true,
         vendor_details: transformedVendorDetails,
@@ -303,6 +308,7 @@ const UpdateVenue = () => {
         categories: prev?.categories || [],
         videos: prev?.videos || [],
         sports_details: prev?.sports_details || [],
+        membership_plans: prev?.membership_plans || [],
       });
     }
     catch (error) {
@@ -464,7 +470,7 @@ const UpdateVenue = () => {
               <Col md={4}>
                 <Form.Group controlId="formVendore" className="mb-2">
                   <Form.Label className="heading">
-                    Category Type <span style={{ color: "red" }}>*</span>
+                    Game Type <span style={{ color: "red" }}>*</span>
                   </Form.Label>
                   <Select
                     isMulti
@@ -489,6 +495,30 @@ const UpdateVenue = () => {
                 </Form.Group>
               </Col>
             </Row>
+            {/(gym|swimming)/i.test(formData.vendor_type || "") && (
+              <Row className="mb-3">
+                <Col md={12}>
+                  <div className="border rounded p-3 bg-light">
+                    <div className="d-flex justify-content-between align-items-center mb-2">
+                      <div>
+                        <Form.Label className="heading mb-0">Recurring Membership Plans</Form.Label>
+                        <div className="text-muted" style={{ fontSize: "12px" }}>Set monthly or longer plans for this recurring facility.</div>
+                      </div>
+                      <button type="button" className="btn btn-sm btn-outline-success" onClick={() => setFormData((current) => ({ ...current, membership_plans: [...(current.membership_plans || []), { name: "Monthly", months: 1, price: "", priority: "Standard Booking", discount: "Flexible Plan", support: "Basic Support" }] }))}>+ Add plan</button>
+                    </div>
+                    {(formData.membership_plans || []).map((plan, index) => (
+                      <Row className="g-2 align-items-end mb-2" key={`${plan.name}-${index}`}>
+                        <Col md={3}><Form.Control placeholder="Plan name" value={plan.name || ""} onChange={(e) => setFormData((current) => { const plans = [...current.membership_plans]; plans[index] = { ...plans[index], name: e.target.value }; return { ...current, membership_plans: plans }; })} /></Col>
+                        <Col md={2}><Form.Control type="number" min="1" placeholder="Months" value={plan.months || ""} onChange={(e) => setFormData((current) => { const plans = [...current.membership_plans]; plans[index] = { ...plans[index], months: Number(e.target.value) }; return { ...current, membership_plans: plans }; })} /></Col>
+                        <Col md={2}><Form.Control type="number" min="0" placeholder="Price (₹)" value={plan.price || ""} onChange={(e) => setFormData((current) => { const plans = [...current.membership_plans]; plans[index] = { ...plans[index], price: Number(e.target.value) }; return { ...current, membership_plans: plans }; })} /></Col>
+                        <Col md={3}><Form.Control placeholder="Priority booking benefit" value={plan.priority || ""} onChange={(e) => setFormData((current) => { const plans = [...current.membership_plans]; plans[index] = { ...plans[index], priority: e.target.value }; return { ...current, membership_plans: plans }; })} /></Col>
+                        <Col md={2}><button type="button" className="btn btn-sm btn-outline-danger w-100" onClick={() => setFormData((current) => ({ ...current, membership_plans: current.membership_plans.filter((_, planIndex) => planIndex !== index) }))}>Remove</button></Col>
+                      </Row>
+                    ))}
+                  </div>
+                </Col>
+              </Row>
+            )}
             <Row>
               {adminRole === "Super Admin" && (
                 <Col md={4}>
@@ -885,26 +915,6 @@ const UpdateVenue = () => {
             </Row>
             <Row>
               <Col md={4}>
-                <Form.Group controlId="formName" className="mb-2">
-                  <Form.Label className="heading">
-                    Game Type
-                    <span style={{ color: "red" }}>*</span>
-                  </Form.Label>
-                  <Form.Control
-                    type="text"
-                    placeholder="Enter Game Type"
-                    name="gameType"
-                    isInvalid={!!errors.gameType}
-                    value={formData.gameType}
-                    onChange={handleChange}
-                    className="add-venue-form-custom-class"
-                  />
-                  <Form.Control.Feedback type="invalid">
-                    {errors.gameType}
-                  </Form.Control.Feedback>
-                </Form.Group>
-              </Col>
-              <Col md={4}>
                 <Form.Group controlId="formPricePerHr" className="mb-2">
                   <Form.Label className="heading">
                     Default Price / Hr (₹) <span style={{ color: "red" }}>*</span>
@@ -922,6 +932,29 @@ const UpdateVenue = () => {
                     {errors.price_per_hr}
                   </Form.Control.Feedback>
                 </Form.Group>
+              </Col>
+              <Col md={4}>
+                <Form.Group controlId="formOpeningDate" className="mb-2">
+                  <Form.Label className="heading">Venue Opening Month & Year</Form.Label>
+                  <Form.Control
+                    type="month"
+                    name="opening_date"
+                    value={formData.opening_date}
+                    onChange={handleChange}
+                  />
+                  <Form.Text className="text-muted" style={{ fontSize: "11px" }}>
+                    Used to identify new and old venues in public listing filters.
+                  </Form.Text>
+                </Form.Group>
+              </Col>
+              <Col md={4} className="d-flex align-items-center">
+                <Form.Check
+                  type="switch"
+                  id="featuredPaidVenue"
+                  label="Featured paid listing"
+                  checked={Boolean(formData.is_featured_paid)}
+                  onChange={(event) => setFormData((current) => ({ ...current, is_featured_paid: event.target.checked }))}
+                />
               </Col>
               <Col md={4}>
                 <Form.Group controlId="formName" className="mb-2">

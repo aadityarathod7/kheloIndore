@@ -972,6 +972,236 @@ div.p-datepicker table td.p-datepicker-today>span:focus {
 .simple-dashboard-favourites-card > div:first-child { display: flex; flex-direction: column; align-items: center; gap: 7px; }
 .simple-dashboard-favourites-card strong { color: #213952; font-size: 20px; }
 
+.simple-dashboard-favourites-panel {
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border: 1px solid #e2eae4;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 8px 22px rgba(19, 54, 34, 0.05);
+
+  .simple-fav-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #edf1ee;
+
+    h2 {
+      margin: 0;
+      color: #142b48 !important;
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    p {
+      margin: 2px 0 0;
+      color: #718096;
+      font-size: 12px;
+    }
+
+    .simple-fav-count-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 28px;
+      height: 28px;
+      padding: 0 10px;
+      border-radius: 20px;
+      background: #fff0f3;
+      color: #df4265;
+      font-size: 13px;
+      font-weight: 800;
+    }
+  }
+
+  .simple-fav-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 0;
+    color: #718096;
+    font-size: 13px;
+  }
+
+  .simple-fav-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 12px;
+    text-align: center;
+    color: #718096;
+
+    i {
+      font-size: 26px;
+      color: #df4265;
+      opacity: 0.6;
+      margin-bottom: 8px;
+    }
+
+    p {
+      margin: 0 0 10px;
+      font-size: 13px;
+      max-width: 240px;
+    }
+
+    .simple-fav-explore-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: #0d9847;
+      font-size: 13px;
+      font-weight: 750;
+      text-decoration: none;
+      padding: 6px 14px;
+      border-radius: 20px;
+      background: #eaf8ee;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background: #d4f3dd;
+        color: #07883a;
+      }
+    }
+  }
+
+  .simple-fav-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 320px;
+    overflow-y: auto;
+    padding-right: 4px;
+
+    &::-webkit-scrollbar {
+      width: 4px;
+    }
+    &::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+  }
+
+  .simple-fav-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 12px;
+    background: #f8fafc;
+    border: 1px solid #edf2f7;
+    border-radius: 12px;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: #f0fdf4;
+      border-color: #bbf7d0;
+    }
+
+    .simple-fav-thumb-link {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 48px;
+      height: 48px;
+      flex: 0 0 48px;
+      border-radius: 10px;
+      overflow: hidden;
+      background: #e2e8f0;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+    }
+
+    .simple-fav-info {
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+
+      .simple-fav-name {
+        display: block;
+        color: #1e293b;
+        font-size: 13.5px;
+        font-weight: 700;
+        text-decoration: none;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        transition: color 0.15s ease;
+
+        &:hover {
+          color: #16a34a;
+        }
+      }
+
+      .simple-fav-location {
+        display: block;
+        margin-top: 2px;
+        color: #64748b;
+        font-size: 11.5px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    }
+
+    .simple-fav-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+
+      .simple-fav-view-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        background: #22c55e;
+        color: #fff;
+        font-size: 11px;
+        text-decoration: none;
+        transition: background 0.15s ease;
+
+        &:hover {
+          background: #16a34a;
+        }
+      }
+
+      .simple-fav-remove-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        border: 1px solid #fecaca;
+        background: #fff;
+        color: #ef4444;
+        font-size: 11px;
+        cursor: pointer;
+        padding: 0;
+        transition: all 0.15s ease;
+
+        &:hover {
+          background: #fef2f2;
+          border-color: #f87171;
+        }
+      }
+    }
+  }
+}
+
 @media (max-width: 991.98px) {
   .simple-dashboard-hero { padding-top: 130px; }
   .simple-dashboard-hero-inner { align-items: flex-start; flex-direction: column; }
@@ -3740,7 +3970,7 @@ button {
       z-index: 2 !important;
       width: 100% !important;
       height: 100% !important;
-      object-fit: contain !important;
+      object-fit: cover !important;
       transition: transform 0.4s ease !important;
       cursor: pointer !important;
     }
@@ -3777,7 +4007,7 @@ button {
       z-index: 2 !important;
       width: 100% !important;
       height: 100% !important;
-      object-fit: contain !important;
+      object-fit: cover !important;
       transition: transform 0.4s ease !important;
       cursor: pointer !important;
     }
@@ -4872,6 +5102,22 @@ header.header.header-sticky {
 
   .row {
     margin-top: 0 !important;
+  }
+}
+
+// Keep the public listing-page heroes visually consistent on desktop.
+.standard-page-hero {
+  box-sizing: border-box;
+  height: 470px;
+  min-height: 470px;
+  padding-top: 110px !important;
+  padding-bottom: 20px !important;
+}
+
+@media (max-width: 767.98px) {
+  .standard-page-hero {
+    height: auto;
+    min-height: 0;
   }
 }
 

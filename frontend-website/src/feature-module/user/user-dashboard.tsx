@@ -6,6 +6,7 @@ import { jwtDecode} from "jwt-decode";
 import { API_URL, IMG_URL } from "../../ApiUrl";
 import axios from "axios";
 import Swal from "sweetalert2";
+import { toCategorySlug } from "../../constants/categories";
 
 interface JwtPayload {
   userID: string | number;
@@ -17,6 +18,7 @@ interface UserData{
   email: string;
   mobile: string;
   booking_count: number;
+  favourite_sports?: string[];
 }
 
 interface ApiBooking {
@@ -68,7 +70,12 @@ interface FavouriteVenue {
   _id?: string;
   id?: string | number;
   name?: string;
-  images?: Array<{ src?: string }>;
+  vendor_type?: string;
+  category?: string;
+  categories?: string[];
+  address?: string;
+  city?: string;
+  images?: Array<{ src?: string; url?: string } | string>;
 }
 
 const UserDashboard = () => {
@@ -488,6 +495,27 @@ const UserDashboard = () => {
               <span className="simple-dashboard-eyebrow">MY ACCOUNT</span>
               <h1>Hello, {userData?.first_name || "Player"}</h1>
               <p>Everything you need to manage your Khelo Indore bookings in one place.</p>
+              {userData?.favourite_sports && userData.favourite_sports.length > 0 && (
+                <div className="d-flex align-items-center flex-wrap gap-2 mt-2">
+                  <span style={{ fontSize: "12px", fontWeight: "700", color: "#16A34A", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                    <i className="fas fa-trophy text-warning me-1" /> My Top Sports:
+                  </span>
+                  {userData.favourite_sports.map((sport) => (
+                    <Link
+                      key={sport}
+                      to={`/sports-venue/${toCategorySlug(sport)}`}
+                      className="badge rounded-pill text-decoration-none d-inline-flex align-items-center gap-1"
+                      style={{ background: "#DCFCE7", color: "#15803D", border: "1px solid #BBF7D0", fontSize: "12px", padding: "5px 12px", fontWeight: "600" }}
+                      title={`Explore ${sport} venues`}
+                    >
+                      {sport} <i className="fas fa-arrow-right" style={{ fontSize: "9px" }} />
+                    </Link>
+                  ))}
+                  <Link to={`${routes.userProfile}#favourite-sports-section`} className="text-muted small ms-1 text-decoration-none" title="Edit favourite sports">
+                    <i className="fas fa-pencil-alt" style={{ fontSize: "11px" }} />
+                  </Link>
+                </div>
+              )}
             </div>
             <div className="simple-dashboard-actions">
               <Link to={routes.userBookings} className="simple-dashboard-primary-action">
@@ -552,9 +580,167 @@ const UserDashboard = () => {
                 {nextBooking ? <><p>{nextBooking.type}</p><div className="simple-dashboard-next-date"><i className="fas fa-calendar-alt" /> {formatDate(nextBooking.date)}</div></> : <p>Your upcoming sessions will appear here.</p>}
                 <Link to={routes.userBookings} className="simple-dashboard-primary-action">View schedule</Link>
               </article>
-              <article id="favourites-section" className="simple-dashboard-panel simple-dashboard-favourites-card">
-                <div><span className="simple-dashboard-stat-icon favourite"><i className="fas fa-heart" /></span><strong>{favLoading ? "—" : favouriteVenues.length}</strong></div>
-                <div><h2>Favourite venues</h2><p>Keep your go-to places within reach.</p><Link to={`${routes.userDashboard}?tab=favourites`}>Manage favourites <i className="fas fa-arrow-right" /></Link></div>
+              <article id="favourites-section" className="simple-dashboard-panel simple-dashboard-favourites-panel">
+                <div className="simple-fav-panel-header">
+                  <div className="d-flex align-items-center gap-2">
+                    <span className="simple-dashboard-stat-icon favourite">
+                      <i className="fas fa-heart" />
+                    </span>
+                    <div>
+                      <h2 className="mb-0">Favourite Venues</h2>
+                      <p className="mb-0 text-muted" style={{ fontSize: "12px" }}>Your saved venues</p>
+                    </div>
+                  </div>
+                  <span className="simple-fav-count-badge">
+                    {favLoading ? "…" : favouriteVenues.length}
+                  </span>
+                </div>
+
+                <div className="simple-fav-body mt-3">
+                  {favLoading ? (
+                    <div className="simple-fav-loading">
+                      <i className="fas fa-spinner fa-spin text-success me-2" />
+                      <span>Loading saved venues…</span>
+                    </div>
+                  ) : favouriteVenues.length === 0 ? (
+                    <div className="simple-fav-empty">
+                      <i className="far fa-heart" />
+                      <p>No favourite venues yet.</p>
+                      <Link to="/sports-venue" className="simple-fav-explore-link">
+                        Explore Venues <i className="fas fa-arrow-right ms-1" />
+                      </Link>
+                    </div>
+                  ) : (
+                    <div className="simple-fav-list">
+                      {favouriteVenues.map((v, index) => {
+                        const vId = v._id || v.id;
+                        const vendorType = (v.vendor_type || "venue").replace(/\s+/g, "-").toLowerCase();
+                        const venueNameSlug = (v.name || "venue").replace(/\s+/g, "-").toLowerCase();
+                        const venueUrl = `/sports-venue/${vendorType}/${venueNameSlug}/${vId}`;
+
+                        const getVenueCoverImage = (venue: FavouriteVenue): string => {
+                          let rawImg: any = venue.images;
+                          if (typeof rawImg === "string") {
+                            try {
+                              if (rawImg.startsWith("[") || rawImg.startsWith("{")) {
+                                rawImg = JSON.parse(rawImg);
+                              }
+                            } catch {
+                              // keep raw string
+                            }
+                          }
+
+                          let path = "";
+                          if (Array.isArray(rawImg) && rawImg.length > 0) {
+                            const first = rawImg[0];
+                            path = typeof first === "string" ? first : (first?.src || first?.url || "");
+                          } else if (typeof rawImg === "string") {
+                            path = rawImg;
+                          }
+
+                          if (path && (path.startsWith("http://") || path.startsWith("https://"))) {
+                            return path;
+                          }
+
+                          if (path) {
+                            const clean = path.startsWith("/") ? path : `/${path}`;
+                            return `${IMG_URL}${clean}`;
+                          }
+
+                          const text = `${venue.name || ""} ${venue.vendor_type || ""} ${venue.category || ""}`.toLowerCase();
+                          if (text.includes("foot") || text.includes("soccer")) {
+                            return "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=800&auto=format&fit=crop&q=80";
+                          }
+                          if (text.includes("cricket") || text.includes("turf") || text.includes("box")) {
+                            return "https://images.unsplash.com/photo-1531415074868-036b1c57e32b?w=800&auto=format&fit=crop&q=80";
+                          }
+                          if (text.includes("badminton")) {
+                            return "https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=800&auto=format&fit=crop&q=80";
+                          }
+                          if (text.includes("tennis") || text.includes("pickleball")) {
+                            return "https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?w=800&auto=format&fit=crop&q=80";
+                          }
+                          if (text.includes("swim") || text.includes("pool")) {
+                            return "https://images.unsplash.com/photo-1519315901367-f34ff9154487?w=800&auto=format&fit=crop&q=80";
+                          }
+                          if (text.includes("gym") || text.includes("fitness")) {
+                            return "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&auto=format&fit=crop&q=80";
+                          }
+                          return "/assets/img/venues/venues-01.jpg";
+                        };
+
+                        const getFallbackImage = (venue: FavouriteVenue): string => {
+                          const text = `${venue.name || ""} ${venue.vendor_type || ""} ${venue.category || ""}`.toLowerCase();
+                          if (text.includes("foot") || text.includes("soccer")) {
+                            return "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=800&auto=format&fit=crop&q=80";
+                          }
+                          if (text.includes("cricket") || text.includes("turf") || text.includes("box")) {
+                            return "https://images.unsplash.com/photo-1531415074868-036b1c57e32b?w=800&auto=format&fit=crop&q=80";
+                          }
+                          if (text.includes("badminton")) {
+                            return "https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=800&auto=format&fit=crop&q=80";
+                          }
+                          if (text.includes("tennis") || text.includes("pickleball")) {
+                            return "https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?w=800&auto=format&fit=crop&q=80";
+                          }
+                          if (text.includes("swim") || text.includes("pool")) {
+                            return "https://images.unsplash.com/photo-1519315901367-f34ff9154487?w=800&auto=format&fit=crop&q=80";
+                          }
+                          if (text.includes("gym") || text.includes("fitness")) {
+                            return "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&auto=format&fit=crop&q=80";
+                          }
+                          return "/assets/img/venues/venues-01.jpg";
+                        };
+
+                        const coverImg = getVenueCoverImage(v);
+                        const fallbackImg = getFallbackImage(v);
+
+                        return (
+                          <div key={String(vId || index)} className="simple-fav-item">
+                            <Link to={venueUrl} className="simple-fav-thumb-link" title={`View ${v.name || "Venue"}`}>
+                              <img
+                                src={coverImg}
+                                alt={v.name || "Venue"}
+                                onError={(e) => {
+                                  const target = e.currentTarget;
+                                  if (target.src !== fallbackImg) {
+                                    target.src = fallbackImg;
+                                  } else {
+                                    target.src = "/assets/img/venues/venues-01.jpg";
+                                  }
+                                }}
+                              />
+                            </Link>
+
+                            <div className="simple-fav-info">
+                              <Link to={venueUrl} className="simple-fav-name" title={v.name}>
+                                {v.name || "Venue"}
+                              </Link>
+                              <span className="simple-fav-location">
+                                <i className="fas fa-map-marker-alt text-danger me-1" />
+                                {v.address ? (v.address.length > 25 ? `${v.address.slice(0, 25)}…` : v.address) : (v.city || "Indore")}
+                              </span>
+                            </div>
+
+                            <div className="simple-fav-actions">
+                              <Link to={venueUrl} className="simple-fav-view-btn" title="View Venue Page">
+                                <i className="fas fa-arrow-right" />
+                              </Link>
+                              <button
+                                type="button"
+                                className="simple-fav-remove-btn"
+                                onClick={(e) => handleRemoveFav(String(vId), e)}
+                                title="Remove from favourites"
+                              >
+                                <i className="far fa-trash-alt" />
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
               </article>
             </aside>
           </section>

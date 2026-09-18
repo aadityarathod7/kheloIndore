@@ -6,6 +6,7 @@ import { all_routes } from "../router/all_routes";
 import axios from "axios";
 import { API_URL, IMG_URL } from "../../ApiUrl";
 import Swal from "sweetalert2";
+import { COACH_TRAINER_CATEGORY_OPTIONS } from "../../constants/categories";
 
 const matchCategory = (cat, trainerType, specializations, q) => {
   const c = (cat || "").toLowerCase().trim();
@@ -46,25 +47,7 @@ interface Trainer {
   profile_views: number;
 }
 
-const options = [
-  { value: "archery", label: "Archery" },
-  { value: "badminton", label: "Badminton" },
-  { value: "baseball", label: "Baseball" },
-  { value: "basketball", label: "Basketball" },
-  { value: "golf", label: "Golf" },
-  { value: "hockey", label: "Hockey" },
-  { value: "kabaddi", label: "Kabaddi" },
-  { value: "shooting", label: "Shooting" },
-  { value: "skating", label: "Skating" },
-  { value: "snooker", label: "Snooker" },
-  { value: "soccer", label: "Soccer" },
-  { value: "squash", label: "Squash" },
-  { value: "swimming", label: "Swimming" },
-  { value: "tennis", label: "Tennis" },
-  { value: "volleyball", label: "Volleyball" },
-  { value: "yoga", label: "Yoga" },
-  { value: "zumba", label: "Zumba" },
-];
+const options = COACH_TRAINER_CATEGORY_OPTIONS;
 
 const sortOptions = [
   { name: "Popularity" },

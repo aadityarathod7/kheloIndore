@@ -7,6 +7,12 @@ const mailContent = require("../middlewares/mail-content");
 const User = require("../models/UserModel");
 const { sendCustomMessage } = require("../helper/bhashMessaging");
 const crypto = require("crypto");
+const { normaliseCoachTrainerCategory } = require("../config/venueCategories");
+
+const normaliseLanguages = (languages) => {
+  const values = Array.isArray(languages) ? languages : String(languages || "").split(",");
+  return [...new Set(values.map((language) => String(language).trim()).filter(Boolean))];
+};
 
 // Never expose provider contact or exact address details through public or shared APIs.
 const withoutPrivateCoachDetails = (coach) => {
@@ -20,6 +26,12 @@ const withoutPrivateCoachDetails = (coach) => {
 };
 exports.createCoach = async (req, res) => {
   try {
+    if (req.body.languages !== undefined) {
+      req.body.languages = normaliseLanguages(req.body.languages);
+    }
+    if (req.body.category) {
+      req.body.category = normaliseCoachTrainerCategory(req.body.category) || req.body.category;
+    }
     let { first_name, last_name, email, mobile,password } = req.body;
     let user = req.user.userID
     if(!user){
@@ -59,7 +71,7 @@ exports.createCoach = async (req, res) => {
           .status(400)
           .json({ message: "Email must contain an '@' symbol." });
       }
-      const existingMobile = await Coach.findOne({ mobile: mobile });
+      const existingMobile = await Coach.findOne({ mobile: mobile, status: { $ne: false } });
       if (existingMobile) {
         return res.status(400).json({ message: "Coach already exits" });
       }
@@ -143,6 +155,12 @@ exports.updateCoachSuperAdmin = async (req, res) => {
         success: false,
         message: "Empty Body",
       });
+    }
+    if (detail.category) {
+      detail.category = normaliseCoachTrainerCategory(detail.category) || detail.category;
+    }
+    if (detail.languages !== undefined) {
+      detail.languages = normaliseLanguages(detail.languages);
     }
     const id = req.params.id;
 
@@ -315,20 +333,25 @@ exports.updateCoach = async (req, res) => {
         message: "Empty Body",
       });
     }
-    const { experience, availability, specializations, bio } = detail;
+    const { experience, availability, specializations, bio, coaching_levels } = detail;
     const token = req.header("Authorization").replace("Bearer ", "");
 
     const decoded = await jwt.verify(token, process.env.JWT_AUTH, { algorithms: ["HS256"] });
 
     const id = decoded.userID;
+    const updatePayload = {
+      experience: experience,
+      availability: availability ? JSON.stringify(availability) : null,
+      specializations: specializations ? specializations : [],
+      bio: bio || "",
+    };
+    if (Array.isArray(coaching_levels)) {
+      updatePayload.coaching_levels = coaching_levels;
+    }
+
     const updatedCoach = await Coach.findByIdAndUpdate(
       id,
-      {
-        experience: experience,
-        availability: availability ? JSON.stringify(availability) : null,
-        specializations: specializations ? specializations : [],
-        bio: bio || "",
-      },
+      updatePayload,
       { new: true }
     );
 
@@ -716,6 +739,9 @@ exports.completeCoachProfile = async (req, res) => {
     if (!req.query.token || req.query.token !== coach.profile_completion_token) {
       return res.status(403).json({ success: false, message: "Invalid or expired profile completion link" });
     }
+    if (detail.languages !== undefined) {
+      detail.languages = normaliseLanguages(detail.languages);
+    }
     const allowed = [
       "gender", "age", "date_of_birth", "price", "category", "trainer_type",
       "near_by_location", "experience", "availability", "specializations", "bio",
@@ -841,7 +867,7 @@ exports.updatecoach = async (req, res) => {
             user_id: admin._id,
             title: "Coach Approval Required",
             message: `Coach ${coach.first_name} ${coach.last_name} has updated their details and is awaiting verification.`,
-            type: "info",
+            type: "coach_approval",
             entity_id: coach._id
           });
         }
@@ -899,4 +925,3 @@ exports.submitCoachForApproval = async (req, res) => {
     return res.status(500).json({ success: false, message: error.message });
   }
 };
-

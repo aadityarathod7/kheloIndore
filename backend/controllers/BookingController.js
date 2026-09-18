@@ -42,6 +42,9 @@ exports.addManualBooking = async (req, res) => {
     if (!venue_id) {
       return res.status(400).json({ success: false, message: "Venue Id is required" });
     }
+    if (!["Venue Admin", "Super Admin"].includes(req.user?.role)) {
+      return res.status(403).json({ success: false, message: "Only Venue Admins can create offline venue bookings." });
+    }
     if (!date) {
       return res.status(400).json({ success: false, message: "Date is required" });
     }
@@ -86,7 +89,14 @@ exports.addManualBooking = async (req, res) => {
     }
 
     const venueData = await Venue1.findById(venue_id);
+    if (!venueData) {
+      return res.status(404).json({ success: false, message: "Venue not found" });
+    }
+    if (req.user.role === "Venue Admin" && String(venueData.vendor_id) !== String(req.user.userID)) {
+      return res.status(403).json({ success: false, message: "You can create bookings only for your own venues." });
+    }
     const vendor_id = venueData ? venueData.vendor_id : null;
+    const manualAmountReceived = Math.max(0, Math.min(Number(amount_paid || 0), total_price));
 
     const newBooking = await Booking.create({
       user_id: customer._id,
@@ -94,15 +104,17 @@ exports.addManualBooking = async (req, res) => {
       vendor_id,
       date,
       slotsBooked,
-      total_price: amount_paid || total_price,
+      total_price,
       transaction_id: `MANUAL-${Date.now()}`,
       merchantTransaction_id: `MANUAL-${Date.now()}`,
-      paymentStatus: amount_paid ? "PAID" : "PENDING",
+      paymentStatus: manualAmountReceived > 0 ? "PAID" : "PENDING",
       paymentState: "MANUAL",
       payment_type: "manual",
       manual_booking: true,
       manual_notes: notes || "",
       payment_mode: payment_mode || "cash",
+      manual_amount_received: manualAmountReceived,
+      platform_amount_received: 0,
     });
 
     // Mark the selected slots as booked
@@ -386,11 +398,17 @@ exports.getBookings = async (req, res) => {
 
     // Get search query from request
     const searchQuery = req.query.search || '';
+    const paymentSource = req.query.paymentSource || 'all';
     const regex = new RegExp(searchQuery, 'i'); // Case-insensitive search
+    const sourceFilter = paymentSource === 'manual'
+      ? { manual_booking: true }
+      : paymentSource === 'platform'
+        ? { manual_booking: { $ne: true } }
+        : {};
 
     if (req.user.role == "Super Admin") {
       // Fetch bookings
-      const bookings = await Booking.find()
+      const bookings = await Booking.find(sourceFilter)
         .populate("user_id venue_id")
         .sort({ createdAt: -1 });
 
@@ -444,7 +462,7 @@ exports.getBookings = async (req, res) => {
       });
     } else if (req.user.role == "Venue Admin") {
       // If the user is a Venue Admin, fetch bookings for the specific venue
-      const bookings = await Booking.find({ vendor_id: user })
+      const bookings = await Booking.find({ vendor_id: user, ...sourceFilter })
         .populate("user_id venue_id")
         .sort({ createdAt: -1 });
 
@@ -1969,8 +1987,6 @@ exports.cancelBookingForCoach = async (req, res) => {
     return res.status(500).json({ success: false, message: "Internal Server Error", error: error.message });
   }
 };
-
-
 
 
 

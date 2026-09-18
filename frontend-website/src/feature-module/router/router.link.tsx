@@ -143,6 +143,11 @@ const publicRoutes = [
     route: Route,
   },
   {
+    path: routes.trainerSearch,
+    element: <BlogList />,
+    route: Route,
+  },
+  {
     path: routes.blogListSidebarRight,
     element: <BlogListSidebarRight />,
     route: Route,
@@ -615,6 +620,16 @@ const publicRoutes = [
     route: Route,
   },
   {
+    path: "/sports-venue/:id",
+    element: <VenueDetails />,
+    route: Route,
+  },
+  {
+    path: "/coaches/venue-details/:id",
+    element: <VenueDetails />,
+    route: Route,
+  },
+  {
     path: routes.userOngoing,
     element: <UserOngoing />,
     route: Route,
@@ -659,6 +674,20 @@ const publicRoutes = [
     route: Route,
   },
 ];
+
+function AdminRedirect() {
+  React.useEffect(() => {
+    const isLocal =
+      window.location.hostname === "localhost" ||
+      window.location.hostname === "127.0.0.1" ||
+      window.location.hostname.startsWith("192.168.");
+    const adminUrl = isLocal
+      ? `${window.location.protocol}//${window.location.hostname}:3001/admin`
+      : "/admin";
+    window.location.assign(adminUrl);
+  }, []);
+  return null;
+}
 
 const withoutHeaderRoutes = [
   {
@@ -706,5 +735,16 @@ const withoutHeaderRoutes = [
     element: <PaymentFailed />,
     route: Route,
   },
+  {
+    path: "/admin",
+    element: <AdminRedirect />,
+    route: Route,
+  },
+  {
+    path: "/adimin",
+    element: <AdminRedirect />,
+    route: Route,
+  },
 ];
+
 export { publicRoutes, withoutHeaderRoutes };

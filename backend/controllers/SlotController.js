@@ -3,11 +3,22 @@ const Slot = require("../models/SlotModel");
 const mongoose = require('mongoose');
 
 const { ObjectId } = require("mongodb");
+
+const isValidSlotTime = (time) => /^([01]\d|2[0-3]):[0-5]\d$/.test(String(time || ""));
+const isHalfHourSlotTime = (time) => ["00", "30"].includes(String(time || "").slice(-2));
+const isValidSlotRange = (slot) => isValidSlotTime(slot?.startTime)
+  && isValidSlotTime(slot?.endTime)
+  && isHalfHourSlotTime(slot?.startTime)
+  && isHalfHourSlotTime(slot?.endTime)
+  && slot.startTime !== slot.endTime;
 // Controller to create slots
 exports.actualcreateSlots = async (req, res) => {
   try {
     const { dateFrom, dateTo, slots } = req.body;
     const venue_id = req.params.id;
+    if (!Array.isArray(slots) || !slots.length || slots.some((slot) => !isValidSlotRange(slot))) {
+      return res.status(400).json({ message: "Each slot must use 24-hour HH:mm times in 30-minute intervals and have different start and end times. 00:00 is allowed as midnight." });
+    }
     
 
     for (
@@ -83,6 +94,9 @@ exports.createSlots = async (req, res) => {
   try {
     const { dateFrom, dateTo, slots } = req.body;
     const venue_id = req.params.id;
+    if (!Array.isArray(slots) || !slots.length || slots.some((slot) => !isValidSlotRange(slot))) {
+      return res.status(400).json({ message: "Each slot must use 24-hour HH:mm times in 30-minute intervals and have different start and end times. 00:00 is allowed as midnight." });
+    }
     
 
     for (

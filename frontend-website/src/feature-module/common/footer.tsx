@@ -4,8 +4,7 @@ import AOS from "aos";
 import "aos/dist/aos.css";
 import ImageWithBasePath from "../../core/data/img/ImageWithBasePath";
 import { all_routes } from "../router/all_routes";
-import axios from "axios";
-import { API_URL } from "../../ApiUrl";
+import { COACH_TRAINER_CATEGORIES, toCategorySlug, VENUE_CATEGORIES } from "../../constants/categories";
 
 const Footer = () => {
   const routes = all_routes;
@@ -17,34 +16,9 @@ const Footer = () => {
   // Re-evaluated on every route change so the bottom nav reflects login/logout
   // without requiring a full page reload.
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(Boolean(localStorage.getItem("token")));
-  const sports = [
-    "Cricket Turfs", "Badminton Courts", "Football Grounds", "Swimming Pools", "Pickleball Courts", "Tennis Courts",
-    "Basketball Courts", "Table Tennis", "Volleyball", "Squash Courts", "Box Cricket", "Kabaddi", "Hockey", "Running", "Cycling", "Gym & Fitness",
-  ];
-
-  const coachCategories = [
-    { name: "Cricket Coaches", search: "Cricket" },
-    { name: "Badminton Coaches", search: "Badminton" },
-    { name: "Football Coaches", search: "Football" },
-    { name: "Tennis Coaches", search: "Tennis" },
-    { name: "Swimming Coaches", search: "Swimming" },
-    { name: "Gym & Fitness Coaches", search: "Gym" },
-    { name: "Yoga Coaches", search: "Yoga" },
-    { name: "Basketball Coaches", search: "Basketball" },
-    { name: "Skating Coaches", search: "Skating" },
-    { name: "Zumba Coaches", search: "Zumba" }
-  ];
-
-  const trainerCategories = [
-    { name: "Personal Fitness", search: "Fitness" },
-    { name: "Yoga & Meditation", search: "Yoga" },
-    { name: "Zumba & Dance", search: "Zumba" },
-    { name: "Gym & Strength", search: "Gym" },
-    { name: "Pilates & Core", search: "Pilates" },
-    { name: "Sports Conditioning", search: "Conditioning" },
-    { name: "Weight Loss", search: "Weight" },
-    { name: "Boxing Training", search: "Boxing" }
-  ];
+  const sports = VENUE_CATEGORIES;
+  const coachCategories = COACH_TRAINER_CATEGORIES;
+  const trainerCategories = COACH_TRAINER_CATEGORIES;
 
   useEffect(() => {
     AOS.init({ duration: 1000, once: true });
@@ -92,24 +66,34 @@ const Footer = () => {
                 <div className="social-icon">
                   <ul className="d-flex align-items-center gap-2 m-0 p-0">
                     <li>
-                      <Link to="#" className="facebook" aria-label="Facebook">
+                      <a href="https://www.facebook.com/kheloindore" className="facebook" aria-label="Facebook" target="_blank" rel="noopener noreferrer">
                         <i className="fab fa-facebook-f" />
-                      </Link>
+                      </a>
                     </li>
                     <li>
-                      <Link to="#" className="twitter" aria-label="Twitter">
-                        <i className="fab fa-twitter" />
-                      </Link>
+                      <a href="https://x.com/kheloindore" className="twitter" aria-label="X" target="_blank" rel="noopener noreferrer">
+                        <i className="fab fa-x-twitter" />
+                      </a>
                     </li>
                     <li>
-                      <Link to="#" className="instagram" aria-label="Instagram">
+                      <a href="https://www.instagram.com/khelo_indore/" className="instagram" aria-label="Instagram" target="_blank" rel="noopener noreferrer">
                         <i className="fab fa-instagram" />
-                      </Link>
+                      </a>
                     </li>
                     <li>
-                      <Link to="#" className="linked-in" aria-label="LinkedIn">
-                        <i className="fab fa-linkedin-in" />
-                      </Link>
+                      <a href="https://www.youtube.com/@KheloIndore" className="youtube" aria-label="YouTube" target="_blank" rel="noopener noreferrer">
+                        <i className="fab fa-youtube" />
+                      </a>
+                    </li>
+                    <li>
+                      <a href="https://www.pinterest.com/kheloindore/" className="pinterest" aria-label="Pinterest" target="_blank" rel="noopener noreferrer">
+                        <i className="fab fa-pinterest-p" />
+                      </a>
+                    </li>
+                    <li>
+                      <a href="https://www.snapchat.com/@kheloindore" className="snapchat" aria-label="Snapchat" target="_blank" rel="noopener noreferrer">
+                        <i className="fab fa-snapchat-ghost" />
+                      </a>
                     </li>
                   </ul>
                 </div>
@@ -122,7 +106,7 @@ const Footer = () => {
                 <ul>
                   {sports.slice(0, showAllSports ? sports.length : 6).map((sport) => (
                     <li key={sport}>
-                      <Link to={`/sports-venue?search=${encodeURIComponent(sport)}`}>{sport}</Link>
+                      <Link to={`/sports-venue/${toCategorySlug(sport)}`}>{sport}</Link>
                     </li>
                   ))}
                   <li>
@@ -139,8 +123,8 @@ const Footer = () => {
                 <h4 className="footer-title">Coaches</h4>
                 <ul>
                   {coachCategories.slice(0, showAllCoaches ? coachCategories.length : 6).map((coach) => (
-                    <li key={coach.name}>
-                      <Link to={`/coaches?search=${encodeURIComponent(coach.search)}`}>{coach.name}</Link>
+                    <li key={coach}>
+                      <Link to={`/coaches/category/${toCategorySlug(coach)}`}>{coach} Coaches</Link>
                     </li>
                   ))}
                   <li>
@@ -157,8 +141,8 @@ const Footer = () => {
                 <h4 className="footer-title">Trainers</h4>
                 <ul>
                   {trainerCategories.slice(0, showAllTrainers ? trainerCategories.length : 6).map((trainer) => (
-                    <li key={trainer.name}>
-                      <Link to={`/trainers?search=${encodeURIComponent(trainer.search)}`}>{trainer.name}</Link>
+                    <li key={trainer}>
+                      <Link to={`/trainers/category/${toCategorySlug(trainer)}`}>{trainer} Trainers</Link>
                     </li>
                   ))}
                   <li>

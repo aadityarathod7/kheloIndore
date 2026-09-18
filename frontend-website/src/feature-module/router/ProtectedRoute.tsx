@@ -1,5 +1,5 @@
 import React from "react";
-import { Navigate, Outlet } from "react-router-dom";
+import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { all_routes } from "./all_routes";
 
 interface ProtectedRouteProps {
@@ -7,6 +7,7 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
+  const location = useLocation();
   const token = localStorage.getItem("token");
 
   let isValidSession = false;
@@ -24,7 +25,8 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     localStorage.removeItem("token");
     localStorage.removeItem("id");
     localStorage.removeItem("role");
-    return <Navigate to={all_routes.login} replace />;
+    const target = location.pathname + location.search;
+    return <Navigate to={all_routes.login} state={{ URL: target, returnTo: target, from: location }} replace />;
   }
 
   return children ? <>{children}</> : <Outlet />;

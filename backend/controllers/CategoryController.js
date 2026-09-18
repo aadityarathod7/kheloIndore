@@ -1,5 +1,17 @@
 const express = require("express");
 const Category = require("../models/CategoryModel");
+const { VENUE_CATEGORIES, COACH_TRAINER_CATEGORIES } = require("../config/venueCategories");
+
+exports.FetchProviderCategories = (_req, res) => {
+  return res.status(200).json({
+    success: true,
+    categories: {
+      venue: VENUE_CATEGORIES,
+      coach: COACH_TRAINER_CATEGORIES,
+      trainer: COACH_TRAINER_CATEGORIES,
+    },
+  });
+};
 
 exports.AddCategory = async (req, res) => {
   try {

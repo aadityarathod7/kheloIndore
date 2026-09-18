@@ -1,4 +1,14 @@
 const Contact = require("../models/ContactUsModel");
+const Counter = require("../models/CounterModel");
+
+const nextTicketNumber = async () => {
+  const counter = await Counter.findOneAndUpdate(
+    { name: "contact-enquiry" },
+    { $inc: { sequence: 1 } },
+    { new: true, upsert: true, setDefaultsOnInsert: true }
+  );
+  return `KI-EN-${String(counter.sequence).padStart(6, "0")}`;
+};
 
 const validateMobile = function (mobile) {
   return /^\d{10}$/.test(mobile); // Checks if the mobile number is exactly 10 digits.
@@ -36,7 +46,7 @@ exports.createContactUs = async (req, res) => {
 
   // If all validations pass, proceed to create the contact
   try {
-    const contact = new Contact(req.body);
+    const contact = new Contact({ ...req.body, ticket_number: await nextTicketNumber() });
     await contact.save();
     return res
       .status(200)
@@ -75,6 +85,10 @@ exports.fetchContactUs = async (req, res) => {
     const contacts = await Contact.find(queryConditions).sort({
       createdAt: -1,
     });
+    await Promise.all(contacts.filter((contact) => !contact.ticket_number).map(async (contact) => {
+      contact.ticket_number = await nextTicketNumber();
+      await contact.save();
+    }));
 
     return res.status(200).json({
       success: true,
@@ -88,3 +102,16 @@ exports.fetchContactUs = async (req, res) => {
   }
 };
 
+exports.resolveContactUs = async (req, res) => {
+  try {
+    const contact = await Contact.findById(req.params.id);
+    if (!contact) return res.status(404).json({ success: false, message: "Enquiry not found." });
+    contact.status = "Resolved";
+    contact.resolved_at = new Date();
+    contact.resolved_by = req.user?.userID || null;
+    await contact.save();
+    return res.status(200).json({ success: true, message: "Enquiry resolved.", data: contact });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
