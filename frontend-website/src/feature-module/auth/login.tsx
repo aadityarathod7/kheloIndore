@@ -138,8 +138,10 @@ const Login = () => {
           localStorage.setItem("token2", response.data.token);
           setStep("OTP");
 
-          const deliveredVia = response.data?.deliveryChannels?.includes("whatsapp") ? "WhatsApp" : "SMS";
-          showToast(`OTP sent via ${deliveredVia}.`, "success", 6000);
+          const hasWa = response.data?.deliveryChannels?.includes("whatsapp");
+          const hasSms = response.data?.deliveryChannels?.includes("sms");
+          const deliveredVia = hasWa && hasSms ? "SMS & WhatsApp" : hasWa ? "WhatsApp" : "SMS";
+          showToast(`OTP sent via ${deliveredVia}. Please check your phone messages.`, "success", 6000);
         } else {
           Swal.fire({
             title: "Error",
@@ -262,7 +264,7 @@ const Login = () => {
           <p className="text-muted m-0" style={{ fontSize: "12.5px", color: "#64748B" }}>
             {step === "MOBILE"
               ? "Enter your mobile number to get OTP"
-              : `Enter 6-digit code sent via ${deliveryChannel === "whatsapp" ? "WhatsApp" : "SMS"} to +91 ${mobileNumber}`}
+              : `Enter 6-digit code sent to +91 ${mobileNumber} (Check SMS & WhatsApp)`}
           </p>
         </div>
 
@@ -411,15 +413,24 @@ const Login = () => {
               )}
             </button>
 
-            <div className="text-center mt-3">
+            <div className="d-flex flex-column align-items-center gap-2 mt-3">
               <button
                 type="button"
                 className="btn btn-link btn-sm text-secondary text-decoration-none"
                 style={{ fontSize: "13px" }}
-                  onClick={() => handleSendOtp(undefined, deliveryChannel)}
+                onClick={() => handleSendOtp(undefined, "sms")}
                 disabled={loading}
               >
-                Didn&apos;t receive OTP? <span className="text-success fw-bold">Resend OTP</span>
+                Didn&apos;t receive on WhatsApp? <span className="text-success fw-bold">Send OTP via SMS</span>
+              </button>
+              <button
+                type="button"
+                className="btn btn-link btn-sm text-secondary text-decoration-none p-0"
+                style={{ fontSize: "12px" }}
+                onClick={() => handleSendOtp(undefined, "whatsapp")}
+                disabled={loading}
+              >
+                Resend on WhatsApp
               </button>
             </div>
           </form>
