@@ -103,6 +103,7 @@ export const all_routes = {
   contactUs: "/contact-us",
   refundPolicy: "/refund-policy",
   paymentSuccess: "/payment-success",
+  bookingSuccess: "/booking-success",
   paymentFailed: "/payment-failed",
   commonpage: "/go-to",
   venueByCategory: "/sports-venue/:type",

@@ -56,8 +56,20 @@ const UserBookings = () => {
   const token = localStorage.getItem("token");
 
   useEffect(() => {
-    window.scrollTo(0, 0)
-  }, [])
+    window.scrollTo(0, 0);
+    const searchParams = new URLSearchParams(window.location.search);
+    if (searchParams.get("booking") === "success") {
+      Swal.fire({
+        icon: "success",
+        title: "Booking Successful! 🎉",
+        text: "Your booking has been placed and confirmed successfully. You can review your bookings below.",
+        confirmButtonColor: "#119C59",
+        confirmButtonText: "View Bookings",
+      });
+      const cleanUrl = window.location.pathname;
+      window.history.replaceState({}, document.title, cleanUrl);
+    }
+  }, []);
 
   useEffect(() => {
     const getTokenFromStorage = () => {

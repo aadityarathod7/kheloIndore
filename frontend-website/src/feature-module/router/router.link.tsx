@@ -736,6 +736,11 @@ const withoutHeaderRoutes = [
     route: Route,
   },
   {
+    path: routes.bookingSuccess,
+    element: <PaymentSuccess />,
+    route: Route,
+  },
+  {
     path: routes.paymentFailed,
     element: <PaymentFailed />,
     route: Route,

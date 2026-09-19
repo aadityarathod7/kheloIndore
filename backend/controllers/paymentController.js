@@ -64,6 +64,37 @@ const safeRedirect = (res, targetUrl) => {
   return res.redirect(finalUrl);
 };
 
+const getSuccessRedirectUrl = ({ service, bookingId, txnId, amount, name, date, slots, pdfUrl }) => {
+  let baseUrl = process.env.WEBSITE_URL;
+  if (!baseUrl && process.env.REDIRECT_URL) {
+    try {
+      const urlStr = process.env.REDIRECT_URL.startsWith("http")
+        ? process.env.REDIRECT_URL
+        : `https://${process.env.REDIRECT_URL}`;
+      baseUrl = new URL(urlStr).origin;
+    } catch (e) {
+      baseUrl = "https://kheloindore.in";
+    }
+  }
+  if (!baseUrl) baseUrl = "https://kheloindore.in";
+  if (!baseUrl.startsWith("http://") && !baseUrl.startsWith("https://")) {
+    baseUrl = `https://${baseUrl}`;
+  }
+
+  const query = new URLSearchParams();
+  query.set("status", "success");
+  if (service) query.set("service", service);
+  if (bookingId) query.set("bookingId", String(bookingId));
+  if (txnId) query.set("txnId", String(txnId));
+  if (amount) query.set("amount", String(amount));
+  if (name) query.set("name", String(name));
+  if (date) query.set("date", String(date));
+  if (slots) query.set("slots", String(slots));
+  if (pdfUrl) query.set("pdf", String(pdfUrl));
+
+  return `${baseUrl}/payment-success?${query.toString()}`;
+};
+
 const createBookingNotifications = async ({ providerUserId, bookingId, providerName, bookingType }) => {
   try {
     const superAdmins = await User.find({ role: "Super Admin", status: true }).select("_id").lean();
@@ -969,11 +1000,20 @@ const venuePaymentStatus = async (req, res) => {
       // subsequent callbacks idempotent by recognising the saved booking.
       const existingBooking = await Booking.findOne({ merchantTransaction_id: txnId }).lean();
       if (existingBooking) {
-        let redirectUrl = process.env.REDIRECT_URL || "https://kheloindore.in/user/user-bookings";
-        if (!redirectUrl.startsWith("http://") && !redirectUrl.startsWith("https://")) {
-          redirectUrl = `https://${redirectUrl}`;
-        }
-        return res.redirect(redirectUrl);
+        let vName = "Venue Booking";
+        try {
+          const v = await Venue1.findById(existingBooking.venue_id).select("name").lean();
+          if (v) vName = v.name;
+        } catch (e) {}
+        return safeRedirect(res, getSuccessRedirectUrl({
+          service: "venue",
+          bookingId: existingBooking._id,
+          txnId: existingBooking.merchantTransaction_id || existingBooking.transaction_id,
+          amount: existingBooking.total_price,
+          name: vName,
+          date: existingBooking.date ? new Date(existingBooking.date).toLocaleDateString() : "",
+          pdfUrl: existingBooking.pdf_url,
+        }));
       }
       return res.status(404).json({ error: "Payment session not found or has expired" });
     }
@@ -1052,7 +1092,15 @@ const venuePaymentStatus = async (req, res) => {
     if (result.data.success == true || state === "COMPLETED" || responseCode === "PAYMENT_SUCCESS") {
       const existing = await Booking.findOne({ merchantTransaction_id: txnId });
       if (existing) {
-        return safeRedirect(res, process.env.REDIRECT_URL);
+        return safeRedirect(res, getSuccessRedirectUrl({
+          service: "venue",
+          bookingId: existing._id,
+          txnId: existing.merchantTransaction_id || existing.transaction_id,
+          amount: existing.total_price,
+          name: venueName,
+          date: existing.date ? new Date(existing.date).toLocaleDateString() : "",
+          pdfUrl: existing.pdf_url,
+        }));
       }
 
       const newTransaction = await Transaction.create({
@@ -1164,7 +1212,16 @@ const venuePaymentStatus = async (req, res) => {
       } catch (emailError) {
         console.error("Email sending failed in venuePaymentStatus:", emailError);
       }
-      return safeRedirect(res, process.env.REDIRECT_URL);
+      return safeRedirect(res, getSuccessRedirectUrl({
+        service: "venue",
+        bookingId: newBooking._id,
+        txnId: transactionId || txnId,
+        amount: amount / 100,
+        name: venueName,
+        date: new Date(date).toLocaleDateString(),
+        slots: allSlotDetails.map(s => `${s.startTime} - ${s.endTime}`).join(", "),
+        pdfUrl: pdfUrl,
+      }));
     } else {
       await Transaction.create({
         user_id,
@@ -1512,6 +1569,23 @@ const coachPaymentStatus = async (req, res) => {
     // Fetch user details
     const user = await UserDetailsAtPayments.findOne({ payment_order_id: merchantTransactionId }).sort({ createdAt: -1 }) || await UserDetailsAtPayments.findOne({ user_id: userId }).sort({ createdAt: -1 });
     if (!user) {
+      const existing = await CoachBooking.findOne({ merchantTransaction_id: merchantTransactionId }).lean();
+      if (existing) {
+        let cName = "Coach Booking";
+        try {
+          const c = await CoachModel.findById(existing.coachId).select("first_name last_name").lean();
+          if (c) cName = `${c.first_name || ""} ${c.last_name || ""}`.trim() || "Coach Booking";
+        } catch (e) {}
+        return safeRedirect(res, getSuccessRedirectUrl({
+          service: "coach",
+          bookingId: existing._id,
+          txnId: existing.merchantTransaction_id || existing.transaction_id,
+          amount: existing.total_price,
+          name: cName,
+          date: existing.startDate ? new Date(existing.startDate).toLocaleDateString() : "",
+          pdfUrl: existing.pdf_url,
+        }));
+      }
       return res.status(404).json({ success: false, message: "No payment details found for user" });
     }
 
@@ -1606,7 +1680,15 @@ const slotDates = `${formattedStartDate} to ${formattedEndDate}`;
           if (result.data.success == true || state === "COMPLETED" || responseCode === "PAYMENT_SUCCESS") {
             const existing = await CoachBooking.findOne({ merchantTransaction_id: merchantTransactionId });
             if (existing) {
-              return safeRedirect(res, process.env.REDIRECT_URL);
+              return safeRedirect(res, getSuccessRedirectUrl({
+                service: "coach",
+                bookingId: existing._id,
+                txnId: existing.merchantTransaction_id || existing.transaction_id,
+                amount: existing.total_price,
+                name: coachName,
+                date: existing.startDate ? new Date(existing.startDate).toLocaleDateString() : "",
+                pdfUrl: existing.pdf_url,
+              }));
             }
               const newBooking = await CoachBooking.create({
                 userId: user_id,
@@ -1731,7 +1813,16 @@ const slotDates = `${formattedStartDate} to ${formattedEndDate}`;
     // Delete temporary user payment record
     await UserDetailsAtPayments.deleteOne({ user_id });
    
-    return safeRedirect(res, process.env.REDIRECT_URL);
+    return safeRedirect(res, getSuccessRedirectUrl({
+      service: "coach",
+      bookingId: newBooking._id,
+      txnId: transactionId || merchantTransaction_id,
+      amount: amount / 100,
+      name: coachName,
+      date: start_date ? new Date(start_date).toLocaleDateString() : "",
+      slots: `${start_time || ""} - ${end_time || ""}`.trim(),
+      pdfUrl: pdfUrl,
+    }));
   } else {
     const transaction = await Transaction.create({
       user_id,
@@ -1970,6 +2061,23 @@ const personalTrainerPaymentStatus = async (req, res) => {
 
     const user = await UserDetailsAtPayments.findOne({ payment_order_id: merchantTransactionId }).sort({ createdAt: -1 }) || await UserDetailsAtPayments.findOne({ user_id: userId }).sort({ createdAt: -1 });
     if (!user) {
+      const existing = await PersonalTrainerBooking.findOne({ merchantTransaction_id: merchantTransactionId }).lean();
+      if (existing) {
+        let tName = "Personal Trainer";
+        try {
+          const t = await personalTrainer.findById(existing.pt_id).select("first_name last_name").lean();
+          if (t) tName = `${t.first_name || ""} ${t.last_name || ""}`.trim() || "Personal Trainer";
+        } catch (e) {}
+        return safeRedirect(res, getSuccessRedirectUrl({
+          service: "trainer",
+          bookingId: existing._id,
+          txnId: existing.merchantTransaction_id || existing.transaction_id,
+          amount: existing.total_price,
+          name: tName,
+          date: existing.startDate ? new Date(existing.startDate).toLocaleDateString() : "",
+          pdfUrl: existing.pdf_url
+        }));
+      }
       return res.status(404).json({ success: false, message: "No payment details found for user" });
     }
 
@@ -2051,7 +2159,15 @@ const slotDates = `${formattedStartDate} to ${formattedEndDate}`;
     if (result.data.success == true || state === "COMPLETED" || responseCode === "PAYMENT_SUCCESS") {
       const existing = await PersonalTrainerBooking.findOne({ merchantTransaction_id: merchantTransactionId });
       if (existing) {
-        return safeRedirect(res, process.env.REDIRECT_URL);
+        return safeRedirect(res, getSuccessRedirectUrl({
+          service: "trainer",
+          bookingId: existing._id,
+          txnId: existing.merchantTransaction_id || existing.transaction_id,
+          amount: existing.total_price,
+          name: trainerName,
+          date: existing.startDate ? new Date(existing.startDate).toLocaleDateString() : "",
+          pdfUrl: existing.pdf_url,
+        }));
       }
 
           const newBooking = await PersonalTrainerBooking.create({
@@ -2166,10 +2282,19 @@ const slotDates = `${formattedStartDate} to ${formattedEndDate}`;
   } catch (emailError) {
     console.error("Email sending failed in personalTrainerPaymentStatus:", emailError);
   }
-    await User.findByIdAndUpdate(user_id, { $inc: { booking_count: 1 } }, { new: true });
+  await User.findByIdAndUpdate(user_id, { $inc: { booking_count: 1 } }, { new: true });
+  await UserDetailsAtPayments.deleteOne({ user_id });
 
-    await UserDetailsAtPayments.deleteOne({ user_id });
-    return safeRedirect(res, process.env.REDIRECT_URL);
+    return safeRedirect(res, getSuccessRedirectUrl({
+      service: "trainer",
+      bookingId: newBooking._id,
+      txnId: transactionId || merchantTransaction_id,
+      amount: amount / 100,
+      name: trainerName,
+      date: start_date ? new Date(start_date).toLocaleDateString() : "",
+      slots: `${start_time || ""} - ${end_time || ""}`.trim(),
+      pdfUrl: pdfUrl,
+    }));
   } else {
     return safeRedirect(res, process.env.FAIL_URL);
   }
