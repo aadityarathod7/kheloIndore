@@ -18,7 +18,7 @@ const bhashSmsPhoneNumber = (mobile) => {
 const bhashWhatsAppPhoneNumber = (mobile) => {
   const digits = String(mobile || "").replace(/\D/g, "");
   const phone10 = digits.length === 12 && digits.startsWith("91") ? digits.slice(2) : digits;
-  if (phone10.length === 10) return `91${phone10}`;
+  if (phone10.length === 10) return phone10;
   throw new Error("A valid Indian mobile number is required");
 };
 
