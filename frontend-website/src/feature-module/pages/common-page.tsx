@@ -75,16 +75,16 @@ export default function CommonPage() {
                 const response = await axios.get(
                     `${API_URL}/web/PersonalTraining/fetchAll`
                 );
-                const trainerData = response.data.data;
+                const trainerData = Array.isArray(response.data.data) ? response.data.data.filter(Boolean) : [];
                 const mappedData = trainerData.map((trainer: any) => ({
-                    first_name: trainer.first_name,
-                    last_name: trainer.last_name,
-                    near_by_location: trainer.near_by_location,
-                    category: trainer.category,
-                    price: trainer.price,
-                    _id: trainer._id,
-                    specializations: trainer.specializations,
-                    profile_picture: trainer.profile_picture,
+                    first_name: trainer?.first_name || "",
+                    last_name: trainer?.last_name || "",
+                    near_by_location: trainer?.near_by_location || "",
+                    category: trainer?.category || "",
+                    price: trainer?.price || 0,
+                    _id: trainer?._id,
+                    specializations: trainer?.specializations || [],
+                    profile_picture: trainer?.profile_picture || [],
                 }));
                 setTrainer(mappedData);
 
@@ -102,20 +102,20 @@ export default function CommonPage() {
         const fetchCoaches = async () => {
             try {
                 const response = await axios.get(`${API_URL}/web/fetch-all-coaches`);
-                const coachData = response.data.data;
+                const coachData = Array.isArray(response.data.data) ? response.data.data.filter(Boolean) : [];
                 const mappedData = coachData.map((coach: any) => ({
-                    first_name: coach.first_name,
-                    last_name: coach.last_name,
-                    location: coach.location,
-                    experience: coach.experience,
-                    availability: coach.availability,
-                    specializations: coach.specializations,
-                    bio: coach.bio,
-                    _id: coach._id,
-                    price: coach.price,
-                    profile_picture: coach.profile_picture,
-                    category: coach.category,
-                    near_by_location: coach.near_by_location,
+                    first_name: coach?.first_name || "",
+                    last_name: coach?.last_name || "",
+                    location: coach?.location || "",
+                    experience: coach?.experience || "",
+                    availability: coach?.availability || "",
+                    specializations: coach?.specializations || [],
+                    bio: coach?.bio || "",
+                    _id: coach?._id,
+                    price: coach?.price || 0,
+                    profile_picture: coach?.profile_picture || [],
+                    category: coach?.category || "",
+                    near_by_location: coach?.near_by_location || "",
                 }));
                 setCoaches(mappedData);
             } catch {
@@ -399,7 +399,7 @@ export default function CommonPage() {
                         />
                       </Link> */}
 
-                                                <Link to={`/trainers/trainer/${trainer.first_name.replace(/\s+/g, '-').toLowerCase()}/${trainer._id}`}>
+                                                <Link to={`/trainers/trainer/${(trainer?.first_name || "trainer").replace(/\s+/g, '-').toLowerCase()}/${trainer._id}`}>
                                                     <ImageWithBasePath
                                                         src={
                                                             // trainer.profile_picture
@@ -435,7 +435,7 @@ export default function CommonPage() {
                                             </div>
                                             <div className="listing-content">
                                                 <h3 className="listing-title">
-                                                    <Link to={`/trainers/trainer/${trainer.first_name.replace(/\s+/g, '-').toLowerCase()}/${trainer._id}`}>
+                                                    <Link to={`/trainers/trainer/${(trainer?.first_name || "trainer").replace(/\s+/g, '-').toLowerCase()}/${trainer._id}`}>
                                                         {trainer.first_name}&nbsp;&nbsp;{trainer.last_name}
                                                     </Link>
                                                 </h3>
@@ -451,7 +451,7 @@ export default function CommonPage() {
                                                     <ul>
                                                         <li>
                                                             <Link
-                                                                to={`/trainers/trainer/${trainer.first_name.replace(/\s+/g, '-').toLowerCase()}/${trainer._id}`}
+                                                                to={`/trainers/trainer/${(trainer?.first_name || "trainer").replace(/\s+/g, '-').toLowerCase()}/${trainer._id}`}
                                                                 className="btn btn-primary w-100"
                                                             >
                                                                 <i className="feather-eye me-2" />

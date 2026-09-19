@@ -136,13 +136,15 @@ const UserBookings = () => {
   }, [user_id]);
 
   useEffect(() => {
-    const ptData = bookingData?.data?.personalTrainer
-    const transformed = ptData?.map((b: unknown) => {
-      const booking = b as any;
+    const ptData = Array.isArray(bookingData?.data?.personalTrainer)
+      ? bookingData.data.personalTrainer.filter(Boolean)
+      : [];
+    const transformed = ptData.map((b: unknown) => {
+      const booking = (b as any) || {};
       return {
         id: booking._id,
-        first_name: booking?.pt_id?.first_name,
-        last_name: booking?.pt_id?.last_name,
+        first_name: booking?.pt_id?.first_name || "Personal",
+        last_name: booking?.pt_id?.last_name || "Trainer",
         startDate: booking?.startDate,
         endDate: booking?.endDate,
         startTime: booking?.start_time,
@@ -158,12 +160,14 @@ const UserBookings = () => {
     });
     setTrainerBookingData(transformed);
 
-    const venueData = bookingData?.data?.venueAdmin
-    const transformedVenue = venueData?.map((b: unknown) => {
-      const booking = b as any;
+    const venueData = Array.isArray(bookingData?.data?.venueAdmin)
+      ? bookingData.data.venueAdmin.filter(Boolean)
+      : [];
+    const transformedVenue = venueData.map((b: unknown) => {
+      const booking = (b as any) || {};
       return {
         date: booking?.date,
-        name: booking?.venue_id?.name,
+        name: booking?.venue_id?.name || "Sports Venue",
         vendor_type: booking?.venue_id?.vendor_type,
         slots: booking?.slot_time,
         total_price: booking?.total_price,
@@ -179,14 +183,16 @@ const UserBookings = () => {
     });
     setVenueBookingData(transformedVenue);
 
-    const coachData = bookingData?.data?.coach
-    const transformedCoach = coachData?.map((b: unknown) => {
-      const booking = b as any;
+    const coachData = Array.isArray(bookingData?.data?.coach)
+      ? bookingData.data.coach.filter(Boolean)
+      : [];
+    const transformedCoach = coachData.map((b: unknown) => {
+      const booking = (b as any) || {};
       return {
         startDate: booking?.startDate,
         endDate: booking?.endDate,
-        first_name: booking?.coachId?.first_name,
-        last_name: booking?.coachId?.last_name,
+        first_name: booking?.coachId?.first_name || "Coach",
+        last_name: booking?.coachId?.last_name || "",
         packageType: booking?.packageType,
         paymentState: booking?.paymentState,
         total_price: booking?.total_price,
@@ -201,7 +207,6 @@ const UserBookings = () => {
       };
     });
     setCoachBookingData(transformedCoach);
-
   }, [bookingData]);
 
   const formatDate = (dateString: string | Date) => {
@@ -845,7 +850,7 @@ const UserBookings = () => {
                                       <h2 className="table-avatar">
                                         <span className="table-head-name flex-grow-1">
                                           <Link to="#" data-bs-toggle="modal" data-bs-target="#profile-coach">
-                                            {bookingData.first_name} {bookingData.last_name}
+                                            {bookingData?.first_name || ""} {bookingData?.last_name || ""}
                                           </Link>
                                         </span>
                                       </h2>
@@ -951,7 +956,7 @@ const UserBookings = () => {
                                       <h2 className="table-avatar">
                                         <span className="table-head-name flex-grow-1">
                                           <Link to="#" data-bs-toggle="modal" data-bs-target="#profile-coach">
-                                            {bookingData.first_name} {bookingData.last_name}
+                                            {bookingData?.first_name || ""} {bookingData?.last_name || ""}
                                           </Link>
                                         </span>
                                       </h2>

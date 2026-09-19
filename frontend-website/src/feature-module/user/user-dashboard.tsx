@@ -445,34 +445,34 @@ const UserDashboard = () => {
 
 
   const recentBookings = [
-    ...venueBookingData.map((booking) => ({
-      id: booking.id,
-      name: booking.name || "Sports venue",
-      type: booking.vendor_type || "Venue",
-      date: booking.date,
-      amount: booking.total_price,
-      status: booking.status,
+    ...(venueBookingData || []).filter(Boolean).map((booking) => ({
+      id: booking?.id,
+      name: booking?.name || "Sports venue",
+      type: booking?.vendor_type || "Venue",
+      date: booking?.date,
+      amount: booking?.total_price,
+      status: booking?.status,
       icon: "fa-map-marker-alt",
     })),
-    ...coachBookingData.map((booking) => ({
-      id: booking.id,
-      name: `${booking.first_name || ""} ${booking.last_name || ""}`.trim() || "Coach",
-      type: booking.packageType || "Coach",
-      date: booking.startDate,
-      amount: booking.total_price,
-      status: booking.status,
+    ...(coachBookingData || []).filter(Boolean).map((booking) => ({
+      id: booking?.id,
+      name: `${booking?.first_name || ""} ${booking?.last_name || ""}`.trim() || "Coach",
+      type: booking?.packageType || "Coach",
+      date: booking?.startDate,
+      amount: booking?.total_price,
+      status: booking?.status,
       icon: "fa-user-tie",
     })),
-    ...trainerBookingData.map((booking) => ({
-      id: booking.id,
-      name: `${booking.first_name || ""} ${booking.last_name || ""}`.trim() || "Trainer",
+    ...(trainerBookingData || []).filter(Boolean).map((booking) => ({
+      id: booking?.id,
+      name: `${booking?.first_name || ""} ${booking?.last_name || ""}`.trim() || "Trainer",
       type: "Trainer",
-      date: booking.startDate,
-      amount: booking.total_price,
-      status: booking.status,
+      date: booking?.startDate,
+      amount: booking?.total_price,
+      status: booking?.status,
       icon: "fa-dumbbell",
     })),
-  ]
+  ];
     .sort((a, b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime())
     .slice(0, 5);
 
@@ -1109,12 +1109,12 @@ const UserDashboard = () => {
                                 <i className="fas fa-spinner fa-spin text-success me-2" /> Loading bookings...
                               </td>
                             </tr>
-                          ) : [...coachBookingData, ...trainerBookingData].length > 0 ? (
-                            [...coachBookingData, ...trainerBookingData].slice(0, 6).map((b, idx) => {
-                              const isPT = !b.packageType;
+                          ) : [...coachBookingData, ...trainerBookingData].filter(Boolean).length > 0 ? (
+                            [...coachBookingData, ...trainerBookingData].filter(Boolean).slice(0, 6).map((b, idx) => {
+                              const isPT = !b?.packageType;
                               const name = isPT 
-                                ? `Trainer ${b.first_name} ${b.last_name}` 
-                                : `Coach ${b.first_name} ${b.last_name}`;
+                                ? `Trainer ${b?.first_name || ""} ${b?.last_name || ""}`.trim() || "Trainer"
+                                : `Coach ${b?.first_name || ""} ${b?.last_name || ""}`.trim() || "Coach";
                               const typeText = isPT ? "Trainer" : (b.packageType || "Coaching Lesson");
                               const img = isPT ? "/assets/img/featured/featured-07.jpg" : "/assets/img/featured/featured-05.jpg";
                               return (
@@ -1298,12 +1298,12 @@ const UserDashboard = () => {
                                 <i className="fas fa-spinner fa-spin text-success me-2" /> Loading upcoming coaching...
                               </td>
                             </tr>
-                          ) : [...upcomingAppointments.coaches, ...upcomingAppointments.trainers].length > 0 ? (
-                            [...upcomingAppointments.coaches, ...upcomingAppointments.trainers].slice(0, 5).map((b, idx) => {
-                              const isPT = !b.packageType;
+                          ) : [...upcomingAppointments.coaches, ...upcomingAppointments.trainers].filter(Boolean).length > 0 ? (
+                            [...upcomingAppointments.coaches, ...upcomingAppointments.trainers].filter(Boolean).slice(0, 5).map((b, idx) => {
+                              const isPT = !b?.packageType;
                               const name = isPT 
-                                ? `Trainer ${b.first_name} ${b.last_name}` 
-                                : `Coach ${b.first_name} ${b.last_name}`;
+                                ? `Trainer ${b?.first_name || ""} ${b?.last_name || ""}`.trim() || "Trainer"
+                                : `Coach ${b?.first_name || ""} ${b?.last_name || ""}`.trim() || "Coach";
                               const typeText = isPT ? "Trainer" : (b.packageType || "Coaching Lesson");
                               const img = isPT ? "/assets/img/featured/featured-07.jpg" : "/assets/img/featured/featured-05.jpg";
                               return (
@@ -1696,12 +1696,12 @@ const UserDashboard = () => {
                                 <i className="fas fa-spinner fa-spin text-success me-2" /> Loading coaching invoices...
                               </td>
                             </tr>
-                          ) : [...coachBookingData, ...trainerBookingData].length > 0 ? (
-                            [...coachBookingData, ...trainerBookingData].slice(0, 5).map((b, idx) => {
-                              const isPT = !b.packageType;
+                          ) : [...coachBookingData, ...trainerBookingData].filter(Boolean).length > 0 ? (
+                            [...coachBookingData, ...trainerBookingData].filter(Boolean).slice(0, 5).map((b, idx) => {
+                              const isPT = !b?.packageType;
                               const name = isPT 
-                                ? `Trainer ${b.first_name} ${b.last_name}` 
-                                : `Coach ${b.first_name} ${b.last_name}`;
+                                ? `Trainer ${b?.first_name || ""} ${b?.last_name || ""}`.trim() || "Trainer"
+                                : `Coach ${b?.first_name || ""} ${b?.last_name || ""}`.trim() || "Coach";
                               const typeText = isPT ? "Trainer" : (b.packageType || "Coaching Lesson");
                               const img = isPT ? "/assets/img/featured/featured-07.jpg" : "/assets/img/featured/featured-05.jpg";
                               return (
