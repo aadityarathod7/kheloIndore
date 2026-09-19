@@ -1001,17 +1001,9 @@ exports.loginUserWithMobile = async (req, res) => {
       });
     }
 
-    const hasWa = delivery.delivered.includes("whatsapp");
-    const hasSms = delivery.delivered.includes("sms");
-    const deliveryMsg = hasWa && hasSms
-      ? "OTP sent via SMS & WhatsApp"
-      : hasWa
-      ? "OTP sent via WhatsApp"
-      : "OTP sent via SMS";
-
     return res.status(200).json({
       success: true,
-      message: deliveryMsg,
+      message: "OTP sent successfully",
       token,
       deliveryChannels: delivery.delivered,
     });

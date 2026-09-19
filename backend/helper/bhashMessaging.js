@@ -15,13 +15,6 @@ const bhashSmsPhoneNumber = (mobile) => {
   throw new Error("A valid Indian mobile number is required");
 };
 
-const bhashWhatsAppPhoneNumber = (mobile) => {
-  const digits = String(mobile || "").replace(/\D/g, "");
-  const phone10 = digits.length === 12 && digits.startsWith("91") ? digits.slice(2) : digits;
-  if (phone10.length === 10) return `91${phone10}`;
-  throw new Error("A valid Indian mobile number is required");
-};
-
 const describeProviderError = (error) => {
   if (!error) return "No error details returned";
   const status = error.response?.status ? `HTTP ${error.response.status}` : "";
@@ -39,21 +32,19 @@ const ensureBhashAccepted = (response, channel) => {
 };
 
 const sendSms = async ({ mobile, message }) => {
-  const phone = bhashSmsPhoneNumber(mobile);
   const response = await axios.get(
     SMS_API_URL,
     { params: {
       user: required("BHASH_SMS_USER"),
       pass: required("BHASH_SMS_PASSWORD"),
       sender: required("BHASH_SMS_SENDER_ID"),
-      phone,
+      phone: bhashSmsPhoneNumber(mobile),
       text: message,
       priority: process.env.BHASH_SMS_PRIORITY || "ndnd",
       stype: process.env.BHASH_SMS_TYPE || "normal",
     }, timeout: 10000 }
   );
 
-  console.log(`[BhashSMS SMS] Dispatched to ${phone}, response: ${response.data}`);
   ensureBhashAccepted(response, "SMS");
 
   return { channel: "sms", providerResponse: response.data };
@@ -64,14 +55,13 @@ const sendWhatsApp = async ({ mobile, otp }) => {
   const pass = process.env.BHASH_WHATSAPP_PASSWORD || required("BHASH_SMS_PASSWORD");
   const sender = process.env.BHASH_WHATSAPP_SENDER_ID || "BUZWAP";
   const text = process.env.BHASH_WHATSAPP_OTP_TEMPLATE || "kheloindore_otp";
-  const phone = bhashWhatsAppPhoneNumber(mobile);
 
   const response = await axios.get(process.env.BHASH_WHATSAPP_API_URL || SMS_API_URL, {
     params: {
       user,
       pass,
       sender,
-      phone,
+      phone: bhashSmsPhoneNumber(mobile),
       text,
       priority: "wa",
       stype: "auth",
@@ -79,25 +69,17 @@ const sendWhatsApp = async ({ mobile, otp }) => {
     },
     timeout: 10000,
   });
-
-  console.log(`[BhashSMS WhatsApp] Dispatched to ${phone}, response: ${response.data}`);
   ensureBhashAccepted(response, "WhatsApp OTP");
   return { channel: "whatsapp", providerResponse: response.data };
 };
 
-/** Sends the same OTP through configured BhashSMS channels. Always includes SMS if WhatsApp is requested to guarantee delivery. */
+/** Sends the same OTP through every configured BhashSMS channel. */
 const sendOtp = async ({ mobile, otp, channels: requestedChannels }) => {
-  let channels = (requestedChannels || process.env.BHASH_OTP_CHANNELS || "sms")
+  const channels = (requestedChannels || process.env.BHASH_OTP_CHANNELS || "sms")
     .toString()
     .split(",")
     .map((channel) => channel.trim().toLowerCase())
     .filter(Boolean);
-
-  // Guarantee delivery: if WhatsApp is requested, always dispatch SMS as well
-  if (channels.includes("whatsapp") && !channels.includes("sms")) {
-    channels.push("sms");
-  }
-
   const message = `Your login OTP is ${otp} for Khelo Indore powered by MANS Sports Entertainment. It is valid for 10 min. Please do not share it with anyone.`;
   const senders = { sms: sendSms, whatsapp: sendWhatsApp };
 
