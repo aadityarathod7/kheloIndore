@@ -767,13 +767,13 @@ const UserDashboard = () => {
               </p>
               
               <div className="d-flex align-items-center flex-wrap gap-2 mt-3">
-                <div className="d-inline-flex align-items-center bg-white px-3 py-2 rounded-pill shadow-sm" style={{ fontSize: "13px", border: "1px solid #E5E7EB" }}>
+                <div className="ki-user-breadcrumb d-inline-flex align-items-center bg-white px-3 py-2 rounded-pill shadow-sm" style={{ fontSize: "13px", border: "1px solid #E5E7EB" }}>
                   <Link to="/" style={{ color: "#64748B", textDecoration: "none", fontWeight: "500" }}><i className="fas fa-home me-1" style={{ color: "#64748B" }} /> Home</Link>
                   <span style={{ margin: "0 10px", color: "#64748B" }}><i className="fas fa-chevron-right" style={{ fontSize: "10px", color: "#64748B" }} /></span>
                   <span style={{ color: "#22C55E", fontWeight: "600" }}>User Dashboard</span>
                 </div>
 
-                <div className="d-inline-flex align-items-center gap-2 ms-sm-2">
+                <nav className="ki-user-hero-nav ms-sm-2" aria-label="User account navigation">
                   <Link to={routes.userDashboard} className="ki-tab-btn active">
                     <i className="fas fa-th-large me-2" />
                     <span>Dashboard</span>
@@ -798,7 +798,7 @@ const UserDashboard = () => {
                     <i className="fas fa-user-edit me-2" />
                     <span>Profile Settings</span>
                   </Link>
-                </div>
+                </nav>
               </div>
             </div>
           </div>
@@ -806,7 +806,7 @@ const UserDashboard = () => {
       </div>
 
       {/* Page Content */}
-      <div className="content court-bg">
+      <div className="content court-bg ki-user-dashboard">
         <div className="container">
           <div className="row justify-content-center">
             <div className="col-xl-11 col-lg-12">

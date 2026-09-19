@@ -9,6 +9,7 @@ import { API_URL, Image_URL } from "../utils/ApiUrl";
 import "../Coaches.css";
 import Select from "react-select";
 import LanguageSelector from "../components/LanguageSelector";
+import MembershipPlansEditor from "../components/MembershipPlansEditor";
 
 const UpdatepersonalTrainer  = () => {
   const [userRole, setUserRole] = React.useState("");
@@ -68,6 +69,7 @@ const UpdatepersonalTrainer  = () => {
     verification_documents: { government_id: [], coaching_certificates: [], sports_qualifications: [], experience_proofs: [] },
     training_photos: [],
     certificate_achievement_photos: [],
+    membership_plans: [],
   });
 
   const LEVEL_OPTIONS = ["Beginner", "Intermediate", "Advanced"];
@@ -325,6 +327,12 @@ const UpdatepersonalTrainer  = () => {
     image.src = URL.createObjectURL(file);
   });
 
+  const mediaUrl = (file) => {
+    const src = typeof file === "string" ? file : file?.src;
+    if (!src) return "";
+    return /^https?:\/\//i.test(src) ? src : `${Image_URL}${src}`;
+  };
+
   const handleUploadImage = async (e, type) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -563,6 +571,7 @@ const UpdatepersonalTrainer  = () => {
         verification_documents: response.data.personalTrainer.verification_documents || { government_id: [], coaching_certificates: [], sports_qualifications: [], experience_proofs: [] },
         training_photos: response.data.personalTrainer.training_photos || [],
         certificate_achievement_photos: response.data.personalTrainer.certificate_achievement_photos || [],
+        membership_plans: response.data.personalTrainer.membership_plans || [],
       });
       // Sync approval status
       setTrainerStatus({
@@ -1440,7 +1449,7 @@ const UpdatepersonalTrainer  = () => {
                   {formData.profile_picture?.[0] && (
                     <div style={{ position: "relative" }}>
                       <img
-                        src={`${Image_URL}${formData.profile_picture?.[0]?.src}`}
+                        src={mediaUrl(formData.profile_picture?.[0])}
                         alt={`Photo`}
                         style={{
                           width: "100px",
@@ -1520,7 +1529,7 @@ const UpdatepersonalTrainer  = () => {
                   {formData.identity_Proof?.[0] && (
                     <div style={{ position: "relative" }}>
                       <img
-                        src={`${Image_URL}${formData.identity_Proof?.[0]?.src}`}
+                        src={mediaUrl(formData.identity_Proof?.[0])}
                         alt={`Photo`}
                         style={{
                           width: "100px",
@@ -1599,7 +1608,7 @@ const UpdatepersonalTrainer  = () => {
                   {formData.other_document?.[0] && (
                     <div style={{ position: "relative" }}>
                       <img
-                        src={`${Image_URL}${formData.other_document?.[0]?.src}`}
+                        src={mediaUrl(formData.other_document?.[0])}
                         alt={`Photo`}
                         style={{
                           width: "100px",
@@ -1665,7 +1674,7 @@ const UpdatepersonalTrainer  = () => {
                     {(formData.videos || []).map((vid, index) => (
                       <div key={index} style={{ position: "relative", margin: "5px" }}>
                         <video
-                          src={`${Image_URL}${vid.src}`}
+                          src={mediaUrl(vid)}
                           controls
                           style={{
                             width: "120px",
@@ -1702,6 +1711,11 @@ const UpdatepersonalTrainer  = () => {
             </Col>
           </Row>
           {/* ── Approval status banner ───────────────────────────────────────── */}
+          <MembershipPlansEditor
+            plans={formData.membership_plans || []}
+            onChange={(membership_plans) => setFormData((current) => ({ ...current, membership_plans }))}
+          />
+
           {trainerStatus.status && (
             <div style={{ background: "#c6f6d5", border: "1px solid #38a169", borderRadius: 8, padding: "12px 18px", marginBottom: 16, display: "flex", alignItems: "center", gap: 10 }}>
               <span style={{ fontSize: 20 }}>✅</span>
@@ -1741,7 +1755,7 @@ const UpdatepersonalTrainer  = () => {
                 type="button"
                 id="btn-approve-trainer"
                 onClick={handleApprove}
-                style={{ background: "linear-gradient(135deg,#48bb78,#38a169)", color: "#fff", border: "none", borderRadius: 8, padding: "10px 28px", fontWeight: 700, fontSize: 15, cursor: "pointer", marginRight: 12, marginBottom: 8, boxShadow: "0 2px 8px rgba(56,161,105,0.35)" }}
+                className="approval-action approval-action--approve"
               >
                 ✅ Approve Trainer
               </button>
@@ -1749,7 +1763,7 @@ const UpdatepersonalTrainer  = () => {
                 type="button"
                 id="btn-reject-trainer"
                 onClick={handleReject}
-                style={{ background: "linear-gradient(135deg,#fc8181,#e53e3e)", color: "#fff", border: "none", borderRadius: 8, padding: "10px 28px", fontWeight: 700, fontSize: 15, cursor: "pointer", marginRight: 12, marginBottom: 8, boxShadow: "0 2px 8px rgba(229,62,62,0.35)" }}
+                className="approval-action approval-action--reject"
               >
                 ❌ Reject
               </button>

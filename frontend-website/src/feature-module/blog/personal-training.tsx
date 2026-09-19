@@ -241,17 +241,6 @@ const BlogList = () => {
   const { type } = useParams<{ type: string }>();
 
   useEffect(() => {
-    setSelectedLocation(selectedLocationSort?.name || "");
-    if (type) {
-      let formattedType = type.replace(/-/g, " ");
-      formattedType = formattedType.replace(/\b\w/g, c => c.toUpperCase());
-      setSelectedCategory(formattedType);
-    } else {
-      setSelectedCategory(selectedSport?.name || null);
-    }
-  }, [location, selectedLocationSort, selectedSport, type]);
-
-  useEffect(() => {
     const fetchTrainer = async () => {
       try {
         const response = await axios.get(`${API_URL}/web/PersonalTraining/fetchAll`);
@@ -285,6 +274,33 @@ const BlogList = () => {
 
     fetchTrainer();
   }, []);
+
+  useEffect(() => {
+    if (!trainer.length) return;
+
+    if (type) {
+      const formattedType = type.replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+      setSelectedCategory(formattedType);
+      setSelectedLocation("");
+      return;
+    }
+
+    const requestedCategory = String(selectedSport?.name || "").trim();
+    const requestedLocation = String(selectedLocationSort?.name || "").trim();
+    const placeholders = ["select", "all", "category", "sport", "location"];
+    const isActualFilter = (value: string) => value && !placeholders.includes(value.toLowerCase());
+
+    setSelectedCategory(
+      isActualFilter(requestedCategory) && trainer.some((item) =>
+        matchCategory(item.category, item.trainer_type, item.specializations, requestedCategory)
+      ) ? requestedCategory : null
+    );
+    setSelectedLocation(
+      isActualFilter(requestedLocation) && trainer.some((item) =>
+        String(item.near_by_location || "").toLowerCase().includes(requestedLocation.toLowerCase())
+      ) ? requestedLocation : ""
+    );
+  }, [trainer, type, location.key]);
 
   const handleCategoryChange = (e: { value: string }) => {
     setSelectedCategory(e.value);
@@ -483,6 +499,7 @@ const BlogList = () => {
     setFilterMaxAge("");
     setFilterLevels([]);
     setSearchQuery("");
+    setSearchParams({});
     setSelectedCategory(null);
     setSelectedLocation("");
   };
@@ -513,11 +530,11 @@ const BlogList = () => {
         <div className="container" style={{ position: "relative", zIndex: 2 }}>
           <div className="row align-items-center">
             <div className="col-lg-7 text-start">
-              <span className="font-weight-bold" style={{ fontSize: "13px", letterSpacing: "1.5px", display: "block", marginBottom: "12px", color: "#22C55E", fontWeight: "700" }}>BOOK. PLAY. ENJOY</span>
+              <span className="font-weight-bold" style={{ fontSize: "13px", letterSpacing: "1.5px", display: "block", marginBottom: "12px", color: "#22C55E", fontWeight: "700" }}>TRAIN. TRANSFORM. THRIVE.</span>
               <h1 className="d-flex align-items-center flex-wrap" style={{ fontSize: "56px", fontWeight: "800", color: "#0F172A", lineHeight: "1.1", marginBottom: "16px" }}>
                 <span style={{ color: "#22C55E" }}>Trainers</span>
               </h1>
-              <p style={{ color: "#64748B", fontSize: "20px", marginBottom: "24px", fontWeight: "500", maxWidth: "480px" }}>Find and book fitness trainers in Indore</p>
+              <p style={{ color: "#64748B", fontSize: "20px", marginBottom: "24px", fontWeight: "500", maxWidth: "480px" }}>Find the right trainer for your fitness journey</p>
               <div className="d-inline-flex align-items-center bg-white px-3 py-2 rounded-pill shadow-sm" style={{ fontSize: "13px", border: "1px solid #E5E7EB" }}>
                 <Link to="/" style={{ color: "#64748B", textDecoration: "none", fontWeight: "500" }}><i className="feather-home me-1" style={{ color: "#64748B" }} /> Home</Link>
                 <span style={{ margin: "0 10px", color: "#64748B" }}><i className="feather-chevron-right" style={{ fontSize: "12px", color: "#64748B" }} /></span>

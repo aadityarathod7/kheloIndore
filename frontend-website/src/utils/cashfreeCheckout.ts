@@ -30,5 +30,12 @@ export const openCashfreeCheckout = async (paymentSessionId: string) => {
   await loadCashfreeSdk();
   if (!window.Cashfree) throw new Error("Cashfree checkout could not be initialized.");
   const mode: "sandbox" | "production" = process.env.REACT_APP_CASHFREE_ENV === "production" ? "production" : "sandbox";
-  await window.Cashfree({ mode }).checkout({ paymentSessionId, redirectTarget: "_self" });
+  const isLocalDevelopment = ["localhost", "127.0.0.1"].includes(window.location.hostname);
+
+  // Local development uses the deployed API, whose payment callback returns
+  // to the deployed website. A same-tab redirect therefore changes origin and
+  // makes the locally stored login token unavailable. Keep localhost open and
+  // authenticated while the payment result opens in its own tab.
+  const redirectTarget = isLocalDevelopment ? "_blank" : "_self";
+  await window.Cashfree({ mode }).checkout({ paymentSessionId, redirectTarget });
 };

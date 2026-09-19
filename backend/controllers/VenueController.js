@@ -113,6 +113,15 @@ exports.fetchVenue = async (req, res) => {
 exports.SingleVenue = async (req, res) => {
   try {
     const id = req.params.id;
+    // The public route accepts a database ID. Category slugs such as
+    // "pickleball" belong to the venue-listing route and must not reach
+    // findById(), which would otherwise throw a CastError and return 500.
+    if (!Venue1.base.Types.ObjectId.isValid(id)) {
+      return res.status(404).json({
+        success: false,
+        message: "Venue not found",
+      });
+    }
     const venue = await Venue1.findById(id);
     if (venue) {
       const vendor = await User.findById(venue.vendor_id);

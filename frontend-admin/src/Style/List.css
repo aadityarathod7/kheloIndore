@@ -117,9 +117,153 @@
   cursor: pointer;
 }
 
+/* Coach list action controls: use a fixed button box so icon-library CSS
+   cannot shrink the controls into hard-to-click glyphs. */
+.coach-table-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 330px;
+}
+
+.account-password-button {
+  min-height: 36px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.15;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.account-reset-button {
+  color: #087f50;
+  background: #fff;
+  border: 1px solid #087f50;
+}
+
+.account-set-password-button {
+  color: #1268e8;
+  background: #fff;
+  border: 1px solid #1268e8;
+}
+
+.coach-action-button {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid #dbe5df;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 19px;
+  line-height: 1;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background .15s ease, border-color .15s ease, transform .15s ease;
+}
+
+.coach-action-button:hover {
+  transform: translateY(-1px);
+}
+
+.coach-action-button svg {
+  width: 19px;
+  height: 19px;
+  font-size: 19px !important;
+}
+
+.coach-action-edit,
+.coach-action-slots,
+.coach-action-activate {
+  color: #087f50;
+}
+
+.coach-action-edit:hover,
+.coach-action-slots:hover,
+.coach-action-activate:hover {
+  border-color: #087f50;
+  background: #edf9f3;
+  color: #05653f;
+}
+
+.coach-action-delete {
+  color: #dc3545;
+  border-color: #f3d1d5;
+}
+
+.coach-action-delete:hover {
+  border-color: #dc3545;
+  background: #fff1f2;
+  color: #b4232e;
+}
+
 @media (max-width: 768px) {
   .table-container .custom-table {
     min-width: 1100px;
+  }
+}
+
+/* Venue-admin list: its reset, password, and Cashfree controls need a
+   dedicated action column. Without this, the browser compresses unrelated
+   columns and clips headings on laptop-sized screens. */
+.venue-admin-table-wrap {
+  scroll-padding-left: 1px;
+}
+
+.venue-admin-table {
+  min-width: 1480px !important;
+}
+
+.venue-admin-table-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 445px;
+}
+
+.venue-admin-table-actions > * {
+  flex: 0 0 auto;
+}
+
+.venue-admin-confirmation {
+  min-width: 118px;
+}
+
+.venue-admin-confirmation-actions {
+  gap: 8px;
+  align-items: center;
+}
+
+@media (max-width: 2000px) and (min-width: 769px) {
+  /* Preserve the identifying columns and action controls when a desktop
+     window is narrower than a full-HD workspace. */
+  .venue-admin-table th:nth-child(1),
+  .venue-admin-table td:nth-child(1),
+  .venue-admin-table th:nth-child(4),
+  .venue-admin-table td:nth-child(4),
+  .venue-admin-table th:nth-child(5),
+  .venue-admin-table td:nth-child(5) {
+    display: none;
+  }
+
+  .venue-admin-table {
+    min-width: 1240px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .venue-admin-table {
+    min-width: 1360px !important;
+  }
+
+  .venue-admin-table-actions {
+    min-width: 445px;
   }
 }
 

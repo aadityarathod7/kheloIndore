@@ -128,7 +128,7 @@ const SuperAdminDashboard = () => {
       </Card>
 
       <Card bordered={false} className="super-panel super-period-panel" title={<div><p className="section-kicker">PERIOD PERFORMANCE</p><h2>Bookings & collections</h2></div>} extra={<div className="period-tabs">{["day", "week", "month"].map((item) => <button key={item} onClick={() => changeFilter(item)} className={filter === item ? "active" : ""}>{item}</button>)}</div>}>
-        {updatingAnalytics ? <div className="inline-loader"><Spin /> Updating…</div> : <><div className="period-metrics"><div><span>Bookings</span><strong>{analytics?.totalBookings || 0}</strong></div><div><span>Collections</span><strong>{money(analytics?.totalRevenue)}</strong></div></div><div className="period-breakdown">{(analytics?.summary ? [["Venue", analytics.summary.venue], ["Coach", analytics.summary.coach], ["Personal trainer", analytics.summary.trainer]] : []).map(([name, data]) => <div key={name}><span>{name}</span><strong>{data.bookings || 0} bookings</strong><small>{money(data.revenue)}</small></div>)}</div></>}
+        {updatingAnalytics ? <div className="inline-loader"><Spin /> Updating…</div> : <><div className="period-metrics"><div><span>Bookings</span><strong>{analytics?.totalBookings || 0}</strong></div><div><span>Collections</span><strong>{money(analytics?.totalRevenue)}</strong></div></div><div className="period-breakdown">{(analytics?.summary ? [["Venue", analytics.summary.venue], ["Coach", analytics.summary.coach], ["Trainer", analytics.summary.trainer]] : []).map(([name, data]) => <div key={name}><span>{name}</span><strong>{data.bookings || 0} bookings</strong><small>{money(data.revenue)}</small></div>)}</div></>}
       </Card>
     </section>
 

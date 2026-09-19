@@ -1,0 +1,82 @@
+.ki-about-page { padding-top: 108px; color: #14213a; overflow: hidden; background: #fff !important; }
+.ki-about-page section { min-height: 0; margin: 0; }
+.ki-about-hero { padding: 52px 0 48px; background: linear-gradient(115deg, #effdf5 0%, #f8fffb 56%, #dff8e9 100%) !important; }
+.ki-about-hero-grid, .ki-about-intro-grid, .ki-about-values-grid { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(340px, .95fr); gap: 34px; align-items: center; }
+.ki-about-eyebrow, .ki-about-section-label { margin: 0 0 13px; color: #0b9f50; font-size: 12px; font-weight: 800; letter-spacing: 2px; }
+.ki-about-hero h1 { max-width: 650px; margin: 0; color: #10203c !important; font-size: clamp(42px, 5vw, 68px); font-weight: 800; letter-spacing: -2.5px; line-height: 1.03; }
+.ki-about-hero h1 span { color: #19bd5d; }
+.ki-about-lead { max-width: 570px; margin: 20px 0 27px; color: #506985; font-size: 18px; line-height: 1.6; }
+.ki-about-actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.ki-about-primary, .ki-about-secondary, .ki-about-light, .ki-about-outline { display: inline-flex; align-items: center; gap: 8px; padding: 13px 19px; font-size: 15px; font-weight: 800; text-decoration: none; transition: .2s ease; }
+.ki-about-primary { color: #fff; background: #0a9c4e; }
+.ki-about-primary:hover { color: #fff; background: #07823f; transform: translateY(-2px); }
+.ki-about-secondary { color: #12345a; border: 1px solid #cbdcd2; background: #fff; }
+.ki-about-secondary:hover { color: #07823f; border-color: #0a9c4e; }
+.ki-about-proof { display: flex; gap: 26px; margin-top: 28px; }
+.ki-about-proof div { display: grid; gap: 1px; padding-right: 26px; border-right: 1px solid #cce6d5; }
+.ki-about-proof div:last-child { padding-right: 0; border: 0; }
+.ki-about-proof strong { color: #0a9c4e; font-size: 21px; font-weight: 800; line-height: 1.1; }
+.ki-about-proof span { color: #5a7089; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .7px; }
+.ki-about-hero-media { position: relative; height: 330px; min-height: 0; overflow: hidden; }
+.ki-about-hero-media > img, .ki-about-values-media img { width: 100%; height: 100%; object-fit: cover; }
+.ki-about-hero-media > img { position: absolute; inset: 0; object-position: center; box-shadow: 12px 12px 0 #c5f3d7; }
+.ki-about-float-card { position: absolute; right: 16px; bottom: 16px; display: flex; gap: 11px; align-items: center; padding: 13px 16px; color: #334155; background: #fff; box-shadow: 0 12px 28px rgba(16, 32, 60, .17); font-size: 13px; line-height: 1.4; }
+.ki-about-float-card i { color: #15aa54; font-size: 23px; }
+.ki-about-float-card strong { color: #14213a; font-size: 15px; }
+.ki-about-intro { padding: 44px 0; background: #fff !important; }
+.ki-about-intro-grid { grid-template-columns: .55fr 1.45fr; gap: 30px; align-items: start; }
+.ki-about-purpose-copy { padding: 26px 30px; border-left: 4px solid #19bd5d; background: #f4fbf6 !important; }
+.ki-about-intro h2, .ki-about-heading h2, .ki-about-values h2 { margin: 0 0 17px; color: #10203c !important; font-size: clamp(29px, 3vw, 42px); font-weight: 800; letter-spacing: -1.1px; line-height: 1.14; }
+.ki-about-intro p:not(.ki-about-section-label), .ki-about-values p { max-width: 720px; margin: 0 0 10px; color: #58708b; font-size: 16px; line-height: 1.7; }
+.ki-about-how { padding: 48px 0; background: #f6f9f7 !important; }
+.ki-about-heading { max-width: 600px; margin-bottom: 28px; }
+.ki-about-feature-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.ki-about-feature-grid article { min-height: 205px; padding: 26px; border: 1px solid #e0eae4; background: #fff !important; }
+.ki-about-feature-grid i { display: grid; width: 42px; height: 42px; place-items: center; margin-bottom: 19px; color: #0a9c4e; background: #e5f9eb; font-size: 21px; }
+.ki-about-feature-grid h3 { margin: 0 0 8px; color: #10203c !important; font-size: 19px; font-weight: 800; }
+.ki-about-feature-grid p { margin: 0; color: #61758c; font-size: 14px; line-height: 1.65; }
+.ki-about-values { padding: 50px 0; background: #fff !important; }
+.ki-about-values-media { height: 300px; overflow: hidden; background: #0b1b29; }
+.ki-about-values ul { display: grid; gap: 13px; margin: 23px 0 0; padding: 0; list-style: none; }
+.ki-about-values li { display: flex; gap: 11px; align-items: flex-start; color: #526b87; line-height: 1.6; }
+.ki-about-values li i { margin-top: 4px; color: #0b9f50; }
+.ki-about-values li strong { color: #172a45; }
+.ki-about-cta { padding: 38px 0; color: #fff; background: linear-gradient(110deg, #087b43, #12ae58) !important; }
+.ki-about-cta .container { display: flex; justify-content: space-between; gap: 25px; align-items: center; }
+.ki-about-cta h2 { margin: 0; color: #fff !important; font-size: clamp(27px, 3vw, 39px); font-weight: 800; letter-spacing: -1px; }
+.ki-about-cta .ki-about-eyebrow { color: #c9ffd9; }
+.ki-about-light { color: #087b43; background: #fff; }
+.ki-about-light:hover { color: #087b43; transform: translateY(-2px); }
+.ki-about-outline { color: #fff; border: 1px solid rgba(255,255,255,.65); }
+.ki-about-outline:hover { color: #fff; border-color: #fff; background: rgba(255,255,255,.12); }
+
+@media (max-width: 991px) {
+  .ki-about-page { padding-top: 82px; }
+  .ki-about-hero { padding: 46px 0; }
+  .ki-about-hero-grid, .ki-about-values-grid { grid-template-columns: 1fr; gap: 35px; }
+  .ki-about-hero-media { max-width: 660px; width: 100%; height: 320px; }
+  .ki-about-proof { margin-top: 24px; }
+  .ki-about-feature-grid { grid-template-columns: 1fr; }
+  .ki-about-feature-grid article { min-height: 0; }
+  .ki-about-intro-grid { grid-template-columns: 1fr; gap: 10px; }
+}
+
+@media (max-width: 575px) {
+  .ki-about-page { padding-top: 70px; }
+  .ki-about-hero { padding: 38px 0; }
+  .ki-about-hero h1 { letter-spacing: -1.7px; }
+  .ki-about-lead { font-size: 16px; }
+  .ki-about-hero-media { height: 260px; }
+  .ki-about-proof { gap: 16px; }
+  .ki-about-proof div { padding-right: 16px; }
+  .ki-about-proof strong { font-size: 18px; }
+  .ki-about-float-card { right: 12px; bottom: 12px; padding: 10px 12px; }
+  .ki-about-intro, .ki-about-values { padding: 38px 0; }
+  .ki-about-purpose-copy { padding: 22px; }
+  .ki-about-how { padding: 38px 0; }
+  .ki-about-feature-grid article { padding: 23px; }
+  .ki-about-values-media { height: 270px; }
+  .ki-about-cta { padding: 38px 0; }
+  .ki-about-cta .container { display: block; }
+  .ki-about-cta .ki-about-actions { margin-top: 20px; }
+}

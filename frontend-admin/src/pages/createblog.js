@@ -109,6 +109,7 @@ export default function Createblog() {
           {
             headers: {
               "Content-Type": "multipart/form-data",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
           }
         );
@@ -116,16 +117,22 @@ export default function Createblog() {
         // Step 2: Extract the 'src' from the response
         const imageSrc = response.data.file_data[0]?.src;
         if (imageSrc) {
-          
           setFormData((prev) => ({
             ...prev,
             blog_image: imageSrc, // Update the state with the uploaded image URL
           }));
+          // A previous submit may have marked the image as required. Clear
+          // that error as soon as the upload succeeds.
+          setErrors((prev) => ({ ...prev, blog_image: "" }));
         } else {
-          
+          setErrors((prev) => ({ ...prev, blog_image: "Image upload did not return a file." }));
         }
       } catch (error) {
-        
+        setImagePreview(null);
+        setErrors((prev) => ({
+          ...prev,
+          blog_image: error.response?.data?.message || "Image upload failed. Please try again.",
+        }));
       }
     }
   };

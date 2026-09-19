@@ -9,6 +9,7 @@ import Lightbox from "yet-another-react-lightbox";
 import { API_URL, IMG_URL } from "../../ApiUrl";
 import { sanitizeHtml } from "../../utils/sanitize";
 import Swal from "sweetalert2";
+import MembershipPlans from "../common/MembershipPlans";
 
 interface TrainerData {
   first_name: any;
@@ -40,6 +41,7 @@ interface TrainerData {
   students_trained: number;
   response_time: string;
   coaching_levels: string[];
+  training_levels: string[];
   own_level: string;
   profile_views: number;
   reviews_count: number;
@@ -47,6 +49,7 @@ interface TrainerData {
   social_media: any;
   gallery_videos: any;
   daily_availability: any;
+  membership_plans?: Array<{ name: string; months: number; price: number; priority?: string; discount?: string; support?: string }>;
   share_token: string;
   mobile: string;
   package: any;
@@ -148,6 +151,8 @@ const PersonalTrainingDetails = (props: any) => {
     : [];
   const coachingLevelsList = trainerData?.coaching_levels?.length
     ? trainerData.coaching_levels
+    : trainerData?.training_levels?.length
+    ? trainerData.training_levels
     : [];
   const socialMedia = trainerData?.social_media || {};
   const dailyAvailability =
@@ -203,7 +208,11 @@ const PersonalTrainingDetails = (props: any) => {
         const shouldCountView = !sessionStorage.getItem(viewKey);
         const response = isSharedProfile
           ? await axios.get(`${API_URL}/web/PersonalTraining/shared/${sharedToken}`)
-          : await axios.get(`${API_URL}/${shouldCountView ? "web/PersonalTraining/fetch" : "PersonalTraining/fetch"}/${id}`);
+          : await axios.get(`${API_URL}/web/PersonalTraining/fetch/${id}`, {
+              // Keep public profile views on the public endpoint. The other
+              // endpoint is reserved for authenticated account management.
+              params: { countView: shouldCountView },
+            });
         if (shouldCountView) sessionStorage.setItem(viewKey, "1");
         const trainerDataId = response.data.personalTrainer;
         setTrainerData(trainerDataId);
@@ -387,9 +396,9 @@ const PersonalTrainingDetails = (props: any) => {
           color: #0F172A !important;
           border-bottom-color: #E2E8F0 !important;
         }
-        .venue-coach-details .book-coach p,
-        .venue-coach-details .book-coach span,
-        .venue-coach-details .book-coach strong {
+        .venue-coach-details .book-coach > p,
+        .venue-coach-details .book-coach > p span,
+        .venue-coach-details .book-coach > p strong {
           color: #334155 !important;
         }
         .venue-coach-details .book-coach .dull-bg {
@@ -407,7 +416,7 @@ const PersonalTrainingDetails = (props: any) => {
         }
         .venue-coach-details .book-coach a.btn-secondary,
         .venue-coach-details .book-coach button.btn-secondary,
-        .venue-coach-details .book-coach button {
+        .venue-coach-details .book-coach button:not(.ki-membership-select) {
           background-color: #22C55E !important;
           border-color: #22C55E !important;
           color: #FFFFFF !important;
@@ -421,14 +430,14 @@ const PersonalTrainingDetails = (props: any) => {
         }
         .venue-coach-details .book-coach a.btn-secondary:hover,
         .venue-coach-details .book-coach button.btn-secondary:hover,
-        .venue-coach-details .book-coach button:hover {
+        .venue-coach-details .book-coach button:not(.ki-membership-select):hover {
           background-color: #16A34A !important;
           border-color: #16A34A !important;
           color: #FFFFFF !important;
         }
         .venue-coach-details .book-coach a.btn-secondary i,
         .venue-coach-details .book-coach button.btn-secondary i,
-        .venue-coach-details .book-coach button i {
+        .venue-coach-details .book-coach button:not(.ki-membership-select) i {
           color: #FFFFFF !important;
           margin-right: 8px !important;
         }
@@ -679,6 +688,11 @@ const PersonalTrainingDetails = (props: any) => {
                           <i className="feather-clock" /> {trainerData.experience}+ Years Exp.
                         </span>
                       ) : null}
+                      {coachingLevelsList.length > 0 ? (
+                        <span className="meta-chip" title={`Trains: ${coachingLevelsList.join(", ")}`}>
+                          <i className="feather-trending-up" /> Trains: {coachingLevelsList.join(", ")}
+                        </span>
+                      ) : null}
                       {trainerData?.gender ? (
                         <span className="meta-chip">
                           <i className="feather-user" /> {capitalize(trainerData.gender)}
@@ -867,7 +881,7 @@ const PersonalTrainingDetails = (props: any) => {
                           ) : null}
                           {coachingLevelsList.length > 0 ? (
                             <div className="cdg-item">
-                              <span className="cdg-label">Coaching Levels</span>
+                              <span className="cdg-label">Training Suitable For</span>
                               <strong className="cdg-value">{coachingLevelsList.join(", ")}</strong>
                             </div>
                           ) : null}
@@ -1741,7 +1755,7 @@ const PersonalTrainingDetails = (props: any) => {
                     )}
                   </div>
                   {/* Packages before Book Now */}
-                  {(packageRates.length > 0 || trainerData?.package_type) ? (
+                  {(packageRates.length > 0 || trainerData?.package_type) && !(trainerData?.membership_plans?.length) ? (
                     <div className="mt-3">
                       <p className="mb-2 fw-bold" style={{ fontSize: "13px", color: "#475569" }}>
                         <i className="feather-gift me-1" style={{ color: "#16A34A" }} /> Packages
@@ -1767,6 +1781,7 @@ const PersonalTrainingDetails = (props: any) => {
                       </div>
                     </div>
                   ) : null}
+                  <MembershipPlans providerType="trainer" providerId={id} plans={trainerData?.membership_plans || []} />
                   <div className="d-grid mt-3 gap-2">
                     <button
                       onClick={() => checkToken(id)}

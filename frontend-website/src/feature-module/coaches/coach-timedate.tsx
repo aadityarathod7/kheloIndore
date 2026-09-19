@@ -90,6 +90,7 @@ const CoachTimeDate = (props: any) => {
   const [slotData, setSlotData] = useState<any[]>([]);
   const [dateId, setDateId] = useState<string | null>(null);
   const [timeSlot, setTimeSlot] = useState<any>(null);
+  const [hasSearchedSlots, setHasSearchedSlots] = useState(false);
   const [selectedTimeSlots, setSelectedTimeSlots] = useState<SlotData[]>([]);
   const [daysDifference, setDaysDifference] = useState<number>(0);
   const [couponCode, setCouponCode] = useState("");
@@ -126,6 +127,7 @@ const CoachTimeDate = (props: any) => {
     setEndDate("");
     setDateId(null);
     setTimeSlot([]);
+    setHasSearchedSlots(false);
     setSelectedTimeSlots([]);
     setDaysDifference(0);
   };
@@ -138,6 +140,7 @@ const CoachTimeDate = (props: any) => {
     setStartDate(date);
     setDateId(null);
     setTimeSlot([]);
+    setHasSearchedSlots(false);
     setSelectedTimeSlots([]);
     if (selectedBatch) {
       // If batch is already selected, calculate the end date based on the start date and batch
@@ -188,6 +191,7 @@ const CoachTimeDate = (props: any) => {
     setEndDate(event.target.value);
     setTimeSlot([]);
     setSelectedTimeSlots([]);
+    setHasSearchedSlots(false);
   };
 
   useEffect(() => {
@@ -219,21 +223,12 @@ const CoachTimeDate = (props: any) => {
     getAllSlots()
   }, [id])
 
-  const findMatchedSlotId = (startDateToCheck: string): any => {
-    const matchedSlot = slotData.find((slot: any) => {
-      const slotStartDate = slot.start_date.split('T')[0]; // Extract only the date part (yyyy-mm-dd)
-      return slotStartDate === startDateToCheck;
-    });
-    
-    setDateId(matchedSlot ? (matchedSlot.id || matchedSlot._id) : null)
-  };
-
-  useEffect(() => {
-    findMatchedSlotId(startDate)
-  }, [startDate])
-
   const getSlotById = async (slotDateId: string | null) => {
-    if (!slotDateId) return;
+    if (!slotDateId) {
+      setTimeSlot({ slots: [] });
+      setHasSearchedSlots(true);
+      return;
+    }
     setTimeSlot([]);
     setSelectedTimeSlots([]);
     try {
@@ -245,11 +240,32 @@ const CoachTimeDate = (props: any) => {
         }
       );
       
-      setTimeSlot(response?.data?.data)
+      setTimeSlot(response?.data?.data || { slots: [] });
     } catch {
-        // The request failure is handled by the surrounding UI state.
-      }
-  }
+      setTimeSlot({ slots: [] });
+    } finally {
+      setHasSearchedSlots(true);
+    }
+  };
+
+  const findAvailableSlots = () => {
+    if (!startDate || !endDate) return;
+
+    const toDateKey = (value: string | Date) => {
+      const date = new Date(value);
+      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+    };
+    const matchedSlot = slotData.find((slot: any) => {
+      if (!slot.start_date || !slot.end_date) return false;
+      const slotStart = toDateKey(slot.start_date);
+      const slotEnd = toDateKey(slot.end_date);
+      return startDate >= slotStart && endDate <= slotEnd;
+    });
+
+    const matchedSlotId = matchedSlot ? (matchedSlot.id || matchedSlot._id) : null;
+    setDateId(matchedSlotId);
+    getSlotById(matchedSlotId);
+  };
   
 
   const handleCalculateDays = () => {
@@ -343,6 +359,20 @@ const CoachTimeDate = (props: any) => {
         title: "Error",
         text: "Please select any slot.",
         icon: "error",
+        confirmButtonText: "OK",
+      });
+      return;
+    }
+
+    const [firstSlot, secondSlot] = selectedTimeSlots;
+    const isOneHourSelection = selectedTimeSlots.length === 2 && (
+      firstSlot.end_time === secondSlot.start_time || secondSlot.end_time === firstSlot.start_time
+    );
+    if (!isOneHourSelection) {
+      Swal.fire({
+        title: "One-Hour Booking Required",
+        text: "Select exactly 2 consecutive 30-minute slots to book one hour.",
+        icon: "warning",
         confirmButtonText: "OK",
       });
       return;
@@ -784,7 +814,7 @@ const CoachTimeDate = (props: any) => {
                         type="button"
                         className="ki-btn-secondary btn-sm"
                         style={{ padding: "6px 16px", fontSize: "14px" }}
-                        onClick={() => getSlotById(dateId)}
+                        onClick={findAvailableSlots}
                         disabled={isNextButtonDisabledTwo}
                       >
                         Find Available Slots <i className="feather-search ms-1"></i>
@@ -811,9 +841,9 @@ const CoachTimeDate = (props: any) => {
                     Available Time Slots
                   </h4>
                   {timeSlot?.slots ? (
-                    timeSlot.slots.length > 0 ? (
+                    timeSlot.slots.some((slot: any) => !slot.isBooked) ? (
                       <div className="row">
-                        {timeSlot.slots.map((slot: any) => (
+                        {timeSlot.slots.filter((slot: any) => !slot.isBooked).map((slot: any) => (
                           <div key={slot.id} className="col-sm-6 col-md-4 mb-3">
                             <div
                               className={`slot-item ${slot.isBooked ? 'disabled' : ''} ${selectedTimeSlots.some((s) => s._id === slot._id) ? 'selected' : ''}`}
@@ -849,8 +879,10 @@ const CoachTimeDate = (props: any) => {
                         ))}
                       </div>
                     ) : (
-                      <div className="text-muted text-center py-4">No slots available for the selected start date.</div>
+                      <div className="text-muted text-center py-4">No slots available for the selected date range.</div>
                     )
+                  ) : hasSearchedSlots ? (
+                    <div className="text-muted text-center py-4">No slots available for the selected date range.</div>
                   ) : (
                     <div className="text-muted text-center py-5">
                       <i className="feather-calendar" style={{ fontSize: "48px", color: "#94A3B8", display: "block", marginBottom: "16px" }} />

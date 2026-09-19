@@ -17,6 +17,7 @@ export default function ApproveCoachTrainer() {
         mobile: "",
     });
     const [role, setRole] = useState("");
+    const roleLabel = role === "Personal Trainer" ? "Trainer" : role;
 
 
     const fetchUserData = async (_id) => {
@@ -79,7 +80,7 @@ export default function ApproveCoachTrainer() {
             });
 
             if (response.data.success) {
-                Swal.fire("Success!", `${role} access updated successfully.`, "success");
+                Swal.fire("Success!", `${roleLabel} access updated successfully.`, "success");
                 if (role === 'Coach') {
                     navigate('/coaches');
                 } else if (role === 'Personal Trainer') {
@@ -88,11 +89,11 @@ export default function ApproveCoachTrainer() {
                     navigate('/dashboard');
                 }
             } else {
-                Swal.fire("Error", `Failed to update ${role} admin access.`, "error");
+                Swal.fire("Error", `Failed to update ${roleLabel} admin access.`, "error");
             }
         } catch (error) {
             
-            Swal.fire("Error", `An error occurred while updating ${role} admin access.`, "error");
+            Swal.fire("Error", `An error occurred while updating ${roleLabel} admin access.`, "error");
         }
     };
 
@@ -100,7 +101,7 @@ export default function ApproveCoachTrainer() {
     return (
         <div>
             <>
-                <h3 className="mb-4 title">Approve {role}</h3>
+                <h3 className="mb-4 title">Approve {roleLabel}</h3>
                 <Container
                     style={{
                         maxWidth: "1000px",
@@ -181,18 +182,17 @@ export default function ApproveCoachTrainer() {
                         )} */}
 
                         <Row>
-                            <Col md={12} className="d-flex justify-content-start mt-3">
+                            <Col md={12} className="approval-actions mt-3">
                                 <Button
                                     type="button"
-                                    className="submit-button"
-                                    style={{ marginRight: "10px" }}
+                                    className="approval-action approval-action--approve"
                                     onClick={() => handleUpdateAccess(1)}
                                 >
                                     Approve
                                 </Button>
                                 <Button
                                     type="button"
-                                    className="cancel-button"
+                                    className="approval-action approval-action--reject"
                                     onClick={() => handleUpdateAccess(2)}
                                 >
                                     Reject

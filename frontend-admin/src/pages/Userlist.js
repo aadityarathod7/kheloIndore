@@ -27,6 +27,7 @@ import "../../src/Userlist.css";
 import "../Style/List.css";
 import Swal from "sweetalert2";
 import PasswordResetLinkButton from "../components/PasswordResetLinkButton";
+import ManagedPasswordButton from "../components/ManagedPasswordButton";
 
 function Userlist() {
   const [userdata, setUserData] = useState([]);
@@ -274,9 +275,10 @@ function Userlist() {
                             </Link>
                           </Tooltip>
                           {role === 'Super Admin' && <PasswordResetLinkButton accountType="user" account={user} />}
+                          {role === 'Super Admin' && <ManagedPasswordButton accountType="user" account={user} />}
                           {role === 'Super Admin' && (
                             user.status ?
-                              <Tooltip title={`Deactivate`} arrow>
+                              <Tooltip title={`Archive profile (data retained)`} arrow>
                                 <DeleteOutlined
                                   className="delete_icon"
                                   onClick={() => handleDelete(user)}
@@ -284,10 +286,9 @@ function Userlist() {
                               </Tooltip>
                               :
                               <Tooltip title={`Activate`} arrow>
-                                <ReloadOutlined
-                                  className="delete_icon"
-                                  onClick={() => handleActive(user)}
-                                />
+                                <button type="button" className="approval-action approval-action--activate" onClick={() => handleActive(user)}>
+                                  <ReloadOutlined /> Activate
+                                </button>
                               </Tooltip>
                           )}
                         </div>

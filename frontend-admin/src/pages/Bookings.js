@@ -197,9 +197,9 @@ function BookingList({ listType }) {
       } else {
         const filteredData = data.filter((row) => {
           if (value === "active") {
-            return row.info.user_id.status === true;
+            return row.info?.user_id?.status === true;
           } else if (value === "inactive") {
-            return row.info.user_id.status === false;
+            return row.info?.user_id?.status === false;
           }
           return true;
         });
@@ -392,15 +392,15 @@ function BookingList({ listType }) {
   useEffect(() => {
     const venueCsvData = currentItems
       ? currentItems.map((data) => ({
-          "User name": `${data.info.user_id.first_name} ${data.info.user_id.last_name}`,
-          "Venue name": data.info.venue_id.name,
-          "Slot time": data.slots
+          "User name": `${data.info?.user_id?.first_name || "Unknown"} ${data.info?.user_id?.last_name || ""}`.trim(),
+          "Venue name": data.info?.venue_id?.name || "Venue unavailable",
+          "Slot time": (data.slots || [])
             .map((slot) => `${slot.startTime} - ${slot.endTime}`)
             .join(", "),
-          Category: data.info.venue_id.category,
-          Payment: `${data.info.total_price}`,
-          Date: data.info.date,
-          Status: data.info.paymentState,
+          Category: data.info?.venue_id?.category || "—",
+          Payment: `${data.info?.total_price || 0}`,
+          Date: data.info?.date,
+          Status: data.info?.paymentState,
         }))
       : "";
 
@@ -529,14 +529,14 @@ function BookingList({ listType }) {
             {isSuperAdmin && (
               <Dropdown onSelect={handleSelect}>
                 <Dropdown.Toggle variant="success" id="dropdown-basic">
-                  {selectedItem ? selectedItem : "Venue"}
+                  {selectedItem === "Personal Trainer" ? "Trainer" : (selectedItem || "Venue")}
                 </Dropdown.Toggle>
 
                 <Dropdown.Menu>
                   <Dropdown.Item eventKey="Venue">Venue</Dropdown.Item>
                   <Dropdown.Item eventKey="Coach">Coach</Dropdown.Item>
                   <Dropdown.Item eventKey="Personal Trainer">
-                    Personal Trainer
+                    Trainer
                   </Dropdown.Item>
                 </Dropdown.Menu>
               </Dropdown>
@@ -661,7 +661,9 @@ function BookingList({ listType }) {
                 </thead>
                 <tbody>
                   {currentItems?.length ? currentItems.map((row, index) => {
-                    const slotTimesArray = row.slots.map(
+                    const bookingInfo = row.info || {};
+                    const venue = bookingInfo.venue_id || {};
+                    const slotTimesArray = (row.slots || []).map(
                       (slot) => `${slot?.startTime} to ${slot?.endTime}`
                     );
                     return (
@@ -672,13 +674,13 @@ function BookingList({ listType }) {
                           {row?.info?.user_id?.last_name}
                         </td>
                         {listType == "dashboard" && (
-                          <td>{row.info.user_id.mobile}</td>
+                          <td>{bookingInfo.user_id?.mobile || "—"}</td>
                         )}
-                        <td className="admin-booking-venue">{row.info.venue_id.name}</td>
+                        <td className="admin-booking-venue">{venue.name || "Venue unavailable"}</td>
                         {listType != "dashboard" && (
                           <td className="admin-booking-slots">{slotTimesArray.join(", ")}</td>
                         )}
-                        <td>{row.info.venue_id.vendor_type}</td>
+                        <td>{venue.vendor_type || "—"}</td>
                         <td>
                           {row.info.manual_booking ? (
                             <>
@@ -714,7 +716,7 @@ function BookingList({ listType }) {
                           })()}
                         </td>
                         <td className="admin-booking-actions">
-                          <div>
+                          <div className={`approval-status approval-status--${row.info.verification_status === 1 ? "approved" : row.info.verification_status === 2 ? "rejected" : "pending"}`}>
                             {(() => {
                               if (row.info.verification_status === 0) {
                                 return "Pending";
@@ -727,15 +729,13 @@ function BookingList({ listType }) {
                           </div>
                           {row.info.cancellation_status !== 1 &&
                             row.info.verification_status === 0 && (
-                              <div className="d-flex">
-                                <CheckOutlined
-                                  className="edit_icon"
-                                  onClick={() => updateStatus(1, row.info._id)}
-                                />
-                                <CloseOutlined
-                                  className="delete_icon"
-                                  onClick={() => updateStatus(2, row.info._id)}
-                                />
+                              <div className="approval-actions">
+                                <button type="button" className="approval-action approval-action--approve" onClick={() => updateStatus(1, row.info._id)}>
+                                  <CheckOutlined /> Accept
+                                </button>
+                                <button type="button" className="approval-action approval-action--reject" onClick={() => updateStatus(2, row.info._id)}>
+                                  <CloseOutlined /> Reject
+                                </button>
                               </div>
                             )}
                         </td>
@@ -896,18 +896,16 @@ function BookingList({ listType }) {
                         {undefined}
                         <td>
                           {row.verification_status === 0 && (
-                            <div className="d-flex">
-                              <CheckOutlined
-                                className="edit_icon"
-                                onClick={() => updateStatus(1, row.id)}
-                              />
-                              <CloseOutlined
-                                className="delete_icon"
-                                onClick={() => updateStatus(2, row.id)}
-                              />
+                            <div className="approval-actions">
+                              <button type="button" className="approval-action approval-action--approve" onClick={() => updateStatus(1, row.id)}>
+                                <CheckOutlined /> Accept
+                              </button>
+                              <button type="button" className="approval-action approval-action--reject" onClick={() => updateStatus(2, row.id)}>
+                                <CloseOutlined /> Reject
+                              </button>
                             </div>
                           )}
-                          <div>
+                          <div className={`approval-status approval-status--${row.verification_status === 1 ? "approved" : row.verification_status === 2 ? "rejected" : "pending"}`}>
                             {(() => {
                               if (row.verification_status === 0) {
                                 return "Pending";

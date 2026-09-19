@@ -24,6 +24,7 @@ const AddEvent = () => {
 
   
   const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [loc, setNearbyLoc] = useState([]);
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
@@ -45,7 +46,8 @@ const AddEvent = () => {
   };
 
   const handlelocationChange = (selectedOption) => {
-    setFormData({ ...formData, near_by_location: selectedOption.value });
+    setFormData({ ...formData, near_by_location: selectedOption?.value || "" });
+    setErrors((current) => ({ ...current, near_by_location: "" }));
   };
 
   const fetchNearbyLocations = async () => {
@@ -101,6 +103,8 @@ const AddEvent = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isSubmitting) return;
+
     const validationErrors = {};
     if (!formData.event_name.trim()) {
       validationErrors.event_name = "Event name is required";
@@ -114,6 +118,9 @@ const AddEvent = () => {
     if (!formData.location.trim()) {
       validationErrors.location = "Location is required";
     }
+    if (!formData.near_by_location) {
+      validationErrors.near_by_location = "Nearby location is required";
+    }
 
 
     if (!formData.end_date.trim()) {
@@ -126,8 +133,19 @@ const AddEvent = () => {
       setErrors(validationErrors);
       return;
     }
+
+    const token = localStorage.getItem("token");
+    if (!token) {
+      Swal.fire({
+        icon: "warning",
+        title: "Session expired",
+        text: "Please sign in again before adding an event.",
+      });
+      return;
+    }
     
     try {
+      setIsSubmitting(true);
       // An event can be created without an image. Previously this code stopped
       // here when no file was selected, with no feedback and no API request.
       const uploadResponse = formData.images.length ? await uploadImage(formData.images) : null;
@@ -140,11 +158,17 @@ const AddEvent = () => {
           `${API_URL}/event/create`,
           {
             ...formData,
+            event_name: formData.event_name.trim(),
+            description: formData.description.trim(),
+            location: formData.location.trim(),
+            organized_by: formData.organized_by.trim(),
+            terms_and_conditions: formData.terms_and_conditions.trim(),
+            price: formData.price === "" ? null : Number(formData.price),
             images,
           },
           {
             headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${token}`,
             },
           }
         );
@@ -169,6 +193,8 @@ const AddEvent = () => {
         text: errorMessage,
 
       });
+    } finally {
+      setIsSubmitting(false);
     }
 
 
@@ -226,7 +252,7 @@ const AddEvent = () => {
             </Col>
             <Col md={4}>
               <Form.Group controlId="formLocation">
-                <Form.Label>Location</Form.Label>
+                <Form.Label>Location<span className="text-danger">*</span></Form.Label>
                 <Form.Control
                   type="text"
                   placeholder="Enter Location"
@@ -248,7 +274,12 @@ const AddEvent = () => {
                 </Form.Label>
                 <Select
                   name="near_by_location"
-                  value={formData.near_by_location}
+                  value={loc
+                    .map((near_by_location) => ({
+                      label: near_by_location.area_name,
+                      value: near_by_location.area_name,
+                    }))
+                    .find((option) => option.value === formData.near_by_location) || null}
                   options={loc.map((near_by_location) => ({
                     label: near_by_location.area_name,
                     value: near_by_location.area_name,
@@ -258,6 +289,9 @@ const AddEvent = () => {
                     formData.near_by_location || "Select Location"
                   }`}
                 />
+                {errors.near_by_location && (
+                  <div className="text-danger small mt-1">{errors.near_by_location}</div>
+                )}
               </Form.Group>
               <br></br>
             </Col>
@@ -399,7 +433,7 @@ const AddEvent = () => {
                       style={{ display: "none" }}
                       ref={fileInputRef}
                     />
-                    <button type="button" className="btn3" onClick={handleButtonClick}>
+                  <button type="button" className="btn3" onClick={handleButtonClick}>
                       Or Click to Select
                     </button>
                   </div>
@@ -422,6 +456,7 @@ const AddEvent = () => {
                           }}
                         />
                         <button
+                          type="button"
                           onClick={() => handleRemovePhoto(index)}
                           style={{
                             position: "absolute",
@@ -464,8 +499,8 @@ const AddEvent = () => {
               <div className="ButtonsContainer d-flex justify-content-start">
                 {" "}
                 {/* Align buttons to the left */}
-                <button type="submit" className="submit-button">
-                  Submit
+                <button type="submit" className="submit-button" disabled={isSubmitting}>
+                  {isSubmitting ? "Submitting..." : "Submit"}
                 </button>
                 <button
                   type="button"

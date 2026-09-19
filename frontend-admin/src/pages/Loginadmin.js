@@ -14,7 +14,7 @@ function Loginadmin() {
   const state = location.state;
   const [showPassword, setShowPassword] = useState(false);
   const [resetStep, setResetStep] = useState('login');
-  const [resetEmail, setResetEmail] = useState('');
+  const [resetMobile, setResetMobile] = useState('');
   const [resetOtp, setResetOtp] = useState('');
   const [resetToken, setResetToken] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -126,10 +126,15 @@ function Loginadmin() {
     event.preventDefault();
     setResetLoading(true);
     try {
-      const { data } = await axios.post(`${API_URL}/user/forgot-password`, { email: resetEmail.trim() });
+      const mobile = resetMobile.replace(/\D/g, '');
+      if (!/^\d{10}$/.test(mobile)) {
+        setResetLoading(false);
+        return Swal.fire('Invalid mobile number', 'Enter your registered 10-digit mobile number.', 'error');
+      }
+      const { data } = await axios.post(`${API_URL}/user/forgot-password`, { mobile });
       setResetToken(data.token);
       setResetStep('verify');
-      Swal.fire('OTP sent', 'Check your registered email for the reset OTP.', 'success');
+      Swal.fire('OTP sent', 'Check your registered mobile number for the reset OTP.', 'success');
     } catch (error) {
       Swal.fire('Error', error.response?.data?.message || 'Unable to send reset OTP.', 'error');
     } finally { setResetLoading(false); }
@@ -174,10 +179,10 @@ function Loginadmin() {
           <div className="text-center mb-4"><img src={logoImage} alt="Khelo Indore Logo" className="login-logo-img" /></div>
           <div className="text-center mb-4">
             <h2 className="login-title">Reset Password</h2>
-            <p className="login-subtitle">{isRequest ? 'Enter the registered email for your Venue Admin, Coach, or Trainer account.' : isVerify ? 'Enter the 6-digit OTP sent to your email.' : 'Choose a new password for your account.'}</p>
+            <p className="login-subtitle">{isRequest ? 'Enter the registered mobile number for your Venue Admin, Coach, or Trainer account.' : isVerify ? 'Enter the 6-digit OTP sent to your mobile.' : 'Choose a new password for your account.'}</p>
           </div>
           <form onSubmit={submitHandler}>
-            {isRequest && <div className="form-group mb-4"><label className="input-label">Registered Email</label><input type="email" required className="clean-admin-input w-100" placeholder="Enter registered email" value={resetEmail} onChange={(event) => setResetEmail(event.target.value)} /></div>}
+            {isRequest && <div className="form-group mb-4"><label className="input-label">Registered Mobile Number</label><input type="tel" required inputMode="numeric" maxLength={10} className="clean-admin-input w-100" placeholder="Enter 10-digit mobile number" value={resetMobile} onChange={(event) => setResetMobile(event.target.value.replace(/\D/g, ''))} /></div>}
             {isVerify && <div className="form-group mb-4"><label className="input-label">OTP</label><input type="text" required maxLength={6} inputMode="numeric" className="clean-admin-input w-100" placeholder="Enter 6-digit OTP" value={resetOtp} onChange={(event) => setResetOtp(event.target.value.replace(/\D/g, ''))} /></div>}
             {!isRequest && !isVerify && <>
               <div className="form-group mb-3"><label className="input-label">New Password</label><div className="position-relative"><input type={showNewPassword ? 'text' : 'password'} required className="clean-admin-input w-100" placeholder="Minimum 8 characters" value={newPassword} onChange={(event) => setNewPassword(event.target.value)} /><button type="button" className="btn position-absolute end-0 top-50 translate-middle-y" onClick={() => setShowNewPassword(!showNewPassword)} aria-label="Show or hide new password"><i className={`fas ${showNewPassword ? 'fa-eye-slash' : 'fa-eye'}`} /></button></div></div>

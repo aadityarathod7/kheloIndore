@@ -8,8 +8,13 @@ const isLocal =
   window.location.hostname === "127.0.0.1" || 
   window.location.hostname.startsWith("192.168.");
 
+// Local admin testing should use the deployed API and its production data.
+// Override this at build time with REACT_APP_DEPLOYED_API_ORIGIN when testing
+// against a different environment (for example, QA).
+const deployedApiOrigin = process.env.REACT_APP_DEPLOYED_API_ORIGIN || "https://kheloindore.in";
+
 const apiOrigin = isLocal
-  ? `${window.location.protocol}//${window.location.hostname}:4000`
+  ? deployedApiOrigin
   : `${window.location.protocol}//${window.location.hostname}`;
 
 export const API_URL = `${apiOrigin}/api`;

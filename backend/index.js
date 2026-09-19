@@ -6,7 +6,6 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 const dbConnect = require("./config/database");
-dbConnect();
 const bookingCron = require("./middlewares/cron_approval_email");
 const { securityHeaders, corsOptions } = require("./middlewares/security");
 
@@ -62,6 +61,16 @@ app.use((err, req, res, next) => {
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`[Success] Local backend server is running on http://localhost:${PORT}`);
-});
+const startServer = async () => {
+  try {
+    await dbConnect();
+    app.listen(PORT, () => {
+      console.log(`[Success] Local backend server is running on http://localhost:${PORT}`);
+    });
+  } catch (error) {
+    console.error(`[Error] Backend could not start: ${error.message}`);
+    process.exitCode = 1;
+  }
+};
+
+startServer();

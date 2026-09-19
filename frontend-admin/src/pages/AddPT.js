@@ -316,7 +316,7 @@ const AddPT = () => {
         Swal.fire({
           icon: "success",
           title: "Success!",
-          text: "Personal trainer added successfully",
+          text: "Trainer added successfully",
         }).then(() => {
           navigate("/personal-training");
         });
@@ -326,7 +326,7 @@ const AddPT = () => {
       Swal.fire({
         icon: "error",
         title: "Oops...",
-        text: "Failed to add personal trainer",
+        text: "Failed to add trainer",
       });
     }
   };

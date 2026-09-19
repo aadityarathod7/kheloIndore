@@ -31,3 +31,4 @@ Thumbs.db
 
 # Generated credential exports must never be committed
 backend/venue_logins_summary.json
+backend/SHOWCASE_TEST_CREDENTIALS.md

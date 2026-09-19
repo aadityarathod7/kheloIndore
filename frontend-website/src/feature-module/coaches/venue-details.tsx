@@ -11,6 +11,7 @@ import axios from "axios";
 import { API_URL, IMG_URL } from "../../ApiUrl";
 import { sanitizeHtml } from "../../utils/sanitize";
 import Swal from "sweetalert2";
+import { openCashfreeCheckout } from "../../utils/cashfreeCheckout";
 import Loader from "../loader/loader";
 import "../../style/css/venue_details.css";
 import { all_routes } from "../router/all_routes";
@@ -340,7 +341,20 @@ const VenueDetails = () => {
   const recurringMembershipPlans = (venueData?.membership_plans || []).filter((plan) =>
     plan?.name && Number(plan?.months) > 0 && Number(plan?.price) >= 0
   );
-  const isRecurringFacility = /gym|swimming/.test(`${venueData?.category || ""} ${venueData?.gameType || ""}`.toLowerCase());
+
+  const handleMembershipCheckout = async (planIndex: number) => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/login", { state: { returnTo: window.location.pathname } });
+      return;
+    }
+    try {
+      const response = await axios.post(`${API_URL}/membership/checkout`, { provider_type: "venue", provider_id: id, plan_index: planIndex }, { headers: { Authorization: `Bearer ${token}` } });
+      await openCashfreeCheckout(response.data.payment_session_id);
+    } catch (error: any) {
+      Swal.fire({ icon: "error", title: "Membership checkout unavailable", text: error.response?.data?.message || "Please try again." });
+    }
+  };
 
   // Opens (or starts) a real chat with the venue owner
 
@@ -1205,8 +1219,8 @@ const VenueDetails = () => {
                     </div>
                   </div>
 
-                  {isRecurringFacility && recurringMembershipPlans.length > 0 && (
-                    <div className="pro-card mb-4">
+                  {recurringMembershipPlans.length > 0 && (
+                    <div className="pro-card mb-4 ki-membership-venue-panel">
                       <div className="d-flex align-items-start gap-2 mb-3">
                         <span className="d-inline-flex align-items-center justify-content-center rounded-circle bg-success bg-opacity-10 text-success" style={{ width: "36px", height: "36px" }}>
                           <i className="fas fa-repeat" />
@@ -1217,8 +1231,8 @@ const VenueDetails = () => {
                         </div>
                       </div>
                       <div className="d-grid gap-2">
-                        {recurringMembershipPlans.map((plan) => (
-                          <div key={`${plan.name}-${plan.months}`} className="rounded-3 border p-3" style={{ borderColor: "#DDE9DF", background: "#FBFFFC" }}>
+                        {recurringMembershipPlans.map((plan, planIndex) => (
+                          <div key={`${plan.name}-${plan.months}`} className="rounded-3 border p-3 ki-membership-venue-card">
                             <div className="d-flex justify-content-between align-items-start gap-2">
                               <div>
                                 <strong style={{ color: "#0F172A" }}>{plan.name}</strong>
@@ -1230,6 +1244,9 @@ const VenueDetails = () => {
                               <span><i className="fas fa-check-circle text-success me-1" />{plan.discount || "Flexible Plan"}</span>
                               <span><i className="fas fa-headset text-success me-1" />{plan.support || "Basic Support"}</span>
                             </div>
+                            <button type="button" className="ki-membership-select mt-3" onClick={() => handleMembershipCheckout(planIndex)}>
+                              Choose {plan.name}
+                            </button>
                           </div>
                         ))}
                       </div>

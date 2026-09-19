@@ -7,6 +7,7 @@ import Category from "./pages/Category";
 import Venue from "./pages/Venue";
 import Loginadmin from "./pages/Loginadmin";
 import "bootstrap/dist/css/bootstrap.min.css";
+import "./responsive-admin.css";
 
 import UpdateCategory from "./pages/UpdateCategory";
 import Userlist from "./pages/Userlist";

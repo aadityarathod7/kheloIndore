@@ -14,8 +14,11 @@ import '@fortawesome/fontawesome-free/css/fontawesome.min.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import { base_path } from "./environment";
 import { PrimeReactProvider } from "primereact/api";
+import { configureSweetAlertNotifications } from "./utils/sweetAlertNotifications";
 
 
+
+configureSweetAlertNotifications();
 
 const rootElement = document.getElementById('root');
 if (rootElement) {

@@ -15,6 +15,7 @@ const mailContent = require("../middlewares/mail-content");
 const venuePdfContent = require("../middlewares/venue_pdf_invoice");
 const coachPdfContent = require("../middlewares/coach_pdf_invoice");
 const ptPdfContent = require("../middlewares/pt_pdf_invoice");
+var pdf = require("html-pdf");
 const path = require("path");
 const fs = require("fs");
 const { v4: uuidv4 } = require("uuid");
@@ -27,34 +28,19 @@ const mongoose = require('mongoose');
 const { ObjectId } = require("mongoose").Types;
 const personalTrainer = require("../models/PersonalTrainingModel")
 const Refund = require("../models/RefundModel");
+const Notification = require("../models/NotificationModel");
+const { requestSplit } = require("./CashfreeSplitController");
 
 const CASHFREE_API_VERSION = process.env.CASHFREE_API_VERSION || "2023-08-01";
 const getCashfreeBaseUrl = () => process.env.CASHFREE_BASE_URL || (process.env.CASHFREE_ENV === "production" ? "https://api.cashfree.com/pg" : "https://sandbox.cashfree.com/pg");
 
-const getCashfreeCredentials = () => {
-  const appId = (process.env.CASHFREE_APP_ID || process.env.CASHFREE_CLIENT_ID || "").trim();
-  const secretKey = (process.env.CASHFREE_SECRET_KEY || process.env.CASHFREE_CLIENT_SECRET || process.env.CASHFREE_SECRET || "").trim();
-  return { appId, secretKey };
-};
-
-const getCashfreeHeaders = () => {
-  const { appId, secretKey } = getCashfreeCredentials();
-  return {
-    accept: "application/json",
-    "Content-Type": "application/json",
-    "x-api-version": CASHFREE_API_VERSION,
-    "x-client-id": appId,
-    "x-client-secret": secretKey,
-  };
-};
-
-const safeRedirect = (res, targetUrl) => {
-  let finalUrl = targetUrl || process.env.REDIRECT_URL || "https://kheloindore.in/user/user-bookings";
-  if (!finalUrl.startsWith("http://") && !finalUrl.startsWith("https://")) {
-    finalUrl = `https://${finalUrl}`;
-  }
-  return res.redirect(finalUrl);
-};
+const getCashfreeHeaders = () => ({
+  accept: "application/json",
+  "Content-Type": "application/json",
+  "x-api-version": CASHFREE_API_VERSION,
+  "x-client-id": process.env.CASHFREE_APP_ID,
+  "x-client-secret": process.env.CASHFREE_SECRET_KEY,
+});
 
 const getCashfreeCustomerDetails = async (userId) => {
   const user = await User.findById(userId).lean();
@@ -70,8 +56,29 @@ const getCashfreeCustomerDetails = async (userId) => {
   };
 };
 
+const createBookingNotifications = async ({ providerUserId, bookingId, providerName, bookingType }) => {
+  try {
+    const superAdmins = await User.find({ role: "Super Admin", status: true }).select("_id").lean();
+    const recipientIds = new Set(superAdmins.map((admin) => String(admin._id)));
+    if (providerUserId) recipientIds.add(String(providerUserId));
+
+    if (!recipientIds.size) return;
+    await Notification.insertMany([...recipientIds].map((user_id) => ({
+      user_id,
+      title: `New ${bookingType} booking`,
+      message: `A new booking has been confirmed for ${providerName || bookingType}.`,
+      type: "booking",
+      entity_id: bookingId,
+    })));
+  } catch (error) {
+    // A notification failure must not affect an already-successful payment.
+    console.error("Booking notification creation failed:", error.message);
+  }
+};
+
 const createCashfreeOrder = async ({ orderId, amount, userId, service }) => {
-  const { appId, secretKey } = getCashfreeCredentials();
+  const appId = process.env.CASHFREE_APP_ID;
+  const secretKey = process.env.CASHFREE_SECRET_KEY;
   let baseRedirectUrl = process.env.REDIRECT_API_URL || "http://localhost:4000";
   if (!baseRedirectUrl.startsWith("http://") && !baseRedirectUrl.startsWith("https://")) {
     baseRedirectUrl = `https://${baseRedirectUrl}`;
@@ -95,8 +102,9 @@ const createCashfreeOrder = async ({ orderId, amount, userId, service }) => {
     
     console.log(`Creating Cashfree order ${orderId} (Amount: ₹${amount})...`);
 
-    // Cashfree requires order_expiry_time to be > 15 minutes and < 30 days
-    const expiryDate = new Date(Date.now() + 30 * 60 * 1000);
+    // Cashfree requires an expiry more than 15 minutes in the future. Keep a
+    // small buffer for request and clock drift while still expiring promptly.
+    const expiryDate = new Date(Date.now() + 20 * 60 * 1000);
     const order_expiry_time = expiryDate.toISOString();
 
     const response = await axios.post(`${getCashfreeBaseUrl()}/orders`, {
@@ -122,7 +130,8 @@ const createCashfreeOrder = async ({ orderId, amount, userId, service }) => {
 };
 
 const getCashfreePaymentStatus = async (orderId) => {
-  const { appId, secretKey } = getCashfreeCredentials();
+  const appId = process.env.CASHFREE_APP_ID;
+  const secretKey = process.env.CASHFREE_SECRET_KEY;
   if (!appId || !secretKey) {
     return {
       data: {
@@ -199,6 +208,20 @@ const getPuppeteerLaunchOptions = () => {
     options.executablePath = '/usr/bin/chromium-browser';
   }
   return options;
+};
+
+const scheduleCashfreeSplit = ({ orderId, bookingId, providerType, providerId, grossAmount }) => {
+  const timer = setTimeout(() => {
+    requestSplit({
+      orderId,
+      bookingId,
+      providerType,
+      providerId,
+      grossAmount,
+      platformPercentage: Number(process.env.CASHFREE_PLATFORM_FEE_PERCENT || 15),
+    }).catch((splitError) => console.error(`Cashfree ${providerType} split failed:`, splitError.message));
+  }, 2 * 60 * 1000);
+  if (typeof timer.unref === "function") timer.unref();
 };
 
 const venuePayment = async (req, res) => {
@@ -312,7 +335,10 @@ const venuePayment = async (req, res) => {
       venue_id,
       date: bookingDate,
       slotsBooked: normalizedSlotsBooked,
-      slotsBook: normalizedSlotsBooked.map((s) => String(s)),
+      // The pending-payment schema also uses slotsBook for the shared
+      // coach/trainer flow. Keep both representations for venue bookings so
+      // its required validation cannot reject a valid venue payment request.
+      slotsBook: normalizedSlotsBooked,
       vendor_id,
       total_price: totalBookedPrice,
       payment_type: paymentType,
@@ -329,7 +355,7 @@ const venuePayment = async (req, res) => {
       expirationTime: expirationTime,
     });
   } catch (error) {
-    
+    console.error("Venue payment initialization failed:", error.message);
     res.status(500).json({
       success: false,
       message: "Unable to initialize payment. Please try again."
@@ -448,7 +474,7 @@ const actualvenuePaymentStatus = async (req, res) => {
 
   const pdfData = {
     entityType: "Venue",  // Dynamically set based on entity type (this could be "Venue" or "Personal Trainer")
-    entityName: `${first_name} ${last_name}`,
+    entityName: venueName,
     email: email,
     first_name: first_name,
     last_name: last_name,
@@ -527,6 +553,12 @@ const actualvenuePaymentStatus = async (req, res) => {
         paymentState: state,
         vendor_id,
         pdf_url: pdfUrl,
+      });
+      await createBookingNotifications({
+        providerUserId: vendor_id,
+        bookingId: newBooking._id,
+        providerName: "the venue",
+        bookingType: "venue",
       });
 
       const updatedSlots = await Slot.updateMany(
@@ -619,7 +651,7 @@ const actualvenuePaymentStatus = async (req, res) => {
         slotsBooked,
         paymentState: state,
       });
-      var html = venuePdfContent.venue_pdf_invoice(pdfData);
+      var html = mailContent.generateUnifiedPdfInvoice(pdfData);
       var option = { format: "A3" };
       var filename = `${uuidv4()}.pdf`;
       var invoicePath = path.join(__dirname, `../public/pdf/${filename}`);
@@ -662,6 +694,12 @@ const actualvenuePaymentStatus = async (req, res) => {
         paymentState: state,
         vendor_id,
         pdf_url: pdfUrl,
+      });
+      await createBookingNotifications({
+        providerUserId: vendor_id,
+        bookingId: newBooking._id,
+        providerName: "the venue",
+        bookingType: "venue",
       });
 
       const updatedSlots = await Slot.updateMany(
@@ -766,7 +804,7 @@ const workingvenuePaymentStatus = async (req, res) => {
 
     const pdfData = {
       entityType: "Venue",
-      entityName: `${first_name} ${last_name}`,
+    entityName: venueName,
       email,
       first_name,
       last_name,
@@ -820,6 +858,12 @@ const workingvenuePaymentStatus = async (req, res) => {
       paymentState: state,
       vendor_id,
       pdf_url: pdfUrl,
+    });
+    await createBookingNotifications({
+      providerUserId: vendor_id,
+      bookingId: newBooking._id,
+      providerName: venueName || "the venue",
+      bookingType: "venue",
     });
 
     // Update Slots
@@ -895,14 +939,9 @@ const workingvenuePaymentStatus = async (req, res) => {
 
 const venuePaymentStatus = async (req, res) => {
   const { txnId } = req.params;
+  
 
   try {
-    // 1. If booking already created, safely redirect directly (prevents 404 on reload or duplicate callbacks)
-    const existing = await Booking.findOne({ merchantTransaction_id: txnId });
-    if (existing) {
-      return safeRedirect(res, process.env.REDIRECT_URL);
-    }
-
     const result = await getCashfreePaymentStatus(txnId);
 
     if (!result.data || !result.data.data) {
@@ -910,23 +949,25 @@ const venuePaymentStatus = async (req, res) => {
     }
 
     const { transactionId, amount, state, responseCode, merchantTransactionId } = result.data.data;
-    const effectiveOrderId = merchantTransactionId || txnId;
-    const userId = effectiveOrderId ? effectiveOrderId.split('-')[0] : null;
+    
+    
 
-    let user = await UserDetailsAtPayments.findOne({ payment_order_id: effectiveOrderId }).sort({ createdAt: -1 });
-    if (!user && txnId !== effectiveOrderId) {
-      user = await UserDetailsAtPayments.findOne({ payment_order_id: txnId }).sort({ createdAt: -1 });
-    }
-    if (!user && userId && ObjectId.isValid(userId)) {
-      user = await UserDetailsAtPayments.findOne({ user_id: new ObjectId(userId) }).sort({ createdAt: -1 });
-    }
+    const userId = merchantTransactionId.split('-')[0];
 
+    const user = await UserDetailsAtPayments.findOne({ payment_order_id: txnId }).sort({ createdAt: -1 }) || await UserDetailsAtPayments.findOne({ user_id: userId }).sort({ createdAt: -1 });
     if (!user) {
-      const existingTxn = await Transaction.findOne({ merchantTransaction_id: txnId });
-      if (existingTxn) {
-        return safeRedirect(res, process.env.REDIRECT_URL);
+      // Cashfree can revisit the return URL after a successful payment. The
+      // first callback consumes the temporary pending-payment record, so make
+      // subsequent callbacks idempotent by recognising the saved booking.
+      const existingBooking = await Booking.findOne({ merchantTransaction_id: txnId }).lean();
+      if (existingBooking) {
+        let redirectUrl = process.env.REDIRECT_URL || "https://kheloindore.in/user/user-bookings";
+        if (!redirectUrl.startsWith("http://") && !redirectUrl.startsWith("https://")) {
+          redirectUrl = `https://${redirectUrl}`;
+        }
+        return res.redirect(redirectUrl);
       }
-      return res.status(404).json({ error: "User not found for the transaction" });
+      return res.status(404).json({ error: "Payment session not found or has expired" });
     }
 
     const { user_id, date, venue_id, slotsBooked, vendor_id, payment_type } = user;
@@ -999,6 +1040,14 @@ const venuePaymentStatus = async (req, res) => {
       }
     }
 
+    const safeRedirect = (res, targetUrl) => {
+      let finalUrl = targetUrl || "https://kheloindore.in/user/user-bookings";
+      if (!finalUrl.startsWith("http://") && !finalUrl.startsWith("https://")) {
+        finalUrl = `https://${finalUrl}`;
+      }
+      return res.redirect(finalUrl);
+    };
+
     // Payment Success Logic
     if (result.data.success == true || state === "COMPLETED" || responseCode === "PAYMENT_SUCCESS") {
       const existing = await Booking.findOne({ merchantTransaction_id: txnId });
@@ -1033,6 +1082,7 @@ const venuePaymentStatus = async (req, res) => {
         transaction_id: transactionId,
         merchantTransaction_id: txnId,
         paymentStatus: responseCode,
+        slotsBook: slotsBooked.map(String),
         paymentState: state,
         vendor_id,
         pdf_url: pdfUrl,
@@ -1040,6 +1090,17 @@ const venuePaymentStatus = async (req, res) => {
         payment_type: payment_type || "full",
         payable_amount: payment_type === "partial" ? amount/100 : null,
       });
+      await createBookingNotifications({
+        providerUserId: vendor_id || vendorid,
+        bookingId: newBooking._id,
+        providerName: venueName,
+        bookingType: "venue",
+      });
+      // Cashfree Easy Split requires the successful payment to be captured
+      // first, then its split API must be called after a short delay. This is
+      // intentionally non-blocking: a booking remains successful if the
+      // settlement service is temporarily unavailable and can be retried.
+      scheduleCashfreeSplit({ orderId: txnId, bookingId: newBooking._id, providerType: "venue", providerId: vendor_id, grossAmount: amount / 100 });
       // Delete UserDetailsAtPayment
       await UserDetailsAtPayments.deleteOne({ user_id: userId });
 
@@ -1285,7 +1346,7 @@ const processBookingRefund = async ({ booking, reason }) => {
 
 const coachPayment = async (req, res) => {
   try {
-    const { user_id, coachId, start_date, end_date, start_time, end_time, payment_type } = req.body;
+    const { user_id, coachId, start_date, end_date, start_time, end_time, payment_type, coupon_code } = req.body;
 
     // Validate the request body
     if (!user_id || !coachId || !start_date || !end_date || !start_time || !end_time) {
@@ -1362,14 +1423,17 @@ const coachPayment = async (req, res) => {
       // Move to the next day
       currentDate.setDate(currentDate.getDate() + 1);
     }
+    const couponCode = String(coupon_code || "").trim().toUpperCase();
+    const discountAmount = couponCode === "KHELO100" ? Math.min(100, totalBookedPrice) : 0;
+    const discountedTotal = totalBookedPrice - discountAmount;
     const expirationTime = new Date().getTime() + 10 * 60 * 1000;
     // Proceed to payment if all slots are available
     const merchantTransactionId = `${user_id}-${Date.now()}`;
     // Partial payment = 50% advance; full payment = 100%
     const payableAmount =
       paymentType === "partial"
-        ? Math.round(totalBookedPrice * PARTIAL_PAYMENT_PERCENT)
-        : totalBookedPrice;
+        ? Math.round(discountedTotal * PARTIAL_PAYMENT_PERCENT)
+        : discountedTotal;
     const cashfreeOrder = await createCashfreeOrder({
       orderId: merchantTransactionId,
       amount: payableAmount,
@@ -1397,7 +1461,9 @@ const coachPayment = async (req, res) => {
         detail.slots.map((slot) => slot._id.toString())
       ), // Store the slot IDs
       packageType: "monthly", // Assuming the packageType is fixed or passed in the request
-      total_price: totalBookedPrice,
+      total_price: discountedTotal,
+      coupon_code: couponCode || undefined,
+      discount_amount: discountAmount,
       payment_type: paymentType,
       payable_amount: payableAmount,
       payment_order_id: merchantTransactionId,
@@ -1429,12 +1495,6 @@ const coachPaymentStatus = async (req, res) => {
       return res.status(400).json({ success: false, message: "Invalid merchant transaction ID" });
     }
 
-    // 1. If booking already created, safely redirect directly (prevents 404 on reload or duplicate callbacks)
-    const existingBooking = await CoachBooking.findOne({ merchantTransaction_id: merchantTransactionId });
-    if (existingBooking) {
-      return safeRedirect(res, process.env.REDIRECT_URL);
-    }
-
     const result = await getCashfreePaymentStatus(merchantTransactionId);
 
     if (!result.data || !result.data.data) {
@@ -1450,15 +1510,8 @@ const coachPaymentStatus = async (req, res) => {
     }
 
     // Fetch user details
-    let user = await UserDetailsAtPayments.findOne({ payment_order_id: merchantTransactionId }).sort({ createdAt: -1 });
-    if (!user && ObjectId.isValid(userId)) {
-      user = await UserDetailsAtPayments.findOne({ user_id: new ObjectId(userId) }).sort({ createdAt: -1 });
-    }
+    const user = await UserDetailsAtPayments.findOne({ payment_order_id: merchantTransactionId }).sort({ createdAt: -1 }) || await UserDetailsAtPayments.findOne({ user_id: userId }).sort({ createdAt: -1 });
     if (!user) {
-      const existingTxn = await Transaction.findOne({ merchantTransaction_id: merchantTransactionId });
-      if (existingTxn) {
-        return safeRedirect(res, process.env.REDIRECT_URL);
-      }
       return res.status(404).json({ success: false, message: "No payment details found for user" });
     }
 
@@ -1572,6 +1625,11 @@ const slotDates = `${formattedStartDate} to ${formattedEndDate}`;
                 payment_type: payment_type || "full",
                 payable_amount: payment_type === "partial" ? amount/100 : null,
               });
+              await createBookingNotifications({
+                bookingId: newBooking._id,
+                providerName: coachName,
+                bookingType: "coach",
+              });
               const transaction = await Transaction.create({
                 user_id,
                 coachId,
@@ -1583,6 +1641,7 @@ const slotDates = `${formattedStartDate} to ${formattedEndDate}`;
                 slotsBook,
                 paymentState: state,
               });
+              scheduleCashfreeSplit({ orderId: merchantTransactionId, bookingId: newBooking._id, providerType: "coach", providerId: coachId, grossAmount: amount / 100 });
     // After successful payment, update slots to booked
     for (const slotId of slotsBook) {
       const coachSlot = await CoachSlot.findOne({ coachId: coachId, start_date: new Date(start_date) });
@@ -1747,7 +1806,7 @@ const getCoachBookingByUserId = async (req, res) => {
 
 const personalTrainerPayment = async (req, res) => {
   try {
-    const { user_id, trainerId, start_date, end_date, start_time, end_time, payment_type } = req.body;
+    const { user_id, trainerId, start_date, end_date, start_time, end_time, payment_type, coupon_code } = req.body;
 // Personal_trainer_id
     // Validate the request body
     if (!user_id || !trainerId || !start_date || !end_date || !start_time || !end_time) {
@@ -1824,14 +1883,17 @@ const personalTrainerPayment = async (req, res) => {
       // Move to the next day
       currentDate.setDate(currentDate.getDate() + 1);
     }
+    const couponCode = String(coupon_code || "").trim().toUpperCase();
+    const discountAmount = couponCode === "KHELO100" ? Math.min(100, totalBookedPrice) : 0;
+    const discountedTotal = totalBookedPrice - discountAmount;
     const expirationTime = new Date().getTime() + 10 * 60 * 1000;
     // Proceed to payment if all slots are available
     const merchantTransactionId = `${user_id}-${Date.now()}`;
     // Partial payment = 50% advance; full payment = 100%
     const payableAmount =
       paymentType === "partial"
-        ? Math.round(totalBookedPrice * PARTIAL_PAYMENT_PERCENT)
-        : totalBookedPrice;
+        ? Math.round(discountedTotal * PARTIAL_PAYMENT_PERCENT)
+        : discountedTotal;
     const cashfreeOrder = await createCashfreeOrder({
       orderId: merchantTransactionId,
       amount: payableAmount,
@@ -1857,7 +1919,9 @@ const personalTrainerPayment = async (req, res) => {
         detail.slots.map((slot) => slot._id.toString())
       ), // Store the slot IDs
       packageType: "monthly", // Assuming the packageType is fixed or passed in the request
-      total_price: totalBookedPrice,
+      total_price: discountedTotal,
+      coupon_code: couponCode || undefined,
+      discount_amount: discountAmount,
       payment_type: paymentType,
       payable_amount: payableAmount,
       payment_order_id: merchantTransactionId,
@@ -1890,12 +1954,6 @@ const personalTrainerPaymentStatus = async (req, res) => {
       return res.status(400).json({ success: false, message: "Invalid merchant transaction ID" });
     }
 
-    // 1. If booking already created, safely redirect directly (prevents 404 on reload or duplicate callbacks)
-    const existingBooking = await PersonalTrainerBooking.findOne({ merchantTransaction_id: merchantTransactionId });
-    if (existingBooking) {
-      return safeRedirect(res, process.env.REDIRECT_URL);
-    }
-
     const result = await getCashfreePaymentStatus(merchantTransactionId);
 
     if (!result.data || !result.data.data) {
@@ -1910,15 +1968,8 @@ const personalTrainerPaymentStatus = async (req, res) => {
       return res.status(400).json({ success: false, message: "Invalid user ID" });
     }
 
-    let user = await UserDetailsAtPayments.findOne({ payment_order_id: merchantTransactionId }).sort({ createdAt: -1 });
-    if (!user && ObjectId.isValid(userId)) {
-      user = await UserDetailsAtPayments.findOne({ user_id: new ObjectId(userId) }).sort({ createdAt: -1 });
-    }
+    const user = await UserDetailsAtPayments.findOne({ payment_order_id: merchantTransactionId }).sort({ createdAt: -1 }) || await UserDetailsAtPayments.findOne({ user_id: userId }).sort({ createdAt: -1 });
     if (!user) {
-      const existingTxn = await Transaction.findOne({ merchantTransaction_id: merchantTransactionId });
-      if (existingTxn) {
-        return safeRedirect(res, process.env.REDIRECT_URL);
-      }
       return res.status(404).json({ success: false, message: "No payment details found for user" });
     }
 
@@ -2020,6 +2071,12 @@ const slotDates = `${formattedStartDate} to ${formattedEndDate}`;
             payment_type: payment_type || "full",
             payable_amount: payment_type === "partial" ? amount/100 : null,
           });
+          await createBookingNotifications({
+            bookingId: newBooking._id,
+            providerName: trainerName,
+            bookingType: "trainer",
+          });
+          scheduleCashfreeSplit({ orderId: merchantTransactionId, bookingId: newBooking._id, providerType: "trainer", providerId: trainerId, grossAmount: amount / 100 });
 
            for (const slotId of slotsBook) {
             const ptSlot = await PersonalTrainerSlot.findOne({

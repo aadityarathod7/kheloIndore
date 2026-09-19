@@ -64,6 +64,18 @@ const PersonalTrainerSchema = new mongoose.Schema(
     policiesAndRules: {
       type: String
       },
+    membership_plans: {
+      type: [{
+        name: { type: String, trim: true },
+        months: { type: Number, min: 1 },
+        price: { type: Number, min: 0 },
+        priority: { type: String, trim: true, default: "Standard Booking" },
+        discount: { type: String, trim: true, default: "Flexible Plan" },
+        support: { type: String, trim: true, default: "Basic Support" },
+        includes_coaching: { type: Boolean, default: true },
+      }],
+      default: [],
+    },
    profile_picture: {
      type: Array,
      default: null,

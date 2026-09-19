@@ -1,7 +1,7 @@
 {
   "files": {
-    "main.css": "/static/css/main.f47b0041.css",
-    "main.js": "/static/js/main.11b69e20.js",
+    "main.css": "/static/css/main.7daaa69e.css",
+    "main.js": "/static/js/main.243659f9.js",
     "static/media/stadium-turf.png": "/static/media/stadium-turf.4267a41f4bcea862b03d.png",
     "static/media/stadium.png": "/static/media/stadium.4267a41f4bcea862b03d.png",
     "static/media/fa-solid-900.ttf": "/static/media/fa-solid-900.2582b0e4bcf85eceead0.ttf",
@@ -34,11 +34,11 @@
     "static/media/down-arrow.svg": "/static/media/down-arrow.c287b4401a92e35d1590.svg",
     "static/media/bg-01.svg": "/static/media/bg-01.9d6fef1969fff93121c7.svg",
     "static/media/cock-icon-02.svg": "/static/media/cock-icon-02.c4f6a4775e582c2cb248.svg",
-    "main.f47b0041.css.map": "/static/css/main.f47b0041.css.map",
-    "main.11b69e20.js.map": "/static/js/main.11b69e20.js.map"
+    "main.7daaa69e.css.map": "/static/css/main.7daaa69e.css.map",
+    "main.243659f9.js.map": "/static/js/main.243659f9.js.map"
   },
   "entrypoints": [
-    "static/css/main.f47b0041.css",
-    "static/js/main.11b69e20.js"
+    "static/css/main.7daaa69e.css",
+    "static/js/main.243659f9.js"
   ]
 }

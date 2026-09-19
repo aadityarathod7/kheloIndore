@@ -55,3 +55,80 @@ label {
   margin-left: 1%;
   
 }
+
+/* Modern upload controls used throughout the coach and trainer profile forms. */
+#formProfileImage > div,
+#formIdentityProof > div,
+#formDocument > div,
+#formVideos > div {
+  min-height: 214px;
+  display: flex !important;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px dashed #9bb8a7 !important;
+  border-radius: 12px;
+  padding: 18px !important;
+  background: linear-gradient(135deg, #f8fcf9, #ffffff);
+  transition: border-color .18s ease, background .18s ease, transform .18s ease;
+}
+
+#formProfileImage > div:hover,
+#formIdentityProof > div:hover,
+#formDocument > div:hover,
+#formVideos > div:hover {
+  border-color: #07884a !important;
+  background: #f0fbf4;
+  transform: translateY(-1px);
+}
+
+#formProfileImage h3,
+#formIdentityProof h3,
+#formDocument h3,
+#formVideos h3 {
+  margin: 0 !important;
+  color: #173423;
+  font-size: 15px !important;
+  font-weight: 700;
+}
+
+#formProfileImage label,
+#formIdentityProof label,
+#formDocument label,
+#formVideos label {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  border-radius: 50%;
+  color: #07884a;
+  background: #e5f8eb;
+  cursor: pointer;
+}
+
+#formProfileImage label svg,
+#formIdentityProof label svg,
+#formDocument label svg,
+#formVideos label svg {
+  margin: 0 !important;
+  font-size: 24px !important;
+}
+
+#formProfileImage img,
+#formIdentityProof img,
+#formDocument img {
+  width: 96px !important;
+  height: 96px !important;
+  margin: 6px !important;
+  object-fit: cover;
+  border: 1px solid #d9e8de;
+  border-radius: 10px;
+}
+
+@media (max-width: 767px) {
+  #formProfileImage > div,
+  #formIdentityProof > div,
+  #formDocument > div,
+  #formVideos > div { min-height: 170px; }
+}

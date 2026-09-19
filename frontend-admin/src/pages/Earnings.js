@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Table, Card, Statistic, Spin, Alert, Button, Input, Modal, message } from "antd";
+import { Table, Card, Statistic, Spin, Alert, Button, Input, Modal, Select, message } from "antd";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { WalletOutlined, CalendarOutlined, LineChartOutlined, PercentageOutlined, UndoOutlined } from "@ant-design/icons";
 import axios from "axios";
@@ -16,6 +16,9 @@ const Earnings = () => {
   const [monthlyData, setMonthlyData] = useState([]);
   const [recentBookings, setRecentBookings] = useState([]);
   const [vendorSettlements, setVendorSettlements] = useState([]);
+  const [providerBreakdown, setProviderBreakdown] = useState([]);
+  const [providerType, setProviderType] = useState("all");
+  const [providerLoading, setProviderLoading] = useState(false);
   const [settlementTotals, setSettlementTotals] = useState(null);
   const [settlementNote, setSettlementNote] = useState("");
   const [payoutTarget, setPayoutTarget] = useState(null);
@@ -33,9 +36,12 @@ const Earnings = () => {
           axios.get(`${API_URL}/earnings/monthly`, { headers }),
           axios.get(`${API_URL}/earnings/recent-bookings`, { headers }),
         ];
-        if (isSuperAdmin) requests.push(axios.get(`${API_URL}/earnings/vendor-settlements`, { headers }));
+        if (isSuperAdmin) {
+          requests.push(axios.get(`${API_URL}/earnings/vendor-settlements`, { headers }));
+          requests.push(axios.get(`${API_URL}/earnings/provider-breakdown`, { headers }));
+        }
 
-        const [summaryRes, monthlyRes, recentRes, settlementsRes] = await Promise.all(requests);
+        const [summaryRes, monthlyRes, recentRes, settlementsRes, providersRes] = await Promise.all(requests);
         if (summaryRes.data.success) setSummary(summaryRes.data.data);
         if (monthlyRes.data.success) setMonthlyData(monthlyRes.data.data);
         if (recentRes.data.success) setRecentBookings(recentRes.data.data);
@@ -44,6 +50,7 @@ const Earnings = () => {
           setSettlementTotals(settlementsRes.data.totals);
           setSettlementNote(settlementsRes.data.note || "");
         }
+        if (providersRes?.data?.success) setProviderBreakdown(providersRes.data.data || []);
       } catch (err) {
         
         setError(err.response?.data?.message || "Failed to load earnings dashboard data. Please try again.");
@@ -53,6 +60,23 @@ const Earnings = () => {
     };
     fetchEarningsData();
   }, []);
+
+  const loadProviderBreakdown = async (type) => {
+    if (!isSuperAdmin) return;
+    try {
+      setProviderType(type);
+      setProviderLoading(true);
+      const response = await axios.get(`${API_URL}/earnings/provider-breakdown`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        params: { providerType: type },
+      });
+      setProviderBreakdown(response.data?.data || []);
+    } catch (err) {
+      message.error(err.response?.data?.message || "Could not load provider earnings.");
+    } finally {
+      setProviderLoading(false);
+    }
+  };
 
   const columns = [
     { title: "S.No", key: "index", render: (_, __, index) => index + 1, width: 70 },
@@ -103,6 +127,14 @@ const Earnings = () => {
     },
     { title: "Payout status", dataIndex: "payoutStatus", width: 145, render: (status) => <span className="payout-pending">{status}</span> },
     { title: "Action", key: "action", width: 140, render: (_, row) => Number(row.pendingPayout) > 0 ? <Button size="small" type="primary" onClick={() => { setPayoutTarget(row); setPayoutForm({ amount: String(row.pendingPayout), payoutDate: new Date().toISOString().slice(0, 10), reference: "", note: "" }); }}>Record payment</Button> : "—" },
+  ];
+
+  const providerColumns = [
+    { title: "Provider", key: "provider", width: 260, render: (_, row) => <div className="settlement-vendor-cell"><strong>{row.providerName}</strong><span style={{ textTransform: "capitalize" }}>{row.providerType}</span><small>{row.city !== "—" ? row.city : row.contact}</small></div> },
+    { title: "Bookings", dataIndex: "bookings", align: "center", width: 100 },
+    { title: "Gross collections", dataIndex: "grossCollections", render: formatCurrency, width: 160 },
+    { title: "Refunded", dataIndex: "refundedAmount", render: (amount) => amount ? <span className="amount-refund">−{formatCurrency(amount)}</span> : "—", width: 130 },
+    { title: "Net earnings", dataIndex: "netCollections", render: (amount) => <strong className="amount-payable">{formatCurrency(amount)}</strong>, width: 150 },
   ];
 
   const recordPayout = async () => {
@@ -165,6 +197,10 @@ const Earnings = () => {
           <span>{settlementNote}</span>
         </div>
         <Table columns={vendorColumns} dataSource={vendorSettlements} rowKey="key" pagination={{ pageSize: 8, hideOnSinglePage: true }} locale={{ emptyText: "No paid venue bookings are available for settlement yet." }} scroll={{ x: 1210 }} />
+      </Card>}
+
+      {isSuperAdmin && <Card title={<div><span className="settlement-card-title">Provider-wise bookings & earnings</span><span className="settlement-card-caption">Compare every venue, coach, and trainer.</span></div>} extra={<Select value={providerType} onChange={loadProviderBreakdown} style={{ minWidth: 150 }} options={[{ value: "all", label: "All providers" }, { value: "venue", label: "Venues" }, { value: "coach", label: "Coaches" }, { value: "trainer", label: "Trainers" }]} />} bordered={false} className="earnings-section-card earnings-settlement-card">
+        <Table loading={providerLoading} columns={providerColumns} dataSource={providerBreakdown} rowKey="key" pagination={{ pageSize: 8, hideOnSinglePage: true }} locale={{ emptyText: "No successful provider bookings found." }} scroll={{ x: 850 }} />
       </Card>}
 
       <Card title={<span style={{ fontWeight: 600 }}>Net Earnings & Refund Trend (Last 6 Months)</span>} bordered={false} className="earnings-section-card earnings-chart-card">

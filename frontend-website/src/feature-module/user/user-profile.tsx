@@ -269,11 +269,27 @@ const UserProfile = () => {
       if (response.status === 200 && response.data.status) {
         const uploadedImage = response.data.file_data?.[0]?.src;
         if (uploadedImage) {
+          if (!userId) {
+            throw new Error("Your account could not be identified. Please sign in again.");
+          }
+
+          const profileImage = [{ src: uploadedImage }];
+          const savedProfile = await axios.put(
+            `${API_URL}/user/profile-setting/${userId}`,
+            { profile_image: profileImage },
+            { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
+          );
+
           setUploadedFileUrl(uploadedImage);
+          setUserData((current) => ({
+            ...current,
+            profile_image: savedProfile.data?.data?.profile_image || profileImage,
+          }));
+          window.dispatchEvent(new Event("userProfileUpdated"));
           Swal.fire({
             icon: "success",
-            title: "Photo Uploaded!",
-            text: "Profile image uploaded successfully.",
+            title: "Profile Photo Saved!",
+            text: "Your new profile photo will remain after refresh.",
             timer: 2000,
             showConfirmButton: false
           });
@@ -553,13 +569,13 @@ const UserProfile = () => {
               <p style={{ color: "#64748B", fontSize: "18px", marginBottom: "20px", fontWeight: "500", maxWidth: "480px" }}>Manage your profile information, contact details & avatar</p>
               
               <div className="d-flex align-items-center flex-wrap gap-2 mt-3">
-                <div className="d-inline-flex align-items-center bg-white px-3 py-2 rounded-pill shadow-sm" style={{ fontSize: "13px", border: "1px solid #E5E7EB" }}>
+                <div className="ki-user-breadcrumb d-inline-flex align-items-center bg-white px-3 py-2 rounded-pill shadow-sm" style={{ fontSize: "13px", border: "1px solid #E5E7EB" }}>
                   <Link to="/" style={{ color: "#64748B", textDecoration: "none", fontWeight: "500" }}><i className="fas fa-home me-1" style={{ color: "#64748B" }} /> Home</Link>
                   <span style={{ margin: "0 10px", color: "#64748B" }}><i className="fas fa-chevron-right" style={{ fontSize: "10px", color: "#64748B" }} /></span>
                   <span style={{ color: "#22C55E", fontWeight: "600" }}>Profile Settings</span>
                 </div>
 
-                <div className="d-inline-flex align-items-center gap-2 ms-sm-2">
+                <nav className="ki-user-hero-nav ms-sm-2" aria-label="User account navigation">
                   <Link to={routes.userDashboard} className="ki-tab-btn">
                     <i className="fas fa-th-large me-2" />
                     <span>Dashboard</span>
@@ -596,7 +612,7 @@ const UserProfile = () => {
                     <i className="fas fa-user-edit me-2" />
                     <span>Profile Settings</span>
                   </Link>
-                </div>
+                </nav>
               </div>
             </div>
           </div>
@@ -628,7 +644,7 @@ const UserProfile = () => {
         </div>
       )}
 
-      <div className="content court-bg py-4">
+      <div className="content court-bg py-4 ki-user-profile">
         <div className="container">
           <div className="row justify-content-center">
             <div className="col-xl-11 col-lg-12">

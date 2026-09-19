@@ -8,6 +8,7 @@ const User = require('../models/UserModel');
 const PersonalTrainer = require("../models/PersonalTrainingModel");
 const Coach = require("../models/CoachModel");
 const CoachSlot = require("../models/CoachSlotsModel");
+const Notification = require("../models/NotificationModel");
 const venuePdfContent = require("../middlewares/venue_pdf_invoice");
 const puppeteer = require("puppeteer");
 const path = require("path");
@@ -22,6 +23,26 @@ require('dotenv').config();
 const mongoose = require('mongoose');
 const { ObjectId } = require("mongoose").Types;
 const superAdminEmail = process.env.SUPER_ADMIN_EMAIL
+
+const notifyUsers = async ({ recipientIds, bookingId, title, message, type = "booking" }) => {
+  try {
+    const uniqueRecipientIds = [...new Set((recipientIds || []).filter(Boolean).map(String))];
+    if (!uniqueRecipientIds.length) return;
+    await Notification.insertMany(uniqueRecipientIds.map((user_id) => ({ user_id, title, message, type, entity_id: bookingId })));
+  } catch (error) {
+    console.error("Booking notification creation failed:", error.message);
+  }
+};
+
+const notifyBookingAdmins = async ({ venueAdminId, bookingId, title, message }) => {
+  const superAdmins = await User.find({ role: "Super Admin", status: true }).select("_id").lean();
+  await notifyUsers({
+    recipientIds: [...superAdmins.map((admin) => admin._id), venueAdminId],
+    bookingId,
+    title,
+    message,
+  });
+};
 // Venue Admin CRM - manually add a booking that came directly to the venue
 // (walk-in / phone bookings). Finds or creates a lightweight user, then books
 // the slots without requiring an online payment.
@@ -133,6 +154,12 @@ exports.addManualBooking = async (req, res) => {
     );
 
     await User.findByIdAndUpdate(customer._id, { $inc: { booking_count: 1 } }, { new: true });
+    await notifyBookingAdmins({
+      venueAdminId: vendor_id,
+      bookingId: newBooking._id,
+      title: "New manual venue booking",
+      message: `${customer_name || "A walk-in customer"} was booked at ${venueData.name}.`,
+    });
 
     const populatedBooking = await Booking.findById(newBooking._id)
       .populate("user_id")
@@ -211,6 +238,12 @@ if(slots1.length===0){
       date,
       slotsBooked,
       total_price,
+    });
+    await notifyBookingAdmins({
+      venueAdminId: vendor_id,
+      bookingId: newBooking._id,
+      title: "New venue booking",
+      message: `A new booking was created for ${venueData?.name || "your venue"}.`,
     });
 
     let populatedBooking = await Booking.findById(newBooking._id)
@@ -1048,6 +1081,16 @@ exports.shubhbookingVerifyStatusById = async (req, res) => {
 
     booking.verification_status = parsedVerifyStatus;
     await booking.save();
+    await notifyUsers({
+      recipientIds: [user?._id],
+      bookingId: booking._id,
+      title: parsedVerifyStatus === 1 ? "Booking confirmed" : parsedVerifyStatus === 2 ? "Booking rejected" : "Booking is pending",
+      message: parsedVerifyStatus === 1
+        ? `Your booking for ${venue?.name || "the venue"} has been confirmed.`
+        : parsedVerifyStatus === 2
+          ? `Your booking for ${venue?.name || "the venue"} was rejected.`
+          : `Your booking for ${venue?.name || "the venue"} is pending confirmation.`,
+    });
 
     if (parsedVerifyStatus === 1) {
       // Approval Logic
@@ -1255,6 +1298,16 @@ exports.bookingVerifyStatusById = async (req, res) => {
 
     booking.verification_status = parsedVerifyStatus;
     await booking.save();
+    await notifyUsers({
+      recipientIds: [user?._id],
+      bookingId: booking._id,
+      title: parsedVerifyStatus === 1 ? "Booking confirmed" : parsedVerifyStatus === 2 ? "Booking rejected" : "Booking is pending",
+      message: parsedVerifyStatus === 1
+        ? `Your booking for ${venue?.name || "the selected provider"} has been confirmed.`
+        : parsedVerifyStatus === 2
+          ? `Your booking for ${venue?.name || "the selected provider"} was rejected.`
+          : `Your booking for ${venue?.name || "the selected provider"} is pending confirmation.`,
+    });
     // Ensure slotsBooked is an array (default to empty if undefined)
   // Determine the role dynamically based on booking
 const role = 
@@ -1676,6 +1729,12 @@ exports.cancelBookingForVenue = async (req, res) => {
     // Update the cancellation status
     booking.cancellation_status = 1;
     await booking.save();
+    await notifyBookingAdmins({
+      venueAdminId: booking.vendor_id,
+      bookingId: booking._id,
+      title: "Venue booking cancelled",
+      message: "A venue booking was cancelled and its slot is available again.",
+    });
 
     // Update slot availability
     const slotsToUpdate = booking.slotsBooked;
@@ -1793,6 +1852,11 @@ exports.cancelBookingForPersonalTrainer = async (req, res) => {
     // Update the cancellation status
     booking.cancellation_status = 1;
     await booking.save();
+    await notifyBookingAdmins({
+      bookingId: booking._id,
+      title: "Trainer booking cancelled",
+      message: "A trainer booking was cancelled and its slot is available again.",
+    });
 
     // Update slot availability using PersonalTrainerSlot model
     const slotsToUpdate = booking.slotsBook;  // Assuming slots are stored in slotsBook field
@@ -1910,6 +1974,11 @@ exports.cancelBookingForCoach = async (req, res) => {
     // Update the cancellation status
     booking.cancellation_status = 1;
     await booking.save();
+    await notifyBookingAdmins({
+      bookingId: booking._id,
+      title: "Coach booking cancelled",
+      message: "A coach booking was cancelled and its slot is available again.",
+    });
 
     // Update slot availability using CoachSlot model
     const slotsToUpdate = booking.slotsBook;  // Assuming slots are stored in slotsBook field
@@ -1987,8 +2056,6 @@ exports.cancelBookingForCoach = async (req, res) => {
     return res.status(500).json({ success: false, message: "Internal Server Error", error: error.message });
   }
 };
-
-
 
 
 

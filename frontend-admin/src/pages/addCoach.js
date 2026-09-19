@@ -7,6 +7,7 @@ import Swal from "sweetalert2";
 import { API_URL } from '../utils/ApiUrl';
 import { useNavigate } from 'react-router-dom';
 import LanguageSelector from "../components/LanguageSelector";
+import MembershipPlansEditor from "../components/MembershipPlansEditor";
 
 const AddCoach = () => {
   const [formData, setFormData] = useState({
@@ -21,6 +22,7 @@ const AddCoach = () => {
     languages: [],
     class_location: "",
     training_mode: "",
+    membership_plans: [],
     social_media: {
       facebook: "",
       instagram: "",
@@ -354,6 +356,11 @@ const AddCoach = () => {
             </div>
             <Form.Label className="checkbox-label">Status</Form.Label>
           </Form.Group> */}
+
+          <MembershipPlansEditor
+            plans={formData.membership_plans || []}
+            onChange={(membership_plans) => setFormData((current) => ({ ...current, membership_plans }))}
+          />
 
           {apiError && (
             <Row className="mt-3">

@@ -6,6 +6,10 @@ import {
   DollarOutlined,
   BellOutlined,
   CloseOutlined,
+  CalendarOutlined,
+  ShopOutlined,
+  TeamOutlined,
+  UserOutlined,
 } from "@ant-design/icons";
 import { AiOutlineDashboard } from "react-icons/ai";
 import { RiCouponLine, RiUserLine } from "react-icons/ri";
@@ -143,6 +147,17 @@ const notificationSection = (notification) => {
   if (searchableText.includes("blog")) return "blog";
   if (searchableText.includes("user")) return "users";
   return "dashboard";
+};
+
+const notificationIcon = (notification) => {
+  switch (notificationSection(notification)) {
+    case "coaches": return <UserOutlined aria-hidden="true" />;
+    case "personal-training": return <TeamOutlined aria-hidden="true" />;
+    case "venues":
+    case "venue-admin": return <ShopOutlined aria-hidden="true" />;
+    case "bookings": return <CalendarOutlined aria-hidden="true" />;
+    default: return <BellOutlined aria-hidden="true" />;
+  }
 };
 
 /* ── Styles (inline, scoped to sidebar) ──────────────────── */
@@ -293,6 +308,7 @@ const MainLayout = () => {
   const currentKey =
     location.pathname.split("/").filter(Boolean).pop() || "dashboard";
   const role = localStorage.getItem("role");
+  const unreadNotifications = notifications.filter((item) => !item.is_read).length;
   const unreadSectionCounts = notifications.reduce((counts, notification) => {
     if (!notification.is_read) {
       const section = notificationSection(notification);
@@ -313,7 +329,20 @@ const MainLayout = () => {
     window.addEventListener("resize", closeOnDesktop);
     return () => window.removeEventListener("resize", closeOnDesktop);
   }, []);
-  useEffect(() => { const token = localStorage.getItem("token"); if (!token) return; const load = () => axios.get(`${API_URL}/notifications/me`, { headers: { Authorization: `Bearer ${token}` } }).then(({ data }) => setNotifications(data.notifications || [])).catch(() => {}); load(); const timer = setInterval(load, 30000); return () => clearInterval(timer); }, []);
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+    const load = () => axios.get(`${API_URL}/notifications/me`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    }).then(({ data }) => setNotifications(data.notifications || [])).catch(() => {});
+    load();
+    window.addEventListener("focus", load);
+    const timer = setInterval(load, 10000);
+    return () => {
+      window.removeEventListener("focus", load);
+      clearInterval(timer);
+    };
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -343,6 +372,16 @@ const MainLayout = () => {
     }
     setNotificationsOpen(false);
     navigate(notificationDestination(notification));
+  };
+
+  const clearNotifications = async () => {
+    if (!notifications.length) return;
+    try {
+      await axios.delete(`${API_URL}/notifications/me`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      });
+      setNotifications([]);
+    } catch (_) {}
   };
 
   return (
@@ -517,7 +556,7 @@ const MainLayout = () => {
                 {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
               </button>
               
-              <span style={{
+              <span className="admin-topbar-title" style={{
                 fontFamily: "Inter, sans-serif",
                 fontSize: "16px",
                 fontWeight: 700,
@@ -530,21 +569,29 @@ const MainLayout = () => {
             <div className="admin-notification-wrap">
               <button type="button" className="admin-notification-bell" aria-label="Notifications" aria-expanded={notificationsOpen} onClick={openNotifications}>
                 <BellOutlined />
-                <span className="admin-notification-count" title="Unread notifications">{notifications.filter((item) => !item.is_read).length > 9 ? "9+" : notifications.filter((item) => !item.is_read).length}</span>
+                {unreadNotifications > 0 && <span className="admin-notification-count" title="Unread notifications">{unreadNotifications > 9 ? "9+" : unreadNotifications}</span>}
               </button>
               {notificationsOpen && <div className="admin-notification-panel">
                 <div className="admin-notification-panel-head">
-                  <div><strong>Notifications</strong><span>{role === "Super Admin" ? "Platform activity and approvals" : "Your latest account updates"}</span></div>
-                  <button type="button" onClick={() => setNotificationsOpen(false)} aria-label="Close notifications"><CloseOutlined /></button>
+                  <div className="admin-notification-panel-copy"><strong>Notifications</strong><span>{role === "Super Admin" ? "Platform activity and approvals" : "Your latest account updates"}</span></div>
+                  <div className="admin-notification-panel-actions">
+                    {notifications.length > 0 && <button type="button" className="admin-notification-clear" onClick={clearNotifications}>Clear all</button>}
+                    <button type="button" onClick={() => setNotificationsOpen(false)} aria-label="Close notifications"><CloseOutlined /></button>
+                  </div>
                 </div>
                 <div className="admin-notification-list">
                   {notifications.length ? notifications.map((notification) => {
                     const label = notification.title || "New update";
-                    const initial = label.charAt(0).toUpperCase();
                     const timestamp = notification.createdAt ? new Date(notification.createdAt).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" }) : "Just now";
                     return <div key={notification._id} className={`admin-notification-item${notification.is_read ? "" : " is-unread"}`} role="button" tabIndex={0} onClick={() => openNotification(notification)} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") openNotification(notification); }}>
-                      <span className="admin-notification-icon">{initial}</span>
-                      <div className="admin-notification-copy"><div><b>{label}</b><time>{timestamp}</time></div><p>{notification.message}</p></div>
+                      <span className="admin-notification-icon">{notificationIcon(notification)}</span>
+                      <div className="admin-notification-copy">
+                        <div className="admin-notification-title-row">
+                          <b>{label}</b>
+                          <time>{timestamp}</time>
+                        </div>
+                        <p>{notification.message}</p>
+                      </div>
                     </div>;
                   }) : <div className="admin-notification-empty"><i className="feather-check" aria-hidden="true" /><strong>You&apos;re all caught up</strong><span>New updates will appear here.</span></div>}
                 </div>

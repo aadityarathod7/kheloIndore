@@ -511,13 +511,13 @@ const UserBookings = () => {
               <p style={{ color: "#64748B", fontSize: "18px", marginBottom: "20px", fontWeight: "500", maxWidth: "480px" }}>Manage and track all your venue & coach bookings</p>
               
               <div className="d-flex align-items-center flex-wrap gap-2 mt-3">
-                <div className="d-inline-flex align-items-center bg-white px-3 py-2 rounded-pill shadow-sm" style={{ fontSize: "13px", border: "1px solid #E5E7EB" }}>
+                <div className="ki-user-breadcrumb d-inline-flex align-items-center bg-white px-3 py-2 rounded-pill shadow-sm" style={{ fontSize: "13px", border: "1px solid #E5E7EB" }}>
                   <Link to="/" style={{ color: "#64748B", textDecoration: "none", fontWeight: "500" }}><i className="fas fa-home me-1" style={{ color: "#64748B" }} /> Home</Link>
                   <span style={{ margin: "0 10px", color: "#64748B" }}><i className="fas fa-chevron-right" style={{ fontSize: "10px", color: "#64748B" }} /></span>
                   <span style={{ color: "#22C55E", fontWeight: "600" }}>My Bookings</span>
                 </div>
 
-                <div className="d-inline-flex align-items-center gap-2 ms-sm-2">
+                <nav className="ki-user-hero-nav ms-sm-2" aria-label="User account navigation">
                   <Link to={routes.userBookings} className="ki-tab-btn active">
                     <i className="fas fa-calendar-alt me-2" />
                     <span>My Bookings</span>
@@ -526,7 +526,7 @@ const UserBookings = () => {
                     <i className="fas fa-user-edit me-2" />
                     <span>Profile Settings</span>
                   </Link>
-                </div>
+                </nav>
               </div>
             </div>
           </div>

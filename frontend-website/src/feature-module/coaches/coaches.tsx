@@ -261,16 +261,41 @@ const CoachesGrid = (_props: { id?: string }) => {
   const { selectedLocationSort, selectedSport } = locationByHome.state || {};
   const { type } = useParams<{ type: string }>();
 
+  // Apply filters that came from the home-page search only after the coach
+  // data is available.  The home dropdown uses values such as "Select" and
+  // older browser history can contain sports/providers that no longer exist;
+  // neither should turn the normal Coaches page into an empty result.
   useEffect(() => {
-    setLocation(selectedLocationSort?.name || "");
+    if (!coaches.length) return;
+
     if (type) {
       let formattedType = type.replace(/-/g, " ");
       formattedType = formattedType.replace(/\b\w/g, c => c.toUpperCase());
       setSelectedCategory(formattedType);
-    } else {
-      setSelectedCategory(selectedSport?.name || null);
+      setLocation(null);
+      return;
     }
-  }, [locationByHome, selectedLocationSort, selectedSport, type]);
+
+    const requestedCategory = String(selectedSport?.name || "").trim();
+    const requestedLocation = String(selectedLocationSort?.name || "").trim();
+    const placeholderValues = ["select", "all", "category", "sport", "location"];
+    const isActualFilter = (value: string) => value && !placeholderValues.includes(value.toLowerCase());
+
+    setSelectedCategory(
+      isActualFilter(requestedCategory) && coaches.some((coach) =>
+        matchCategory(coach.category, coach.trainer_type, coach.specializations, requestedCategory)
+      )
+        ? requestedCategory
+        : null
+    );
+    setLocation(
+      isActualFilter(requestedLocation) && coaches.some((coach) =>
+        String(coach.near_by_location || "").toLowerCase().includes(requestedLocation.toLowerCase())
+      )
+        ? requestedLocation
+        : null
+    );
+  }, [coaches, type, locationByHome.key]);
 
   useEffect(() => {
     const fetchCoaches = async () => {
@@ -524,6 +549,7 @@ const CoachesGrid = (_props: { id?: string }) => {
     setFilterMaxAge("");
     setFilterLevels([]);
     setSearchQuery("");
+    setSearchParams({});
     setSelectedCategory(null);
     setLocation(null);
   };
@@ -556,6 +582,13 @@ const CoachesGrid = (_props: { id?: string }) => {
                 <span style={{ color: "#22C55E" }}>Coaches</span>
               </h1>
               <p style={{ color: "#64748B", fontSize: "20px", marginBottom: "24px", fontWeight: "500", maxWidth: "480px" }}>Find and book the best coaches in Indore</p>
+              <Link
+                to="/coaches"
+                className="d-inline-flex align-items-center gap-2 mb-3"
+                style={{ color: "#15803D", fontSize: "14px", fontWeight: "700", textDecoration: "none" }}
+              >
+                Browse coaches by sport <i className="feather-arrow-right" />
+              </Link>
               <div className="d-inline-flex align-items-center bg-white px-3 py-2 rounded-pill shadow-sm" style={{ fontSize: "13px", border: "1px solid #E5E7EB" }}>
                 <Link to="/" style={{ color: "#64748B", textDecoration: "none", fontWeight: "500" }}><i className="feather-home me-1" style={{ color: "#64748B" }} /> Home</Link>
                 <span style={{ margin: "0 10px", color: "#64748B" }}><i className="feather-chevron-right" style={{ fontSize: "12px", color: "#64748B" }} /></span>

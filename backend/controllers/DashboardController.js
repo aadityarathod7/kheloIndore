@@ -2,6 +2,11 @@ const User = require('../models/UserModel');
 const Booking = require("../models/BookingModel");
 const CoachBooking = require("../models/CoachBookingModel");
 const PersonalTrainerBooking = require("../models/PersonalTrainerBookingModel");
+// Loading the provider models here also makes booking population reliable
+// when this controller is loaded independently.
+const Venue = require("../models/Venue1");
+const Coach = require("../models/CoachModel");
+const PersonalTrainer = require("../models/PersonalTrainingModel");
 
 exports.DateFilter = async(req,res)=>{
     try{
@@ -270,7 +275,7 @@ exports.bookingRevenueAnalytics = async (req, res) => {
   }
 };
 
-// Download a CSV report of bookings + revenue for the selected filter
+// Download a complete CSV report for the selected filter.
 exports.downloadAnalyticsReport = async (req, res) => {
   try {
     const user = req.user.userID;
@@ -291,21 +296,105 @@ exports.downloadAnalyticsReport = async (req, res) => {
       match = { createdAt: { $gte: range.from, $lte: range.to } };
     }
 
-    const [venues, coaches, trainers] = await Promise.all([
-      Booking.find(match).select("createdAt total_price paymentState").lean(),
-      CoachBooking.find(match).select("createdAt total_price paymentState").lean(),
-      PersonalTrainerBooking.find(match).select("createdAt total_price paymentState").lean(),
+    const [venues, coaches, trainers, customerCount, venueCount, coachCount, trainerCount] = await Promise.all([
+      Booking.find(match)
+        .populate("user_id", "first_name last_name email mobile")
+        .populate("venue_id", "name provider_public_id category address city")
+        .populate("vendor_id", "first_name last_name email mobile")
+        .lean(),
+      CoachBooking.find(match)
+        .populate("userId", "first_name last_name email mobile")
+        .populate("coachId", "first_name last_name full_name provider_public_id category city email mobile")
+        .lean(),
+      PersonalTrainerBooking.find(match)
+        .populate("user_id", "first_name last_name email mobile")
+        .populate("pt_id", "first_name last_name provider_public_id category city email mobile")
+        .lean(),
+      User.countDocuments({ role: "User" }),
+      Venue.countDocuments(),
+      Coach.countDocuments(),
+      PersonalTrainer.countDocuments(),
     ]);
 
-    const rows = [
-      ["Type", "Date", "Amount (INR)", "Payment Status"],
-      ...venues.map((b) => ["Venue", new Date(b.createdAt).toISOString(), b.total_price || 0, b.paymentState || ""]),
-      ...coaches.map((b) => ["Coach", new Date(b.createdAt).toISOString(), b.total_price || 0, b.paymentState || ""]),
-      ...trainers.map((b) => ["Personal Trainer", new Date(b.createdAt).toISOString(), b.total_price || 0, b.paymentState || ""]),
+    const formatDate = (value) => {
+      if (!value) return "";
+      const date = new Date(value);
+      return Number.isNaN(date.getTime()) ? String(value) : date.toISOString();
+    };
+    const personName = (person) => {
+      if (!person) return "";
+      return [person.full_name, `${person.first_name || ""} ${person.last_name || ""}`.trim()]
+        .find(Boolean) || "";
+    };
+    const providerId = (provider) => provider?.provider_public_id || provider?._id || "";
+    const bookingState = (booking) => booking.cancellation_status === 1
+      ? "Cancelled"
+      : booking.paymentState || booking.paymentStatus || "Pending";
+    const money = (value) => Number(value || 0).toFixed(2);
+    const summary = (bookings) => ({
+      count: bookings.length,
+      gross: bookings.reduce((sum, booking) => sum + Number(booking.total_price || 0), 0),
+      cancelled: bookings.filter((booking) => booking.cancellation_status === 1).length,
+    });
+    const venueSummary = summary(venues);
+    const coachSummary = summary(coaches);
+    const trainerSummary = summary(trainers);
+    const dateRangeLabel = filter === "custom" && fromDate && toDate
+      ? `${fromDate} to ${toDate}`
+      : !range.isCustom ? `${formatDate(range.from)} to ${formatDate(range.to)}` : "All available records";
+
+    const reportRows = [
+      ["KHELO INDORE PLATFORM REPORT"],
+      ["Generated at", formatDate(new Date())],
+      ["Report period", dateRangeLabel],
+      ["Filter", filter],
+      [],
+      ["PLATFORM SNAPSHOT"],
+      ["Registered customers", customerCount],
+      ["Venues", venueCount],
+      ["Coaches", coachCount],
+      ["Personal trainers", trainerCount],
+      [],
+      ["BOOKING & REVENUE SUMMARY"],
+      ["Service", "Bookings", "Gross amount (INR)", "Cancelled bookings"],
+      ["Venue", venueSummary.count, money(venueSummary.gross), venueSummary.cancelled],
+      ["Coach", coachSummary.count, money(coachSummary.gross), coachSummary.cancelled],
+      ["Personal Trainer", trainerSummary.count, money(trainerSummary.gross), trainerSummary.cancelled],
+      ["Total", venueSummary.count + coachSummary.count + trainerSummary.count, money(venueSummary.gross + coachSummary.gross + trainerSummary.gross), venueSummary.cancelled + coachSummary.cancelled + trainerSummary.cancelled],
+      [],
+      ["BOOKING DETAILS"],
+      ["Service", "Booking ID", "Created at", "Service date / start", "Service end", "Customer", "Customer email", "Customer mobile", "Provider", "Provider ID", "Category", "Location", "Booked slots / sessions", "List amount (INR)", "Payable amount (INR)", "Payment status", "Payment state", "Payment type", "Booking status", "Transaction ID", "Manual booking"],
     ];
 
+    const detailRows = [
+      ...venues.map((booking) => {
+        const venue = booking.venue_id;
+        const customer = booking.user_id;
+        const slots = (booking.slot_time || []).map((slot) => `${slot.startTime || ""}-${slot.endTime || ""}`).join(" | ") || (booking.slotsBooked || []).join(" | ");
+        return ["Venue", booking._id, formatDate(booking.createdAt), formatDate(booking.date), "", personName(customer), customer?.email || "", customer?.mobile || "", venue?.name || "", providerId(venue), venue?.category || "", [venue?.address, venue?.city].filter(Boolean).join(", "), slots, money(booking.total_price), money(booking.payable_amount ?? booking.total_price), booking.paymentStatus || "", booking.paymentState || "", booking.payment_type || "", bookingState(booking), booking.transaction_id || booking.merchantTransaction_id || "", booking.manual_booking ? "Yes" : "No"];
+      }),
+      ...coaches.map((booking) => {
+        const coach = booking.coachId;
+        const customer = booking.userId;
+        return ["Coach", booking._id, formatDate(booking.createdAt), formatDate(booking.startDate), formatDate(booking.endDate), personName(customer), customer?.email || "", customer?.mobile || "", personName(coach), providerId(coach), coach?.category || "", coach?.city || "", (booking.slotsBook || []).join(" | "), money(booking.total_price), money(booking.payable_amount ?? booking.total_price), booking.paymentStatus || "", booking.paymentState || "", booking.payment_type || "", bookingState(booking), booking.transaction_id || booking.merchantTransaction_id || "", "No"];
+      }),
+      ...trainers.map((booking) => {
+        const trainer = booking.pt_id;
+        const customer = booking.user_id;
+        return ["Personal Trainer", booking._id, formatDate(booking.createdAt), formatDate(booking.startDate), formatDate(booking.endDate), personName(customer), customer?.email || "", customer?.mobile || "", personName(trainer), providerId(trainer), trainer?.category || "", trainer?.city || "", (booking.slotsBook || []).join(" | "), money(booking.total_price), money(booking.payable_amount ?? booking.total_price), booking.paymentStatus || "", booking.paymentState || "", booking.payment_type || "", bookingState(booking), booking.transaction_id || booking.merchantTransaction_id || "", "No"];
+      }),
+    ];
+
+    const rows = [...reportRows, ...detailRows];
+
+    const csvCell = (cell) => {
+      let value = String(cell ?? "");
+      // Avoid formula execution when the CSV is opened in Excel or Sheets.
+      if (/^[=+\-@]/.test(value)) value = `'${value}`;
+      return `"${value.replace(/"/g, '""')}"`;
+    };
     const csv = rows
-      .map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(","))
+      .map((row) => row.map(csvCell).join(","))
       .join("\n");
     const filename = `khelo-indore-analytics-${filter}-${Date.now()}.csv`;
     res.setHeader("Content-Type", "text/csv");

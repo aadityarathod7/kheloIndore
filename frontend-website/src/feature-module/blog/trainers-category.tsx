@@ -133,7 +133,10 @@ const TrainersCategory = () => {
         }));
         setTrainers(mappedTrainers);
 
-        setCategories(COACH_TRAINER_CATEGORIES.map((name) => ({
+        const availableCategories = Array.from(new Set(
+          trainerData.map((trainer: any) => String(trainer.category || "").trim()).filter(Boolean)
+        ));
+        setCategories((availableCategories.length ? availableCategories : [...COACH_TRAINER_CATEGORIES]).map((name) => ({
           id: toCategorySlug(name),
           name,
           slug: toCategorySlug(name),
@@ -167,7 +170,7 @@ const TrainersCategory = () => {
   const categoryCounts = classifyTrainers(trainers);
 
   const filteredCategories = categories.filter((cat) =>
-    cat.name.toLowerCase().includes(searchQuery.toLowerCase())
+    categoryCounts[cat.id] > 0 && cat.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -183,11 +186,11 @@ const TrainersCategory = () => {
             <div className="container" style={{ position: "relative", zIndex: 2 }}>
               <div className="row align-items-center">
                 <div className="col-lg-7 text-start">
-                  <span className="font-weight-bold" style={{ fontSize: "13px", letterSpacing: "1.5px", display: "block", marginBottom: "12px", color: "#22C55E", fontWeight: "700" }}>BOOK. PLAY. ENJOY</span>
+                  <span className="font-weight-bold" style={{ fontSize: "13px", letterSpacing: "1.5px", display: "block", marginBottom: "12px", color: "#22C55E", fontWeight: "700" }}>TRAIN. TRANSFORM. THRIVE.</span>
                   <h1 className="d-flex align-items-center flex-wrap" style={{ fontSize: "56px", fontWeight: "800", color: "#0F172A", lineHeight: "1.1", marginBottom: "16px" }}>
                     <span style={{ color: "#22C55E" }}>Trainers</span>
                   </h1>
-                  <p style={{ color: "#64748B", fontSize: "20px", marginBottom: "24px", fontWeight: "500", maxWidth: "480px" }}>Select a sport category to view listings and book your trainer</p>
+                  <p style={{ color: "#64748B", fontSize: "20px", marginBottom: "24px", fontWeight: "500", maxWidth: "480px" }}>Find the right trainer for your fitness journey</p>
                   
                   {/* Category Search Input */}
                   <div className="mb-4 position-relative" style={{ maxWidth: "480px" }}>

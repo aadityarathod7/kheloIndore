@@ -357,10 +357,10 @@ const VenueTimeDate = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (selectedSlots.length > 0 && selectedDate) {
-      if (selectedSlots.length < 2) {
+      if (selectedSlots.length !== 2) {
         Swal.fire({
-          title: "Minimum Booking Required",
-          text: "Minimum booking duration is 1 hour (2 consecutive 30-minute slots). Please select another slot.",
+          title: "One-Hour Booking Required",
+          text: "Select exactly 2 consecutive 30-minute slots to book one hour.",
           icon: "warning",
           confirmButtonText: "OK",
         });

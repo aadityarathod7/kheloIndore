@@ -1550,6 +1550,49 @@ exports.bookingRejectionTemplate1 = (
 };
 
 exports.generateUnifiedPdfInvoice = (pdfData) => {
+  const escapeHtml = (value) => String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+  const text = (value, fallback = "Not available") => escapeHtml(value || fallback);
+  const amount = (value) => `₹${Number(value || 0).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  const entityType = pdfData.entityType || "Venue";
+  const providerName = pdfData.entityName || pdfData.venueName || "Not available";
+  const serviceDate = pdfData.date || pdfData.startDate || "Not available";
+  const schedule = [pdfData.startDate, pdfData.endDate]
+    .filter(Boolean)
+    .filter((value, index, values) => values.indexOf(value) === index)
+    .join(" to ") || serviceDate;
+  const slots = Array.isArray(pdfData.slotsBooked)
+    ? pdfData.slotsBooked.map((slot) => typeof slot === "string" ? slot : `${slot.startTime || ""} - ${slot.endTime || ""}`.trim()).filter(Boolean).join(" · ")
+    : pdfData.slotsBooked;
+  const bookingReference = pdfData.bookingId || pdfData.merchantTransaction_id || pdfData.transactionId || "Pending";
+  const customerName = [pdfData.first_name, pdfData.last_name].filter(Boolean).join(" ") || "Customer";
+
+  return `<!DOCTYPE html>
+  <html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Khelo Indore Booking Invoice</title><style>
+    @page { size: A4; margin: 16mm; }
+    * { box-sizing: border-box; } body { margin: 0; color: #172033; background: #fff; font-family: Arial, Helvetica, sans-serif; font-size: 12px; line-height: 1.5; }
+    .invoice { max-width: 794px; margin: 0 auto; } .top { display: flex; justify-content: space-between; gap: 22px; padding: 22px 24px; color: #fff; background: #0a7a50; }
+    .brand { font-size: 22px; font-weight: 800; letter-spacing: .2px; } .brand small { display: block; margin-top: 3px; color: #d1fae5; font-size: 10px; font-weight: 700; letter-spacing: 1.2px; }
+    .invoice-title { text-align: right; } .invoice-title h1 { margin: 0; font-size: 24px; } .invoice-title p { margin: 4px 0 0; color: #d1fae5; }
+    .body { padding: 22px 24px 12px; } .meta { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; } .panel { border: 1px solid #dbe5df; padding: 15px; background: #fbfefc; }
+    .label { margin-bottom: 7px; color: #097e52; font-size: 10px; font-weight: 800; letter-spacing: .8px; text-transform: uppercase; } .name { margin: 0 0 5px; color: #0f172a; font-size: 15px; font-weight: 800; }
+    .muted { color: #64748b; } table { width: 100%; border-collapse: collapse; margin: 16px 0; } th { padding: 9px 10px; color: #fff; background: #0f172a; font-size: 10px; letter-spacing: .4px; text-align: left; text-transform: uppercase; } td { padding: 10px; border: 1px solid #dbe5df; vertical-align: top; } .detail-key { width: 31%; color: #475569; font-weight: 700; background: #f8fafc; }
+    .total { display: flex; justify-content: flex-end; margin-top: 4px; } .total-box { min-width: 250px; padding: 14px 16px; color: #fff; background: #0a7a50; } .total-box span { display: block; color: #d1fae5; font-size: 10px; font-weight: 800; letter-spacing: .7px; text-transform: uppercase; } .total-box strong { display: block; margin-top: 2px; font-size: 22px; }
+    .footer { padding: 15px 24px 22px; color: #64748b; font-size: 10px; text-align: center; border-top: 1px solid #e2e8f0; } .status { display: inline-block; padding: 3px 8px; color: #166534; background: #dcfce7; font-size: 10px; font-weight: 800; }
+  </style></head><body><main class="invoice">
+    <header class="top"><div class="brand">KHELO INDORE<small>BOOK · PLAY · ENJOY</small></div><div class="invoice-title"><h1>Booking Invoice</h1><p>Reference: ${text(bookingReference)}</p></div></header>
+    <section class="body"><div class="meta"><div class="panel"><div class="label">Billed to</div><p class="name">${text(customerName)}</p><div>${text(pdfData.email)}</div><div>${text(pdfData.mobile)}</div></div><div class="panel"><div class="label">Booking information</div><div><strong>Booked on:</strong> ${text(pdfData.bookDate)}</div><div><strong>Invoice date:</strong> ${text(pdfData.invoiceDate || pdfData.bookDate)}</div><div><strong>Status:</strong> <span class="status">${text(pdfData.status || pdfData.paymentState || "Pending")}</span></div></div></div>
+      <div class="label">Service details</div><table><tbody><tr><td class="detail-key">Service type</td><td>${text(entityType)}</td></tr><tr><td class="detail-key">${text(entityType)} name</td><td>${text(providerName)}</td></tr><tr><td class="detail-key">Location</td><td>${text(pdfData.venueLocation || pdfData.location || pdfData.providerLocation)}</td></tr><tr><td class="detail-key">Service date / duration</td><td>${text(schedule)}</td></tr><tr><td class="detail-key">Time / slots</td><td>${text(slots)}</td></tr><tr><td class="detail-key">Package / booking type</td><td>${text(pdfData.packageType || pdfData.payment_type || "Standard booking")}</td></tr></tbody></table>
+      <div class="label">Payment details</div><table><thead><tr><th>Payment status</th><th>Transaction ID</th><th>Merchant transaction ID</th><th>Payment type</th></tr></thead><tbody><tr><td>${text(pdfData.paymentStatus || pdfData.status)}</td><td>${text(pdfData.transactionId)}</td><td>${text(pdfData.merchantTransaction_id)}</td><td>${text(pdfData.payment_type || "Full payment")}</td></tr></tbody></table>
+      <div class="total"><div class="total-box"><span>Total amount paid</span><strong>${amount(pdfData.payable_amount ?? pdfData.total_price)}</strong></div></div>
+    </section><footer class="footer">Thank you for choosing Khelo Indore. Keep this invoice for your records.<br>For support, visit kheloindore.in/contact-us.</footer>
+  </main></body></html>`;
+
   const mailcontent = `
   <!DOCTYPE html>
   <html lang="en">
@@ -1708,6 +1751,10 @@ exports.generateUnifiedPdfInvoice = (pdfData) => {
 
   return mailcontent;
 };
+
+// Older approval and manual-booking flows call this name. Route them to the
+// same complete invoice so every venue, coach, and trainer PDF matches.
+exports.venue_pdf_invoice = exports.generateUnifiedPdfInvoice;
 
 
 
@@ -2057,4 +2104,3 @@ exports.onboarding_profile_link = (name, completeLink) => {
   `;
   return mailContent;
 };
-

@@ -14,6 +14,7 @@ const Coach = require("../models/CoachModel");
 const mongoose = require("mongoose");
 const path = require("path");
 const mail = require("../helper/sendMail");
+const { sendPasswordResetLinkEmail } = require("../helper/passwordResetMail");
 const mailContent = require("../middlewares/mail-content");
 const { find } = require("../models/BookingModel");
 const JWT_SECRET = process.env.JWT_AUTH;
@@ -156,7 +157,7 @@ exports.sendManagedAccountResetLink = async (req, res) => {
     const resetLink = `${process.env.ADMIN_URL || `${websiteUrl}/admin`}?resetToken=${encodeURIComponent(token)}`;
     const recipientName = `${account.first_name || ""} ${account.last_name || ""}`.trim() || "there";
     const html = `<div style="font-family:Arial,sans-serif;line-height:1.6;color:#1f2937;max-width:600px;margin:auto"><h2>Khelo Indore password reset</h2><p>Hello ${recipientName},</p><p>A Super Admin requested a password reset for your account. Click the button below to set a new password. This link expires in 30 minutes.</p><p style="margin:28px 0"><a href="${resetLink}" style="background:#097e52;color:#fff;text-decoration:none;padding:12px 20px;border-radius:6px;font-weight:700">Reset password</a></p><p>If you did not expect this email, please contact Khelo Indore support.</p></div>`;
-    await mail.sendEmailConfirm({ recipientEmail: account.email, subject: "Reset your Khelo Indore password", html });
+    await sendPasswordResetLinkEmail({ recipientEmail: account.email, subject: "Reset your Khelo Indore password", html });
     account.password_reset_sent_at = new Date();
     await account.save();
     return res.status(200).json({ success: true, message: "Password reset link sent to the registered email address.", retryAfterSeconds: 60 });
@@ -170,7 +171,7 @@ exports.signupBySuperAdmin = async (req, res) => {
     if (req.user?.role !== "Super Admin") {
       return res.status(403).json({ success: false, message: "Access denied." });
     }
-    const { first_name, last_name, role, mobile, email, password } = req.body;
+    const { first_name, last_name, role, mobile, email, password, membership_plans } = req.body;
 
     // Validation
     let validationErrors = [];
@@ -243,10 +244,16 @@ exports.signupBySuperAdmin = async (req, res) => {
   const newUser = await User.create(userData)
  // Save in specific collections based on role
  if (role === "Coach") {
-  const coachData = new Coach(userData);
+  const coachData = new Coach({
+    ...userData,
+    membership_plans: Array.isArray(membership_plans) ? membership_plans : [],
+  });
   await coachData.save();
 } else if (role === "Personal Trainer") {
-  const personalTrainerData = new PersonalTrainer(userData);
+  const personalTrainerData = new PersonalTrainer({
+    ...userData,
+    membership_plans: Array.isArray(membership_plans) ? membership_plans : [],
+  });
   await personalTrainerData.save();
 }
     // Send email notification
@@ -380,6 +387,7 @@ exports.signup = async (req, res, next) => {
 
     // Save data in the respective role-specific table
     let roleSpecificId;
+    let setupAccount;
     const userDataWithAccess = { ...userData, is_admin_access: 1 };
     if (role === "Coach") {
       const newUser = new User(userDataWithAccess);
@@ -387,16 +395,19 @@ exports.signup = async (req, res, next) => {
       const coach = new Coach(userDataWithAccess);
       const savedCoach = await coach.save();
       roleSpecificId = savedCoach._id;
+      setupAccount = savedCoach;
     } else if (role === "Personal Trainer") {
       const newUser = new User(userDataWithAccess);
       const savedUser = await newUser.save();
       const personalTrainer = new PersonalTrainer(userDataWithAccess);
       const savedTrainer = await personalTrainer.save();
       roleSpecificId = savedTrainer._id;
+      setupAccount = savedTrainer;
     } else if (role === "Venue Admin") {
       const newUser = new User(userDataWithAccess);
       const savedUser = await newUser.save();
       roleSpecificId = savedUser._id;
+      setupAccount = savedUser;
     } else if (role === "User") {     // Save or update user data for verification
     await signupVerifyOTP.findOneAndUpdate(
       { $or: [{ mobile }, { email }] },
@@ -466,6 +477,10 @@ exports.signup = async (req, res, next) => {
 
       // Send welcome email to newly registered partner
       try {
+        const accountType = role === "Coach" ? "coach" : role === "Personal Trainer" ? "trainer" : "user";
+        const setupToken = jwt.sign({ accountId: setupAccount._id.toString(), accountType, superAdminReset: true }, JWT_SECRET, { expiresIn: "30m" });
+        const websiteUrl = (process.env.WEBSITE_URL || "https://kheloindore.in").replace(/\/$/, "");
+        const setupLink = `${process.env.ADMIN_URL || `${websiteUrl}/admin`}?resetToken=${encodeURIComponent(setupToken)}`;
         const welcomeHtml = `
       <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: auto; border: 1px solid #ddd; border-radius: 8px; overflow: hidden;">
         <!-- Header Section -->
@@ -481,13 +496,13 @@ exports.signup = async (req, res, next) => {
             Thank you for registering as a <strong>${role}</strong> on KheloIndore! We are thrilled to welcome you to our partner network.
           </p>
           <p style="font-size: 14px; line-height: 1.8;">
-            Your registration request has been submitted and your account is active. You can now log in to the admin dashboard using the following link:
+            Your registration request has been submitted. Your login ID is your registered mobile number: <strong>${mobile}</strong>.
           </p>
           <p style="text-align: center; margin: 25px 0;">
-            <a href="https://kheloindore.in/admin/" style="background-color: #ff5f15; color: #ffffff; text-decoration: none; padding: 12px 25px; border-radius: 5px; font-weight: bold; display: inline-block;">Log In to Partner Dashboard</a>
+            <a href="${setupLink}" style="background-color: #097e52; color: #ffffff; text-decoration: none; padding: 12px 25px; border-radius: 5px; font-weight: bold; display: inline-block;">Set Your Password</a>
           </p>
           <p style="font-size: 14px; line-height: 1.8;">
-            Once logged in, you can complete your profile details and set up your listing so clients can find and book your services.
+            Use this secure link to choose your password. It expires in 30 minutes. After that, log in using your mobile number and chosen password.
           </p>
           <p style="font-size: 14px; line-height: 1.8;">
             If you have any questions or need any assistance setting up your listing, please visit <a href="https://kheloindore.in/contact-us" style="color: #ff5f15; text-decoration: none;">kheloindore.in</a> to reach our support team.
@@ -503,11 +518,13 @@ exports.signup = async (req, res, next) => {
         </div>
       </div>
         `;
-        await mail.sendEmailConfirm({
+        await sendPasswordResetLinkEmail({
           recipientEmail: email,
-          subject: `Welcome to KheloIndore - ${role} Registration`,
+          subject: `Set up your KheloIndore ${role} account`,
           html: welcomeHtml,
         });
+        setupAccount.password_reset_sent_at = new Date();
+        await setupAccount.save();
       } catch (emailErr) {
         console.error("Partner welcome email failed to send:", emailErr.message || emailErr);
       }
@@ -2305,19 +2322,23 @@ if(search){
 exports.forgotPassword = async (req, res) => {
   try {
     
-    const { email } = req.body;
+    const { email, mobile } = req.body;
+    const normalizedMobile = String(mobile || "").replace(/\D/g, "");
+    const useMobile = Boolean(normalizedMobile);
 
-    // Check if the email is provided
-    if (!email) {
-      return res.status(400).json({ message: "Email is required" });
+    if (!email && !useMobile) {
+      return res.status(400).json({ message: "Registered email or 10-digit mobile number is required" });
+    }
+    if (useMobile && !/^\d{10}$/.test(normalizedMobile)) {
+      return res.status(400).json({ message: "Enter a valid 10-digit mobile number" });
     }
 
     // Partner accounts are stored in their own collections, so resolve the
     // account type before issuing a reset token.
     const accountMatches = [
-      ["PersonalTrainer", await PersonalTrainer.findOne({ email })],
-      ["Coach", await Coach.findOne({ email })],
-      ["User", await User.findOne({ email })], // includes Venue Admin
+      ["PersonalTrainer", await PersonalTrainer.findOne(useMobile ? { mobile: normalizedMobile } : { email })],
+      ["Coach", await Coach.findOne(useMobile ? { mobile: normalizedMobile } : { email })],
+      ["User", await User.findOne(useMobile ? { mobile: normalizedMobile } : { email })], // includes Venue Admin
     ];
     const [accountType, user] = accountMatches.find(([, account]) => account) || [];
     if (!user) {
@@ -2332,23 +2353,20 @@ exports.forgotPassword = async (req, res) => {
     });
     user.otp = otp; // Store OTP in the user document
     await user.save(); 
-    // Generate JWT token with email only (OTP stays server-side in the DB)
-    const token = jwt.sign({ email, accountType }, JWT_SECRET, { expiresIn: "10m" });
+    // The account ID avoids relying on an email when the reset starts from mobile.
+    const token = jwt.sign({ accountId: user._id.toString(), email: user.email, mobile: user.mobile, accountType }, JWT_SECRET, { expiresIn: "10m" });
 
-    // Generate email content
-    const html = mailContent.generateResetPasswordMailContent(
-      user.first_name,
-      user.last_name,
-      otp // Use the generated OTP
-    );
-
-    // Send the email
-    await mail.generateResetPasswordMailContent(user.email, html);
+    if (useMobile) {
+      await sendOtp({ mobile: user.mobile, otp });
+    } else {
+      const html = mailContent.generateResetPasswordMailContent(user.first_name, user.last_name, otp);
+      await mail.generateResetPasswordMailContent(user.email, html);
+    }
 
     // Return success response
     res.status(200).json({
       success: true,
-      message: "OTP sent to your email",
+      message: useMobile ? "OTP sent to your registered mobile number" : "OTP sent to your email",
       token, // Send the token to the client for further verification
     });
   } catch (error) {
@@ -2372,11 +2390,11 @@ exports.verifyOtp = async (req, res) => {
     // Verify and decode the JWT token
     const decoded = jwt.verify(token, JWT_SECRET);
 
-    const { email, accountType } = decoded; // Extract account details from the reset token
+    const { email, accountId, accountType } = decoded;
 
     const modelByAccountType = { PersonalTrainer, Coach, User };
     const AccountModel = modelByAccountType[accountType] || User;
-    const user = await AccountModel.findOne({ email });
+    const user = accountId ? await AccountModel.findById(accountId) : await AccountModel.findOne({ email });
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
@@ -2386,7 +2404,7 @@ exports.verifyOtp = async (req, res) => {
       return res.status(400).json({ message: "Invalid OTP" });
     }
 
-    const resetToken = jwt.sign({ email, accountType, resetVerified: true }, JWT_SECRET, { expiresIn: "10m" });
+    const resetToken = jwt.sign({ accountId: user._id.toString(), email: user.email, accountType, resetVerified: true }, JWT_SECRET, { expiresIn: "10m" });
     res.status(200).json({success: true, message: "OTP verified successfully", resetToken });
   } catch (error) {
     
@@ -2423,7 +2441,7 @@ exports.resetPassword = async (req, res) => {
 
     const modelByAccountType = { PersonalTrainer, Coach, User, trainer: PersonalTrainer, coach: Coach, user: User, admin: Admin };
     const AccountModel = modelByAccountType[accountType] || User;
-    const user = superAdminReset ? await AccountModel.findById(accountId) : await AccountModel.findOne({ email });
+    const user = (superAdminReset || accountId) ? await AccountModel.findById(accountId) : await AccountModel.findOne({ email });
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }

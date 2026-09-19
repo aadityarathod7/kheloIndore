@@ -2,7 +2,25 @@ const CoachBooking = require("../models/CoachBookingModel");
 const Coach = require("../models/CoachModel");
 const User = require("../models/UserModel");
 const CoachSlot = require("../models/CoachSlotsModel");
+const Notification = require("../models/NotificationModel");
 const mongoose = require('mongoose')
+
+const notifyCoachBookingAdmins = async (bookingId, coachName) => {
+  try {
+    const admins = await User.find({ role: "Super Admin", status: true }).select("_id").lean();
+    if (!admins.length) return;
+    await Notification.insertMany(admins.map((admin) => ({
+      user_id: admin._id,
+      title: "New coach booking",
+      message: `A new booking has been created for ${coachName || "a coach"}.`,
+      type: "booking",
+      entity_id: bookingId,
+    })));
+  } catch (error) {
+    console.error("Coach booking notification creation failed:", error.message);
+  }
+};
+
 exports.bookCoach = async (req, res) => {
   try {
     const { userId, coachId, slotBooked, date, packageType } = req.body;
@@ -125,6 +143,11 @@ exports.bookCoach = async (req, res) => {
     userId,
       { $inc: { booking_count: 1 } },
       { new: true }
+    );
+
+    await notifyCoachBookingAdmins(
+      newBooking._id,
+      [populatedBooking.coachId?.first_name, populatedBooking.coachId?.last_name].filter(Boolean).join(" ")
     );
 
     res.status(200).json({
@@ -430,4 +453,3 @@ exports.fetchCoachBooking = async (req, res) => {
 };
 
 exports.fetchCoachBooking = exports.actualfetchCoachBooking;
-

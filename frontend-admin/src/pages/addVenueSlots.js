@@ -65,6 +65,12 @@ const halfHourTimes = Array.from({ length: 48 }, (_, index) => {
     return `${hours}:${minutes}`;
 });
 
+const formatTimeLabel = (time) => {
+    const [hourText, minutes] = time.split(':');
+    const hour = Number(hourText);
+    return `${hour % 12 || 12}:${minutes} ${hour >= 12 ? 'PM' : 'AM'}`;
+};
+
 export default function AddVenueSlots() {
     const today = new Date().toLocaleDateString('en-CA');
     const [venueName, setVenueName] = useState("");
@@ -455,13 +461,17 @@ export default function AddVenueSlots() {
 
 
     const handleAddWholeDaySlots = async (offlineBlocked = false) => {
-        const { dateFrom, dateTo, startTime, endTime, price } = formData;
+        const { dateFrom, dateTo, price } = formData;
+        // Midnight to the following midnight generates all 48 half-hour slots,
+        // including the final 23:30–00:00 slot.
+        const startTime = "00:00";
+        const endTime = "00:00";
 
         const startDate = parseSlotDate(dateFrom);
         const endDate = parseSlotDate(dateTo);
 
-        if (!startDate || !endDate || !startTime || !endTime || startTime === endTime || startDate > endDate || price === "" || Number(price) < 0) {
-            Swal.fire({ icon: "error", title: "Invalid slot details", text: "Choose a date range, start time, later end time, and valid price." });
+        if (!startDate || !endDate || startDate > endDate || price === "" || Number(price) < 0) {
+            Swal.fire({ icon: "error", title: "Invalid slot details", text: "Choose a valid date range and price." });
             return;
         }
 
@@ -523,11 +533,11 @@ export default function AddVenueSlots() {
                 <Form.Control type="date" value={formData.dateFrom} onChange={handleQuickDateChange} required />
                 <Form.Select value={formData.startTime} onChange={(e) => setFormData((prev) => ({ ...prev, startTime: e.target.value, endTime: calculateEndTime(e.target.value) }))} required>
                     <option value="">Start time</option>
-                    {halfHourTimes.map((time) => <option key={time} value={time}>{time}</option>)}
+                    {halfHourTimes.map((time) => <option key={time} value={time}>{formatTimeLabel(time)}</option>)}
                 </Form.Select>
                 <Form.Select value={formData.endTime} onChange={(e) => setFormData((prev) => ({ ...prev, endTime: e.target.value }))} required aria-label="End time">
                     <option value="">End time</option>
-                    {halfHourTimes.map((time) => <option key={time} value={time}>{time}</option>)}
+                    {halfHourTimes.map((time) => <option key={time} value={time}>{formatTimeLabel(time)}</option>)}
                 </Form.Select>
                 <Form.Control type="number" min="0" placeholder="Price (₹)" value={formData.price} onChange={(e) => setFormData((prev) => ({ ...prev, price: e.target.value }))} required />
                 <Button variant="success" type="submit">Add Available</Button>
@@ -721,7 +731,7 @@ export default function AddVenueSlots() {
                                             }}
                                         >
                                             <option value="">Select start time</option>
-                                            {halfHourTimes.map((time) => <option key={time} value={time}>{time}</option>)}
+                                            {halfHourTimes.map((time) => <option key={time} value={time}>{formatTimeLabel(time)}</option>)}
                                         </Form.Select>
                                     </Form.Group>
                                     <Form.Group controlId="formEndTime">
@@ -732,7 +742,7 @@ export default function AddVenueSlots() {
                                             onChange={handleFormChange}
                                         >
                                             <option value="">Select end time</option>
-                                            {halfHourTimes.map((time) => <option key={time} value={time}>{time}</option>)}
+                                            {halfHourTimes.map((time) => <option key={time} value={time}>{formatTimeLabel(time)}</option>)}
                                         </Form.Select>
                                     </Form.Group>
                                     <Form.Group controlId="formPrice">
@@ -750,7 +760,7 @@ export default function AddVenueSlots() {
                                 <Button variant="secondary" onClick={handleCloseModal}>
                                     Close
                                 </Button>
-                                <Button variant="outline-success" type='button' onClick={() => handleAddWholeDaySlots(false)} disabled={!formData.price || !formData.startTime || !formData.endTime}>
+                                <Button variant="outline-success" type='button' onClick={() => handleAddWholeDaySlots(false)} disabled={!formData.price}>
                                     Add Whole Day Slots
                                 </Button>
                                 <Button variant="primary" type='button' onClick={() => handleAddSlot(false)} disabled={!formData.price || !formData.startTime || !formData.endTime}>

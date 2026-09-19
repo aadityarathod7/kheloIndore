@@ -269,7 +269,7 @@ exports.updatePTSlotByIdNew = async (req, res) => {
 
 exports.createPersonalTrainerSlot = async (req, res) => {
   try {
-    const { start_date, end_date, start_time, end_time } = req.body;
+    const { start_date, end_date, start_time, end_time, price, offlineBlocked = false, fullDay = false } = req.body;
     const personalTrainerId = req.params.id;
 
     // Validate the request body
@@ -281,7 +281,7 @@ exports.createPersonalTrainerSlot = async (req, res) => {
     }
     const startMinutes = timeToMinutes(start_time);
     const endMinutes = timeToMinutes(end_time);
-    if (startMinutes === null || endMinutes === null || startMinutes === endMinutes) {
+    if (startMinutes === null || endMinutes === null || (startMinutes === endMinutes && !fullDay)) {
       return res.status(400).json({ success: false, message: "Use valid HH:mm times with different start and end times. 00:00 is supported as midnight." });
     }
 
@@ -306,7 +306,7 @@ exports.createPersonalTrainerSlot = async (req, res) => {
       });
     }
 
-    const pricePerHour = personalTrainer.price || 0; // Assuming price is a field in the PersonalTrainer model
+    const pricePerHour = Number.isFinite(Number(price)) && Number(price) >= 0 ? Number(price) : (personalTrainer.price || 0);
 
     // Helper function to generate slots for a single day
     const generateSlotsForDay = (date) => {
@@ -318,7 +318,8 @@ exports.createPersonalTrainerSlot = async (req, res) => {
           start_time: formatMinutes(currentMinute),
           end_time: formatMinutes(nextMinute),
           price: pricePerHour,
-          isBooked: false,
+          isBooked: Boolean(offlineBlocked),
+          isOfflineBlocked: Boolean(offlineBlocked),
         });
       }
       return slots;
@@ -339,7 +340,7 @@ exports.createPersonalTrainerSlot = async (req, res) => {
     // Check for existing slots with overlapping times
     for (const day of allSlots) {
       const existingSlot = await PersonalTrainerSlot.findOne({
-        personalTrainerId: personalTrainerId,
+        trainerId: personalTrainerId,
         start_date: day.batchDate,
       });
 
@@ -637,4 +638,22 @@ exports.deleteSlotsByDateRangept = async (req, res) => {
       error: error.message
     });
   }
+};
+
+exports.carryForwardPersonalTrainerSlots = async (req, res) => {
+  try {
+    const { sourceDate, targetDateFrom, targetDateTo } = req.body;
+    const trainerId = req.params.trainerId;
+    if (!sourceDate || !targetDateFrom || !targetDateTo || targetDateFrom > targetDateTo) return res.status(400).json({ success: false, message: "Choose a valid source date and target date range." });
+    const sourceStart = new Date(`${sourceDate}T00:00:00`);
+    const sourceEnd = new Date(sourceStart); sourceEnd.setDate(sourceEnd.getDate() + 1);
+    const source = await PersonalTrainerSlot.findOne({ trainerId, start_date: { $gte: sourceStart, $lt: sourceEnd } });
+    if (!source) return res.status(404).json({ success: false, message: "No slots found on the source date." });
+    const targets = [];
+    for (let date = new Date(`${targetDateFrom}T00:00:00`); date <= new Date(`${targetDateTo}T00:00:00`); date.setDate(date.getDate() + 1)) targets.push(new Date(date));
+    const conflicts = await PersonalTrainerSlot.find({ trainerId, start_date: { $gte: targets[0], $lt: new Date(targets[targets.length - 1].getTime() + 86400000) } }).select("start_date");
+    if (conflicts.length) return res.status(409).json({ success: false, message: "One or more target dates already have slots. No slots were copied." });
+    await PersonalTrainerSlot.insertMany(targets.map((date) => ({ trainerId, start_date: date, end_date: date, created_by: req.user?._id || trainerId, slots: source.slots.map((slot) => ({ start_time: slot.start_time, end_time: slot.end_time, price: slot.price, isBooked: false, isOfflineBlocked: false })) })));
+    return res.json({ success: true, message: "Slots carried forward successfully." });
+  } catch (error) { return res.status(500).json({ success: false, message: "Could not carry forward slots.", error: error.message }); }
 };

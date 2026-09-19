@@ -18,6 +18,7 @@ const ALL_LANGUAGES = [
   "Russian", "Chinese", "Japanese", "Korean", "Arabic"
 ];
 const LANGUAGE_OPTIONS = ALL_LANGUAGES.map(lang => ({ label: lang, value: lang }));
+const TRAINING_LEVEL_OPTIONS = ["Beginner", "Intermediate", "Advanced"];
 
 const Coaches = () => {
   const [formData, setFormData] = useState({
@@ -45,6 +46,7 @@ const Coaches = () => {
     status: "",
     categories: [],
     videos: [],
+    coaching_levels: [],
   });
   const navigate = useNavigate();
 
@@ -93,6 +95,18 @@ const Coaches = () => {
       ...previous,
       package: { ...previous.package, [name]: value === "" ? "" : Number(value) },
     }));
+  };
+
+  const handleTrainingLevelToggle = (level) => {
+    setFormData((current) => {
+      const levels = current.coaching_levels || [];
+      return {
+        ...current,
+        coaching_levels: levels.includes(level)
+          ? levels.filter((item) => item !== level)
+          : [...levels, level],
+      };
+    });
   };
 
   const handleSelectChange = (selectedOption) => {
@@ -349,6 +363,8 @@ const Coaches = () => {
         other_document: response.data.coach.other_document || [], // Ensure it's an array
         categories: response.data.coach.categories || [],
         videos: response.data.coach.videos || [],
+        coaching_levels: response.data.coach.coaching_levels || [],
+        package: response.data.coach.package || {},
       });
     } catch (error) {
       
@@ -924,6 +940,30 @@ const Coaches = () => {
                     {errors.price}
                   </div>
                 )}
+              </Form.Group>
+            </Col>
+          </Row>
+          <Row className="mt-2">
+            <Col sm={12}>
+              <Form.Group controlId="formTrainingAudience" className="mb-3">
+                <Form.Label className="fw-bold">Training Suitable For</Form.Label>
+                <div className="text-muted small mb-2">Select the player levels this coach trains.</div>
+                <div className="d-flex flex-wrap gap-2">
+                  {TRAINING_LEVEL_OPTIONS.map((level) => {
+                    const isSelected = (formData.coaching_levels || []).includes(level);
+                    return (
+                      <button
+                        type="button"
+                        key={level}
+                        onClick={() => handleTrainingLevelToggle(level)}
+                        className={`btn btn-sm ${isSelected ? "btn-success" : "btn-outline-secondary"}`}
+                        aria-pressed={isSelected}
+                      >
+                        {level}
+                      </button>
+                    );
+                  })}
+                </div>
               </Form.Group>
             </Col>
           </Row>

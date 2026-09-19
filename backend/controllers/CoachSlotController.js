@@ -59,7 +59,7 @@ exports.actualcreateCoachSlot = async (req, res) => {
 
 exports.createCoachSlot = async (req, res) => {
   try {
-    const { start_date, end_date, start_time, end_time } = req.body;
+    const { start_date, end_date, start_time, end_time, price, offlineBlocked = false, fullDay = false } = req.body;
     const coachId = req.params.coachId;
 
     // Validate the request body
@@ -71,7 +71,7 @@ exports.createCoachSlot = async (req, res) => {
     }
     const startMinutes = timeToMinutes(start_time);
     const endMinutes = timeToMinutes(end_time);
-    if (startMinutes === null || endMinutes === null || startMinutes === endMinutes) {
+    if (startMinutes === null || endMinutes === null || (startMinutes === endMinutes && !fullDay)) {
       return res.status(400).json({ success: false, message: "Use valid HH:mm times with different start and end times. 00:00 is supported as midnight." });
     }
 
@@ -96,7 +96,7 @@ exports.createCoachSlot = async (req, res) => {
       });
     }
 
-    const pricePerHour = coach.price || 0; // Assuming price is a field in the Coach model
+    const pricePerHour = Number.isFinite(Number(price)) && Number(price) >= 0 ? Number(price) : (coach.price || 0);
 
     // Helper function to generate slots for a single day
     const generateSlotsForDay = (date) => {
@@ -108,7 +108,8 @@ exports.createCoachSlot = async (req, res) => {
           start_time: formatMinutes(currentMinute),
           end_time: formatMinutes(nextMinute),
           price: pricePerHour,
-          isBooked: false,
+          isBooked: Boolean(offlineBlocked),
+          isOfflineBlocked: Boolean(offlineBlocked),
         });
       }
       return slots;
@@ -643,7 +644,7 @@ exports.updateCoachSlotBooking = async (req, res) => {
 };
  // Assuming you have the Slot model
 
- exports.deleteSlotsByDateRangeCoach = async (req, res) => {
+exports.deleteSlotsByDateRangeCoach = async (req, res) => {
   try {
     const { coachId, start_date, end_date, start_time, end_time } = req.body; // Destructure the request body
 
@@ -719,4 +720,22 @@ exports.updateCoachSlotBooking = async (req, res) => {
       error: error.message
     });
   }
+};
+
+exports.carryForwardCoachSlots = async (req, res) => {
+  try {
+    const { sourceDate, targetDateFrom, targetDateTo } = req.body;
+    const coachId = req.params.coachId;
+    if (!sourceDate || !targetDateFrom || !targetDateTo || targetDateFrom > targetDateTo) return res.status(400).json({ success: false, message: "Choose a valid source date and target date range." });
+    const sourceStart = new Date(`${sourceDate}T00:00:00`);
+    const sourceEnd = new Date(sourceStart); sourceEnd.setDate(sourceEnd.getDate() + 1);
+    const source = await CoachSlot.findOne({ coachId, start_date: { $gte: sourceStart, $lt: sourceEnd } });
+    if (!source) return res.status(404).json({ success: false, message: "No slots found on the source date." });
+    const targets = [];
+    for (let date = new Date(`${targetDateFrom}T00:00:00`); date <= new Date(`${targetDateTo}T00:00:00`); date.setDate(date.getDate() + 1)) targets.push(new Date(date));
+    const conflicts = await CoachSlot.find({ coachId, start_date: { $gte: targets[0], $lt: new Date(targets[targets.length - 1].getTime() + 86400000) } }).select("start_date");
+    if (conflicts.length) return res.status(409).json({ success: false, message: "One or more target dates already have slots. No slots were copied." });
+    await CoachSlot.insertMany(targets.map((date) => ({ coachId, start_date: date, end_date: date, created_by: req.user?._id || coachId, slots: source.slots.map((slot) => ({ start_time: slot.start_time, end_time: slot.end_time, price: slot.price, isBooked: false, isOfflineBlocked: false })) })));
+    return res.json({ success: true, message: "Slots carried forward successfully." });
+  } catch (error) { return res.status(500).json({ success: false, message: "Could not carry forward slots.", error: error.message }); }
 };

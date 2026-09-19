@@ -170,6 +170,7 @@ export default function EditBlog() {
           {
             headers: {
               "Content-Type": "multipart/form-data",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
           }
         );
@@ -178,11 +179,16 @@ export default function EditBlog() {
         if (imageSrc) {
           setBlogImage(imageSrc);
           setImagePreview(null);
+          setErrors((prev) => ({ ...prev, image: "" }));
         } else {
-          
+          setErrors((prev) => ({ ...prev, image: "Image upload did not return a file." }));
         }
       } catch (error) {
-        
+        setImagePreview(null);
+        setErrors((prev) => ({
+          ...prev,
+          image: error.response?.data?.message || "Image upload failed. Please try again.",
+        }));
       }
     }
   };

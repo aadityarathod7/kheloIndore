@@ -1,0 +1,344 @@
+/*
+ * Final responsive layer for every admin route.
+ * This file is imported after Bootstrap and the page styles so older screens
+ * inherit safe mobile behaviour without needing page-by-page overrides.
+ */
+
+html,
+body,
+#root {
+  min-width: 320px;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.admin-shell,
+.admin-main-layout,
+.admin-page-content,
+.admin-page-content > * {
+  min-width: 0;
+}
+
+.admin-page-content img,
+.admin-page-content video,
+.admin-page-content iframe,
+.admin-page-content canvas {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Large data sets remain usable on a phone: the table scrolls horizontally
+   instead of forcing the whole page wider. */
+.admin-page-content .table-container,
+.admin-page-content .table-responsive,
+.admin-page-content .ant-table-wrapper,
+.admin-page-content .fc-scroller-harness {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+.admin-page-content .table-container > table,
+.admin-page-content .table-responsive > table,
+.admin-page-content table.blog-table {
+  min-width: 680px;
+}
+
+.admin-page-content .ant-table-content {
+  overflow-x: auto;
+}
+
+/* Legacy list pages use a mixture of inline flex styles and Bootstrap utility
+   classes for their row actions. Give every variant a wrapping action group
+   so a long button label never overlaps the next column. */
+.admin-page-content .table-container .custom-table td > .d-flex,
+.admin-page-content .table-container .custom-table td > div[style*="display: flex"] {
+  display: flex !important;
+  align-items: center;
+  /* Keep action rows compact. The parent table already scrolls horizontally
+     on constrained screens, which is preferable to a 2–3 line action cell. */
+  flex-wrap: nowrap;
+  gap: 8px !important;
+  white-space: nowrap;
+}
+
+.admin-page-content .table-container .custom-table :is(.account-password-button, .cashfree-onboarding-button) {
+  flex: 0 0 auto;
+}
+
+.admin-page-content .table-container .custom-table .coach-table-actions,
+.admin-page-content .table-container .custom-table .venue-admin-table-actions {
+  flex-wrap: nowrap;
+  min-width: max-content;
+}
+
+.admin-page-content :is(button, .btn, .ant-btn, input, select, textarea) {
+  max-width: 100%;
+}
+
+.admin-page-content :is(button, .btn, .ant-btn) {
+  min-height: 40px;
+  touch-action: manipulation;
+}
+
+@media (max-width: 992px) {
+  .admin-page-content {
+    margin: 16px !important;
+    padding: 20px !important;
+  }
+
+  .admin-page-content .container,
+  .admin-page-content .container-fluid {
+    width: 100%;
+    max-width: none;
+    padding-right: 0;
+    padding-left: 0;
+  }
+
+  .admin-page-content .row {
+    --bs-gutter-x: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-topbar {
+    height: 56px !important;
+    min-height: 56px !important;
+    line-height: 56px !important;
+  }
+
+  .admin-page-content {
+    margin: 10px !important;
+    padding: 14px !important;
+    min-height: calc(100vh - 76px) !important;
+  }
+
+  .admin-page-content .title,
+  .admin-page-content h1 {
+    font-size: 22px !important;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+  }
+
+  .admin-page-content h2 { font-size: 20px !important; }
+  .admin-page-content h3 { font-size: 18px !important; }
+
+  .admin-page-content .card,
+  .admin-page-content .ant-card,
+  .admin-page-content .modal-content {
+    border-radius: 12px !important;
+  }
+
+  .admin-page-content .card-body,
+  .admin-page-content .ant-card-body {
+    padding: 14px !important;
+  }
+
+  .admin-page-content .d-flex:not(.dropdown-menu):not(.ant-space) {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  /* Bootstrap's `sm` columns otherwise stay side-by-side down to 576px,
+     which makes list filters and add/download actions unusable on tablets. */
+  .admin-page-content .cnt > .row > [class*="col-"],
+  .admin-page-content .cnt > form.row > [class*="col-"],
+  .admin-page-content .list-page-wrapper > .row > [class*="col-"] {
+    width: 100%;
+    max-width: 100%;
+    flex: 0 0 100%;
+  }
+
+  .admin-page-content .d-flex.justify-content-between,
+  .admin-page-content .d-flex.justify-content-end {
+    justify-content: flex-start !important;
+  }
+
+  .admin-page-content .ButtonsContainer,
+  .admin-page-content .view_bnt,
+  .admin-page-content .btn-group,
+  .admin-page-content [aria-label="Payment source filter"] {
+    width: 100%;
+  }
+
+  .admin-page-content .ButtonsContainer :is(button, .btn),
+  .admin-page-content .view_bnt :is(button, .btn) {
+    flex: 1 1 160px;
+  }
+
+  .admin-page-content .form-control,
+  .admin-page-content .form-select,
+  .admin-page-content .ant-input,
+  .admin-page-content .ant-picker,
+  .admin-page-content .ant-select {
+    width: 100% !important;
+    min-height: 42px;
+  }
+
+  .admin-page-content .table-container > table,
+  .admin-page-content .table-responsive > table,
+  .admin-page-content table.blog-table,
+  .admin-page-content .table {
+    min-width: 640px;
+    font-size: 13px;
+  }
+
+  /* A few slot-management pages use plain tables rather than the shared
+     table container. Keep those tables within the viewport too. */
+  .admin-page-content table:not(.custom-table):not(.ant-table) {
+    display: block;
+    width: max-content;
+    min-width: 100%;
+    max-width: none;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .admin-page-content .table :is(th, td) {
+    padding: 11px 12px;
+  }
+
+  .admin-page-content .ant-table {
+    min-width: 640px;
+  }
+
+  .admin-page-content .ant-pagination {
+    justify-content: flex-start;
+    margin-top: 14px;
+  }
+
+  .admin-page-content .fc {
+    min-width: 600px;
+  }
+
+  .ant-modal,
+  .ant-modal-root .ant-modal {
+    width: calc(100vw - 20px) !important;
+    max-width: calc(100vw - 20px) !important;
+    margin: 10px auto !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-topbar-title { display: none; }
+
+  .admin-page-content {
+    margin: 8px !important;
+    padding: 12px !important;
+  }
+
+  .admin-page-content .title,
+  .admin-page-content h1 {
+    font-size: 20px !important;
+  }
+
+  .admin-page-content .ButtonsContainer :is(button, .btn),
+  .admin-page-content .view_bnt :is(button, .btn),
+  .admin-page-content .btn-group :is(button, .btn) {
+    flex-basis: 100%;
+    width: 100%;
+  }
+
+  .admin-page-content .table-container .custom-table td > .d-flex,
+  .admin-page-content .table-container .custom-table td > div[style*="display: flex"] {
+    align-items: center;
+  }
+
+  .admin-page-content .ant-pagination-options,
+  .admin-page-content .ant-pagination-jump-next,
+  .admin-page-content .ant-pagination-jump-prev {
+    display: none;
+  }
+
+  .admin-page-content .table-container > table,
+  .admin-page-content .table-responsive > table,
+  .admin-page-content table.blog-table,
+  .admin-page-content .table,
+  .admin-page-content .ant-table {
+    min-width: 580px;
+  }
+}
+
+/* Shared approval controls: used in venue, venue-admin, coach and trainer lists. */
+.approval-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+}
+
+.approval-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 7px 11px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color .15s ease, border-color .15s ease, box-shadow .15s ease;
+}
+
+.approval-action:focus-visible {
+  outline: 3px solid rgba(22, 163, 74, .28);
+  outline-offset: 2px;
+}
+
+.approval-action--approve {
+  color: #087c4d;
+  background: #ecfdf5;
+  border-color: #16a34a;
+}
+
+.approval-action--approve:hover { background: #d1fae5; }
+
+.approval-action--reject {
+  color: #c02636;
+  background: #fff1f2;
+  border-color: #ef4444;
+}
+
+.approval-action--reject:hover { background: #ffe4e6; }
+
+.approval-action--reverify {
+  color: #9a5b00;
+  background: #fffbeb;
+  border-color: #f59e0b;
+}
+
+.approval-action--reverify:hover { background: #fef3c7; }
+
+.approval-action--activate {
+  color: #075985;
+  background: #f0f9ff;
+  border-color: #0284c7;
+}
+
+.approval-action--activate:hover { background: #e0f2fe; }
+
+.approval-status {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  margin-top: 8px;
+  padding: 4px 9px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.approval-status--approved { color: #087c4d; background: #dcfce7; }
+.approval-status--pending { color: #9a5b00; background: #fef3c7; }
+.approval-status--rejected { color: #c02636; background: #ffe4e6; }
+
+@media (max-width: 768px) {
+  .approval-action { min-height: 34px; padding: 7px 9px; font-size: 12px; }
+}

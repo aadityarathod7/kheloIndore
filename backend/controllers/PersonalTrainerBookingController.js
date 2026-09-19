@@ -1,6 +1,24 @@
  const PersonalTrainerBookingModel = require('../models/PersonalTrainerBookingModel');
 const PersonalTrainerBooking = require('../models/PersonalTrainerBookingModel');
- const PersonalTrainerSlot = require('../models/PersonalTrainerSlotModel')
+const PersonalTrainerSlot = require('../models/PersonalTrainerSlotModel')
+const User = require('../models/UserModel');
+const Notification = require('../models/NotificationModel');
+
+const notifyTrainerBookingAdmins = async (bookingId) => {
+  try {
+    const admins = await User.find({ role: "Super Admin", status: true }).select("_id").lean();
+    if (!admins.length) return;
+    await Notification.insertMany(admins.map((admin) => ({
+      user_id: admin._id,
+      title: "New trainer booking",
+      message: "A new booking has been created for a personal trainer.",
+      type: "booking",
+      entity_id: bookingId,
+    })));
+  } catch (error) {
+    console.error("Trainer booking notification creation failed:", error.message);
+  }
+};
 
 exports.createPTBooking = async (req, res) => {
   try {
@@ -76,6 +94,8 @@ exports.createPTBooking = async (req, res) => {
       start_date,
       end_date,
     });
+
+    await notifyTrainerBookingAdmins(newBooking._id);
 
     return res.status(200).json({
       success: true,

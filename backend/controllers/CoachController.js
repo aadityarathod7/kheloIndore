@@ -233,10 +233,11 @@ exports.updateCoachSuperAdmin = async (req, res) => {
       "categories",
       "videos",
       "package",
+      "membership_plans",
     ];
 
     // Handle array-type fields that arrive as JSON strings from the admin form
-    ["coaching_levels", "daily_availability", "categories", "videos", "gallery"].forEach((field) => {
+    ["coaching_levels", "daily_availability", "categories", "videos", "gallery", "membership_plans"].forEach((field) => {
       const value = detail[field];
       if (value === undefined || value === null || value === "") return;
       if (typeof value === "string") {
@@ -670,8 +671,12 @@ exports.coachVerifyBySuperAdmin = async(req,res)=>{
 exports.fetchPublicCoach = async (req, res) => {
   try {
     const { id } = req.params;
+    const countView = req.query.countView !== "false";
     if (!id || id.trim() === "") {
       return res.status(400).json({ success: false, message: "Invalid coach ID provided" });
+    }
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(404).json({ success: false, message: "Coach not found" });
     }
     const coach = await Coach.findById(id);
     if (!coach) {
@@ -680,9 +685,13 @@ exports.fetchPublicCoach = async (req, res) => {
     if (coach.status !== true || coach.is_admin_access !== 1 || coach.verification_status !== 1) {
       return res.status(403).json({ success: false, message: "Coach is not active" });
     }
-    // Increment profile view counter
-    coach.profile_views = (coach.profile_views || 0) + 1;
-    await coach.save();
+    // A profile can be fetched repeatedly by the same visitor without using
+    // the protected management endpoint. The website asks us to count only
+    // the first view in that browser session.
+    if (countView) {
+      coach.profile_views = (coach.profile_views || 0) + 1;
+      await coach.save();
+    }
     return res.status(200).json({ success: true, coach: withoutPrivateCoachDetails(coach) });
   } catch (error) {
     

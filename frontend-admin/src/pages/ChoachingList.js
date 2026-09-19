@@ -14,6 +14,8 @@ import { Popover, Input, Select } from 'antd';
 import { FilterOutlined } from '@ant-design/icons';
 import axios from "axios";
 import PasswordResetLinkButton from "../components/PasswordResetLinkButton";
+import ManagedPasswordButton from "../components/ManagedPasswordButton";
+import CashfreeVendorButton from "../components/CashfreeVendorButton";
 
 
 function Coachlist() {
@@ -399,7 +401,7 @@ function Coachlist() {
                       <FilterOutlined style={{ cursor: 'pointer' }} />
                     </Popover>
                   </th>
-                  <th style={{ width: '19%' }}>Action</th>
+                  <th style={{ minWidth: '330px' }}>Action</th>
                   <th>Confirmation</th>
                 </tr>
               </thead>
@@ -415,7 +417,7 @@ function Coachlist() {
                       {row.status ? "Active" : "Inactive"}
                     </td>
                     <td>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <div className="coach-table-actions">
                         <Tooltip
                           title={
                             <span style={{ whiteSpace: "pre-line" }}>
@@ -424,13 +426,17 @@ function Coachlist() {
                           }
                           arrow
                         >
-                          <Link to={`/coaches/update/${row._id}`} style={{ marginRight: '2%' }}>
-                            <EditOutlined
-                              className='edit_icon'
-                            />
+                          <Link
+                            to={`/coaches/update/${row._id}`}
+                            className="coach-action-button coach-action-edit"
+                            aria-label={`Edit ${row.full_name || row.first_name}`}
+                          >
+                            <EditOutlined aria-hidden="true" />
                           </Link>
                         </Tooltip>
                         {isSuperAdmin && <PasswordResetLinkButton accountType="coach" account={row} />}
+                        {isSuperAdmin && <ManagedPasswordButton accountType="coach" account={row} />}
+                        {isSuperAdmin && <CashfreeVendorButton providerType="coach" account={row} />}
                         <Tooltip
                           title={
                             <span style={{ whiteSpace: "pre-line" }}>
@@ -439,26 +445,36 @@ function Coachlist() {
                           }
                           arrow
                         >
-                          <Link to={`/coaches/slots-add/${row._id}`}>
-                            <AppstoreAddOutlined
-                              className='edit_icon'
-                            />
+                          <Link
+                            to={`/coaches/slots-add/${row._id}`}
+                            className="coach-action-button coach-action-slots"
+                            aria-label={`Add slots for ${row.full_name || row.first_name}`}
+                          >
+                            <AppstoreAddOutlined aria-hidden="true" />
                           </Link>
                         </Tooltip>
                         {isSuperAdmin && (
                           row.status ?
-                            <Tooltip title={`Deactivate`} arrow>
-                              <DeleteOutlined
-                                className="delete_icon"
+                            <Tooltip title={`Archive profile (data retained)`} arrow>
+                              <button
+                                type="button"
+                                className="coach-action-button coach-action-delete"
+                                aria-label={`Deactivate ${row.full_name || row.first_name}`}
                                 onClick={() => handleDelete(row)}
-                              />
+                              >
+                                <DeleteOutlined aria-hidden="true" />
+                              </button>
                             </Tooltip>
                             :
                             <Tooltip title={`Activate`} arrow>
-                              <ReloadOutlined
-                                className="delete_icon"
+                              <button
+                                type="button"
+                                className="coach-action-button coach-action-activate"
+                                aria-label={`Activate ${row.full_name || row.first_name}`}
                                 onClick={() => handleUpdateAccess(1, row._id)}
-                              />
+                              >
+                                <ReloadOutlined aria-hidden="true" />
+                              </button>
                             </Tooltip>
                         )}
                       </div>
@@ -469,22 +485,27 @@ function Coachlist() {
                         <>
                           {row.is_admin_access === 2 && (
                             <button
-                              className="submit-button p-1"
+                              type="button"
+                              className="approval-action approval-action--reverify"
                               onClick={() => handleUpdateAccess(1, row._id)}
                             >
-                              Reverify
+                              <ReloadOutlined /> Reverify
                             </button>
                           )}
 
                           {row.is_admin_access === 0 && (
-                            <div className="d-flex">
-                              <CheckOutlined className='edit_icon' onClick={() => handleUpdateAccess(1, row._id)} />
-                              <CloseOutlined className='delete_icon' onClick={() => handleUpdateAccess(2, row._id)} />
+                            <div className="approval-actions">
+                              <button type="button" className="approval-action approval-action--approve" onClick={() => handleUpdateAccess(1, row._id)}>
+                                <CheckOutlined /> Approve
+                              </button>
+                              <button type="button" className="approval-action approval-action--reject" onClick={() => handleUpdateAccess(2, row._id)}>
+                                <CloseOutlined /> Reject
+                              </button>
                             </div>
                           )}
                         </>
                       )}
-                      <div>
+                      <div className={`approval-status approval-status--${row.is_admin_access === 1 ? 'approved' : row.is_admin_access === 2 ? 'rejected' : 'pending'}`}>
                         {(() => {
                           if (row.is_admin_access === 0) {
                             return "Pending";

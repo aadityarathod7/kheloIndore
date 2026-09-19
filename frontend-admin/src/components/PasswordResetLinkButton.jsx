@@ -44,12 +44,12 @@ export default function PasswordResetLinkButton({ accountType, account }) {
   return (
     <button
       type="button"
-      className="btn btn-sm btn-outline-success ms-1"
+      className="account-password-button account-reset-button"
       onClick={sendLink}
       disabled={remaining > 0}
       title="Email a link so this account can create a new password"
     >
-      {remaining ? `Link sent (${remaining}s)` : "Generate password link"}
+      {remaining ? `Link sent (${remaining}s)` : "Reset link"}
     </button>
   );
 }

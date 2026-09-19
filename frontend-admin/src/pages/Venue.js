@@ -1448,7 +1448,7 @@ const AddVenue = () => {
               </Col>
 
             </Row>
-            {/(gym|swimming)/i.test(formData.vendor_type || "") && (
+            {(
               <Row className="mb-3">
                 <Col md={12}>
                   <div className="border rounded p-3 bg-light">

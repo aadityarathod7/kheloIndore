@@ -238,6 +238,16 @@ const publicRoutes = [
     route: Route,
   },
   {
+    path: routes.coachesAll,
+    element: <CoachesGrid id={undefined} />,
+    route: Route,
+  },
+  {
+    path: routes.coachesCategories,
+    element: <CoachesCategory />,
+    route: Route,
+  },
+  {
     path: routes.coachesByCategory,
     element: <CoachesGrid id={undefined} />,
     route: Route,
@@ -616,11 +626,6 @@ const publicRoutes = [
   },
   {
     path: routes.venueDetails,
-    element: <VenueDetails />,
-    route: Route,
-  },
-  {
-    path: "/sports-venue/:id",
     element: <VenueDetails />,
     route: Route,
   },

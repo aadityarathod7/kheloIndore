@@ -203,10 +203,11 @@ exports.updatePersonalTrainer = async (req, res) => {
       "achievements_awards", "training_formats", "group_size_max", "session_durations",
       "availability_options", "pricing", "professional_experiences", "verification_documents",
       "training_photos", "certificate_achievement_photos",
+      "membership_plans",
     ];
     extendedFields.forEach((field) => {
       if (detail[field] !== undefined && detail[field] !== null && detail[field] !== "") {
-        if (["coaching_levels", "daily_availability", "categories", "videos", "sports", "training_levels", "age_groups", "certifications", "achievements_awards", "training_formats", "session_durations", "availability_options", "professional_experiences", "training_photos", "certificate_achievement_photos"].includes(field)) {
+        if (["coaching_levels", "daily_availability", "categories", "videos", "sports", "training_levels", "age_groups", "certifications", "achievements_awards", "training_formats", "session_durations", "availability_options", "professional_experiences", "training_photos", "certificate_achievement_photos", "membership_plans"].includes(field)) {
           if (typeof detail[field] === "string") {
             try {
               updatePayload[field] = JSON.parse(detail[field]);
@@ -585,6 +586,9 @@ exports.fetchPublicTrainer = async (req, res) => {
     if (!id || id.trim() === "") {
       return res.status(400).json({ success: false, message: "Invalid trainer ID provided" });
     }
+    if (!PersonalTrainer.base.Types.ObjectId.isValid(id)) {
+      return res.status(404).json({ success: false, message: "Trainer not found" });
+    }
     const trainer = await PersonalTrainer.findById(id);
     if (!trainer) {
       return res.status(404).json({ success: false, message: "Trainer not found" });
@@ -592,8 +596,10 @@ exports.fetchPublicTrainer = async (req, res) => {
     if (trainer.status !== true || trainer.is_admin_access !== 1 || trainer.verification_status !== 1) {
       return res.status(403).json({ success: false, message: "Trainer is not active or approved" });
     }
-    trainer.profile_views = (trainer.profile_views || 0) + 1;
-    await trainer.save();
+    if (req.query.countView !== "false") {
+      trainer.profile_views = (trainer.profile_views || 0) + 1;
+      await trainer.save();
+    }
     return res.status(200).json({ success: true, personalTrainer: withoutPrivateTrainerDetails(trainer) });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });

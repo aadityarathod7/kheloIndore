@@ -5,17 +5,18 @@ import "aos/dist/aos.css";
 import ImageWithBasePath from "../../core/data/img/ImageWithBasePath";
 import { all_routes } from "../router/all_routes";
 import { COACH_TRAINER_CATEGORIES, toCategorySlug, VENUE_CATEGORIES } from "../../constants/categories";
+import { hasCustomerSession } from "../../utils/customerAuth";
 
 const Footer = () => {
   const routes = all_routes;
-  const loginToken = localStorage.getItem("token");
+  const loginToken = hasCustomerSession();
   const location = useLocation();
   const [showAllSports, setShowAllSports] = useState(false);
   const [showAllCoaches, setShowAllCoaches] = useState(false);
   const [showAllTrainers, setShowAllTrainers] = useState(false);
   // Re-evaluated on every route change so the bottom nav reflects login/logout
   // without requiring a full page reload.
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(Boolean(localStorage.getItem("token")));
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(hasCustomerSession());
   const sports = VENUE_CATEGORIES;
   const coachCategories = COACH_TRAINER_CATEGORIES;
   const trainerCategories = COACH_TRAINER_CATEGORIES;
@@ -25,7 +26,7 @@ const Footer = () => {
   }, []);
 
   useEffect(() => {
-    setIsLoggedIn(Boolean(localStorage.getItem("token")));
+    setIsLoggedIn(hasCustomerSession());
   }, [location.pathname]);
 
   return (
@@ -171,6 +172,7 @@ const Footer = () => {
               <div className="col-lg-7">
                 <ul className="footer-legal-links">
                   <li><Link to={routes.blogGrid}>Blogs</Link></li>
+                  <li><Link to={routes.aboutUs}>About Us</Link></li>
                   <li><Link to={routes.contactUs}>Contact Us</Link></li>
                   <li><Link to={routes.privacyPolicy}>Privacy Policy</Link></li>
                   <li><Link to={routes.termsCondition}>Terms &amp; Conditions</Link></li>

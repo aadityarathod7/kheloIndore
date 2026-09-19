@@ -1,0 +1,47 @@
+.cashfree-onboarding-popup {
+  width: min(620px, calc(100vw - 32px)) !important;
+  padding: 28px 32px !important;
+  overflow: hidden !important;
+}
+
+.cashfree-onboarding-popup .cashfree-onboarding-html {
+  width: 100% !important;
+  margin: 18px 0 0 !important;
+  overflow: visible !important;
+}
+
+.cashfree-onboarding-form {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 9px;
+  width: 100%;
+  text-align: left;
+}
+
+.cashfree-onboarding-form .swal2-input,
+.cashfree-onboarding-form .swal2-select {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  height: 46px;
+  margin: 0 !important;
+  font-size: 15px;
+}
+
+.cashfree-onboarding-form label {
+  margin-top: 5px;
+  color: #344054;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.cashfree-onboarding-form .swal2-select {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 520px) {
+  .cashfree-onboarding-popup { padding: 24px 18px !important; }
+  .cashfree-onboarding-popup .swal2-title { font-size: 24px !important; }
+}

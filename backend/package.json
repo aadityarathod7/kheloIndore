@@ -10,6 +10,9 @@
     "seed:demo-profiles": "node seeds/seed_test_data.js --profiles-only",
     "seed:content": "node seeds/seed_blogs_and_events.js",
     "seed:super-admin": "node seeds/seed_super_admin_8349307444.js"
+    ,"seed:memberships": "node seeds/seed_membership_plans.js",
+    "seed:showcase": "node seeds/seed_fresh_showcase_data.js",
+    "seed:showcase:reset": "node seeds/seed_fresh_showcase_data.js --reset"
   },
   "keywords": [],
   "author": "",
@@ -26,6 +29,7 @@
     "crypto-js": "^4.2.0",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
+    "html-pdf": "^3.0.1",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.2.0",
     "multer": "^1.4.5-lts.1",

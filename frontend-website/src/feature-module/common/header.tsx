@@ -15,6 +15,7 @@ import { CButton, CCloseButton } from "@coreui/react";
 import { API_URL, IMG_URL } from "../../ApiUrl";
 import Swal from "sweetalert2";
 import axios from "axios";
+import { getCustomerToken } from "../../utils/customerAuth";
 
 interface tokenvalue {
   userID: string;
@@ -28,7 +29,7 @@ interface tokenvalue {
 const Header = () => {
   const routes = all_routes;
   const location = useLocation();
-  const loginToken = localStorage.getItem("token");
+  const loginToken = getCustomerToken();
   const navigate = useNavigate();
   const [userData, setUserData] = useState<JwtPayload | null>(null);
   const [isActive, setIsActive] = useState(false);
@@ -207,7 +208,7 @@ const Header = () => {
 
   useEffect(() => {
     const fetchUserData = async () => {
-      const token = localStorage.getItem("token");
+      const token = getCustomerToken();
       if (token) {
         try {
           const decodedToken: any = jwtDecode<JwtPayload>(token);
@@ -371,6 +372,11 @@ const Header = () => {
       routes: routes.blogGrid,
     },
     {
+      tittle: "About",
+      separateRoute: true,
+      routes: routes.aboutUs,
+    },
+    {
       tittle: "Contact Us",
       separateRoute: true,
       routes: routes.contactUs,
@@ -384,6 +390,7 @@ const Header = () => {
     { label: "Trainers", icon: "fas fa-dumbbell", route: routes.blogList },
     { label: "Events", icon: "fas fa-calendar-alt", route: routes.events },
     { label: "Blogs", icon: "fas fa-newspaper", route: routes.blogGrid },
+    { label: "About", icon: "fas fa-info-circle", route: routes.aboutUs },
     { label: "Contact Us", icon: "fas fa-envelope", route: routes.contactUs },
   ];
 

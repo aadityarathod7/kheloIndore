@@ -133,7 +133,10 @@ const CoachesCategory = () => {
         }));
         setCoaches(mappedCoaches);
 
-        setCategories(COACH_TRAINER_CATEGORIES.map((name) => ({
+        const availableCategories = Array.from(new Set(
+          coachData.map((coach: any) => String(coach.category || "").trim()).filter(Boolean)
+        ));
+        setCategories((availableCategories.length ? availableCategories : [...COACH_TRAINER_CATEGORIES]).map((name) => ({
           id: toCategorySlug(name),
           name,
           slug: toCategorySlug(name),
@@ -167,7 +170,7 @@ const CoachesCategory = () => {
   const categoryCounts = classifyCoaches(coaches);
 
   const filteredCategories = categories.filter((cat) =>
-    cat.name.toLowerCase().includes(searchQuery.toLowerCase())
+    categoryCounts[cat.id] > 0 && cat.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (

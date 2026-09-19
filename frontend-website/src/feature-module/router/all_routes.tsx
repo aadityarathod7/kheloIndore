@@ -45,6 +45,8 @@ export const all_routes = {
   coachDetails: "/coaches/coach-details",
   coachEarning: "/coaches/coach-earning",
   coachesGrid: "/coaches",
+  coachesAll: "/coaches/all",
+  coachesCategories: "/coaches/categories",
   coachesGridSidebar: "/coaches/coaches-sidebar-grid",
   coachesList: "/coaches/coaches-list",
   coachesListSidebar: "/coaches/coaches-sidebar-list",

@@ -48,7 +48,11 @@ exports.onboardCashfreeVendor = async (req, res) => {
       kyc_details,
       ...(bank ? { bank } : { upi }),
     };
-    const response = await axios.post(`${baseUrl()}/easy-split/vendors`, payload, { headers: headers(crypto.randomUUID()), timeout: 30000 });
+    // A previous submission can exist in Cashfree with a failed bank validation.
+    // Update that vendor rather than attempting to create a duplicate vendor ID.
+    const response = account.cashfree_vendor_id
+      ? await axios.patch(`${baseUrl()}/easy-split/vendors/${encodeURIComponent(account.cashfree_vendor_id)}`, payload, { headers: headers(crypto.randomUUID()), timeout: 30000 })
+      : await axios.post(`${baseUrl()}/easy-split/vendors`, payload, { headers: headers(crypto.randomUUID()), timeout: 30000 });
     account.cashfree_vendor_id = response.data.vendor_id || vendorId;
     account.cashfree_vendor_status = response.data.status || "PENDING";
     account.cashfree_vendor_updated_at = new Date();

@@ -701,6 +701,14 @@ export default function VenueByCategory() {
   const routeState = routeLocation.state as VenueSearchNavigationState | null;
   const categorySelected = thisCategory?.type || "";
 
+  // Move old shared/bookmarked URLs to the canonical Turf URL while keeping
+  // the legacy route readable during the transition.
+  useEffect(() => {
+    if (categorySelected === "cricket-grounds") {
+      navigate("/sports-venue/turf", { replace: true, state: routeState });
+    }
+  }, [categorySelected, navigate, routeState]);
+
   const getVenueSize = (venue: Venues) => {
     if (Array.isArray(venue.sports_details) && venue.sports_details.length > 0) {
       const activeSport = (thisCategory?.type || "").replace(/-/g, " ").toLowerCase();
@@ -834,12 +842,17 @@ export default function VenueByCategory() {
     if (requestedLocation) setLocationName(requestedLocation);
   }, [routeState]);
 
-  const categoryTitle = selectedSport && selectedSport !== "all"
+  const categoryTitle = selectedSport === "cricket-grounds"
+    ? "Turf"
+    : selectedSport && selectedSport !== "all"
     ? selectedSport
         .split("-")
         .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
         .join(" ")
     : "Sports";
+  const categoryListingLabel = categoryTitle === "Turf"
+    ? "turf venues"
+    : `${categoryTitle.toLowerCase()} grounds`;
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -853,7 +866,12 @@ export default function VenueByCategory() {
         // filters when deployed; the client re-applies the same rules below so
         // results stay correct either way.
         const params: Record<string, string> = {};
-        if (selectedSport && selectedSport !== "all" && selectedSport !== "other-sports") params.sport = selectedSport;
+        if (selectedSport && selectedSport !== "all" && selectedSport !== "other-sports") {
+          // "cricket-grounds" is the public legacy slug for the Turf
+          // category. Provider records and the API use the canonical value
+          // "turf", so translate it before requesting listings.
+          params.sport = selectedSport === "cricket-grounds" ? "turf" : selectedSport;
+        }
         if (locationName) params.location = locationName;
         if (selectedGrassType && selectedGrassType !== "any") params.grassType = selectedGrassType;
         if (selectedAmenities.length > 0) params.amenities = selectedAmenities.join(",");
@@ -1098,10 +1116,11 @@ export default function VenueByCategory() {
   const indexOfLastVenue = currentPage * venuesPerPage;
   const indexOfFirstVenue = indexOfLastVenue - venuesPerPage;
 
-  const featuredVenues = displayList.filter((venue) => venue.is_featured_paid).slice(0, 4);
-  const regularVenues = displayList.filter((venue) => !venue.is_featured_paid);
-  const currentVenues = regularVenues.slice(indexOfFirstVenue, indexOfLastVenue);
-  const totalPages = Math.max(1, Math.ceil(regularVenues.length / venuesPerPage));
+  // Keep venue results consistent with Coach and Trainer listings: one
+  // complete, paginated grid. Paid/featured status must never split the
+  // category results into a separate promotional strip.
+  const currentVenues = displayList.slice(indexOfFirstVenue, indexOfLastVenue);
+  const totalPages = Math.max(1, Math.ceil(displayList.length / venuesPerPage));
 
   const handlePageChange = (pageNumber: number) => {
     setCurrentPage(pageNumber);
@@ -1149,7 +1168,7 @@ export default function VenueByCategory() {
                 {categoryTitle} <span style={{ color: "#22C55E", marginLeft: "10px" }}>Venues</span>
               </h1>
               <p style={{ color: "#64748B", fontSize: "18px", marginBottom: "16px", fontWeight: "500", maxWidth: "480px" }}>
-                Browse and book top-rated {categoryTitle.toLowerCase()} grounds across Indore
+                Browse and book top-rated {categoryListingLabel} across Indore
               </p>
               
               {/* Breadcrumb pill matching sports-venue.tsx */}
@@ -1177,7 +1196,7 @@ export default function VenueByCategory() {
                 <span style={{ color: "#22C55E" }}>{displayList.length}</span> {categoryTitle} Venues
               </h2>
               <p className="text-muted mb-0" style={{ fontSize: "13px", fontWeight: "500", color: "#64748B" }}>
-                Book the best {categoryTitle.toLowerCase()} grounds in Indore
+                Book the best {categoryListingLabel} in Indore
               </p>
             </div>
 
@@ -1523,33 +1542,6 @@ export default function VenueByCategory() {
                   </button>
                 </div>
               </div>
-
-              {featuredVenues.length > 0 && (
-                <section className="mb-4" aria-label="Featured paid venues">
-                  <div className="d-flex align-items-center justify-content-between mb-2">
-                    <h2 className="mb-0" style={{ color: "#14532D", fontSize: "18px", fontWeight: "800" }}>
-                      <i className="feather-star me-2" style={{ color: "#F59E0B" }} /> Featured venues{locationName ? ` in ${locationName}` : " in Indore"}
-                    </h2>
-                    <span className="badge rounded-pill" style={{ background: "#FEF3C7", color: "#92400E", fontSize: "11px", fontWeight: "700" }}>PAID</span>
-                  </div>
-                  <div className="d-grid gap-3 ki-featured-row" style={{ gridTemplateColumns: "repeat(4, minmax(0, 1fr))" }}>
-                    {featuredVenues.map((venue) => (
-                      <Link
-                        key={venue._id}
-                        to={`/sports-venue/${venue.vendor_type ? venue.vendor_type.replace(/\s+/g, "-").toLowerCase() : "venue"}/${venue.name.replace(/\s+/g, "-").toLowerCase()}/${venue._id}`}
-                        className="text-decoration-none"
-                        style={{ minWidth: 0, border: "1px solid #FCD34D", borderRadius: "14px", background: "#FFFBEB", overflow: "hidden" }}
-                      >
-                        <img src={getVenueImage(venue.images)} alt={venue.name} style={{ width: "100%", height: "105px", objectFit: "cover" }} />
-                        <div className="p-3">
-                          <h3 className="mb-1 text-truncate" style={{ color: "#1F2937", fontSize: "15px", fontWeight: "800" }}>{venue.name}</h3>
-                          <p className="mb-0 text-truncate" style={{ color: "#64748B", fontSize: "12px" }}><i className="feather-map-pin me-1" />{venue.near_by_location || "Indore"}</p>
-                        </div>
-                      </Link>
-                    ))}
-                  </div>
-                </section>
-              )}
 
               {/* Cards Grid */}
               {currentVenues.length > 0 ? (

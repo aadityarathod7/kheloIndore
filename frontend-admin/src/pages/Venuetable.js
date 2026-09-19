@@ -537,22 +537,21 @@ function VenueList() {
                             </Tooltip>
                             :
                             <Tooltip title={`Activate`} arrow>
-                              <ReloadOutlined
-                                className="delete_icon"
-                                onClick={() => handleActive(venue)}
-                              />
+                              <button type="button" className="approval-action approval-action--activate" onClick={() => handleActive(venue)}>
+                                <ReloadOutlined /> Activate
+                              </button>
                             </Tooltip>
                         )}
                         {isSuperAdmin && venue.awaiting_approval && (
-                          <button type="button" className="btn btn-sm btn-outline-success" onClick={() => approvePendingUpdate(venue)}>
-                            Approve changes
+                          <button type="button" className="approval-action approval-action--approve" onClick={() => approvePendingUpdate(venue)}>
+                            <CheckOutlined /> Approve changes
                           </button>
                         )}
                       </div>
                     </td>
                     <td>
 
-                      <div>
+                      <div className={`approval-status approval-status--${venue.verification_status === 1 ? 'approved' : venue.verification_status === 2 ? 'rejected' : 'pending'}`}>
                         {(() => {
                           if (venue.verification_status === 0) {
                             return "Pending";
@@ -565,27 +564,26 @@ function VenueList() {
                       </div>
 
                       {isSuperAdmin && (showAcceptReject[venue._id] ?? (venue.verification_status === 0)) && (
-                        <div className="d-flex">
-                          <CheckOutlined
-                            className='edit_icon'
-                            onClick={() => handleIconClick(1, venue._id)}
-                          />
-                          <CloseOutlined
-                            className='delete_icon'
-                            onClick={() => handleIconClick(2, venue._id)}
-                          />
+                        <div className="approval-actions">
+                          <button type="button" className="approval-action approval-action--approve" onClick={() => handleIconClick(1, venue._id)}>
+                            <CheckOutlined /> Accept
+                          </button>
+                          <button type="button" className="approval-action approval-action--reject" onClick={() => handleIconClick(2, venue._id)}>
+                            <CloseOutlined /> Reject
+                          </button>
                         </div>
                       )}
                       {isSuperAdmin && (showAcceptReject[venue._id] ?? (venue.verification_status === 2)) && (
-                        <div className="d-flex">
+                        <div className="approval-actions">
                           {/* <CheckOutlined
                             className='edit_icon'
                             onClick={() => handleIconClick(1, venue._id)}
                           /> */}
                           <button
-                            className="submit-button p-1"
+                            type="button"
+                            className="approval-action approval-action--reverify"
                             onClick={() => handleIconClick(1, venue._id)}
-                          >Reverify</button>
+                          ><ReloadOutlined /> Reverify</button>
                           {/* <CloseOutlined
                             className='delete_icon'
                             onClick={() => handleIconClick(2, venue._id)}

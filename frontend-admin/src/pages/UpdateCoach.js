@@ -11,6 +11,7 @@ import Swal from "sweetalert2";
 import axios from "axios";
 import Select from "react-select";
 import LanguageSelector from "../components/LanguageSelector";
+import MembershipPlansEditor from "../components/MembershipPlansEditor";
 import { API_URL } from "../utils/ApiUrl";
 import { Image_URL } from "../utils/ApiUrl";
 import "../Coaches.css";
@@ -74,6 +75,7 @@ const UpdateCoach = () => {
       linkedin: "",
     },
     daily_availability: [],
+    membership_plans: [],
   });
 
   const LEVEL_OPTIONS = ["Beginner", "Intermediate", "Advanced"];
@@ -214,6 +216,7 @@ const UpdateCoach = () => {
           daily_availability: coach.daily_availability || [],
           gallery: coach.gallery || [],
           videos: coach.videos || coach.gallery_videos || [],
+          membership_plans: coach.membership_plans || [],
         });
         if (response.data.coach.profile_picture.length > 0) {
           const imageUrl = response.data.coach.profile_picture; 
@@ -1079,7 +1082,12 @@ const UpdateCoach = () => {
               </div>
             </Col> */}
 
-            <Form.Group controlId="formCheckbox">
+          <MembershipPlansEditor
+            plans={input.membership_plans || []}
+            onChange={(membership_plans) => setInput((current) => ({ ...current, membership_plans }))}
+          />
+
+          <Form.Group controlId="formCheckbox">
               <div className="checkbox-container">
                 <Form.Check
                   type="checkbox"
@@ -1136,7 +1144,7 @@ const UpdateCoach = () => {
                 type="button"
                 id="btn-approve-coach"
                 onClick={handleApprove}
-                style={{ background: "linear-gradient(135deg,#48bb78,#38a169)", color: "#fff", border: "none", borderRadius: 8, padding: "10px 28px", fontWeight: 700, fontSize: 15, cursor: "pointer", marginRight: 12, marginBottom: 8, boxShadow: "0 2px 8px rgba(56,161,105,0.35)" }}
+                className="approval-action approval-action--approve"
               >
                 ✅ Approve Coach
               </button>
@@ -1144,7 +1152,7 @@ const UpdateCoach = () => {
                 type="button"
                 id="btn-reject-coach"
                 onClick={handleReject}
-                style={{ background: "linear-gradient(135deg,#fc8181,#e53e3e)", color: "#fff", border: "none", borderRadius: 8, padding: "10px 28px", fontWeight: 700, fontSize: 15, cursor: "pointer", marginRight: 12, marginBottom: 8, boxShadow: "0 2px 8px rgba(229,62,62,0.35)" }}
+                className="approval-action approval-action--reject"
               >
                 ❌ Reject
               </button>

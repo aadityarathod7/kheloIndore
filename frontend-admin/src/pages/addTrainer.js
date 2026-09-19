@@ -6,6 +6,7 @@ import "../../src/User.css";
 import Swal from "sweetalert2";
 import { API_URL } from '../utils/ApiUrl';
 import { useNavigate } from 'react-router-dom';
+import MembershipPlansEditor from "../components/MembershipPlansEditor";
 
 const AddPersonalTrainer = () => {
   const [formData, setFormData] = useState({
@@ -17,6 +18,7 @@ const AddPersonalTrainer = () => {
     password: "",
     confirm_password: "",
     status: true,
+    membership_plans: [],
   });
 
   const [errors, setErrors] = useState({});
@@ -261,6 +263,11 @@ const AddPersonalTrainer = () => {
               </Form.Group>
             </Col>
           </Row>
+
+          <MembershipPlansEditor
+            plans={formData.membership_plans || []}
+            onChange={(membership_plans) => setFormData((current) => ({ ...current, membership_plans }))}
+          />
 
           <Form.Group controlId="formCheckbox">
             <div className="checkbox-container">

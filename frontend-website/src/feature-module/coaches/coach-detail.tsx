@@ -10,6 +10,7 @@ import axios from "axios";
 import { API_URL, IMG_URL } from "../../ApiUrl";
 import { sanitizeHtml } from "../../utils/sanitize";
 import Swal from "sweetalert2";
+import MembershipPlans from "../common/MembershipPlans";
 
 interface CoachData {
   first_name: any;
@@ -47,6 +48,7 @@ interface CoachData {
   students_trained: number;
   response_time: string;
   coaching_levels: string[];
+  training_levels?: string[];
   own_level: string;
   profile_views: number;
   reviews_count: number;
@@ -54,6 +56,7 @@ interface CoachData {
   social_media: any;
   gallery_videos: any;
   daily_availability: any;
+  membership_plans?: Array<{ name: string; months: number; price: number; priority?: string; discount?: string; support?: string }>;
   share_token: string;
   mobile: string;
   other_contact_number: string;
@@ -153,9 +156,14 @@ const CoachDetail = (props: any) => {
         .map((l) => l.trim())
         .filter(Boolean)
     : [];
-  const coachingLevelsList = coachData?.coaching_levels?.length
-    ? coachData.coaching_levels
-    : [];
+  // Coaches can have historic `coaching_levels` data or the newer
+  // `training_levels` field. Normalise both so the profile always shows the
+  // complete set of levels they train.
+  const coachingLevelsList = getSpecializations(
+    coachData?.coaching_levels?.length
+      ? coachData.coaching_levels
+      : coachData?.training_levels
+  );
   const socialMedia = coachData?.social_media || {};
   const dailyAvailability =
     coachData?.daily_availability && coachData.daily_availability.length
@@ -348,7 +356,12 @@ const CoachDetail = (props: any) => {
         const shouldCountView = !sessionStorage.getItem(viewKey);
         const response = isSharedProfile
           ? await axios.get(`${API_URL}/web/coach/shared/${sharedToken}`)
-          : await axios.get(`${API_URL}/${shouldCountView ? "web/fetch-coach" : "fetch-coach"}/${id}`);
+          : await axios.get(`${API_URL}/web/fetch-coach/${id}`, {
+              // This page is publicly accessible.  Keep every request on the
+              // public endpoint; the authenticated endpoint is only for coach
+              // management and returns 401 for website visitors.
+              params: { countView: shouldCountView },
+            });
         if (shouldCountView) sessionStorage.setItem(viewKey, "1");
         const coachDataId = response.data.coach;
         setCochData(coachDataId);
@@ -487,9 +500,9 @@ const CoachDetail = (props: any) => {
           color: #0F172A !important;
           border-bottom-color: #E2E8F0 !important;
         }
-        .venue-coach-details .book-coach p,
-        .venue-coach-details .book-coach span,
-        .venue-coach-details .book-coach strong {
+        .venue-coach-details .book-coach > p,
+        .venue-coach-details .book-coach > p span,
+        .venue-coach-details .book-coach > p strong {
           color: #334155 !important;
         }
         .venue-coach-details .book-coach .dull-bg {
@@ -507,7 +520,7 @@ const CoachDetail = (props: any) => {
         }
         .venue-coach-details .book-coach a.btn-secondary,
         .venue-coach-details .book-coach button.btn-secondary,
-        .venue-coach-details .book-coach button {
+        .venue-coach-details .book-coach button:not(.ki-membership-select) {
           background-color: #22C55E !important;
           border-color: #22C55E !important;
           color: #FFFFFF !important;
@@ -521,14 +534,14 @@ const CoachDetail = (props: any) => {
         }
         .venue-coach-details .book-coach a.btn-secondary:hover,
         .venue-coach-details .book-coach button.btn-secondary:hover,
-        .venue-coach-details .book-coach button:hover {
+        .venue-coach-details .book-coach button:not(.ki-membership-select):hover {
           background-color: #16A34A !important;
           border-color: #16A34A !important;
           color: #FFFFFF !important;
         }
         .venue-coach-details .book-coach a.btn-secondary i,
         .venue-coach-details .book-coach button.btn-secondary i,
-        .venue-coach-details .book-coach button i {
+        .venue-coach-details .book-coach button:not(.ki-membership-select) i {
           color: #FFFFFF !important;
           margin-right: 8px !important;
         }
@@ -763,6 +776,11 @@ const CoachDetail = (props: any) => {
                           <i className="feather-clock" /> {coachData.experience}+ Years Exp.
                         </span>
                       ) : null}
+                      {coachingLevelsList.length > 0 ? (
+                        <span className="meta-chip" title={`Trains: ${coachingLevelsList.join(", ")}`}>
+                          <i className="feather-trending-up" /> Trains: {coachingLevelsList.join(", ")}
+                        </span>
+                      ) : null}
                       {coachData?.gender ? (
                         <span className="meta-chip">
                           <i className="feather-user" /> {capitalize(coachData.gender)}
@@ -951,7 +969,7 @@ const CoachDetail = (props: any) => {
                           ) : null}
                           {coachingLevelsList.length > 0 ? (
                             <div className="cdg-item">
-                              <span className="cdg-label">Coaching Levels</span>
+                              <span className="cdg-label">Training Suitable For</span>
                               <strong className="cdg-value">{coachingLevelsList.join(", ")}</strong>
                             </div>
                           ) : null}
@@ -1803,7 +1821,7 @@ const CoachDetail = (props: any) => {
                     )}
                   </div>
                   {/* Packages before Book Now */}
-                  {(packageRates.length > 0 || coachData?.package_type) ? (
+                  {(packageRates.length > 0 || coachData?.package_type) && !(coachData?.membership_plans?.length) ? (
                     <div className="mt-3">
                       <p className="mb-2 fw-bold" style={{ fontSize: "13px", color: "#475569" }}>
                         <i className="feather-gift me-1" style={{ color: "#16A34A" }} /> Packages
@@ -1829,6 +1847,7 @@ const CoachDetail = (props: any) => {
                       </div>
                     </div>
                   ) : null}
+                  <MembershipPlans providerType="coach" providerId={id} plans={coachData?.membership_plans || []} />
                   <div className="d-grid mt-3 gap-2">
                     <button
                       onClick={() => checkToken(id)}

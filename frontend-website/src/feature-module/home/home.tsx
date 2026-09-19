@@ -1243,7 +1243,7 @@ const Home = () => {
           </div>
 
           {/* Bottom Statistics counter bar */}
-          <div className="stats-counter-bar mt-5 p-3 p-md-4 mb-4" ref={statsRef}>
+          <div className="stats-counter-bar stats-counter-bar--minimal mt-5 mb-4" ref={statsRef}>
             <div className="row align-items-center g-0">
               <div className="col-6 col-lg-3 ki-stat-col">
                 <div className="ki-stat">
@@ -1385,7 +1385,7 @@ const Home = () => {
             <div className="col-lg-4 col-md-6 d-flex">
               <div className="work-grid work-grid-visual w-100 hover-lift">
                 <div className="work-visual aos" data-aos="fade-up" data-aos-delay="450">
-                  <ImageWithBasePath src="/assets/trainer.png" alt="Personal trainer" />
+                  <ImageWithBasePath src="/assets/trainer.png" alt="Trainer" />
                 </div>
                 <div className="work-icon aos" data-aos="fade-up" data-aos-delay="380">
                   <div className="work-icon-inner">

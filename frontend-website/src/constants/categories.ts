@@ -24,9 +24,6 @@ export const COACH_TRAINER_CATEGORY_OPTIONS = COACH_TRAINER_CATEGORIES.map((cate
 }));
 
 export const toCategorySlug = (name: string) => {
-  // Retains the established dedicated URL used for cricket turf listings.
-  if (name.trim().toLowerCase() === "turf") return "cricket-grounds";
-
   return name
     .toLowerCase()
     .trim()

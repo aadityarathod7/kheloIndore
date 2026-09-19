@@ -95,14 +95,11 @@ const BlogListSidebarLeft = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedAlphabet, setSelectedAlphabet] = useState("All");
-  const [userFavSports, setUserFavSports] = useState<string[]>(() => {
-    try {
-      const cached = localStorage.getItem("userFavouriteSports");
-      return cached ? JSON.parse(cached) : [];
-    } catch {
-      return [];
-    }
-  });
+  // Recommendations are intentionally not restored from localStorage. A
+  // signed-in user must be verified and have favourites saved on their real
+  // profile before we alter public category ordering or show a Top Match.
+  const [userFavSports, setUserFavSports] = useState<string[]>([]);
+  const [hasAuthenticatedFavourites, setHasAuthenticatedFavourites] = useState(false);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -112,20 +109,35 @@ const BlogListSidebarLeft = () => {
   useEffect(() => {
     const fetchFavs = () => {
       const token = localStorage.getItem("token");
-      if (!token) return;
+      if (!token) {
+        setUserFavSports([]);
+        setHasAuthenticatedFavourites(false);
+        localStorage.removeItem("userFavouriteSports");
+        return;
+      }
       try {
         const { userID } = jwtDecode<{ userID: string | number }>(token);
-        if (!userID) return;
+        if (!userID) throw new Error("Missing user ID in token");
         axios.get(`${API_URL}/user/fetch-user-by-id/${userID}`, {
           headers: { Authorization: `Bearer ${token}` },
         }).then((res) => {
-          const favs = res.data?.data?.favourite_sports || [];
-          setUserFavSports(favs);
-          localStorage.setItem("userFavouriteSports", JSON.stringify(favs));
+          const profile = res.data?.data;
+          const favs = Array.isArray(profile?.favourite_sports) ? profile.favourite_sports.filter(Boolean) : [];
+          const isUserAccount = String(profile?.role || "").toLowerCase() === "user";
+          setUserFavSports(isUserAccount ? favs : []);
+          setHasAuthenticatedFavourites(isUserAccount && favs.length > 0);
+          if (isUserAccount && favs.length > 0) localStorage.setItem("userFavouriteSports", JSON.stringify(favs));
+          else localStorage.removeItem("userFavouriteSports");
         }).catch((err) => {
+          setUserFavSports([]);
+          setHasAuthenticatedFavourites(false);
+          localStorage.removeItem("userFavouriteSports");
           console.debug("Failed to fetch favourite sports", err);
         });
       } catch (err) {
+        setUserFavSports([]);
+        setHasAuthenticatedFavourites(false);
+        localStorage.removeItem("userFavouriteSports");
         console.debug("Failed to decode token", err);
       }
     };
@@ -159,7 +171,10 @@ const BlogListSidebarLeft = () => {
         }));
         setVenues(mappedVenues);
 
-        setCategories(VENUE_CATEGORIES.map((name) => ({
+        const availableCategories = Array.from(new Set(
+          venuesData.map((venue: any) => String(venue.category || venue.vendor_type || "").trim()).filter(Boolean)
+        ));
+        setCategories((availableCategories.length ? availableCategories : [...VENUE_CATEGORIES]).map((name) => ({
           id: toCategorySlug(name),
           name,
           slug: toCategorySlug(name),
@@ -219,7 +234,7 @@ const BlogListSidebarLeft = () => {
   const categoryCounts = classifyVenues(venues);
 
   const isCategoryFav = (catName: string) => {
-    if (!userFavSports || userFavSports.length === 0) return false;
+    if (!hasAuthenticatedFavourites || userFavSports.length === 0) return false;
     return userFavSports.some((s) => {
       const sportLower = s.toLowerCase().trim();
       const catLower = catName.toLowerCase().trim();
@@ -234,6 +249,7 @@ const BlogListSidebarLeft = () => {
 
   const alphabetLetters = Array.from("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
   const filteredCategories = categories
+    .filter((cat) => categoryCounts[cat.id] > 0)
     .filter((cat) => cat.name.toLowerCase().includes(searchQuery.toLowerCase()))
     .filter((cat) => selectedAlphabet === "All" || cat.name.toUpperCase().startsWith(selectedAlphabet))
     .sort((first, second) => {
@@ -322,7 +338,7 @@ const BlogListSidebarLeft = () => {
                 })}
               </div>
               <div className="row g-4">
-                {userFavSports.length > 0 && selectedAlphabet === "All" && !searchQuery && (
+                {hasAuthenticatedFavourites && userFavSports.length > 0 && selectedAlphabet === "All" && !searchQuery && (
                   <div className="col-12 mb-1">
                     <div
                       className="p-3 rounded-3 d-flex align-items-center justify-content-between flex-wrap gap-2 shadow-sm"

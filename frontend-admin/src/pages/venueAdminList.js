@@ -12,6 +12,8 @@ import "../Style/List.css";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import axios from "axios";
 import PasswordResetLinkButton from "../components/PasswordResetLinkButton";
+import ManagedPasswordButton from "../components/ManagedPasswordButton";
+import CashfreeVendorButton from "../components/CashfreeVendorButton";
 
 export default function VenueAdminList() {
     const [venueAdmin, setVenueAdmin] = useState([]);
@@ -242,7 +244,7 @@ export default function VenueAdminList() {
                     </Col>
                 </Form.Group>
 
-                <div className="table-container">
+                <div className="table-container venue-admin-table-wrap">
                     {loading ? (
                         <div className="text-center">
                             <ColorRing
@@ -256,7 +258,7 @@ export default function VenueAdminList() {
                             <p>Loading...</p>
                         </div>
                     ) : (
-                        <Table className="custom-table">
+                        <Table className="custom-table venue-admin-table">
                             <thead>
                                 <tr>
                                     <th style={{ width: "7%" }}>S.No.</th>
@@ -314,7 +316,7 @@ export default function VenueAdminList() {
                                             {row.status ? "Active" : "Inactive"}
                                         </td>
                                         <td>
-                                            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                                            <div className="venue-admin-table-actions">
                                                 {role === 'Super Admin' && (
                                                     <Tooltip title={`Download`} arrow>
                                                         <PDFDownloadLink
@@ -335,9 +337,11 @@ export default function VenueAdminList() {
                                                     </Link>
                                                 </Tooltip>
                                                 {role === 'Super Admin' && <PasswordResetLinkButton accountType="user" account={row} />}
+                                                {role === 'Super Admin' && <ManagedPasswordButton accountType="user" account={row} />}
+                                                {role === 'Super Admin' && <CashfreeVendorButton providerType="venue" account={row} />}
                                                 {role === 'Super Admin' && (
                                                     row.status ?
-                                                        <Tooltip title={`Deactivate`} arrow>
+                                                        <Tooltip title={`Archive profile (data retained)`} arrow>
                                                             <DeleteOutlined
                                                                 className="delete_icon"
                                                                 onClick={() => handleDelete(row)}
@@ -345,41 +349,35 @@ export default function VenueAdminList() {
                                                         </Tooltip>
                                                         :
                                                         <Tooltip title={`Activate`} arrow>
-                                                            <ReloadOutlined
-                                                                className="delete_icon"
-                                                                onClick={() => handleActive(row)}
-                                                            />
+                                                            <button type="button" className="approval-action approval-action--activate" onClick={() => handleActive(row)}>
+                                                                <ReloadOutlined /> Activate
+                                                            </button>
                                                         </Tooltip>
                                                 )}
                                             </div>
                                         </td>
 
-                                        {role === 'Super Admin' && <td>
-                                            <div className="d-flex">
+                                        {role === 'Super Admin' && <td className="venue-admin-confirmation">
+                                            <div className="approval-actions venue-admin-confirmation-actions">
                                                 {row.is_admin_access === 2 ? (
                                                     <button
-                                                        className="submit-button p-1"
+                                                        type="button"
+                                                        className="approval-action approval-action--reverify"
                                                         onClick={() => handleUpdateAccess(row._id, 1)}
-                                                    >Reverify</button>
+                                                    ><ReloadOutlined /> Reverify</button>
                                                 ) : row.is_admin_access === 0 ? (
                                                     <>
-                                                        <CheckOutlined
-                                                            className="edit_icon"
-                                                            onClick={() => handleUpdateAccess(row._id, 1)}
-                                                        />
-                                                        <CloseOutlined
-                                                            className="delete_icon"
-                                                            onClick={() => handleUpdateAccess(row._id, 2)}
-                                                        />
+                                                        <button type="button" className="approval-action approval-action--approve" onClick={() => handleUpdateAccess(row._id, 1)}><CheckOutlined /> Approve</button>
+                                                        <button type="button" className="approval-action approval-action--reject" onClick={() => handleUpdateAccess(row._id, 2)}><CloseOutlined /> Reject</button>
                                                     </>
                                                 ) : null}
                                             </div>
                                             {row.is_admin_access === 1 ? (
-                                                <span>Approved</span>
+                                                <span className="approval-status approval-status--approved">Approved</span>
                                             ) : row.is_admin_access === 2 ? (
-                                                <span>Rejected</span>
+                                                <span className="approval-status approval-status--rejected">Rejected</span>
                                             ) : row.is_admin_access === 0 ? (
-                                                <span>Pending</span>
+                                                <span className="approval-status approval-status--pending">Pending</span>
                                             ) : null}
                                         </td>}
                                     </tr>
@@ -393,7 +391,7 @@ export default function VenueAdminList() {
                     pageSizeOptions={["5", "10", "20", "50"]}
                     showSizeChanger={true}
                     showQuickJumper={true}
-                    total={venueAdmin.length}
+                    total={filteredData.length}
                     pageSize={itemsPerPage}
                     current={currentPage}
                     onChange={handlePagination}

@@ -849,6 +849,267 @@ div.p-datepicker table td.p-datepicker-today>span:focus {
   .ki-bookings-table { min-width: 920px !important; }
 }
 
+// Compact membership selector used in Venue, Coach and Trainer booking sidebars.
+.ki-membership-plans {
+  margin-top: 22px;
+  padding-top: 20px;
+  border-top: 1px solid #e5eee8;
+}
+.ki-membership-heading { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.ki-membership-heading > span { display: grid; width: 34px; height: 34px; place-items: center; border-radius: 10px; color: #b45309; background: #fff3d8; font-size: 14px; }
+.ki-membership-heading strong { display: block; color: #8a4100; font-size: 16px; font-weight: 800; }
+.ki-membership-heading small { display: block; margin-top: 2px; color: #77877d; font-size: 11px; }
+.ki-membership-plan-list { display: grid; gap: 14px; }
+.ki-membership-plan { padding: 20px; border: 1px solid #f5c46a; border-radius: 14px; background: #fffdfa; transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease; }
+.ki-membership-plan:hover { border-color: #f59e0b; box-shadow: 0 8px 18px rgba(217, 119, 6, .14); transform: translateY(-1px); }
+.ki-membership-plan.is-best-value { border-color: #f59e0b; background: linear-gradient(135deg, #fffdf7, #fff3d8); }
+.ki-membership-plan-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+.ki-membership-plan-top > div:first-child > strong { display: block; color: #10203c; font-size: 20px; font-weight: 800; }
+.ki-membership-plan-top > div:first-child > span { display: block; margin-top: 5px; color: #4f6380; font-size: 14px; }
+.ki-membership-price { text-align: right; }
+.ki-membership-price > strong { display: block; color: #c26100; font-size: 22px; font-weight: 800; line-height: 1; }
+.ki-membership-price small { display: inline-block; margin-top: 4px; padding: 2px 5px; color: #9a4d00; background: #ffedc2; border-radius: 4px; font-size: 9px; font-weight: 800; text-transform: uppercase; }
+.ki-membership-benefits { display: flex; flex-wrap: wrap; gap: 14px; margin: 17px 0 18px; color: #4f5564; font-size: 13px; }
+.ki-membership-benefits span { display: inline-flex; align-items: center; gap: 6px; }
+.ki-membership-benefits i { color: #c26100; }
+.ki-membership-plans .ki-membership-select,
+.ki-membership-venue-panel .ki-membership-select {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 50px;
+  border: 1px solid #f59e0b !important;
+  border-radius: 12px;
+  color: #9a4d00 !important;
+  background: #fffaf0 !important;
+  font-size: 15px;
+  font-weight: 800;
+  transition: all .18s ease;
+}
+.ki-membership-plans .ki-membership-select:hover,
+.ki-membership-venue-panel .ki-membership-select:hover {
+  color: #fff !important;
+  background: #f59e0b !important;
+  box-shadow: 0 6px 12px rgba(217, 119, 6, .24);
+}
+.ki-membership-venue-card { border-color: #f5d7a0 !important; background: #fffdfa !important; }
+.ki-membership-venue-card .text-success, .ki-membership-venue-card .text-success i { color: #c26100 !important; }
+.ki-membership-venue-panel .text-success { color: #c26100 !important; }
+.ki-membership-venue-panel .bg-success { background-color: #fff3d8 !important; }
+
+// ── User space refresh: dashboard, profile and saved items ───────────────
+.ki-user-dashboard,
+.ki-user-profile {
+  background: linear-gradient(180deg, #f8fbf9 0%, #f8fafc 42%, #ffffff 100%);
+
+  .dashboard-card,
+  .payment-card,
+  .profile-user-view,
+  .ki-profile-card {
+    border: 1px solid #e4ece7 !important;
+    border-radius: 20px !important;
+    background: rgba(255, 255, 255, .96) !important;
+    box-shadow: 0 12px 32px rgba(15, 23, 42, .055) !important;
+    overflow: hidden;
+  }
+
+  .dashboard-card {
+    margin-bottom: 22px !important;
+
+    > .card-header,
+    .card-header {
+      min-height: 0 !important;
+      padding: 22px 24px 16px !important;
+      border-bottom: 1px solid #edf2ee !important;
+      background: transparent !important;
+
+      h4 {
+        color: #102a1c !important;
+        font-size: 18px !important;
+        font-weight: 750 !important;
+        letter-spacing: -.015em;
+      }
+
+      p {
+        margin: 4px 0 0 !important;
+        color: #728077 !important;
+        font-size: 13px !important;
+      }
+    }
+  }
+
+  .my-profile-box {
+    margin-bottom: 22px;
+
+    > h3 {
+      display: none;
+    }
+
+    .profile-user-view {
+      margin: 0 !important;
+      padding: 23px 25px !important;
+      background: linear-gradient(115deg, #ffffff 0%, #f1fbf4 100%) !important;
+    }
+
+    .profile-groups {
+      gap: 16px;
+    }
+
+    .user-profile-detail h4 {
+      color: #102a1c !important;
+      letter-spacing: -.02em;
+    }
+  }
+
+  .statistics-card {
+    padding: 0 20px 20px !important;
+
+    .row {
+      row-gap: 12px;
+    }
+
+    .statistics-grid {
+      min-height: 126px;
+      margin: 0 !important;
+      padding: 20px !important;
+      border: 1px solid #e7efe9 !important;
+      border-radius: 16px !important;
+      background: #fbfefc !important;
+      box-shadow: none !important;
+      transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
+
+      &:hover {
+        transform: translateY(-3px);
+        border-color: #86efac !important;
+        box-shadow: 0 10px 22px rgba(22, 163, 74, .10) !important;
+      }
+
+      h3 {
+        color: #087d45 !important;
+        font-size: 29px !important;
+        font-weight: 800 !important;
+        letter-spacing: -.04em;
+      }
+
+      p {
+        color: #526357 !important;
+        font-size: 12px !important;
+        font-weight: 700 !important;
+        text-transform: uppercase;
+        letter-spacing: .055em;
+      }
+
+      .statistics-icon {
+        width: 46px !important;
+        height: 46px !important;
+        border-radius: 14px !important;
+        background: #dcfce7 !important;
+      }
+    }
+  }
+
+  .payment-card {
+    background: linear-gradient(135deg, #075f3b 0%, #0d8c52 100%) !important;
+    border: 0 !important;
+    box-shadow: 0 14px 28px rgba(5, 116, 70, .22) !important;
+
+    .payment-content p,
+    .payment-content h2 {
+      color: #fff !important;
+    }
+
+    .payment-btn .btn {
+      border-radius: 10px !important;
+      color: #075f3b !important;
+      background: #fff !important;
+      font-weight: 700 !important;
+    }
+  }
+
+  .dashboard-card-table {
+    margin: 0 !important;
+
+    td {
+      padding: 16px 20px !important;
+      border-color: #edf2ee !important;
+      vertical-align: middle !important;
+    }
+
+    tr:last-child td { border-bottom: 0 !important; }
+    h4, h6 { color: #183323 !important; }
+  }
+
+  .card-header-btns .nav-tabs {
+    gap: 3px;
+    padding: 3px !important;
+    border: 1px solid #e3ece5 !important;
+    border-radius: 10px;
+    background: #f5f8f6;
+
+    .nav-link {
+      border: 0 !important;
+      border-radius: 7px !important;
+      color: #617168 !important;
+      font-size: 12px !important;
+      font-weight: 700 !important;
+
+      &.active {
+        color: #087d45 !important;
+        background: #fff !important;
+        box-shadow: 0 2px 5px rgba(15, 23, 42, .08);
+      }
+    }
+  }
+}
+
+.ki-user-profile {
+  .ki-profile-card {
+    padding: 24px !important;
+  }
+
+  #favourite-sports-section {
+    border-top: 3px solid #f7c948 !important;
+  }
+
+  #favourites-section {
+    border-top: 3px solid #ef5975 !important;
+
+    .row > [class*="col-"] {
+      margin-bottom: 12px;
+    }
+  }
+
+  .btn-outline-secondary {
+    border-color: #d8e2dc !important;
+    color: #405448 !important;
+
+    &:hover {
+      border-color: #22c55e !important;
+      color: #087d45 !important;
+      background: #f0fdf4 !important;
+    }
+  }
+}
+
+@media (max-width: 767.98px) {
+  .ki-user-dashboard,
+  .ki-user-profile {
+    .dashboard-card > .card-header,
+    .dashboard-card .card-header,
+    .ki-profile-card,
+    .my-profile-box .profile-user-view {
+      padding: 18px !important;
+    }
+
+    .statistics-card { padding: 0 12px 12px !important; }
+    .statistics-card .statistics-grid { min-height: 106px; padding: 16px !important; }
+    .statistics-card .statistics-grid h3 { font-size: 24px !important; }
+    .dashboard-card-table td { padding: 14px 16px !important; }
+  }
+}
+
 /* Custom mobile filter dropdown used on category pages. */
 .ki-custom-dropdown-option.is-selected,
 .ki-custom-dropdown-option.is-selected .ki-custom-dropdown-option-label,
@@ -863,6 +1124,7 @@ div.p-datepicker table td.p-datepicker-today>span:focus {
 .simple-user-dashboard {
   background: #f6f9f7;
   color: #172b46;
+  overflow-x: clip;
 }
 
 .simple-dashboard-hero {
@@ -933,6 +1195,9 @@ div.p-datepicker table td.p-datepicker-today>span:focus {
 .simple-dashboard-stat-icon.favourite { color: #df4265; background: #fff0f3; }
 
 .simple-dashboard-grid { display: grid; grid-template-columns: minmax(0, 1.65fr) minmax(300px, .85fr); gap: 24px; align-items: start; }
+.simple-dashboard-grid > *,
+.simple-dashboard-side,
+.simple-dashboard-panel { min-width: 0; }
 .simple-dashboard-panel { padding: 25px; }
 .simple-dashboard-panel-heading { padding-bottom: 19px; border-bottom: 1px solid #e9efea; }
 .simple-dashboard-panel-heading h2,
@@ -1207,6 +1472,7 @@ div.p-datepicker table td.p-datepicker-today>span:focus {
   .simple-dashboard-hero-inner { align-items: flex-start; flex-direction: column; }
   .simple-dashboard-stats { grid-template-columns: repeat(2, 1fr); }
   .simple-dashboard-grid { grid-template-columns: 1fr; }
+  .simple-dashboard-side { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 575.98px) {
   .simple-dashboard-hero { padding: 112px 0 32px; }
@@ -1215,6 +1481,7 @@ div.p-datepicker table td.p-datepicker-today>span:focus {
   .simple-dashboard-content { padding: 24px 0 48px; }
   .simple-dashboard-stats { grid-template-columns: 1fr; gap: 10px; }
   .simple-dashboard-panel { padding: 18px; }
+  .simple-dashboard-side { grid-template-columns: 1fr; gap: 16px; }
   .simple-dashboard-panel-heading { align-items: flex-start; flex-direction: column; gap: 10px; }
   .simple-dashboard-booking { align-items: flex-start; gap: 10px; }
   .simple-dashboard-booking-main strong { white-space: normal; }
@@ -5304,6 +5571,59 @@ body .swal2-container {
   }
 }
 
+// Shared non-blocking notifications. Kept compact and clear on every screen.
+body .swal2-container.swal2-bottom-end {
+  padding: 18px !important;
+  pointer-events: none !important;
+
+  .swal2-popup.swal2-toast.ki-minimal-toast {
+    width: min(360px, calc(100vw - 32px)) !important;
+    min-height: 58px !important;
+    padding: 12px 14px !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 0 !important;
+    background: rgba(255, 255, 255, .98) !important;
+    box-shadow: 0 16px 40px rgba(15, 23, 42, .16) !important;
+    pointer-events: auto !important;
+    text-align: left !important;
+
+    .swal2-title,
+    .ki-minimal-toast-title {
+      margin: 0 26px 0 10px !important;
+      color: #20332a !important;
+      font-size: 14px !important;
+      font-weight: 700 !important;
+      line-height: 1.35 !important;
+      text-align: left !important;
+    }
+
+    .swal2-icon {
+      margin: 0 !important;
+      transform: scale(.72);
+      transform-origin: center;
+    }
+
+    .swal2-close {
+      top: 7px !important;
+      right: 8px !important;
+      color: #94a3b8 !important;
+      font-size: 20px !important;
+    }
+
+    .swal2-timer-progress-bar {
+      background: #22c55e !important;
+    }
+  }
+}
+
+@media (max-width: 575.98px) {
+  body .swal2-container.swal2-bottom-end {
+    right: 0 !important;
+    bottom: 68px !important;
+    padding: 12px !important;
+  }
+}
+
 // Compact Sleek Dashboard Menu Tabs (Pill Style)
 .ki-tab-btn {
   display: inline-flex !important;
@@ -5352,6 +5672,77 @@ body .swal2-container {
     i,
     span {
       color: #FFFFFF !important;
+    }
+  }
+}
+
+// Shared account navigation used by Dashboard, My Bookings, and Profile Settings.
+// It stays a clean, single-line tab strip on large screens and becomes swipeable
+// rather than forcing labels into multiple lines on narrow screens.
+.ki-user-hero-nav {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+  padding: 4px;
+  border: 1px solid rgba(203, 213, 225, 0.8);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.58);
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.06);
+  vertical-align: middle;
+
+  .ki-tab-btn {
+    flex: 0 0 auto;
+    min-height: 38px !important;
+    height: auto !important;
+    padding: 8px 14px !important;
+    white-space: nowrap;
+    box-shadow: none !important;
+
+    i {
+      margin-right: 7px !important;
+    }
+
+    span {
+      white-space: nowrap;
+      line-height: 1.2 !important;
+    }
+  }
+}
+
+@media (max-width: 991.98px) {
+  .hero-booking-section .d-flex.flex-wrap.gap-2.mt-3 {
+    align-items: flex-start !important;
+  }
+
+  .ki-user-breadcrumb {
+    flex: 0 0 auto;
+  }
+
+  .ki-user-hero-nav {
+    display: flex;
+    width: 100%;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+}
+
+@media (max-width: 575.98px) {
+  .ki-user-hero-nav {
+    gap: 6px;
+    border-radius: 14px;
+    padding: 4px;
+
+    .ki-tab-btn {
+      min-height: 36px !important;
+      padding: 8px 12px !important;
+      font-size: 12px !important;
     }
   }
 }
@@ -5640,7 +6031,7 @@ body .swal2-container {
   }
 }
 
-// Sleek Sub-Tabs Styling Overrides (Sports Venue / Coaches / Personal Trainer)
+// Sleek Sub-Tabs Styling Overrides (Sports Venue / Coaches / Trainers)
 .card-header-btns .nav-tabs {
   border: 0 !important;
   background: #F1F5F9 !important;

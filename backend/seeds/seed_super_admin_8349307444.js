@@ -5,17 +5,21 @@ const User = require("../models/UserModel");
 
 require("dotenv").config({ path: path.resolve(__dirname, "../.env") });
 
-const mobile = "8349307444";
-const password = "Kheloindore@2026";
+const mobile = process.env.SUPER_ADMIN_MOBILE;
+const email = process.env.SUPER_ADMIN_LOGIN || process.env.SUPER_ADMIN_EMAIL;
+const password = process.env.SUPER_ADMIN_PASSWORD;
 
 async function seedSuperAdmin() {
-  await mongoose.connect(process.env.DATABASE_URL);
+  if (!mobile || !email || !password) {
+    throw new Error("SUPER_ADMIN_LOGIN, SUPER_ADMIN_MOBILE, and SUPER_ADMIN_PASSWORD must be set in backend/.env.");
+  }
+  await mongoose.connect(process.env.DATABASE_URL || process.env.MONGODB_URI);
 
   const passwordHash = await bcrypt.hash(password, 12);
   const account = {
     first_name: "Super",
     last_name: "Admin",
-    email: "superadmin.8349307444@kheloindore.local",
+    email,
     mobile,
     password: passwordHash,
     role: "Super Admin",

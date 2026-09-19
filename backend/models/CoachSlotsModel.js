@@ -13,6 +13,7 @@ const CoachSlotSchema = mongoose.Schema({
       end_time: { type: String, required: true },
       price: { type: Number, required: true },
       isBooked: { type: Boolean, default: false },
+      isOfflineBlocked: { type: Boolean, default: false },
     },
   ],
   status: {

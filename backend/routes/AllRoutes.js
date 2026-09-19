@@ -2,7 +2,7 @@ const express = require("express");
 const route = express.Router();
 const { getMyWallet } = require("../controllers/WalletController");
 const { getReviews, createReview } = require("../controllers/ReviewController");
-const { myNotifications, markNotificationsRead } = require("../controllers/NotificationController");
+const { myNotifications, markNotificationsRead, clearMyNotifications } = require("../controllers/NotificationController");
 const mail = require('../controllers/NodeMailerController')
 
 const imageUpload= require('../middlewares/multer')
@@ -339,6 +339,7 @@ route.get("/reviews/:type/:id", getReviews);
 route.put("/reviews/:type/:id", auth, createReview);
 route.get("/notifications/me", auth, myNotifications);
 route.put("/notifications/read", auth, markNotificationsRead);
+route.delete("/notifications/me", auth, clearMyNotifications);
 
 //Images
 route.post(
@@ -420,10 +421,12 @@ const {
   deleteCoachBatch,
   fetchCoachSlotByDateId,
   updateCoachSlotBooking,
-  deleteSlotsByDateRangeCoach
+  deleteSlotsByDateRangeCoach,
+  carryForwardCoachSlots
 } = require("../controllers/CoachSlotController");
 route.post("/coach-slot/add/:coachId", auth, createCoachSlot);
 route.put("/coach-slot/delete", auth, deleteSlotsByDateRangeCoach);
+route.post("/coach-slot/carry-forward/:coachId", auth, carryForwardCoachSlots);
 route.put("/coach-slot/update/:coachId/:slotId/:coachSlotId", auth, updateCoachSlotById);
 route.put("/coach-slot/update/:coachSlotId", auth, updateCoachSlotByIdNew);
 route.put("/cancel-coach-slot/:id", auth, updateCoachSlotBooking);
@@ -439,9 +442,10 @@ const {
 route.post("/coach/booking", auth, bookCoach);
 route.get("/coach/booking/fetch",auth, fetchCoachBooking);
 // for pt slots
-const {addSlotPT,getPtBatch,getPtSlots, updatePTSlotById,createPersonalTrainerSlot,getAllPersonalTrainerSlotsByTrainerId,fetchPersonalTrainerSlotByDateId,deleteSlotsByDateRangept} = require('../controllers/PersonalTrainerSlotController');
+const {addSlotPT,getPtBatch,getPtSlots, updatePTSlotById,createPersonalTrainerSlot,getAllPersonalTrainerSlotsByTrainerId,fetchPersonalTrainerSlotByDateId,deleteSlotsByDateRangept,carryForwardPersonalTrainerSlots} = require('../controllers/PersonalTrainerSlotController');
 route.post('/pt/batch/add/:PTId', auth, addSlotPT);
 route.put('/pt/slot/delete', auth, deleteSlotsByDateRangept);
+route.post('/pt/slots/carry-forward/:trainerId', auth, carryForwardPersonalTrainerSlots);
 route.post('/pt/slots/add/:id', auth, createPersonalTrainerSlot);
 route.get('/get-all-pt-slot/:id',getAllPersonalTrainerSlotsByTrainerId);
 route.get('/get-pt-slot-by-date/:id',fetchPersonalTrainerSlotByDateId);
@@ -457,6 +461,7 @@ route.get("/pt/booking/get",auth, getPTBooking);
 //Phonepe
 const { venuePayment, venuePaymentStatus, coachPaymentStatus, coachPayment, personalTrainerPayment, personalTrainerPaymentStatus,getVenueBookingByUserId,getCoachBookingByUserId,getPersonalTrainerBookingByUserId, getVenueCoachPTBookingByUserId,venueRefund,getAllRefunds }  = require("../controllers/paymentController");
 const { onboardCashfreeVendor, cashfreeSplitWebhook, getCashfreeSplits } = require("../controllers/CashfreeSplitController");
+const { startMembershipCheckout, verifyMembershipPayment, getMyMemberships } = require("../controllers/MembershipController");
 route.post("/webhooks/cashfree/easy-split", cashfreeSplitWebhook);
 route.post("/super-admin/cashfree/vendors/:providerType/:id", auth, requireRole("Super Admin"), onboardCashfreeVendor);
 route.get("/super-admin/cashfree/splits", auth, requireRole("Super Admin"), getCashfreeSplits);
@@ -476,6 +481,10 @@ route.post('/refund/:BookingId', auth, venueRefund);
 route.get('/getrefund',getAllRefunds);
 //  all booing in one API by userID
 route.get('/get/venue-coach-pt-booking/:userId',getVenueCoachPTBookingByUserId)
+// Fixed-duration memberships for venues, coaches, and personal trainers.
+route.post('/membership/checkout', auth, startMembershipCheckout);
+route.all('/membership/payment/status/:orderId', verifyMembershipPayment);
+route.get('/membership/my', auth, getMyMemberships);
 // API for web 
 route.get('/web/fetch-all-coaches', fetchAllCoaches);
 route.get("/web/venue/getVenue", getVenue)

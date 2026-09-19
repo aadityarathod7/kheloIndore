@@ -5,6 +5,8 @@ import axios from "axios";
 import Swal from "sweetalert2";
 import { API_URL } from "../../ApiUrl";
 import { jwtDecode } from "jwt-decode";
+import { getCustomerToken } from "../../utils/customerAuth";
+import { showToast } from "../../utils/toast";
 
 const Login = () => {
   const route = all_routes;
@@ -34,7 +36,7 @@ const Login = () => {
   const handleAuthRedirect = (userObj?: any, tokenStr?: string) => {
     let currentUserId = userObj?.userID || userObj?.id || userObj?._id || "";
     if (!currentUserId) {
-      const activeToken = tokenStr || localStorage.getItem("token");
+      const activeToken = tokenStr || getCustomerToken();
       if (activeToken) {
         try {
           const decoded: any = jwtDecode(activeToken);
@@ -94,7 +96,7 @@ const Login = () => {
   };
 
   useEffect(() => {
-    const loginToken = localStorage.getItem("token");
+    const loginToken = getCustomerToken();
     if (loginToken) {
       handleAuthRedirect(undefined, loginToken);
     }
@@ -136,24 +138,8 @@ const Login = () => {
           localStorage.setItem("token2", response.data.token);
           setStep("OTP");
 
-          const Toast = Swal.mixin({
-            toast: true,
-            position: "top-end",
-            showConfirmButton: false,
-            timer: 10000,
-            timerProgressBar: true,
-            background: "#FFFFFF",
-            color: "#0F172A",
-            iconColor: "#22C55E",
-            customClass: {
-              popup: "swal-light-toast-shadow"
-            }
-          });
           const deliveredVia = response.data?.deliveryChannels?.includes("whatsapp") ? "WhatsApp" : "SMS";
-          Toast.fire({
-            icon: "success",
-            title: `OTP sent via ${deliveredVia}.`,
-          });
+          showToast(`OTP sent via ${deliveredVia}.`, "success", 6000);
         } else {
           Swal.fire({
             title: "Error",
@@ -223,23 +209,7 @@ const Login = () => {
             navigate(route.userProfile, { state: { firstTime: true } });
           });
         } else {
-          const Toast = Swal.mixin({
-            toast: true,
-            position: "top-end",
-            showConfirmButton: false,
-            timer: 1500,
-            timerProgressBar: true,
-            background: "#FFFFFF",
-            color: "#0F172A",
-            iconColor: "#22C55E",
-            customClass: {
-              popup: "swal-light-toast-shadow"
-            }
-          });
-          Toast.fire({
-            icon: "success",
-            title: "Logged In Successfully!",
-          });
+          showToast("Logged in successfully!", "success", 2200);
           handleAuthRedirect(userData, authToken);
         }
       })
