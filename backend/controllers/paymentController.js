@@ -56,6 +56,14 @@ const getCashfreeCustomerDetails = async (userId) => {
   };
 };
 
+const safeRedirect = (res, targetUrl) => {
+  let finalUrl = targetUrl || process.env.REDIRECT_URL || "https://kheloindore.in/user/user-bookings";
+  if (!finalUrl.startsWith("http://") && !finalUrl.startsWith("https://")) {
+    finalUrl = `https://${finalUrl}`;
+  }
+  return res.redirect(finalUrl);
+};
+
 const createBookingNotifications = async ({ providerUserId, bookingId, providerName, bookingType }) => {
   try {
     const superAdmins = await User.find({ role: "Super Admin", status: true }).select("_id").lean();
@@ -1040,14 +1048,6 @@ const venuePaymentStatus = async (req, res) => {
       }
     }
 
-    const safeRedirect = (res, targetUrl) => {
-      let finalUrl = targetUrl || "https://kheloindore.in/user/user-bookings";
-      if (!finalUrl.startsWith("http://") && !finalUrl.startsWith("https://")) {
-        finalUrl = `https://${finalUrl}`;
-      }
-      return res.redirect(finalUrl);
-    };
-
     // Payment Success Logic
     if (result.data.success == true || state === "COMPLETED" || responseCode === "PAYMENT_SUCCESS") {
       const existing = await Booking.findOne({ merchantTransaction_id: txnId });
@@ -1744,7 +1744,7 @@ const slotDates = `${formattedStartDate} to ${formattedEndDate}`;
       slotsBook,
       paymentState: state,
     });
-    res.redirect(process.env.FAIL_URL); // Redirect to failure page 
+    return safeRedirect(res, process.env.FAIL_URL); // Redirect to failure page
   }
   } catch (error) {
     
