@@ -338,41 +338,42 @@ function BookingList({ listType }) {
   };
 
   useEffect(() => {
-    const transformed = coachBooking
-      ? coachBooking.map((booking) => ({
+    const transformed = Array.isArray(coachBooking)
+      ? coachBooking.filter(Boolean).map((booking) => ({
           id: booking._id,
           startDate: booking.startDate,
-          first_name: booking.coachId.first_name,
-          last_name: booking.coachId.last_name,
-          user_first_name: booking.userId.first_name,
-          user_last_name: booking.userId.last_name,
-          mobile: booking.userId.mobile,
-          package_type: booking.packageType,
-          payment: booking.total_price,
-          payment_state: booking.paymentState,
+          first_name: booking.coachId?.first_name || "Coach",
+          last_name: booking.coachId?.last_name || "",
+          user_first_name: booking.userId?.first_name || "User",
+          user_last_name: booking.userId?.last_name || "",
+          mobile: booking.userId?.mobile || "—",
+          package_type: booking.packageType || "Coaching",
+          payment: booking.total_price || 0,
+          payment_state: booking.paymentState || "Pending",
           verification_status: booking.verification_status,
           cancellation_status: booking.cancellation_status,
         }))
-      : "";
+      : [];
 
     setTransformedBookings(transformed);
   }, [coachBooking]);
 
   useEffect(() => {
-    
-    const transformed = trainerBooking.map((booking) => ({
-      id: booking._id,
-      startDate: booking.startDate,
-      first_name: booking.pt_id.first_name,
-      last_name: booking.pt_id.last_name,
-      user_first_name: booking.user_id.first_name,
-      user_last_name: booking.user_id.last_name,
-      mobile: booking.user_id.mobile,
-      payment: booking.total_price,
-      payment_state: booking.paymentState,
-      verification_status: booking.verification_status,
-      cancellation_status: booking.cancellation_status,
-    }));
+    const transformed = Array.isArray(trainerBooking)
+      ? trainerBooking.filter(Boolean).map((booking) => ({
+          id: booking._id,
+          startDate: booking.startDate,
+          first_name: booking.pt_id?.first_name || "Trainer",
+          last_name: booking.pt_id?.last_name || "",
+          user_first_name: booking.user_id?.first_name || "User",
+          user_last_name: booking.user_id?.last_name || "",
+          mobile: booking.user_id?.mobile || "—",
+          payment: booking.total_price || 0,
+          payment_state: booking.paymentState || "Pending",
+          verification_status: booking.verification_status,
+          cancellation_status: booking.cancellation_status,
+        }))
+      : [];
     
     setTransformedTrainerBookings(transformed);
   }, [trainerBooking]);
@@ -387,40 +388,40 @@ function BookingList({ listType }) {
       const data = transformedTrainerBookings;
       setBookingData(data);
     }
-  }, [selectedItem, transformedBookings]);
+  }, [selectedItem, transformedBookings, transformedTrainerBookings]);
 
   useEffect(() => {
-    const venueCsvData = currentItems
+    const venueCsvData = Array.isArray(currentItems)
       ? currentItems.map((data) => ({
-          "User name": `${data.info?.user_id?.first_name || "Unknown"} ${data.info?.user_id?.last_name || ""}`.trim(),
-          "Venue name": data.info?.venue_id?.name || "Venue unavailable",
-          "Slot time": (data.slots || [])
-            .map((slot) => `${slot.startTime} - ${slot.endTime}`)
+          "User name": `${data?.info?.user_id?.first_name || "Unknown"} ${data?.info?.user_id?.last_name || ""}`.trim(),
+          "Venue name": data?.info?.venue_id?.name || "Venue unavailable",
+          "Slot time": (data?.slots || [])
+            .map((slot) => `${slot?.startTime} - ${slot?.endTime}`)
             .join(", "),
-          Category: data.info?.venue_id?.category || "—",
-          Payment: `${data.info?.total_price || 0}`,
-          Date: data.info?.date,
-          Status: data.info?.paymentState,
+          Category: data?.info?.venue_id?.category || "—",
+          Payment: `${data?.info?.total_price || 0}`,
+          Date: data?.info?.date,
+          Status: data?.info?.paymentState,
         }))
-      : "";
+      : [];
 
-    const coachCsvData = transformedBookings
-      ? transformedBookings.map((data) => ({
-          "User name": `${data.user_first_name} ${data.user_last_name}`,
-          "User mobile": data.mobile,
-          "Coach name": `${data.first_name} ${data.last_name}`,
-          Category: data.package_type,
-          Date: data.date,
-          Status: data.payment_state,
+    const coachCsvData = Array.isArray(transformedBookings)
+      ? transformedBookings.filter(Boolean).map((data) => ({
+          "User name": `${data?.user_first_name || ""} ${data?.user_last_name || ""}`.trim(),
+          "User mobile": data?.mobile || "—",
+          "Coach name": `${data?.first_name || ""} ${data?.last_name || ""}`.trim(),
+          Category: data?.package_type || "",
+          Date: data?.date || "",
+          Status: data?.payment_state || "",
         }))
-      : "";
+      : [];
 
     if (selectedItem == "Coach") {
       setCsvData(coachCsvData);
     } else {
       setCsvData(venueCsvData);
     }
-  }, []);
+  }, [selectedItem, currentItems, transformedBookings]);
 
   const updateStatus = async (status, id) => {
     const bookingId = id;
@@ -670,8 +671,8 @@ function BookingList({ listType }) {
                       <tr key={index}>
                         <td>{index + 1 + indexOfFirstItem}</td>
                         <td className="admin-booking-user">
-                          {row?.info?.user_id?.first_name}{" "}
-                          {row?.info?.user_id?.last_name}
+                          {row?.info?.user_id?.first_name || "User"}{" "}
+                          {row?.info?.user_id?.last_name || ""}
                         </td>
                         {listType == "dashboard" && (
                           <td>{bookingInfo.user_id?.mobile || "—"}</td>
