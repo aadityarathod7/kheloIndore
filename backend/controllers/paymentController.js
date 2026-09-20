@@ -29,6 +29,7 @@ const { ObjectId } = require("mongoose").Types;
 const personalTrainer = require("../models/PersonalTrainingModel")
 const Refund = require("../models/RefundModel");
 const Notification = require("../models/NotificationModel");
+const Membership = require("../models/MembershipModel");
 const { requestSplit } = require("./CashfreeSplitController");
 
 const CASHFREE_API_VERSION = process.env.CASHFREE_API_VERSION || "2023-08-01";
@@ -2492,6 +2493,11 @@ const getVenueCoachPTBookingByUserId = async (req, res) => {
       .populate('venue_id', 'name vendor_type')  // Populating Venue details (name)
       .sort({ createdAt: -1 });
 
+    // Fetch user memberships
+    const membershipRecords = await Membership.find({ user_id: userId })
+      .sort({ createdAt: -1 })
+      .lean();
+
     const bookingIds = [
       ...personalTrainerRecords,
       ...coachRecords,
@@ -2526,6 +2532,20 @@ const formattedIST = new Date(ist).toISOString().replace("T", " ").split(".")[0]
         refund: refundByBookingId.get(record._id.toString()) || null,
         venue_name: record.venue_id?.name || "N/A",
         vendor_type: record.venue_id?.vendor_type || "N/A",
+      })),
+      memberships: (membershipRecords || []).map((m) => ({
+        ...m,
+        id: m._id,
+        status: m.status,
+        provider_name: m.provider_name || "Sports Provider",
+        plan_name: m.plan?.name || "Membership Plan",
+        months: m.plan?.months || 1,
+        amount: m.payment?.amount || m.plan?.price || 0,
+        start_date: m.start_date,
+        end_date: m.end_date,
+        order_id: m.payment?.order_id,
+        payment_status: m.payment?.status,
+        paid_at: m.payment?.paid_at,
       })),
     };
 

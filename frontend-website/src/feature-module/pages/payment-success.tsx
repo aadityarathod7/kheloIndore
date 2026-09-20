@@ -30,6 +30,8 @@ export default function PaymentSuccess() {
       ? "Coach Session"
       : service === "trainer"
       ? "Personal Training"
+      : service === "membership"
+      ? "Recurring Membership"
       : "Sports Venue Booking");
   const date = searchParams.get("date") || "";
   const slots = searchParams.get("slots") || "";
@@ -374,14 +376,14 @@ export default function PaymentSuccess() {
 
           {date && (
             <div className="detail-item">
-              <span className="detail-label">Booking Date</span>
+              <span className="detail-label">{service === "membership" ? "Membership Validity" : "Booking Date"}</span>
               <span className="detail-value">{date}</span>
             </div>
           )}
 
           {slots && (
             <div className="detail-item">
-              <span className="detail-label">Time Slot</span>
+              <span className="detail-label">{service === "membership" ? "Plan Access" : "Time Slot"}</span>
               <span className="detail-value">{slots}</span>
             </div>
           )}

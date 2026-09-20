@@ -65,6 +65,11 @@ const VenueOrderConfirm = () => {
     formatSeletedDate,
     data,
   } = effectiveState;
+
+  const isMembership = Boolean(effectiveState.isMembership || effectiveState.data?.isMembership);
+  const membershipPlan = effectiveState.membershipPlan || effectiveState.plan || effectiveState.data?.plan;
+  const planIndex = effectiveState.planIndex ?? effectiveState.data?.planIndex ?? 0;
+
   // Derive these values directly from route state. Keeping the derived array
   // in component state caused a new array on every render and an infinite
   // setState/useEffect loop.
@@ -119,17 +124,23 @@ const VenueOrderConfirm = () => {
   }, [bookingData?.slotsBooked, slotIds]);
   const date = bookingData?.date || formattedDate;
   const total_Price = useMemo(() => {
+    if (isMembership) {
+      const memPrice = Number(membershipPlan?.price ?? effectiveState.total_Price ?? effectiveState.totalPrice ?? bookingData?.totalPrice ?? bookingData?.total_price);
+      if (Number.isFinite(memPrice) && memPrice > 0) return memPrice;
+    }
     const suppliedTotal = Number(bookingData?.totalPrice ?? bookingData?.total_price);
     return Number.isFinite(suppliedTotal) && suppliedTotal > 0
       ? suppliedTotal
       : totalPrice;
-  }, [bookingData?.totalPrice, bookingData?.total_price, totalPrice]);
+  }, [isMembership, membershipPlan?.price, effectiveState.total_Price, effectiveState.totalPrice, bookingData?.totalPrice, bookingData?.total_price, totalPrice]);
 
   // Payment type selection (Partial 25% advance / Full payment)
   const [paymentType, setPaymentType] = useState<"partial" | "full">("full");
   const [acceptedPolicy, setAcceptedPolicy] = useState(false);
   const payableAmount =
-    paymentType === "partial" ? Math.round((total_Price || 0) * 0.25) : total_Price || 0;
+    isMembership
+      ? (total_Price || 0)
+      : (paymentType === "partial" ? Math.round((total_Price || 0) * 0.25) : total_Price || 0);
 
   //   const openNewWindow = () => {
   // };
@@ -148,20 +159,33 @@ const VenueOrderConfirm = () => {
   }, [id]);
 
   const handleSubmit = async () => {
-    if (!slotId.length || total_Price <= 0) {
-      Swal.fire({
-        icon: "warning",
-        title: "Select a valid slot",
-        text: "Please return to the venue page and select an available time slot before paying.",
-      });
-      return;
+    if (!isMembership) {
+      if (!slotId.length || total_Price <= 0) {
+        Swal.fire({
+          icon: "warning",
+          title: "Select a valid slot",
+          text: "Please return to the venue page and select an available time slot before paying.",
+        });
+        return;
+      }
+    } else {
+      if (!membershipPlan || total_Price <= 0) {
+        Swal.fire({
+          icon: "warning",
+          title: "Invalid Membership Plan",
+          text: "Please return to the venue page and select a valid membership plan.",
+        });
+        return;
+      }
     }
 
     if (!acceptedPolicy) {
       Swal.fire({
         icon: "warning",
         title: "Please accept the terms",
-        text: "You must accept the booking & refund policy before proceeding to payment.",
+        text: isMembership
+          ? "You must accept the membership terms and conditions before proceeding."
+          : "You must accept the booking & refund policy before proceeding to payment.",
         confirmButtonColor: "#22C55E"
       });
       return;
@@ -199,25 +223,45 @@ const VenueOrderConfirm = () => {
     }
 
     try {
-      const response = await axios.post(`${API_URL}/venue/payment`, {
-        user_id: userId,
-        venue_id: venueId,
-        date: date,
-        slotsBooked: slotId,
-        total_price: total_Price,
-        payment_type: paymentType,
-      }, { headers: { Authorization: `Bearer ${authToken}` } });
+      if (isMembership) {
+        const response = await axios.post(
+          `${API_URL}/membership/checkout`,
+          {
+            provider_type: "venue",
+            provider_id: venueId || id,
+            plan_index: planIndex,
+          },
+          { headers: { Authorization: `Bearer ${authToken}` } }
+        );
 
-      if (response?.data?.paymentSessionId) {
-        sessionStorage.removeItem("pendingBooking");
-        sessionStorage.removeItem("activeBookingConfirmation");
-        await openCashfreeCheckout(response.data.paymentSessionId);
+        if (response?.data?.payment_session_id) {
+          sessionStorage.removeItem("pendingBooking");
+          sessionStorage.removeItem("activeBookingConfirmation");
+          await openCashfreeCheckout(response.data.payment_session_id);
+        } else {
+          throw new Error(response?.data?.message || "Unable to start Cashfree checkout.");
+        }
       } else {
-        throw new Error(response?.data?.message || "Unable to start Cashfree checkout.");
+        const response = await axios.post(`${API_URL}/venue/payment`, {
+          user_id: userId,
+          venue_id: venueId,
+          date: date,
+          slotsBooked: slotId,
+          total_price: total_Price,
+          payment_type: paymentType,
+        }, { headers: { Authorization: `Bearer ${authToken}` } });
+
+        if (response?.data?.paymentSessionId) {
+          sessionStorage.removeItem("pendingBooking");
+          sessionStorage.removeItem("activeBookingConfirmation");
+          await openCashfreeCheckout(response.data.paymentSessionId);
+        } else {
+          throw new Error(response?.data?.message || "Unable to start Cashfree checkout.");
+        }
       }
     } catch (error: any) {
       
-      const errMsg = error?.response?.data?.message || "An error occurred while processing the payment";
+      const errMsg = error?.response?.data?.message || error?.message || "An error occurred while processing the payment";
       Swal.fire({
         icon: "error",
         title: "Booking Failed",
@@ -247,8 +291,8 @@ const VenueOrderConfirm = () => {
       String(bookingDate.getDate()).padStart(2, "0"),
     ].join("");
     const serialNumber = String(Date.now()).slice(-6);
-    return `KI-BK-${datePart}${serialNumber}`;
-  }, [selectedDate]);
+    return isMembership ? `KI-MEM-${datePart}${serialNumber}` : `KI-BK-${datePart}${serialNumber}`;
+  }, [selectedDate, isMembership]);
 
   const selectedSlotsLabel = selectedTimeSlots.length > 0
     ? selectedTimeSlots.map((slot: any) => `${slot.startTime} - ${slot.endTime}`).join(", ")
@@ -343,7 +387,7 @@ const VenueOrderConfirm = () => {
                   <i className="feather-check" style={{ fontSize: "14px" }} />
                 </span>
                 <span className="fw-bold pb-1 text-muted" style={{ fontSize: "14px" }}>
-                  Time & Date
+                  {isMembership ? "Membership Plan" : "Time & Date"}
                 </span>
               </div>
 
@@ -428,37 +472,37 @@ const VenueOrderConfirm = () => {
                 {/* Info Pills Row */}
                 <div className="row g-2.5 mt-2">
                   
-                  {/* Booking Date Pill */}
+                  {/* Booking / Start Date Pill */}
                   <div className="col-md-4">
                     <div className="info-pill-container d-flex align-items-center gap-2">
                       <span className="d-flex align-items-center justify-content-center bg-white rounded-circle shadow-xs" style={{ width: "30px", height: "30px" }}>
                         <i className="feather-calendar text-success" style={{ fontSize: "14px" }} />
                       </span>
                       <div>
-                        <span className="text-muted d-block" style={{ fontSize: "9px", textTransform: "uppercase", fontWeight: "600" }}>Booking Date</span>
+                        <span className="text-muted d-block" style={{ fontSize: "9px", textTransform: "uppercase", fontWeight: "600" }}>{isMembership ? "Start Date" : "Booking Date"}</span>
                         <span className="fw-bold text-dark d-block" style={{ fontSize: "12px" }}>
-                          {selectedDate ? new Date(selectedDate).toLocaleDateString("en-US", { day: 'numeric', month: 'short', year: 'numeric' }) : "Select Date"}
+                          {selectedDate ? new Date(selectedDate).toLocaleDateString("en-US", { day: 'numeric', month: 'short', year: 'numeric' }) : (isMembership ? "Today" : "Select Date")}
                         </span>
                       </div>
                     </div>
                   </div>
 
-                  {/* Time Slots Pill */}
+                  {/* Time Slots / Plan Duration Pill */}
                   <div className="col-md-4">
                     <div className="info-pill-container d-flex align-items-center gap-2">
                       <span className="d-flex align-items-center justify-content-center bg-white rounded-circle shadow-xs" style={{ width: "30px", height: "30px" }}>
-                        <i className="feather-clock text-success" style={{ fontSize: "14px" }} />
+                        <i className={isMembership ? "feather-repeat text-success" : "feather-clock text-success"} style={{ fontSize: "14px" }} />
                       </span>
                       <div>
-                        <span className="text-muted d-block" style={{ fontSize: "9px", textTransform: "uppercase", fontWeight: "600" }}>Time Slots</span>
+                        <span className="text-muted d-block" style={{ fontSize: "9px", textTransform: "uppercase", fontWeight: "600" }}>{isMembership ? "Plan Duration" : "Time Slots"}</span>
                         <span className="fw-bold text-dark d-block" style={{ fontSize: "12px", lineHeight: "1.45", maxHeight: "54px", overflowY: "auto", paddingRight: "2px" }}>
-                          {selectedSlotsLabel}
+                          {isMembership ? `${membershipPlan?.name || "Membership"} · ${membershipPlan?.months || 1} Month${(membershipPlan?.months || 1) > 1 ? "s" : ""} Access` : selectedSlotsLabel}
                         </span>
                       </div>
                     </div>
                   </div>
 
-                  {/* Booking ID Pill */}
+                  {/* Booking / Membership ID Pill */}
                   <div className="col-md-4">
                     <div className="info-pill-container d-flex align-items-center justify-content-between">
                       <div className="d-flex align-items-center gap-2">
@@ -466,7 +510,7 @@ const VenueOrderConfirm = () => {
                           <i className="feather-tag text-success" style={{ fontSize: "14px" }} />
                         </span>
                         <div>
-                          <span className="text-muted d-block" style={{ fontSize: "9px", textTransform: "uppercase", fontWeight: "600" }}>Booking ID</span>
+                          <span className="text-muted d-block" style={{ fontSize: "9px", textTransform: "uppercase", fontWeight: "600" }}>{isMembership ? "Membership ID" : "Booking ID"}</span>
                           <span className="fw-bold text-dark d-block" style={{ fontSize: "12px" }}>{bookingId}</span>
                         </div>
                       </div>
@@ -475,7 +519,7 @@ const VenueOrderConfirm = () => {
                         onClick={handleCopyId}
                         className="btn btn-link p-0 text-muted"
                         style={{ border: "none" }}
-                        title="Copy Booking ID"
+                        title="Copy Reference ID"
                       >
                         <i className={copied ? "feather-check text-success" : "feather-copy"} style={{ fontSize: "13px" }} />
                       </button>
@@ -493,51 +537,73 @@ const VenueOrderConfirm = () => {
                   <h5 className="fw-bold mb-0 text-dark" style={{ fontSize: "16px" }}>Payment Information</h5>
                 </div>
 
-                {/* Payment Type Selection */}
-                <div className="mb-4">
-                  <span className="text-muted d-block mb-2" style={{ fontSize: "12px", fontWeight: "600" }}>Select Payment Option</span>
-                  <div className="d-flex flex-column gap-2">
-                    <label
-                      className={`d-flex align-items-center justify-content-between px-3 py-2.5 rounded-3 border cursor-pointer ${paymentType === "full" ? "border-success bg-success-subtle" : "border-secondary-subtle bg-white"}`}
-                      style={{ cursor: "pointer" }}
-                    >
-                      <div className="d-flex align-items-center gap-2">
-                        <input
-                          type="radio"
-                          name="paymentType"
-                          checked={paymentType === "full"}
-                          onChange={() => setPaymentType("full")}
-                          style={{ accentColor: "#22C55E" }}
-                        />
+                {/* Payment Option Selection */}
+                {isMembership ? (
+                  <div className="mb-4">
+                    <span className="text-muted d-block mb-2" style={{ fontSize: "12px", fontWeight: "600" }}>Membership Payment Option</span>
+                    <div className="p-3 rounded-3 border border-success bg-success bg-opacity-10 d-flex align-items-center justify-content-between">
+                      <div className="d-flex align-items-center gap-3">
+                        <span className="d-inline-flex align-items-center justify-content-center rounded-circle bg-success text-white shadow-xs" style={{ width: "36px", height: "36px" }}>
+                          <i className="feather-check" style={{ fontSize: "18px" }} />
+                        </span>
                         <div>
-                          <span className="fw-bold text-dark d-block" style={{ fontSize: "13px" }}>Full Payment</span>
-                          <span className="text-muted" style={{ fontSize: "11px" }}>Pay the full amount now. Refundable (75%) if cancelled at least 4 hours before the booking.</span>
+                          <span className="fw-bold text-dark d-block" style={{ fontSize: "14px" }}>
+                            Full Plan Payment · {membershipPlan?.name || "Membership"}
+                          </span>
+                          <span className="text-muted" style={{ fontSize: "12px" }}>
+                            {membershipPlan?.months || 1} month{(membershipPlan?.months || 1) > 1 ? "s" : ""} access · {membershipPlan?.priority || "Priority Booking"}
+                          </span>
                         </div>
                       </div>
-                      <strong className="text-success" style={{ fontSize: "15px" }}>₹{total_Price || "0"}</strong>
-                    </label>
-
-                    <label
-                      className={`d-flex align-items-center justify-content-between px-3 py-2.5 rounded-3 border ${paymentType === "partial" ? "border-success bg-success-subtle" : "border-secondary-subtle bg-white"}`}
-                      style={{ cursor: "pointer" }}
-                    >
-                      <div className="d-flex align-items-center gap-2">
-                        <input
-                          type="radio"
-                          name="paymentType"
-                          checked={paymentType === "partial"}
-                          onChange={() => setPaymentType("partial")}
-                          style={{ accentColor: "#22C55E" }}
-                        />
-                        <div>
-                          <span className="fw-bold text-dark d-block" style={{ fontSize: "13px" }}>Partial Payment (25% advance)</span>
-                          <span className="text-muted" style={{ fontSize: "11px" }}>Pay 25% now to confirm your booking. <strong>Non-refundable.</strong></span>
-                        </div>
-                      </div>
-                      <strong className="text-success" style={{ fontSize: "15px" }}>₹{Math.round((total_Price || 0) * 0.25)}</strong>
-                    </label>
+                      <strong className="text-success" style={{ fontSize: "18px" }}>₹{Number(total_Price || 0).toLocaleString("en-IN")}</strong>
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="mb-4">
+                    <span className="text-muted d-block mb-2" style={{ fontSize: "12px", fontWeight: "600" }}>Select Payment Option</span>
+                    <div className="d-flex flex-column gap-2">
+                      <label
+                        className={`d-flex align-items-center justify-content-between px-3 py-2.5 rounded-3 border cursor-pointer ${paymentType === "full" ? "border-success bg-success-subtle" : "border-secondary-subtle bg-white"}`}
+                        style={{ cursor: "pointer" }}
+                      >
+                        <div className="d-flex align-items-center gap-2">
+                          <input
+                            type="radio"
+                            name="paymentType"
+                            checked={paymentType === "full"}
+                            onChange={() => setPaymentType("full")}
+                            style={{ accentColor: "#22C55E" }}
+                          />
+                          <div>
+                            <span className="fw-bold text-dark d-block" style={{ fontSize: "13px" }}>Full Payment</span>
+                            <span className="text-muted" style={{ fontSize: "11px" }}>Pay the full amount now. Refundable (75%) if cancelled at least 4 hours before the booking.</span>
+                          </div>
+                        </div>
+                        <strong className="text-success" style={{ fontSize: "15px" }}>₹{total_Price || "0"}</strong>
+                      </label>
+
+                      <label
+                        className={`d-flex align-items-center justify-content-between px-3 py-2.5 rounded-3 border ${paymentType === "partial" ? "border-success bg-success-subtle" : "border-secondary-subtle bg-white"}`}
+                        style={{ cursor: "pointer" }}
+                      >
+                        <div className="d-flex align-items-center gap-2">
+                          <input
+                            type="radio"
+                            name="paymentType"
+                            checked={paymentType === "partial"}
+                            onChange={() => setPaymentType("partial")}
+                            style={{ accentColor: "#22C55E" }}
+                          />
+                          <div>
+                            <span className="fw-bold text-dark d-block" style={{ fontSize: "13px" }}>Partial Payment (25% advance)</span>
+                            <span className="text-muted" style={{ fontSize: "11px" }}>Pay 25% now to confirm your booking. <strong>Non-refundable.</strong></span>
+                          </div>
+                        </div>
+                        <strong className="text-success" style={{ fontSize: "15px" }}>₹{Math.round((total_Price || 0) * 0.25)}</strong>
+                      </label>
+                    </div>
+                  </div>
+                )}
 
                 <div className="d-flex align-items-center justify-content-between flex-wrap gap-3">
                   <div>
@@ -564,7 +630,11 @@ const VenueOrderConfirm = () => {
                     style={{ accentColor: "#22C55E", marginTop: "2px" }}
                   />
                   <label htmlFor="acceptPolicy" className="text-muted" style={{ fontSize: "11px", lineHeight: "1.5", cursor: "pointer" }}>
-                    I understand that <strong>partial payments are non-refundable</strong>, and full payments cancelled at least 4 hours before the booking time are refunded after a <strong>25% deduction</strong>. If this booking is made directly or through any platform other than Khelo Indore, Khelo Indore will not be responsible.
+                    {isMembership ? (
+                      <>I understand that <strong>membership plans provide fixed-duration access</strong> ({membershipPlan?.months || 1} month{(membershipPlan?.months || 1) > 1 ? "s" : ""}) and are <strong>non-refundable once activated</strong>. Standard venue timing regulations and rules of conduct apply throughout the membership duration.</>
+                    ) : (
+                      <>I understand that <strong>partial payments are non-refundable</strong>, and full payments cancelled at least 4 hours before the booking time are refunded after a <strong>25% deduction</strong>. If this booking is made directly or through any platform other than Khelo Indore, Khelo Indore will not be responsible.</>
+                    )}
                   </label>
                 </div>
               </div>
@@ -583,7 +653,7 @@ const VenueOrderConfirm = () => {
 
                 <div className="d-flex flex-column gap-2 mb-2" style={{ fontSize: "13px" }}>
                   <div className="d-flex align-items-start justify-content-between py-1.2 border-bottom" style={{ borderColor: "#F1F5F9" }}>
-                    <span className="text-muted">Booking ID</span>
+                    <span className="text-muted">{isMembership ? "Membership ID" : "Booking ID"}</span>
                     <span className="fw-bold text-dark text-end" style={{ maxWidth: "180px", wordBreak: "break-all" }}>{bookingId}</span>
                   </div>
                   
@@ -592,28 +662,49 @@ const VenueOrderConfirm = () => {
                     <span className="fw-bold text-dark text-end" style={{ maxWidth: "160px" }}>{venueData?.name || "Venue"}</span>
                   </div>
 
-                  <div className="d-flex align-items-center justify-content-between py-1.2 border-bottom" style={{ borderColor: "#F1F5F9" }}>
-                    <span className="text-muted">Booking Date</span>
-                    <span className="fw-bold text-dark">
-                      {selectedDate ? new Date(selectedDate).toLocaleDateString("en-US", { day: 'numeric', month: 'short', year: 'numeric' }) : "Select Date"}
-                    </span>
-                  </div>
+                  {isMembership ? (
+                    <>
+                      <div className="d-flex align-items-center justify-content-between py-1.2 border-bottom" style={{ borderColor: "#F1F5F9" }}>
+                        <span className="text-muted">Plan Name</span>
+                        <span className="fw-bold text-dark">{membershipPlan?.name || "Membership"}</span>
+                      </div>
+                      <div className="d-flex align-items-center justify-content-between py-1.2 border-bottom" style={{ borderColor: "#F1F5F9" }}>
+                        <span className="text-muted">Access Duration</span>
+                        <span className="fw-bold text-dark">{membershipPlan?.months || 1} Month{(membershipPlan?.months || 1) > 1 ? "s" : ""}</span>
+                      </div>
+                      <div className="d-flex align-items-center justify-content-between py-1.2 border-bottom" style={{ borderColor: "#F1F5F9" }}>
+                        <span className="text-muted">Benefits</span>
+                        <span className="fw-bold text-success text-end" style={{ maxWidth: "160px", fontSize: "12px" }}>
+                          {membershipPlan?.priority || "Priority Booking"}
+                        </span>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="d-flex align-items-center justify-content-between py-1.2 border-bottom" style={{ borderColor: "#F1F5F9" }}>
+                        <span className="text-muted">Booking Date</span>
+                        <span className="fw-bold text-dark">
+                          {selectedDate ? new Date(selectedDate).toLocaleDateString("en-US", { day: 'numeric', month: 'short', year: 'numeric' }) : "Select Date"}
+                        </span>
+                      </div>
 
-                  <div className="d-flex align-items-start justify-content-between py-1.2 border-bottom" style={{ borderColor: "#F1F5F9" }}>
-                    <span className="text-muted">Time Slots</span>
-                    <span className="fw-bold text-dark text-end" style={{ maxWidth: "160px" }}>
-                      {selectedSlotsLabel}
-                    </span>
-                  </div>
+                      <div className="d-flex align-items-start justify-content-between py-1.2 border-bottom" style={{ borderColor: "#F1F5F9" }}>
+                        <span className="text-muted">Time Slots</span>
+                        <span className="fw-bold text-dark text-end" style={{ maxWidth: "160px" }}>
+                          {selectedSlotsLabel}
+                        </span>
+                      </div>
 
-                  <div className="d-flex align-items-center justify-content-between py-1.2 border-bottom" style={{ borderColor: "#F1F5F9" }}>
-                    <span className="text-muted">Total Duration</span>
-                    <span className="fw-bold text-dark">{totalDuration} Hour{totalDuration !== 1 ? "s" : ""}</span>
-                  </div>
+                      <div className="d-flex align-items-center justify-content-between py-1.2 border-bottom" style={{ borderColor: "#F1F5F9" }}>
+                        <span className="text-muted">Total Duration</span>
+                        <span className="fw-bold text-dark">{totalDuration} Hour{totalDuration !== 1 ? "s" : ""}</span>
+                      </div>
+                    </>
+                  )}
 
                   <div className="d-flex align-items-center justify-content-between pt-2">
                     <span className="fw-bold text-dark" style={{ fontSize: "14px" }}>Total Price</span>
-                    <span className="fw-extrabold text-success" style={{ fontSize: "18px", fontWeight: "800" }}>₹{total_Price || "0"}</span>
+                    <span className="fw-extrabold text-success" style={{ fontSize: "18px", fontWeight: "800" }}>₹{Number(total_Price || 0).toLocaleString("en-IN")}</span>
                   </div>
 
                 </div>
@@ -623,7 +714,7 @@ const VenueOrderConfirm = () => {
               <div className="d-flex align-items-center gap-2 mt-3">
                 <Link
                   className="btn btn-outline-secondary rounded-pill px-3 py-2.5 fw-bold d-flex align-items-center justify-content-center gap-2 shadow-xs"
-                  to={`/sports-venue/venue-timedate/${id}`}
+                  to={isMembership ? `/sports-venue/venue-details/${id}` : `/sports-venue/venue-timedate/${id}`}
                   style={{ border: "1px solid #CBD5E1", fontSize: "13px", flex: "1" }}
                 >
                   <i className="feather-arrow-left" /> Back

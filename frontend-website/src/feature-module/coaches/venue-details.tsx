@@ -342,18 +342,62 @@ const VenueDetails = () => {
     plan?.name && Number(plan?.months) > 0 && Number(plan?.price) >= 0
   );
 
-  const handleMembershipCheckout = async (planIndex: number) => {
+  const handleMembershipSelect = (plan: any, planIndex: number) => {
+    const targetUrl = `/sports-venue/venue-confirm/${id}`;
+    const bookingState = {
+      isMembership: true,
+      planIndex,
+      membershipPlan: plan,
+      plan: plan,
+      venueData: venueData,
+      total_Price: Number(plan.price),
+      totalPrice: Number(plan.price),
+      selectedDate: new Date().toISOString(),
+      data: {
+        venue_id: id,
+        isMembership: true,
+        planIndex,
+        planName: plan.name,
+        months: plan.months,
+        totalPrice: Number(plan.price),
+        total_price: Number(plan.price),
+      }
+    };
+
     const token = localStorage.getItem("token");
     if (!token) {
-      navigate("/login", { state: { returnTo: window.location.pathname } });
+      sessionStorage.setItem("pendingBooking", JSON.stringify({
+        targetUrl,
+        venueId: id,
+        state: bookingState,
+        type: "venue",
+        timestamp: Date.now(),
+      }));
+
+      Swal.fire({
+        title: "Login to continue",
+        text: `Please log in to review and confirm your ${plan.name} membership.`,
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Login / Register",
+        cancelButtonText: "Cancel",
+        confirmButtonColor: "#22C55E",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          navigate("/login", {
+            state: {
+              URL: targetUrl,
+              bookingState,
+              returnTo: targetUrl,
+            },
+          });
+        }
+      });
       return;
     }
-    try {
-      const response = await axios.post(`${API_URL}/membership/checkout`, { provider_type: "venue", provider_id: id, plan_index: planIndex }, { headers: { Authorization: `Bearer ${token}` } });
-      await openCashfreeCheckout(response.data.payment_session_id);
-    } catch (error: any) {
-      Swal.fire({ icon: "error", title: "Membership checkout unavailable", text: error.response?.data?.message || "Please try again." });
-    }
+
+    sessionStorage.setItem("activeBookingConfirmation", JSON.stringify(bookingState));
+    navigate(targetUrl, { state: bookingState });
   };
 
   // Opens (or starts) a real chat with the venue owner
@@ -1244,7 +1288,7 @@ const VenueDetails = () => {
                               <span><i className="fas fa-check-circle text-success me-1" />{plan.discount || "Flexible Plan"}</span>
                               <span><i className="fas fa-headset text-success me-1" />{plan.support || "Basic Support"}</span>
                             </div>
-                            <button type="button" className="ki-membership-select mt-3" onClick={() => handleMembershipCheckout(planIndex)}>
+                            <button type="button" className="ki-membership-select mt-3" onClick={() => handleMembershipSelect(plan, planIndex)}>
                               Choose {plan.name}
                             </button>
                           </div>

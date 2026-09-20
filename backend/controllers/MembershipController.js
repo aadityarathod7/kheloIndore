@@ -5,10 +5,31 @@ const Coach = require("../models/CoachModel");
 const Trainer = require("../models/PersonalTrainingModel");
 const User = require("../models/UserModel");
 
+const Notification = require("../models/NotificationModel");
+
 const models = { venue: Venue, coach: Coach, trainer: Trainer };
 const cashfreeBaseUrl = () => process.env.CASHFREE_BASE_URL || (process.env.CASHFREE_ENV === "production" ? "https://api.cashfree.com/pg" : "https://sandbox.cashfree.com/pg");
 const cashfreeHeaders = () => ({ accept: "application/json", "Content-Type": "application/json", "x-api-version": process.env.CASHFREE_API_VERSION || "2023-08-01", "x-client-id": process.env.CASHFREE_APP_ID, "x-client-secret": process.env.CASHFREE_SECRET_KEY });
 const providerName = (type, provider) => type === "venue" ? provider.name : `${provider.first_name || ""} ${provider.last_name || ""}`.trim();
+
+const getBaseUrl = () => {
+  let baseUrl = process.env.WEBSITE_URL;
+  if (!baseUrl && process.env.REDIRECT_URL) {
+    try {
+      const urlStr = process.env.REDIRECT_URL.startsWith("http")
+        ? process.env.REDIRECT_URL
+        : `https://${process.env.REDIRECT_URL}`;
+      baseUrl = new URL(urlStr).origin;
+    } catch (e) {
+      baseUrl = "https://kheloindore.in";
+    }
+  }
+  if (!baseUrl) baseUrl = "https://kheloindore.in";
+  if (!baseUrl.startsWith("http://") && !baseUrl.startsWith("https://")) {
+    baseUrl = `https://${baseUrl}`;
+  }
+  return baseUrl.replace(/\/$/, "");
+};
 
 exports.startMembershipCheckout = async (req, res) => {
   try {
@@ -46,8 +67,48 @@ exports.verifyMembershipPayment = async (req, res) => {
     membership.status = paid ? "ACTIVE" : "FAILED";
     if (paid) membership.payment.paid_at = new Date();
     await membership.save();
-    return res.redirect(`${process.env.REDIRECT_URL || process.env.WEBSITE_URL || "/"}/user/user-memberships?order=${membership.payment.order_id}`);
-  } catch (error) { return res.status(500).json({ success: false, message: "Unable to verify membership payment." }); }
+
+    const baseUrl = getBaseUrl();
+
+    if (paid) {
+      try {
+        const superAdmins = await User.find({ role: "Super Admin", status: true }).select("_id").lean();
+        const recipientIds = new Set(superAdmins.map((admin) => String(admin._id)));
+        const provider = await models[membership.provider_type]?.findById(membership.provider_id).lean();
+        if (provider?.user_id) recipientIds.add(String(provider.user_id));
+
+        if (recipientIds.size) {
+          await Notification.insertMany([...recipientIds].map((user_id) => ({
+            user_id,
+            title: `New Membership Purchased`,
+            message: `${membership.plan?.name || "Recurring"} membership purchased for ${membership.provider_name || "Provider"} (₹${membership.payment.amount}).`,
+            type: "booking",
+            entity_id: membership._id,
+          })));
+        }
+      } catch (notifErr) {
+        console.error("Membership notification creation error:", notifErr.message);
+      }
+
+      const query = new URLSearchParams();
+      query.set("status", "success");
+      query.set("service", "membership");
+      query.set("bookingId", membership.payment.order_id);
+      query.set("txnId", membership.payment.cashfree_order_id || membership.payment.order_id);
+      query.set("amount", String(membership.payment.amount));
+      query.set("name", `${membership.provider_name || "Sports Venue"} (${membership.plan?.name || "Membership"})`);
+      const startStr = membership.start_date ? new Date(membership.start_date).toLocaleDateString("en-IN") : "";
+      const endStr = membership.end_date ? new Date(membership.end_date).toLocaleDateString("en-IN") : "";
+      query.set("date", `${startStr} to ${endStr}`);
+      query.set("slots", `${membership.plan?.months || 1} Month${(membership.plan?.months || 1) > 1 ? "s" : ""} Access`);
+
+      return res.redirect(`${baseUrl}/payment-success?${query.toString()}`);
+    } else {
+      return res.redirect(`${baseUrl}/user/user-bookings?booking=failed`);
+    }
+  } catch (error) {
+    return res.status(500).json({ success: false, message: "Unable to verify membership payment." });
+  }
 };
 
 exports.getMyMemberships = async (req, res) => {

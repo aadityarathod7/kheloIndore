@@ -109,6 +109,26 @@ const TrainingOrderConfirm = (props: any) => {
     }
 
     try {
+      if (effectiveState.isMembership) {
+        const response = await axios.post(
+          `${API_URL}/membership/checkout`,
+          {
+            provider_type: "trainer",
+            provider_id: id,
+            plan_index: effectiveState.planIndex ?? 0,
+          },
+          { headers: { Authorization: `Bearer ${authToken}` } }
+        );
+        if (response?.data?.payment_session_id) {
+          sessionStorage.removeItem("pendingBooking");
+          sessionStorage.removeItem("activeBookingConfirmation");
+          await openCashfreeCheckout(response.data.payment_session_id);
+          return;
+        } else {
+          throw new Error(response?.data?.message || "Unable to start Cashfree checkout.");
+        }
+      }
+
       const response = await axios.post(
         `${API_URL}/personalTrainer/payment`,
         {

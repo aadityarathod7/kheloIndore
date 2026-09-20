@@ -48,6 +48,7 @@ const UserBookings = () => {
   const [venueBookingData, setVenueBookingData] = useState<AllBookings[]>([])
   const [coachBookingData, setCoachBookingData] = useState<AllBookings[]>([])
   const [tarinerBookingData, setTrainerBookingData] = useState<AllBookings[]>([])
+  const [membershipData, setMembershipData] = useState<any[]>([])
   const [bookingData, setBookingData] = useState<BookingData>()
   const [CurrentTime, setCurrentTime] = useState<BookingData>()
 
@@ -136,6 +137,29 @@ const UserBookings = () => {
   }, [user_id]);
 
   useEffect(() => {
+    const fetchMemberships = async () => {
+      try {
+        const authToken = localStorage.getItem("token");
+        if (!authToken) return;
+        const res = await axios.get(`${API_URL}/membership/my`, {
+          headers: { Authorization: `Bearer ${authToken}` }
+        });
+        if (res.data?.success && Array.isArray(res.data?.data)) {
+          setMembershipData(res.data.data);
+        }
+      } catch {
+        // Handled silently
+      }
+    };
+    if (user_id) {
+      fetchMemberships();
+    }
+  }, [user_id]);
+
+  useEffect(() => {
+    if (Array.isArray(bookingData?.data?.memberships) && bookingData.data.memberships.length > 0) {
+      setMembershipData(bookingData.data.memberships);
+    }
     const ptData = Array.isArray(bookingData?.data?.personalTrainer)
       ? bookingData.data.personalTrainer.filter(Boolean)
       : [];
@@ -683,6 +707,18 @@ const UserBookings = () => {
                                     >
                                       Trainer
                                     </button>
+                                    <button
+                                      className="nav-link"
+                                      id="nav-RecentMembership-tab"
+                                      data-bs-toggle="tab"
+                                      data-bs-target="#nav-RecentMembership"
+                                      type="button"
+                                      role="tab"
+                                      aria-controls="nav-RecentMembership"
+                                      aria-selected="false"
+                                    >
+                                      Memberships
+                                    </button>
                                   </div>
                                 </nav>
                               </div>
@@ -1009,6 +1045,92 @@ const UserBookings = () => {
                                     </td>
                                   </tr>
                                 ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        )}
+                      </div>
+                      <div
+                        className="tab-pane fade"
+                        id="nav-RecentMembership"
+                        role="tabpanel"
+                        aria-labelledby="nav-RecentMembership-tab"
+                        tabIndex={0}
+                      >
+                        {(!membershipData || membershipData.length === 0) ? (
+                          <div className="text-center py-5 my-3">
+                            <div
+                              className="d-inline-flex align-items-center justify-content-center mb-3"
+                              style={{ width: "64px", height: "64px", borderRadius: "50%", background: "rgba(34, 197, 94, 0.1)", color: "#22C55E" }}
+                            >
+                              <i className="fas fa-repeat fs-3" />
+                            </div>
+                            <h5 className="font-weight-bold text-dark mb-1">No Active Memberships</h5>
+                            <p className="text-muted mb-4" style={{ fontSize: "14px", maxWidth: "420px", margin: "0 auto" }}>
+                              You don&apos;t have any active memberships right now. Explore recurring plans on venues and coaches!
+                            </p>
+                            <Link
+                              to={routes.blogListSidebarLeft}
+                              className="btn text-white px-4 py-2"
+                              style={{ background: "linear-gradient(135deg, #22C55E 0%, #16A34A 100%)", borderRadius: "50px", fontSize: "14px", fontWeight: "600", boxShadow: "0 4px 12px rgba(34, 197, 94, 0.25)" }}
+                            >
+                              <i className="fas fa-calendar-plus me-2" /> Explore Venues
+                            </Link>
+                          </div>
+                        ) : (
+                          <div className="table-responsive table-datatble ki-bookings-table-wrap">
+                            <table className="table datatable ki-bookings-table ki-venue-bookings-table">
+                              <thead className="thead-light">
+                                <tr>
+                                  <th style={{ color: "#1E293B" }}>Provider</th>
+                                  <th>Plan</th>
+                                  <th>Validity</th>
+                                  <th>Amount</th>
+                                  <th>Order / Ref</th>
+                                  <th>Status</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {membershipData.map((mem: any, index: number) => {
+                                  const isActive = mem.status === "ACTIVE";
+                                  const start = mem.start_date ? new Date(mem.start_date).toLocaleDateString("en-IN") : "";
+                                  const end = mem.end_date ? new Date(mem.end_date).toLocaleDateString("en-IN") : "";
+                                  return (
+                                    <tr key={mem._id || mem.id || index}>
+                                      <td>
+                                        <div className="d-flex align-items-center gap-2">
+                                          <span className="badge bg-success bg-opacity-10 text-success p-2 rounded-circle">
+                                            <i className="fas fa-repeat" />
+                                          </span>
+                                          <div>
+                                            <strong className="d-block text-dark">{mem.provider_name || "Sports Provider"}</strong>
+                                            <small className="text-muted text-capitalize">{mem.provider_type || "venue"}</small>
+                                          </div>
+                                        </div>
+                                      </td>
+                                      <td>
+                                        <strong>{mem.plan?.name || mem.plan_name || "Membership"}</strong>
+                                        <small className="d-block text-muted">{mem.plan?.months || mem.months || 1} Month(s) Access</small>
+                                      </td>
+                                      <td>
+                                        <span className="d-block text-dark fw-bold">{start} to {end}</span>
+                                      </td>
+                                      <td>
+                                        <strong className="text-success">₹{Number(mem.payment?.amount || mem.amount || 0).toLocaleString("en-IN")}</strong>
+                                      </td>
+                                      <td>
+                                        <span className="badge bg-light text-dark font-monospace" style={{ fontSize: "11px" }}>
+                                          {mem.payment?.order_id || mem.order_id || "N/A"}
+                                        </span>
+                                      </td>
+                                      <td>
+                                        <span className={`badge ${isActive ? "bg-success" : "bg-secondary"} text-white px-2 py-1`} style={{ borderRadius: "12px", fontSize: "11px" }}>
+                                          {mem.status || "ACTIVE"}
+                                        </span>
+                                      </td>
+                                    </tr>
+                                  );
+                                })}
                               </tbody>
                             </table>
                           </div>
