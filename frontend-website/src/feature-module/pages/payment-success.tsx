@@ -24,6 +24,17 @@ export default function PaymentSuccess() {
   const bookingId = searchParams.get("bookingId") || "";
   const amount = searchParams.get("amount") || "";
   const service = searchParams.get("service") || "venue";
+  const targetBookingType =
+    service === "event" ? "events" :
+    service === "coach" ? "coaches" :
+    (service === "trainer" || service === "personalTrainer") ? "trainer" :
+    service === "membership" ? "memberships" :
+    "venue";
+
+  useEffect(() => {
+    sessionStorage.setItem("lastBookingType", targetBookingType);
+  }, [targetBookingType]);
+
   const name =
     searchParams.get("name") ||
     (service === "coach"
@@ -63,7 +74,7 @@ export default function PaymentSuccess() {
     if (isPaused) return;
 
     if (countdown <= 0) {
-      navigate("/user/user-bookings?booking=success");
+      navigate(`/user/user-bookings?booking=success&type=${targetBookingType}`);
       return;
     }
 
@@ -72,7 +83,7 @@ export default function PaymentSuccess() {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [countdown, isPaused, navigate]);
+  }, [countdown, isPaused, navigate, targetBookingType]);
 
   const handleCopyId = () => {
     const textToCopy = bookingId || txnId;
@@ -428,7 +439,7 @@ export default function PaymentSuccess() {
           <button
             type="button"
             className="btn-view-bookings"
-            onClick={() => navigate("/user/user-bookings?booking=success")}
+            onClick={() => navigate(`/user/user-bookings?booking=success&type=${targetBookingType}`)}
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>

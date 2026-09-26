@@ -114,6 +114,7 @@ const TrainersCategory = () => {
   const [trainers, setTrainers] = useState<Trainer[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [selectedAlphabet, setSelectedAlphabet] = useState<string>("All");
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -168,10 +169,13 @@ const TrainersCategory = () => {
   };
 
   const categoryCounts = classifyTrainers(trainers);
+  const alphabetLetters = Array.from("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
 
-  const filteredCategories = categories.filter((cat) =>
-    categoryCounts[cat.id] > 0 && cat.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredCategories = categories
+    .filter((cat) => (categoryCounts[cat.id] || 0) > 0)
+    .filter((cat) => cat.name.toLowerCase().includes(searchQuery.toLowerCase()))
+    .filter((cat) => selectedAlphabet === "All" || cat.name.toUpperCase().startsWith(selectedAlphabet))
+    .sort((a, b) => a.name.localeCompare(b.name));
 
   return (
     <div>
@@ -191,6 +195,10 @@ const TrainersCategory = () => {
                     <span style={{ color: "#22C55E" }}>Trainers</span>
                   </h1>
                   <p style={{ color: "#64748B", fontSize: "20px", marginBottom: "24px", fontWeight: "500", maxWidth: "480px" }}>Find the right trainer for your fitness journey</p>
+                  <div className="d-inline-flex align-items-center rounded-pill px-3 py-2 mb-4" style={{ background: "#DCFCE7", border: "1px solid #BBF7D0", color: "#166534", fontSize: "14px", fontWeight: "700" }}>
+                    <i className="feather-user-check me-2" aria-hidden="true" />
+                    {trainers.length} {trainers.length === 1 ? "trainer" : "trainers"}
+                  </div>
                   
                   {/* Category Search Input */}
                   <div className="mb-4 position-relative" style={{ maxWidth: "480px" }}>
@@ -200,7 +208,12 @@ const TrainersCategory = () => {
                       placeholder="Search trainers (e.g. Yoga, Fitness)"
                       style={{ fontSize: "15px", paddingRight: "50px", backgroundColor: "#FFFFFF", border: "1px solid #E2E8F0" }}
                       value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
+                      onChange={(e) => {
+                        setSearchQuery(e.target.value);
+                        if (e.target.value) {
+                          setSelectedAlphabet("All");
+                        }
+                      }}
                     />
                     <i className="feather-search position-absolute end-0 top-50 translate-middle-y me-4" style={{ color: "#22C55E", fontSize: "18px" }} />
                   </div>
@@ -219,6 +232,56 @@ const TrainersCategory = () => {
           {/* Categories Grid Content */}
           <div className="content blog-grid" style={{ backgroundColor: "#F8FAFC", padding: "24px 0 60px 0" }}>
             <div className="container">
+              <div className="d-flex flex-wrap align-items-center gap-2 mb-4" aria-label="Filter trainer categories by alphabet">
+                <button
+                  type="button"
+                  className="btn btn-sm rounded-pill px-3"
+                  onClick={() => setSelectedAlphabet("All")}
+                  style={{
+                    background: selectedAlphabet === "All" ? "#16A34A" : "#FFFFFF",
+                    border: "1px solid #BBF7D0",
+                    color: selectedAlphabet === "All" ? "#FFFFFF" : "#166534",
+                    fontWeight: "700",
+                    minWidth: "48px"
+                  }}
+                >
+                  All
+                </button>
+                {alphabetLetters.map((letter) => {
+                  const hasCategory = categories.some(
+                    (category) => (categoryCounts[category.id] || 0) > 0 && category.name.toUpperCase().startsWith(letter)
+                  );
+                  const isSelected = selectedAlphabet === letter;
+                  return (
+                    <button
+                      type="button"
+                      key={letter}
+                      className="btn btn-sm rounded-circle p-0"
+                      onClick={() => {
+                        if (hasCategory) {
+                          setSelectedAlphabet(letter);
+                          setSearchQuery("");
+                        }
+                      }}
+                      disabled={!hasCategory}
+                      aria-pressed={isSelected}
+                      style={{
+                        width: "34px",
+                        height: "34px",
+                        background: isSelected ? "#16A34A" : "#FFFFFF",
+                        border: "1px solid #BBF7D0",
+                        color: isSelected ? "#FFFFFF" : hasCategory ? "#166534" : "#CBD5E1",
+                        fontWeight: "700",
+                        cursor: hasCategory ? "pointer" : "not-allowed",
+                        opacity: hasCategory ? 1 : 0.65
+                      }}
+                    >
+                      {letter}
+                    </button>
+                  );
+                })}
+              </div>
+
               <div className="row g-4">
                 {filteredCategories.length === 0 ? (
                   <div className="col-12 text-center py-5">
@@ -226,7 +289,11 @@ const TrainersCategory = () => {
                       <i className="feather-search" style={{ fontSize: "48px", color: "#94A3B8" }} />
                     </div>
                     <h3 style={{ fontSize: "20px", fontWeight: "700", color: "#334155" }}>No Categories Found</h3>
-                    <p style={{ color: "#64748B" }}>{"We couldn't find any categories matching \"" + searchQuery + "\""}</p>
+                    <p style={{ color: "#64748B" }}>
+                      {searchQuery
+                        ? `We couldn't find any categories matching "${searchQuery}"`
+                        : `We couldn't find any categories starting with "${selectedAlphabet}"`}
+                    </p>
                   </div>
                 ) : (
                   filteredCategories.map((cat) => {

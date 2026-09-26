@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import { API_URL, IMG_URL } from "../../ApiUrl";
+import Swal from "sweetalert2";
 
 interface EventData {
   event_name: string;
@@ -20,8 +21,10 @@ const imageUrl = (src?: string) =>
   src && /^https?:\/\//i.test(src) ? src : src ? `${IMG_URL}${src}` : "/assets/img/no-img.png";
 
 const EventDetails = () => {
+  const navigate = useNavigate();
   const [eventData, setEventData] = useState<EventData>();
   const [shareCopied, setShareCopied] = useState(false);
+  const [tickets, setTickets] = useState(1);
   const { id } = useParams<{ id: string }>();
 
   useEffect(() => {
@@ -56,6 +59,52 @@ const EventDetails = () => {
     } catch {
       // Sharing can be dismissed by the user or blocked by the browser.
     }
+  };
+
+  const handleBookNow = () => {
+    const targetUrl = `/events/event-confirm/${id}`;
+    const bookingState = {
+      eventData,
+      tickets,
+      totalPrice: (eventData.price || 0) * tickets,
+    };
+
+    const token = localStorage.getItem("token");
+    if (!token) {
+      sessionStorage.setItem(
+        "pendingBooking",
+        JSON.stringify({
+          targetUrl,
+          eventId: id,
+          state: bookingState,
+          type: "event",
+          timestamp: Date.now(),
+        })
+      );
+
+      Swal.fire({
+        title: "Login to continue",
+        text: "Please log in to review and confirm your event registration.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Login / Register",
+        cancelButtonText: "Cancel",
+        confirmButtonColor: "#22C55E",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          navigate("/login", {
+            state: {
+              URL: targetUrl,
+              bookingState,
+              returnTo: targetUrl,
+            },
+          });
+        }
+      });
+      return;
+    }
+
+    navigate(targetUrl, { state: bookingState });
   };
 
   return (
@@ -129,8 +178,55 @@ const EventDetails = () => {
                 <div className="event-fact"><i className="feather-map-pin" /><div><strong className="d-block">Location</strong><span>{eventData.location || "Location to be announced"}</span></div></div>
               </div>
               <div className="mt-4 pt-4" style={{ borderTop: "1px dashed #dce7df" }}>
-                <div className="d-flex align-items-center justify-content-between mb-3"><div><span className="d-block text-muted small">Starts from</span><strong className="d-block fs-4">₹{eventData.price || 0}</strong></div><span className="event-category badge px-2 py-1">Available</span></div>
-                <button type="button" className="event-book-button btn w-100"><i className="feather-calendar me-2" />Book Now</button>
+                {/* Ticket quantity selector */}
+                <div className="d-flex align-items-center justify-content-between mb-3 p-3 bg-light rounded-3" style={{ border: "1px solid #E2E8F0" }}>
+                  <div>
+                    <span className="d-block text-muted small fw-bold">Select Tickets</span>
+                    <span className="small text-success fw-semibold">
+                      {(eventData.price || 0) > 0 ? `₹${eventData.price} per ticket` : "Free Registration"}
+                    </span>
+                  </div>
+                  <div className="d-flex align-items-center gap-2">
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center"
+                      style={{ width: 32, height: 32, padding: 0 }}
+                      disabled={tickets <= 1}
+                      onClick={() => setTickets((prev) => Math.max(1, prev - 1))}
+                    >
+                      <i className="feather-minus" style={{ fontSize: 12 }} />
+                    </button>
+                    <span className="fw-bold px-2 fs-6">{tickets}</span>
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center"
+                      style={{ width: 32, height: 32, padding: 0 }}
+                      disabled={tickets >= 10}
+                      onClick={() => setTickets((prev) => Math.min(10, prev + 1))}
+                    >
+                      <i className="feather-plus" style={{ fontSize: 12 }} />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="d-flex align-items-center justify-content-between mb-3">
+                  <div>
+                    <span className="d-block text-muted small">Total Payable</span>
+                    <strong className="d-block fs-3" style={{ color: "#159447" }}>
+                      {(eventData.price || 0) > 0 ? `₹${(eventData.price || 0) * tickets}` : "FREE"}
+                    </strong>
+                  </div>
+                  <span className="event-category badge px-2 py-1">Available</span>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleBookNow}
+                  className="event-book-button btn w-100"
+                >
+                  <i className="feather-calendar me-2" />
+                  {(eventData.price || 0) > 0 ? "Book Tickets Now" : "Register Free Now"}
+                </button>
               </div>
               {eventData.organized_by && <p className="small text-muted mt-4 mb-0">Organised by <strong>{eventData.organized_by}</strong></p>}
             </div>

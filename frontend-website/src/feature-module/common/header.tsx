@@ -831,8 +831,8 @@ const Header = () => {
                           (fullUserData?.first_name || userData?.first_name || 'U')[0].toUpperCase()
                         )}
                       </div>
-                      <span className="user-name-text">
-                        {fullUserData?.first_name || userData?.first_name || "User"}
+                      <span className="user-name-text" title={fullUserData?.first_name || userData?.first_name || "User"}>
+                        {(fullUserData?.first_name || userData?.first_name || "User").trim().split(" ")[0]}
                       </span>
                       <i className="fas fa-chevron-down" style={{ fontSize: "12px", opacity: 0.7 }} />
                       <div className="lt-btn">

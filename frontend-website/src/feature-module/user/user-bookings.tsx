@@ -1,7 +1,7 @@
 import { Column } from "primereact/column";
 import { DataTable } from "primereact/datatable";
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import ImageWithBasePath from "../../core/data/img/ImageWithBasePath";
 import { allCourt } from "../../core/data/interface/model";
 import { all_routes } from "../router/all_routes";
@@ -11,6 +11,8 @@ import { API_URL, IMG_URL } from "../../ApiUrl";
 import { jwtDecode } from "jwt-decode";
 import { AiFillFilePdf } from 'react-icons/ai';
 import Swal from "sweetalert2";
+
+export type BookingTabKey = "venue" | "coaches" | "trainer" | "memberships" | "events";
 
 interface JwtPayload {
   userID: number;
@@ -43,34 +45,99 @@ interface AllBookings {
 
 const UserBookings = () => {
   const routes = all_routes;
+  const location = useLocation();
   const [searchInput, setSearchInput] = useState("");
   const [userDataId, setUserDataId] = useState<JwtPayload | null>(null);
   const [venueBookingData, setVenueBookingData] = useState<AllBookings[]>([])
   const [coachBookingData, setCoachBookingData] = useState<AllBookings[]>([])
   const [tarinerBookingData, setTrainerBookingData] = useState<AllBookings[]>([])
   const [membershipData, setMembershipData] = useState<any[]>([])
+  const [eventBookingData, setEventBookingData] = useState<any[]>([])
   const [bookingData, setBookingData] = useState<BookingData>()
   const [CurrentTime, setCurrentTime] = useState<BookingData>()
+  const [activeTab, setActiveTab] = useState<BookingTabKey>("venue");
 
-
+  const activateTab = (tabKey: BookingTabKey) => {
+    setActiveTab(tabKey);
+    const buttonIdMap: Record<BookingTabKey, string> = {
+      venue: "nav-Recent-tab",
+      coaches: "nav-RecentCoaching-tab",
+      trainer: "nav-RecentTrainer-tab",
+      memberships: "nav-RecentMembership-tab",
+      events: "nav-RecentEvent-tab",
+    };
+    const targetBtn = document.getElementById(buttonIdMap[tabKey]);
+    if (targetBtn) {
+      try {
+        if ((window as any).bootstrap?.Tab) {
+          const bsTab = (window as any).bootstrap.Tab.getOrCreateInstance(targetBtn);
+          bsTab?.show();
+        } else {
+          targetBtn.click();
+        }
+      } catch {
+        targetBtn.click();
+      }
+    }
+  };
 
   const token = localStorage.getItem("token");
 
   useEffect(() => {
     window.scrollTo(0, 0);
     const searchParams = new URLSearchParams(window.location.search);
-    if (searchParams.get("booking") === "success") {
+    const bookingParam = searchParams.get("booking");
+    const rawType =
+      searchParams.get("type") ||
+      searchParams.get("tab") ||
+      searchParams.get("service") ||
+      (location.state as any)?.type ||
+      (location.state as any)?.tab ||
+      sessionStorage.getItem("lastBookingType");
+
+    let targetTab: BookingTabKey = "venue";
+    if (rawType) {
+      const norm = String(rawType).toLowerCase().replace(/[^a-z]/g, "");
+      if (norm.includes("event")) targetTab = "events";
+      else if (norm.includes("coach")) targetTab = "coaches";
+      else if (norm.includes("train") || norm.includes("pt")) targetTab = "trainer";
+      else if (norm.includes("member")) targetTab = "memberships";
+      else if (norm.includes("venue") || norm.includes("court")) targetTab = "venue";
+
+      activateTab(targetTab);
+    }
+
+    if (bookingParam === "success") {
+      const typeDisplayNames: Record<BookingTabKey, string> = {
+        events: "Event",
+        coaches: "Coach",
+        trainer: "Personal Trainer",
+        memberships: "Membership",
+        venue: "Sports Venue",
+      };
+      const label = typeDisplayNames[targetTab] || "Booking";
+
       Swal.fire({
         icon: "success",
         title: "Booking Successful! 🎉",
-        text: "Your booking has been placed and confirmed successfully. You can review your bookings below.",
+        text: `Your ${label} booking has been placed and confirmed successfully. You can review your bookings below.`,
         confirmButtonColor: "#119C59",
         confirmButtonText: "View Bookings",
+      }).then(() => {
+        activateTab(targetTab);
+        setTimeout(() => {
+          const cardEl = document.querySelector(".ki-bookings-card");
+          if (cardEl) {
+            cardEl.scrollIntoView({ behavior: "smooth", block: "start" });
+          }
+        }, 150);
       });
+
+      sessionStorage.removeItem("lastBookingType");
       const cleanUrl = window.location.pathname;
       window.history.replaceState({}, document.title, cleanUrl);
     }
-  }, []);
+  }, [location]);
 
   useEffect(() => {
     const getTokenFromStorage = () => {
@@ -153,6 +220,26 @@ const UserBookings = () => {
     };
     if (user_id) {
       fetchMemberships();
+    }
+  }, [user_id]);
+
+  useEffect(() => {
+    const fetchEventBookings = async () => {
+      try {
+        const authToken = localStorage.getItem("token");
+        if (!authToken) return;
+        const res = await axios.get(`${API_URL}/event/booking/my-bookings`, {
+          headers: { Authorization: `Bearer ${authToken}` },
+        });
+        if (res.data?.success && Array.isArray(res.data?.data)) {
+          setEventBookingData(res.data.data);
+        }
+      } catch {
+        // Handled silently
+      }
+    };
+    if (user_id) {
+      fetchEventBookings();
     }
   }, [user_id]);
 
@@ -672,52 +759,69 @@ const UserBookings = () => {
                                 <nav>
                                   <div className="nav nav-tabs" role="tablist">
                                     <button
-                                      className="nav-link active"
+                                      className={`nav-link ${activeTab === "venue" ? "active" : ""}`}
                                       id="nav-Recent-tab"
                                       data-bs-toggle="tab"
                                       data-bs-target="#nav-Recent"
                                       type="button"
                                       role="tab"
                                       aria-controls="nav-Recent"
-                                      aria-selected="true"
+                                      aria-selected={activeTab === "venue"}
+                                      onClick={() => activateTab("venue")}
                                     >
                                       Sports Venue
                                     </button>
                                     <button
-                                      className="nav-link"
+                                      className={`nav-link ${activeTab === "coaches" ? "active" : ""}`}
                                       id="nav-RecentCoaching-tab"
                                       data-bs-toggle="tab"
                                       data-bs-target="#nav-RecentCoaching"
                                       type="button"
                                       role="tab"
                                       aria-controls="nav-RecentCoaching"
-                                      aria-selected="false"
+                                      aria-selected={activeTab === "coaches"}
+                                      onClick={() => activateTab("coaches")}
                                     >
                                       Coaches
                                     </button>
                                     <button
-                                      className="nav-link"
+                                      className={`nav-link ${activeTab === "trainer" ? "active" : ""}`}
                                       id="nav-RecentTrainer-tab"
                                       data-bs-toggle="tab"
                                       data-bs-target="#nav-RecentTrainer"
                                       type="button"
                                       role="tab"
                                       aria-controls="nav-RecentTrainer"
-                                      aria-selected="false"
+                                      aria-selected={activeTab === "trainer"}
+                                      onClick={() => activateTab("trainer")}
                                     >
                                       Trainer
                                     </button>
                                     <button
-                                      className="nav-link"
+                                      className={`nav-link ${activeTab === "memberships" ? "active" : ""}`}
                                       id="nav-RecentMembership-tab"
                                       data-bs-toggle="tab"
                                       data-bs-target="#nav-RecentMembership"
                                       type="button"
                                       role="tab"
                                       aria-controls="nav-RecentMembership"
-                                      aria-selected="false"
+                                      aria-selected={activeTab === "memberships"}
+                                      onClick={() => activateTab("memberships")}
                                     >
                                       Memberships
+                                    </button>
+                                    <button
+                                      className={`nav-link ${activeTab === "events" ? "active" : ""}`}
+                                      id="nav-RecentEvent-tab"
+                                      data-bs-toggle="tab"
+                                      data-bs-target="#nav-RecentEvent"
+                                      type="button"
+                                      role="tab"
+                                      aria-controls="nav-RecentEvent"
+                                      aria-selected={activeTab === "events"}
+                                      onClick={() => activateTab("events")}
+                                    >
+                                      Events
                                     </button>
                                   </div>
                                 </nav>
@@ -729,7 +833,7 @@ const UserBookings = () => {
                     </div>
                     <div className="tab-content">
                       <div
-                        className="tab-pane fade active show"
+                        className={`tab-pane fade ${activeTab === "venue" ? "active show" : ""}`}
                         id="nav-Recent"
                         role="tabpanel"
                         aria-labelledby="nav-Recent-tab"
@@ -839,7 +943,7 @@ const UserBookings = () => {
                         )}
                       </div>
                       <div
-                        className="tab-pane fade"
+                        className={`tab-pane fade ${activeTab === "coaches" ? "active show" : ""}`}
                         id="nav-RecentCoaching"
                         role="tabpanel"
                         aria-labelledby="nav-RecentCoaching-tab"
@@ -945,7 +1049,7 @@ const UserBookings = () => {
                         )}
                       </div>
                       <div
-                        className="tab-pane fade"
+                        className={`tab-pane fade ${activeTab === "trainer" ? "active show" : ""}`}
                         id="nav-RecentTrainer"
                         role="tabpanel"
                         aria-labelledby="nav-RecentTrainer-tab"
@@ -1051,7 +1155,7 @@ const UserBookings = () => {
                         )}
                       </div>
                       <div
-                        className="tab-pane fade"
+                        className={`tab-pane fade ${activeTab === "memberships" ? "active show" : ""}`}
                         id="nav-RecentMembership"
                         role="tabpanel"
                         aria-labelledby="nav-RecentMembership-tab"
@@ -1127,6 +1231,116 @@ const UserBookings = () => {
                                         <span className={`badge ${isActive ? "bg-success" : "bg-secondary"} text-white px-2 py-1`} style={{ borderRadius: "12px", fontSize: "11px" }}>
                                           {mem.status || "ACTIVE"}
                                         </span>
+                                      </td>
+                                    </tr>
+                                  );
+                                })}
+                              </tbody>
+                            </table>
+                          </div>
+                        )}
+                      </div>
+                      <div
+                        className={`tab-pane fade ${activeTab === "events" ? "active show" : ""}`}
+                        id="nav-RecentEvent"
+                        role="tabpanel"
+                        aria-labelledby="nav-RecentEvent-tab"
+                        tabIndex={0}
+                      >
+                        {(!eventBookingData || eventBookingData.length === 0) ? (
+                          <div className="text-center py-5 my-3">
+                            <div
+                              className="d-inline-flex align-items-center justify-content-center mb-3"
+                              style={{ width: "64px", height: "64px", borderRadius: "50%", background: "rgba(34, 197, 94, 0.1)", color: "#22C55E" }}
+                            >
+                              <i className="feather-calendar fs-3" />
+                            </div>
+                            <h5 className="font-weight-bold text-dark mb-1">No Event Bookings Found</h5>
+                            <p className="text-muted mb-4" style={{ fontSize: "14px", maxWidth: "420px", margin: "0 auto" }}>
+                              You haven&apos;t booked or registered for any sports events yet. Check out upcoming tournaments and events in Indore!
+                            </p>
+                            <Link
+                              to="/events"
+                              className="btn text-white px-4 py-2"
+                              style={{ background: "linear-gradient(135deg, #22C55E 0%, #16A34A 100%)", borderRadius: "50px", fontSize: "14px", fontWeight: "600", boxShadow: "0 4px 12px rgba(34, 197, 94, 0.25)" }}
+                            >
+                              <i className="feather-calendar me-2" /> Explore Events
+                            </Link>
+                          </div>
+                        ) : (
+                          <div className="table-responsive table-datatble ki-bookings-table-wrap">
+                            <table className="table datatable ki-bookings-table ki-venue-bookings-table">
+                              <thead className="thead-light">
+                                <tr>
+                                  <th style={{ color: "#1E293B" }}>Event</th>
+                                  <th>Date &amp; Time</th>
+                                  <th>Location</th>
+                                  <th>Tickets</th>
+                                  <th>Amount</th>
+                                  <th>Order ID</th>
+                                  <th>Status</th>
+                                  <th>Action</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {eventBookingData.map((evt: any, index: number) => {
+                                  const eventDate = evt.event_date
+                                    ? new Date(evt.event_date).toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short", year: "numeric" })
+                                    : "TBD";
+                                  const isPaidOrFree = ["PAID", "FREE"].includes(evt.payment_status);
+                                  return (
+                                    <tr key={evt._id || evt.id || index}>
+                                      <td>
+                                        <div className="d-flex align-items-center gap-2">
+                                          <span className="badge bg-success bg-opacity-10 text-success p-2 rounded-circle">
+                                            <i className="feather-award" />
+                                          </span>
+                                          <div>
+                                            <strong className="d-block text-dark">{evt.event_name || "Sports Event"}</strong>
+                                            <small className="text-muted">{evt.attendee_name ? `Attendee: ${evt.attendee_name}` : "General Ticket"}</small>
+                                          </div>
+                                        </div>
+                                      </td>
+                                      <td>
+                                        <div className="d-flex align-items-center fw-bold" style={{ fontSize: "14px", color: "#1E293B" }}>
+                                          <i className="feather-calendar me-2 text-success" />
+                                          {eventDate}
+                                        </div>
+                                      </td>
+                                      <td>
+                                        <span className="d-block text-dark" style={{ fontSize: "13px" }}>
+                                          <i className="feather-map-pin me-1 text-muted" />
+                                          {evt.location || "Indore"}
+                                        </span>
+                                      </td>
+                                      <td>
+                                        <span className="badge bg-light text-dark px-3 py-2 fw-bold" style={{ borderRadius: "8px", fontSize: "13px" }}>
+                                          {evt.tickets || 1} Ticket{Number(evt.tickets) > 1 ? "s" : ""}
+                                        </span>
+                                      </td>
+                                      <td>
+                                        <strong className="text-success fs-15">
+                                          {Number(evt.total_price) > 0 ? `₹${Number(evt.total_price).toLocaleString("en-IN")}` : "FREE"}
+                                        </strong>
+                                      </td>
+                                      <td>
+                                        <span className="badge bg-light text-dark font-monospace" style={{ fontSize: "11px" }}>
+                                          {evt.payment_order_id || "N/A"}
+                                        </span>
+                                      </td>
+                                      <td>
+                                        <span className={`badge ${isPaidOrFree ? "bg-success" : "bg-warning"} text-white px-2 py-1`} style={{ borderRadius: "12px", fontSize: "11px" }}>
+                                          {evt.payment_status === "FREE" ? "CONFIRMED (FREE)" : evt.payment_status || "CONFIRMED"}
+                                        </span>
+                                      </td>
+                                      <td>
+                                        <Link
+                                          to={`/events/event-details/${evt.event_id?._id || evt.event_id || ""}`}
+                                          className="btn btn-sm btn-outline-success rounded-pill px-3"
+                                          style={{ fontSize: "12px", fontWeight: "600" }}
+                                        >
+                                          View Event
+                                        </Link>
                                       </td>
                                     </tr>
                                   );

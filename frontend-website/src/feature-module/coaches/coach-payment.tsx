@@ -48,13 +48,21 @@ const CoachPayment = () => {
 
   useEffect(() => {
     const fetchCoacheId = async () => {
+      if (!id) return;
       try {
-        const response = await axios.get(`${API_URL}/fetch-coach/${id}`);
-        const coachDataId = response.data.coach;
-
+        let response;
+        try {
+          response = await axios.get(`${API_URL}/web/fetch-coach/${id}`);
+        } catch {
+          const token = localStorage.getItem("token");
+          response = await axios.get(`${API_URL}/fetch-coach/${id}`, {
+            headers: token ? { Authorization: `Bearer ${token}` } : {},
+          });
+        }
+        const coachDataId = response.data.coach || response.data.data;
         setCochData(coachDataId);
       } catch {
-        // The request failure is handled by the surrounding UI state.
+        // Handled silently
       }
     };
     fetchCoacheId();

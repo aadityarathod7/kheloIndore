@@ -1,16 +1,15 @@
 import React, { useState, useRef } from "react";
-import { Container, Form, Row, Col, Button } from "react-bootstrap";
-import { FiUpload } from "react-icons/fi";
+import { Container, Form, Row, Col, Button, Spinner } from "react-bootstrap";
+import { FiUpload, FiArrowLeft, FiCheck, FiImage, FiFileText, FiGlobe, FiUser } from "react-icons/fi";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import Swal from "sweetalert2";
-import { useNavigate } from "react-router-dom";
-import slugify from "slugify"; // Import slugify
+import slugify from "slugify";
 import { API_URL } from "../utils/ApiUrl";
-
-
+import { Editor } from "@tinymce/tinymce-react";
+import "../Style/blog-editor.css";
 
 export default function Createblog() {
-  // State to store blog data (form payload)
   const [formData, setFormData] = useState({
     blog_title: "",
     meta_keywords: "",
@@ -26,28 +25,27 @@ export default function Createblog() {
   });
 
   const fileInputRef = useRef(null);
-  const [errors, setErrors] = useState({}); // State to store validation errors
-  const [imagePreview, setImagePreview] = useState(null); // Local preview state
+  const [errors, setErrors] = useState({});
+  const [imagePreview, setImagePreview] = useState(null);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Clear previous errors
     setErrors({});
 
-    // Validation checks
     let validationErrors = {};
-    if (!formData.blog_title) validationErrors.blog_title = "Title is required.";
-    if (!formData.meta_description.trim()) validationErrors.meta_description = "Meta description is required.";
-    if (!formData.blog_description.trim()) validationErrors.blog_description = "Blog description is required.";
-    if (!formData.slug_url.trim()) validationErrors.slug_url = "Slug URL is required.";
-    if (!formData.blog_image) validationErrors.blog_image = "Image is required.";
+    if (!formData.blog_title?.trim()) validationErrors.blog_title = "Blog title is required.";
+    if (!formData.meta_description?.trim()) validationErrors.meta_description = "Meta description is required.";
+    if (!formData.blog_description?.trim()) validationErrors.blog_description = "Blog description is required.";
+    if (!formData.slug_url?.trim()) validationErrors.slug_url = "Slug URL is required.";
+    if (!formData.blog_image) validationErrors.blog_image = "Featured image is required.";
 
-    // If there are validation errors, set the error state and return
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
+      // Scroll to the first error
+      window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
 
@@ -60,49 +58,53 @@ export default function Createblog() {
       canonical_url: formData.canonical_url,
       slug_url: formData.slug_url,
       author: formData.author,
-      meta_keywords: formData.meta_keywords.split(",").map((keyword) => keyword.trim()).filter(Boolean),
+      meta_keywords: formData.meta_keywords
+        ? formData.meta_keywords.split(",").map((k) => k.trim()).filter(Boolean)
+        : [],
       blog_image_alt: formData.blog_image_alt,
       status: formData.status,
     };
 
+    setIsSubmitting(true);
     try {
-      const response = await axios.post(`${API_URL}/blog/create`, payload, {
+      await axios.post(`${API_URL}/blog/create`, payload, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
 
-      // Handle success response
       Swal.fire({
         icon: "success",
-        title: "Success!",
-        text: "Blog created successfully",
+        title: "Blog Published!",
+        text: "Your blog post has been created successfully.",
+        timer: 1800,
+        showConfirmButton: false,
       }).then(() => {
         navigate(`/blog`);
       });
     } catch (error) {
-      
       Swal.fire({
         icon: "error",
-        title: "Error",
+        title: "Publish Failed",
         text: error.response?.data?.message || "Unable to create the blog. Please try again.",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleImageChange = async (event) => {
     const file = event.target.files[0];
     if (file) {
-      // Show image preview locally
       const previewUrl = URL.createObjectURL(file);
       setImagePreview(previewUrl);
+      setIsUploadingImage(true);
 
       const formDataFile = new FormData();
-      formDataFile.append("uploadFile", file); // Append file to FormData with 'uploadFile' as key
+      formDataFile.append("uploadFile", file);
 
       try {
-        // Step 1: Upload the image
         const response = await axios.post(
           `${API_URL}/upload-file?types=blog`,
           formDataFile,
@@ -114,15 +116,12 @@ export default function Createblog() {
           }
         );
 
-        // Step 2: Extract the 'src' from the response
         const imageSrc = response.data.file_data[0]?.src;
         if (imageSrc) {
           setFormData((prev) => ({
             ...prev,
-            blog_image: imageSrc, // Update the state with the uploaded image URL
+            blog_image: imageSrc,
           }));
-          // A previous submit may have marked the image as required. Clear
-          // that error as soon as the upload succeeds.
           setErrors((prev) => ({ ...prev, blog_image: "" }));
         } else {
           setErrors((prev) => ({ ...prev, blog_image: "Image upload did not return a file." }));
@@ -133,6 +132,8 @@ export default function Createblog() {
           ...prev,
           blog_image: error.response?.data?.message || "Image upload failed. Please try again.",
         }));
+      } finally {
+        setIsUploadingImage(false);
       }
     }
   };
@@ -140,9 +141,8 @@ export default function Createblog() {
   const handleChange = (e) => {
     const { name, value } = e.target;
 
-    // Check if the field is 'blog_title' and update 'slug_url' automatically
     if (name === "blog_title") {
-      const slug = slugify(value, { lower: true, strict: true }); // Use slugify to generate the slug
+      const slug = slugify(value, { lower: true, strict: true });
       setFormData((prev) => ({
         ...prev,
         [name]: value,
@@ -150,239 +150,390 @@ export default function Createblog() {
         canonical_url: prev.canonical_url || `/blog/${slug}`,
       }));
     } else {
-      setFormData({
-        ...formData,
+      setFormData((prev) => ({
+        ...prev,
         [name]: value,
-      });
+      }));
     }
 
-    setErrors({
-      ...errors,
-      [name]: "",
-    });
+    if (errors[name]) {
+      setErrors((prev) => ({
+        ...prev,
+        [name]: "",
+      }));
+    }
   };
 
+  const metaLength = formData.meta_description?.length || 0;
+  const metaStatusClass =
+    metaLength === 0 ? "" : metaLength <= 160 ? "safe" : metaLength <= 200 ? "warning" : "over";
+
   return (
-    <>
-      <h2>Create Blog</h2>
-      <Container className="mt-4">
-        <Form onSubmit={handleSubmit}>
-          <Row className="mb-3">
-            <Col md={4}>
-              <Form.Group>
-                <Form.Label>
-                  Title<span style={{ color: "red" }}>*</span>
-                </Form.Label>
+    <div className="blog-editor-page">
+      <Form onSubmit={handleSubmit}>
+        {/* Top bar */}
+        <div className="blog-editor-topbar">
+          <div>
+            <div className="blog-editor-breadcrumb">
+              <Link to="/blog">
+                <FiArrowLeft /> Blogs
+              </Link>
+              <span>/</span>
+              <span>Create New Post</span>
+            </div>
+            <h1 className="blog-editor-heading">Create Blog Post</h1>
+            <p className="blog-editor-subheading">
+              Write rich, SEO-friendly stories and updates for Khelo Indore.
+            </p>
+          </div>
+
+          <div className="blog-editor-top-actions">
+            <Link to="/blog" className="btn-editor-cancel">
+              Cancel
+            </Link>
+            <button type="submit" className="btn-editor-submit" disabled={isSubmitting}>
+              {isSubmitting ? (
+                <>
+                  <Spinner size="sm" animation="border" className="me-1" /> Publishing...
+                </>
+              ) : (
+                <>
+                  <FiCheck /> Publish Post
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+
+        <Row>
+          {/* Main Column - Article Content & SEO */}
+          <Col lg={8}>
+            {/* Card 1: Article Content */}
+            <div className="blog-card">
+              <div className="blog-card-header">
+                <h3 className="blog-card-title">
+                  <FiFileText className="card-icon" /> Article Content
+                </h3>
+                <span className="blog-card-badge">Main</span>
+              </div>
+
+              {/* Title */}
+              <div className="blog-field-group">
+                <label className="blog-field-label">
+                  Blog Title <span className="required-star">*</span>
+                </label>
                 <Form.Control
                   type="text"
-                  placeholder="Enter Title"
+                  placeholder="e.g. 5 Simple Ways to Make Sports a Part of Your Daily Life in Indore"
                   name="blog_title"
+                  className="blog-input blog-input-title"
                   value={formData.blog_title}
                   onChange={handleChange}
                   isInvalid={!!errors.blog_title}
                 />
-                <Form.Control.Feedback type="invalid">
-                  {errors.blog_title}
-                </Form.Control.Feedback>
-              </Form.Group>
-            </Col>
-            <Col md={4}>
-              <Form.Group>
-                <Form.Label>Meta Title</Form.Label>
-                <Form.Control
-                  type="text"
-                  placeholder="Enter Meta Title"
-                  name="meta_title"
-                  value={formData.meta_title}
-                  isInvalid={!!errors.meta_title}
-                  onChange={handleChange}
-                />
-                <Form.Control.Feedback type="invalid">
-                  {errors.meta_Keywords}
-                </Form.Control.Feedback>
-              </Form.Group>
-            </Col>
-            <Col md={4}>
-              <Form.Group>
-                <Form.Label>Canonical URL <small className="text-muted">(defaults to slug)</small></Form.Label>
-                <Form.Control
-                  type="text"
-                  placeholder="/blog/my-blog-slug"
-                  name="canonical_url"
-                  isInvalid={!!errors.canonical_url}
-                  value={formData.canonical_url}
-                  onChange={handleChange}
-                />
-                <Form.Control.Feedback type="invalid">
-                  {errors.canonical_url}
-                </Form.Control.Feedback>
-              </Form.Group>
-            </Col>
-          </Row>
+                {errors.blog_title && (
+                  <div className="text-danger mt-1 font-size-12">{errors.blog_title}</div>
+                )}
+              </div>
 
-          <Row>
-            <Col md={8}>
-              <Form.Group>
-                <Form.Label>
-                  Meta Description<span style={{ color: "red" }}>*</span>
-                </Form.Label>
+              {/* Description / TinyMCE */}
+              <div className="blog-field-group mb-0">
+                <label className="blog-field-label">
+                  Blog Description & Content <span className="required-star">*</span>
+                </label>
+                <Editor
+                  tinymceScriptSrc={`${process.env.PUBLIC_URL || ""}/tinymce/tinymce.min.js`}
+                  value={formData.blog_description}
+                  onEditorChange={(content) => {
+                    setFormData((prev) => ({ ...prev, blog_description: content }));
+                    if (errors.blog_description) {
+                      setErrors((prev) => ({ ...prev, blog_description: "" }));
+                    }
+                  }}
+                  init={{
+                    height: 520,
+                    menubar: "file edit view insert format tools table help",
+                    license_key: "gpl",
+                    plugins: [
+                      "advlist", "autolink", "lists", "link", "image", "charmap", "preview",
+                      "anchor", "searchreplace", "visualblocks", "code", "fullscreen",
+                      "insertdatetime", "media", "table", "help", "wordcount"
+                    ],
+                    toolbar:
+                      "undo redo | blocks fontfamily fontsize | " +
+                      "bold italic underline strikethrough | forecolor backcolor | " +
+                      "link image media table | alignleft aligncenter alignright alignjustify | " +
+                      "bullist numlist outdent indent | removeformat | code fullscreen help",
+                    link_default_target: "_blank",
+                    link_assume_external_targets: "https",
+                    block_formats:
+                      "Paragraph=p; Heading 2=h2; Heading 3=h3; Heading 4=h4; Blockquote=blockquote; Preformatted=pre",
+                    content_style:
+                      "body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 16px; line-height: 1.7; color: #1e293b; padding: 14px; }",
+                  }}
+                />
+                {errors.blog_description && (
+                  <div className="text-danger mt-2 font-size-12">{errors.blog_description}</div>
+                )}
+              </div>
+            </div>
+
+            {/* Card 2: SEO & Meta Settings */}
+            <div className="blog-card">
+              <div className="blog-card-header">
+                <h3 className="blog-card-title">
+                  <FiGlobe className="card-icon" /> Search Engine Optimization (SEO)
+                </h3>
+                <span className="blog-card-badge">Google Preview</span>
+              </div>
+
+              {/* Meta Title */}
+              <div className="blog-field-group">
+                <label className="blog-field-label">Meta Title</label>
+                <Form.Control
+                  type="text"
+                  placeholder="Custom title tag for search engines"
+                  name="meta_title"
+                  className="blog-input"
+                  value={formData.meta_title}
+                  onChange={handleChange}
+                />
+                <span className="blog-field-hint">
+                  Appears as the clickable headline in Google search results.
+                </span>
+              </div>
+
+              {/* Meta Description */}
+              <div className="blog-field-group">
+                <div className="d-flex justify-content-between align-items-center mb-1">
+                  <label className="blog-field-label mb-0">
+                    Meta Description <span className="required-star">*</span>
+                  </label>
+                  <span className={`char-counter ${metaStatusClass}`}>
+                    {metaLength} / 160 characters
+                  </span>
+                </div>
                 <Form.Control
                   as="textarea"
-                  rows={5}
+                  rows={3}
                   name="meta_description"
+                  className="blog-input"
                   value={formData.meta_description}
                   onChange={handleChange}
                   maxLength={320}
-                  placeholder="Write a concise search-engine description (160 characters recommended)"
+                  placeholder="Summarize the article in 1-2 compelling sentences for searchers..."
                   isInvalid={!!errors.meta_description}
                 />
-                <Form.Text className="text-muted">
-                  {formData.meta_description.length}/160 characters recommended
-                </Form.Text>
-              </Form.Group>
+                {errors.meta_description && (
+                  <div className="text-danger mt-1 font-size-12">{errors.meta_description}</div>
+                )}
+              </div>
 
-              {errors.meta_description && (
-                <div className="text-danger" style={{ marginTop: "40px" }}>
-                  {errors.meta_description}
-                </div>
-              )}
-            </Col>
-
-            <Col md={4}>
-              <Form.Group>
-                <Form.Label>
-                  Image<span style={{ color: "red" }}>*</span>
-                </Form.Label>
-                <div className="d-flex align-items-center flex-column">
-                  <Form.Control
-                    type="file"
-                    onChange={handleImageChange}
-                    style={{ display: "none" }}
-                    id="upload-image"
-                  />
-                  <Button
-                    as="label"
-                    htmlFor="upload-image"
-                    variant="outline-secondary"
-                    className="d-flex align-items-center mb-3"
-                  >
-                    <FiUpload className="me-2" />
-                    Upload Image
-                  </Button>
-                  {imagePreview && (
-                    <div className="mb-3">
-                      <img
-                        src={imagePreview}
-                        alt="Preview"
-                        style={{
-                          width: "100%",
-                          maxHeight: "200px",
-                          objectFit: "cover",
-                        }}
+              <Row>
+                {/* Slug URL */}
+                <Col md={6}>
+                  <div className="blog-field-group">
+                    <label className="blog-field-label">
+                      Slug URL <span className="required-star">*</span>
+                    </label>
+                    <div className="slug-input-wrapper">
+                      <span className="slug-prefix">/blog/</span>
+                      <Form.Control
+                        type="text"
+                        name="slug_url"
+                        placeholder="sports-daily-life-indore"
+                        value={formData.slug_url}
+                        onChange={handleChange}
+                        isInvalid={!!errors.slug_url}
                       />
                     </div>
-                  )}
-                  {formData.blog_image && !imagePreview && (
-                    <div className="mb-3">
-                      <img
-                        src={formData.blog_image}
-                        alt="Uploaded"
-                        style={{
-                          width: "100%",
-                          maxHeight: "200px",
-                          objectFit: "cover",
-                        }}
-                      />
-                    </div>
-                  )}
+                    {errors.slug_url && (
+                      <div className="text-danger mt-1 font-size-12">{errors.slug_url}</div>
+                    )}
+                  </div>
+                </Col>
 
-                  <Form.Label className="mt-2">Image alt text</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="blog_image_alt"
-                    value={formData.blog_image_alt}
-                    onChange={handleChange}
-                    placeholder="Describe the blog image"
-                  />
+                {/* Canonical URL */}
+                <Col md={6}>
+                  <div className="blog-field-group">
+                    <label className="blog-field-label">Canonical URL</label>
+                    <Form.Control
+                      type="text"
+                      name="canonical_url"
+                      className="blog-input"
+                      placeholder="/blog/sports-daily-life-indore"
+                      value={formData.canonical_url}
+                      onChange={handleChange}
+                    />
+                  </div>
+                </Col>
+              </Row>
 
-                  <Form.Label>Author</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="author"
-                    value={formData.author}
-                    onChange={handleChange}
-                    placeholder="Enter author's name"
-                    isInvalid={!!errors.author}
-                  />
-                </div>
-              </Form.Group>
-              {errors.blog_image && (
-                <div className="text-danger">{errors.blog_image}</div>
-              )}
-            </Col>
-          </Row>
-
-          <Row className="mb-3 mt-5">
-            <Col md={4}>
-              <Form.Group>
-                <Form.Label>
-                  Slug URL<span style={{ color: "red" }}>*</span>
-                </Form.Label>
+              {/* Meta Keywords */}
+              <div className="blog-field-group mb-0">
+                <label className="blog-field-label">Meta Keywords</label>
                 <Form.Control
                   type="text"
-                  name="slug_url"
-                  placeholder="Enter Slug URL"
-                  value={formData.slug_url}
+                  name="meta_keywords"
+                  className="blog-input"
+                  placeholder="sports, Indore fitness, outdoor arenas, coaching"
+                  value={formData.meta_keywords}
                   onChange={handleChange}
                 />
-                {errors.slug_url && <div className="text-danger">{errors.slug_url}</div>}
-              </Form.Group>
-            </Col>
+                <span className="blog-field-hint">Comma separated list of keywords</span>
+              </div>
+            </div>
+          </Col>
 
-            <Col md={8}>
-              <Form.Group>
-                <Form.Label>
-                  Description<span style={{ color: "red" }}>*</span>
-                </Form.Label>
-                <Form.Control
-                  as="textarea"
-                  rows={12}
-                  name="blog_description"
-                  value={formData.blog_description}
-                  onChange={handleChange}
-                  placeholder="Enter blog description"
-                  isInvalid={!!errors.blog_description}
+          {/* Right Sidebar - Publishing, Image, Author */}
+          <Col lg={4}>
+            {/* Card 1: Publish Settings */}
+            <div className="blog-card">
+              <div className="blog-card-header">
+                <h3 className="blog-card-title">Publish Settings</h3>
+                <span
+                  className={`status-indicator-badge ${
+                    formData.status === "active" ? "active" : "inactive"
+                  }`}
+                >
+                  <span className="status-dot"></span>
+                  {formData.status === "active" ? "Active" : "Draft"}
+                </span>
+              </div>
+
+              <div className="blog-status-box">
+                <div className="blog-status-meta">
+                  <span className="blog-status-title">Visible on Website</span>
+                  <span className="blog-status-desc">
+                    {formData.status === "active"
+                      ? "Publicly readable by visitors"
+                      : "Hidden from website users"}
+                  </span>
+                </div>
+                <Form.Check
+                  type="switch"
+                  id="blog-publish-switch"
+                  checked={formData.status === "active"}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      status: e.target.checked ? "active" : "inactive",
+                    }))
+                  }
                 />
-              </Form.Group>
+              </div>
 
-              {/* Show the error message outside the description box */}
-              {errors.blog_description && (
-                <div className="text-danger" style={{ marginTop: "40px" }}>
-                  {errors.blog_description}
+              <button
+                type="submit"
+                className="btn-editor-submit w-100 justify-content-center"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <>
+                    <Spinner size="sm" animation="border" className="me-1" /> Publishing...
+                  </>
+                ) : (
+                  <>
+                    <FiCheck /> Publish Post
+                  </>
+                )}
+              </button>
+            </div>
+
+            {/* Card 2: Featured Image */}
+            <div className="blog-card">
+              <div className="blog-card-header">
+                <h3 className="blog-card-title">
+                  <FiImage className="card-icon" /> Featured Image <span className="required-star">*</span>
+                </h3>
+              </div>
+
+              <input
+                type="file"
+                ref={fileInputRef}
+                accept="image/*"
+                onChange={handleImageChange}
+                style={{ display: "none" }}
+                id="blog-featured-image-upload"
+              />
+
+              {imagePreview || formData.blog_image ? (
+                <div className="blog-preview-wrapper">
+                  <img
+                    src={imagePreview || formData.blog_image}
+                    alt="Blog Cover Preview"
+                    className="blog-preview-img"
+                  />
+                  <div className="blog-preview-actions">
+                    <button
+                      type="button"
+                      className="btn-preview-change"
+                      onClick={() => fileInputRef.current && fileInputRef.current.click()}
+                      disabled={isUploadingImage}
+                    >
+                      {isUploadingImage ? "Uploading..." : "Replace Image"}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div
+                  className="blog-upload-zone"
+                  onClick={() => fileInputRef.current && fileInputRef.current.click()}
+                >
+                  <div className="blog-upload-icon">
+                    <FiUpload />
+                  </div>
+                  <div className="blog-upload-text">
+                    {isUploadingImage ? "Uploading image..." : "Upload Cover Image"}
+                  </div>
+                  <div className="blog-upload-subtext">PNG, JPG, WebP up to 5MB</div>
                 </div>
               )}
-            </Col>
-          </Row>
 
-          <Form.Check
-            className="mb-3"
-            type="switch"
-            id="blog-status"
-            label="Active (visible on the website)"
-            checked={formData.status === "active"}
-            onChange={(e) => setFormData({ ...formData, status: e.target.checked ? "active" : "inactive" })}
-          />
+              {errors.blog_image && (
+                <div className="text-danger mt-2 font-size-12">{errors.blog_image}</div>
+              )}
 
-          <Button
-            variant="primary"
-            type="submit"
-            className="mt-5"
-            style={{ backgroundColor: "#FF5F15", borderColor: "#FF5F15" }}
-          >
-            Submit
-          </Button>
-        </Form>
-      </Container>
-    </>
+              {/* Alt Text */}
+              <div className="blog-field-group mt-3 mb-0">
+                <label className="blog-field-label">Image Alt Text</label>
+                <Form.Control
+                  type="text"
+                  name="blog_image_alt"
+                  className="blog-input"
+                  placeholder="Describe the image for screen readers & SEO"
+                  value={formData.blog_image_alt}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
+
+            {/* Card 3: Author */}
+            <div className="blog-card">
+              <div className="blog-card-header">
+                <h3 className="blog-card-title">
+                  <FiUser className="card-icon" /> Author & Attribution
+                </h3>
+              </div>
+
+              <div className="blog-field-group mb-0">
+                <label className="blog-field-label">Author Name</label>
+                <Form.Control
+                  type="text"
+                  name="author"
+                  className="blog-input"
+                  placeholder="e.g. Khelo Indore Editorial Team"
+                  value={formData.author}
+                  onChange={handleChange}
+                />
+                <span className="blog-field-hint">
+                  Displayed under the article title on the website.
+                </span>
+              </div>
+            </div>
+          </Col>
+        </Row>
+      </Form>
+    </div>
   );
 }

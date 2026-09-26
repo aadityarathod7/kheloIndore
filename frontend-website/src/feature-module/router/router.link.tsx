@@ -49,6 +49,7 @@ import InactiveCourt from "../coaches/court-inactive";
 import Error404 from "../pages/error-404";
 import Events from "../pages/events";
 import EventDetails from "../pages/event-details";
+import EventOrderConfirm from "../pages/event-order-confirm";
 import CageCheckout from "../coaches/cage-checkout";
 import CageDetails from "../coaches/cage-details";
 import CageOrderConfirm from "../coaches/cage-order-confirm";
@@ -396,6 +397,11 @@ const publicRoutes = [
   {
     path: routes.eventdetails,
     element: <EventDetails id={undefined} />,
+    route: Route,
+  },
+  {
+    path: routes.eventOrderConfirm,
+    element: <EventOrderConfirm />,
     route: Route,
   },
   {

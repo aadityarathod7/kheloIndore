@@ -485,6 +485,12 @@ route.get('/get/venue-coach-pt-booking/:userId',getVenueCoachPTBookingByUserId)
 route.post('/membership/checkout', auth, startMembershipCheckout);
 route.all('/membership/payment/status/:orderId', verifyMembershipPayment);
 route.get('/membership/my', auth, getMyMemberships);
+
+// Sports Events Booking & Checkout
+const { createEventBooking, verifyEventPayment, getMyEventBookings } = require("../controllers/EventBookingController");
+route.post('/event/booking/create', auth, createEventBooking);
+route.all('/event/payment/status/:orderId', verifyEventPayment);
+route.get('/event/booking/my-bookings', auth, getMyEventBookings);
 // API for web 
 route.get('/web/fetch-all-coaches', fetchAllCoaches);
 route.get("/web/venue/getVenue", getVenue)

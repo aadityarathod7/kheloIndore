@@ -77,23 +77,24 @@ const UpdateEvent = () => {
 
   const uploadImage = async (fileArray) => {
     try {
+      const token = localStorage.getItem("token");
       const formDataForUpload = new FormData();
       fileArray.forEach((file) => {
-        formDataForUpload.append("types", "events-media");
         formDataForUpload.append("uploadFile", file);
       });
       const response = await axios.post(
-        `${API_URL}/upload-file`,
+        `${API_URL}/upload-file?types=events-media`,
         formDataForUpload,
         {
           headers: {
             "Content-Type": "multipart/form-data",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
           },
         }
       );
-      return response.data.filePaths;
+      return response.data?.file_data || [];
     } catch (error) {
-      
+      console.error("Image upload failed:", error);
       return null;
     }
   };
@@ -154,9 +155,11 @@ const UpdateEvent = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      const token = localStorage.getItem("token");
+      let newUploadedImages = [];
       if (formData.images.length > 0) {
-        const uploadedFilePaths = await uploadImage(formData.images);
-        if (!uploadedFilePaths) {
+        newUploadedImages = await uploadImage(formData.images);
+        if (!newUploadedImages) {
           Swal.fire({
             icon: "error",
             title: "Error",
@@ -164,12 +167,20 @@ const UpdateEvent = () => {
           });
           return;
         }
-        formData.imagePaths = uploadedFilePaths;
       }
-      formData.previousImages = previousImages; // Add previous images to formData
+      const combinedImages = [...previousImages, ...newUploadedImages];
+      const payload = {
+        ...formData,
+        images: combinedImages,
+      };
       const response = await axios.put(
         `${API_URL}/event/update/${_id}`,
-        formData
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
       Swal.fire({
         icon: "success",

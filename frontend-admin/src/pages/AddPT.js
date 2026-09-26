@@ -254,12 +254,14 @@ const AddPT = () => {
         formDataForUpload.append("types", "personal-training");
         formDataForUpload.append("uploadFile", file);
       });
+      const token = localStorage.getItem("token");
       const response = await axios.post(
-        `${API_URL}/upload-file`,
+        `${API_URL}/upload-file?types=personal-training`,
         formDataForUpload,
         {
           headers: {
             "Content-Type": "multipart/form-data",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
           },
         }
       );

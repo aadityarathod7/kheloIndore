@@ -177,14 +177,14 @@ exports.signupBySuperAdmin = async (req, res) => {
     let validationErrors = [];
     if (!first_name) {
       validationErrors.push("First name is required");
-    } else if (!/^[a-zA-Z ]+$/.test(first_name)) {
-      validationErrors.push("First name should contain only characters");
+    } else if (!/^[a-zA-Z0-9 ]+$/.test(first_name)) {
+      validationErrors.push("First name should contain only alphanumeric characters");
     }
 
     if (!last_name) {
       validationErrors.push("Last name is required");
-    } else if (!/^[a-zA-Z ]+$/.test(last_name)) {
-      validationErrors.push("Last name should contain only characters");
+    } else if (!/^[a-zA-Z0-9 ]+$/.test(last_name)) {
+      validationErrors.push("Last name should contain only alphanumeric characters");
     }
 
     if (!mobile || mobile.toString().length !== 10) {
@@ -1351,17 +1351,17 @@ exports.UpdateUser = async (req, res) => {
     const { first_name, last_name, email, mobile, status, zipcode, state,stateId, city, address,user_info,is_admin_access } = req.body;
 
     // Validate first name and last name
-    const nameRegex = /^[A-Za-z\s]+$/;
+    const nameRegex = /^[A-Za-z0-9\s]+$/;
     if (first_name && !nameRegex.test(first_name)) {
       return res.status(400).json({
         success: false,
-        message: "First name must contain characters only.",
+        message: "First name must contain alphanumeric characters only.",
       });
     }
     if (last_name && !nameRegex.test(last_name)) {
       return res.status(400).json({
         success: false,
-        message: "Last name must contain characters only.",
+        message: "Last name must contain alphanumeric characters only.",
       });
     }
 
@@ -1677,9 +1677,12 @@ if (!Array.isArray(req.files.uploadFile) || req.files.uploadFile.length === 0) {
     const files = Array.isArray(req.files.uploadFile) ? req.files.uploadFile : [req.files.uploadFile];
 
     // Profile photographs can be up to 5MB; other image types retain the
-    // existing compact CMS upload limit.
+    // Profile photographs, event banners, and venue/blog images can be up to 5MB;
+    // other image types retain the compact CMS limit.
+    const FIVE_MB_TYPES = new Set(["user", "events-media", "event", "blog", "venue", "coach", "trainer", "personal-training"]);
     for (const file of files) {
-      const maxImageBytes = type === "user" ? 5 * 1024 * 1024 : 500 * 1024;
+      const isFiveMb = FIVE_MB_TYPES.has(type);
+      const maxImageBytes = isFiveMb ? 5 * 1024 * 1024 : 500 * 1024;
       if (file.mimetype.startsWith("image/") && file.size > maxImageBytes) {
         // Clean up files written to disk in this request
         for (const f of files) {
@@ -1689,7 +1692,7 @@ if (!Array.isArray(req.files.uploadFile) || req.files.uploadFile.length === 0) {
         }
         return res.status(400).json({
           status: false,
-          message: `Image "${file.originalname}" exceeds the maximum allowed size of ${type === "user" ? "5MB" : "500KB"} (Size: ${(file.size / 1024).toFixed(1)}KB). Please compress it and try again.`,
+          message: `Image "${file.originalname}" exceeds the maximum allowed size of ${isFiveMb ? "5MB" : "500KB"} (Size: ${(file.size / 1024).toFixed(1)}KB). Please compress it and try again.`,
         });
       }
     }

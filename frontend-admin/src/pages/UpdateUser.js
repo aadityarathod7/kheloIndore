@@ -160,9 +160,9 @@ const UpdateUsers = () => {
                   value={formData.first_name}
                   onChange={handleChange}
                   onInput={(e) => {
-                    e.target.value = e.target.value.replace(/[^A-Za-z]/g, "");
+                    e.target.value = e.target.value.replace(/[^A-Za-z0-9\s]/g, "");
                   }}
-                  maxLength={25}
+                  maxLength={50}
                   isInvalid={!!errors.first_name}
                 />
                 <Form.Control.Feedback type="invalid">
@@ -182,9 +182,9 @@ const UpdateUsers = () => {
                   value={formData.last_name}
                   onChange={handleChange}
                   onInput={(e) => {
-                    e.target.value = e.target.value.replace(/[^A-Za-z]/g, "");
+                    e.target.value = e.target.value.replace(/[^A-Za-z0-9\s]/g, "");
                   }}
-                  maxLength={25}
+                  maxLength={50}
                   isInvalid={!!errors.last_name}
                 />
                 <Form.Control.Feedback type="invalid">

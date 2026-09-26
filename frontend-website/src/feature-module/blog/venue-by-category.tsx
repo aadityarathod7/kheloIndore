@@ -83,6 +83,7 @@ const CustomDropdown = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [openUpward, setOpenUpward] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -107,6 +108,19 @@ const CustomDropdown = ({
     }
   }, [isOpen]);
 
+  const handleToggleOpen = () => {
+    if (!isOpen && dropdownRef.current) {
+      const rect = dropdownRef.current.getBoundingClientRect();
+      const spaceBelow = window.innerHeight - rect.bottom;
+      if (spaceBelow < 280 && rect.top > 200) {
+        setOpenUpward(true);
+      } else {
+        setOpenUpward(false);
+      }
+    }
+    setIsOpen(!isOpen);
+  };
+
   const filteredOptions = useMemo(() => {
     if (!searchTerm.trim()) return options;
     const query = searchTerm.toLowerCase().trim();
@@ -114,11 +128,11 @@ const CustomDropdown = ({
   }, [options, searchTerm]);
 
   return (
-    <div className="position-relative w-100" ref={dropdownRef} style={{ zIndex: isOpen ? 1100 : 1 }}>
+    <div className="position-relative w-100" ref={dropdownRef} style={{ zIndex: isOpen ? 9998 : 1 }}>
       <button
         type="button"
         className="btn w-100 d-flex align-items-center justify-content-between px-3 bg-white shadow-sm"
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={handleToggleOpen}
         style={{
           height: "42px",
           fontSize: "12px",
@@ -139,7 +153,7 @@ const CustomDropdown = ({
           style={{
             fontSize: "13px",
             color: "#22C55E",
-            transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
+            transform: isOpen ? (openUpward ? "rotate(0deg)" : "rotate(180deg)") : (openUpward ? "rotate(180deg)" : "rotate(0deg)"),
             transition: "transform 0.2s ease"
           }}
         />
@@ -149,15 +163,19 @@ const CustomDropdown = ({
         <div
           className="position-absolute start-0 bg-white shadow-lg border overflow-hidden"
           style={{
-            zIndex: 1200,
+            zIndex: 9999,
             minWidth: "100%",
             width: "100%",
             maxWidth: "min(280px, calc(100vw - 24px))",
             boxSizing: "border-box",
             borderColor: "#E2E8E3",
             borderRadius: "14px",
-            boxShadow: "0 10px 25px rgba(0,0,0,0.12)",
-            marginTop: "4px"
+            boxShadow: openUpward
+              ? "0 -10px 25px rgba(0,0,0,0.12)"
+              : "0 10px 25px rgba(0,0,0,0.12)",
+            ...(openUpward
+              ? { bottom: "calc(100% + 6px)" }
+              : { top: "calc(100% + 4px)" })
           }}
         >
           {searchable && options.length > 5 && (
@@ -306,7 +324,7 @@ const MiniCalendarDropdown = ({
   };
 
   return (
-    <div className="position-relative w-100" ref={dropdownRef} style={{ zIndex: isOpen ? 1100 : 1 }}>
+    <div className="position-relative w-100" ref={dropdownRef} style={{ zIndex: isOpen ? 9998 : 1 }}>
       <button
         type="button"
         className="btn w-100 d-flex align-items-center justify-content-between px-3 bg-white shadow-sm"
@@ -341,7 +359,7 @@ const MiniCalendarDropdown = ({
         <div
           className="position-absolute start-0 bg-white shadow-lg border p-3 mt-1"
           style={{
-            zIndex: 1200,
+            zIndex: 9999,
             width: "250px",
             borderColor: "#E2E8E3",
             borderRadius: "16px",
@@ -475,14 +493,17 @@ const MultiSelectDropdown = ({
   onChange,
   placeholder,
   icon,
+  forceUpward,
 }: {
   options: DropdownOption[];
   selectedValues: string[];
   onChange: (vals: string[]) => void;
   placeholder: string;
   icon: string;
+  forceUpward?: boolean;
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [openUpward, setOpenUpward] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -507,6 +528,23 @@ const MultiSelectDropdown = ({
     }
   };
 
+  const handleToggleOpen = () => {
+    if (!isOpen && dropdownRef.current) {
+      if (forceUpward) {
+        setOpenUpward(true);
+      } else {
+        const rect = dropdownRef.current.getBoundingClientRect();
+        const spaceBelow = window.innerHeight - rect.bottom;
+        if (spaceBelow < 280 && rect.top > 200) {
+          setOpenUpward(true);
+        } else {
+          setOpenUpward(false);
+        }
+      }
+    }
+    setIsOpen(!isOpen);
+  };
+
   const formatButtonLabel = () => {
     if (selectedValues.length === 0) return placeholder;
     if (selectedValues.length === 1) {
@@ -517,11 +555,11 @@ const MultiSelectDropdown = ({
   };
 
   return (
-    <div className="position-relative w-100" ref={dropdownRef} style={{ zIndex: isOpen ? 1100 : 1 }}>
+    <div className="position-relative w-100" ref={dropdownRef} style={{ zIndex: isOpen ? 9998 : 1 }}>
       <button
         type="button"
         className="btn w-100 d-flex align-items-center justify-content-between px-3 bg-white shadow-sm"
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={handleToggleOpen}
         style={{
           height: "42px",
           fontSize: "12px",
@@ -542,7 +580,7 @@ const MultiSelectDropdown = ({
           style={{
             fontSize: "13px",
             color: "#22C55E",
-            transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
+            transform: isOpen ? (openUpward ? "rotate(0deg)" : "rotate(180deg)") : (openUpward ? "rotate(180deg)" : "rotate(0deg)"),
             transition: "transform 0.2s ease"
           }}
         />
@@ -550,16 +588,21 @@ const MultiSelectDropdown = ({
 
       {isOpen && (
         <div
-          className="position-absolute start-0 bg-white shadow-lg border overflow-hidden"
+          className="position-absolute start-0 bg-white shadow-lg border"
           style={{
-            zIndex: 1200,
+            zIndex: 9999,
             minWidth: "100%",
             width: "max-content",
             maxWidth: "260px",
             borderColor: "#E2E8E3",
             borderRadius: "14px",
-            boxShadow: "0 10px 25px rgba(0,0,0,0.12)",
-            marginTop: "4px"
+            overflow: "hidden",
+            boxShadow: openUpward
+              ? "0 -10px 25px rgba(0,0,0,0.12)"
+              : "0 10px 25px rgba(0,0,0,0.12)",
+            ...(openUpward
+              ? { bottom: "calc(100% + 6px)" }
+              : { top: "calc(100% + 4px)" })
           }}
         >
           <div style={{ maxHeight: "220px", overflowY: "auto", padding: "4px 0" }}>
@@ -1186,7 +1229,7 @@ export default function VenueByCategory() {
       {/* /Hero Header Section */}
 
       {/* Main Page Container - Left Sidebar Layout */}
-      <div className="content blog-grid" style={{ backgroundColor: "#F8FAFC", padding: "28px 0 60px 0" }}>
+      <div className="content blog-grid" style={{ backgroundColor: "#F8FAFC", padding: "28px 0 100px 0", minHeight: "75vh" }}>
         <div className="container-fluid px-lg-5 px-md-4 px-3">
 
           {/* Title & Count Row */}
@@ -1218,7 +1261,7 @@ export default function VenueByCategory() {
 
             {/* LEFT COLUMN - Sticky Filter Sidebar */}
             <div className="col-lg-3 col-md-4 d-none d-md-block">
-              <div className="bg-white rounded-4 p-4 shadow-sm border" style={{ borderColor: "#E2E8E3", position: "sticky", top: "100px" }}>
+              <div className="bg-white rounded-4 p-4 shadow-sm border" style={{ borderColor: "#E2E8E3", position: "sticky", top: "100px", marginBottom: "30px" }}>
                 {/* Filter Header */}
                 <div className="d-flex align-items-center justify-content-between mb-3">
                   <h5 className="fw-bold mb-0" style={{ fontSize: "16px", color: "#0F172A", fontFamily: "Space Grotesk, sans-serif" }}>
@@ -1235,6 +1278,9 @@ export default function VenueByCategory() {
                 </div>
 
                 <hr style={{ borderColor: "#F1F5F9", margin: "0 0 16px 0" }} />
+
+                {/* Scrollable filter content */}
+                <div style={{ maxHeight: "calc(100vh - 220px)", overflowY: "auto", overflowX: "clip", paddingRight: "2px" }}>
 
                 {/* Filter 0: Search By Name */}
                 <div className="mb-4">
@@ -1405,6 +1451,7 @@ export default function VenueByCategory() {
                     onChange={setSelectedAmenities}
                     placeholder="Any Amenities"
                     icon="feather-grid"
+                    forceUpward
                   />
                 </div>
 
@@ -1446,6 +1493,7 @@ export default function VenueByCategory() {
                     </div>
                   </div>
                 )}
+                </div>{/* /Scrollable filter content */}
               </div>
             </div>
 

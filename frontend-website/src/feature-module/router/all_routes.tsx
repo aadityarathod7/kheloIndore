@@ -128,5 +128,6 @@ export const all_routes = {
   personalTrainingDetails: "/trainers/trainer/:name/:id",
   sharedTrainerProfile: "/personal-training/shared/:token",
   eventdetails: "/events/event-details/:id",
+  eventOrderConfirm: "/events/event-confirm/:id",
   blogDetailsSidebarLeft: "/blog/:slugName",
 };

@@ -78,26 +78,30 @@ const AddEvent = () => {
 
   const uploadImage = async (fileArray) => {
     try {
+      const token = localStorage.getItem("token");
       const formDataForUpload = new FormData();
-      fileArray.forEach((file, index) => {
-        formDataForUpload.append("types", "events-media");
+      fileArray.forEach((file) => {
         formDataForUpload.append("uploadFile", file);
       });
       
       const response = await axios.post(
-        `${API_URL}/upload-file`,
+        `${API_URL}/upload-file?types=events-media`,
         formDataForUpload,
         {
           headers: {
             "Content-Type": "multipart/form-data",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
           },
         }
       );
       
       return response;
     } catch (error) {
-      
-      return null;
+      console.error("Image upload failed:", error);
+      throw new Error(
+        error.response?.data?.message ||
+        "Image upload failed. Please ensure file is valid and under 5MB."
+      );
     }
   };
 

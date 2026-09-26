@@ -157,10 +157,10 @@ const AddVenueAdmin = () => {
                   value={formData.first_name}
                   onChange={handleChange}
                   onInput={(e) => {
-                    e.target.value = e.target.value.replace(/[^A-Za-z\s]/g, "");
+                    e.target.value = e.target.value.replace(/[^A-Za-z0-9\s]/g, "");
                   }}
                   isInvalid={!!errors.first_name}
-                  maxLength={25}
+                  maxLength={50}
                   style={{ marginTop: "5px", marginBottom: "4px" }}
 
                 />
@@ -181,10 +181,10 @@ const AddVenueAdmin = () => {
                   value={formData.last_name}
                   onChange={handleChange}
                   onInput={(e) => {
-                    e.target.value = e.target.value.replace(/[^A-Za-z\s]/g, "");
+                    e.target.value = e.target.value.replace(/[^A-Za-z0-9\s]/g, "");
                   }}
                   isInvalid={!!errors.last_name}
-                  maxLength={25}
+                  maxLength={50}
                   style={{ marginTop: "5px", marginBottom: "4px" }}
                 />
                 <Form.Control.Feedback type="invalid">

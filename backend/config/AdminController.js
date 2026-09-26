@@ -21,14 +21,14 @@ exports.signupBySuperAdmin = async (req, res) => {
 
     if (!first_name) {
       validationErrors.push("first name is required");
-    } else if (!/^[a-zA-Z ]+$/.test(first_name)) {
-      validationErrors.push("first name should contain only characters");
+    } else if (!/^[a-zA-Z0-9 ]+$/.test(first_name)) {
+      validationErrors.push("first name should contain only alphanumeric characters");
     }
 
     if (!last_name) {
       validationErrors.push("last name is required");
-    } else if (!/^[a-zA-Z ]+$/.test(last_name)) {
-      validationErrors.push("last name should contain only characters");
+    } else if (!/^[a-zA-Z0-9 ]+$/.test(last_name)) {
+      validationErrors.push("last name should contain only alphanumeric characters");
     }
 
     if (!mobile || mobile.toString().length !== 10) {
@@ -699,13 +699,13 @@ exports.UpdateUser = async (req, res) => {
     const { first_name, last_name, email, mobile, status } = req.body;
 
     // Validate first name and last name
-    const nameRegex = /^[A-Za-z\s]+$/;
+    const nameRegex = /^[A-Za-z0-9\s]+$/;
     if (first_name && !nameRegex.test(first_name)) {
       return res
         .status(400)
         .json({
           success: false,
-          message: "First name must contain characters only.",
+          message: "First name must contain alphanumeric characters only.",
         });
     }
     if (last_name && !nameRegex.test(last_name)) {
@@ -713,7 +713,7 @@ exports.UpdateUser = async (req, res) => {
         .status(400)
         .json({
           success: false,
-          message: "Last name must contain characters only.",
+          message: "Last name must contain alphanumeric characters only.",
         });
     }
 

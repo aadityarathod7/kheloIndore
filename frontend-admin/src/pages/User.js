@@ -159,9 +159,9 @@ const Users = () => {
                   onChange={handleChange}
                   isInvalid={!!errors.first_name}
                   onInput={(e) => {
-                    e.target.value = e.target.value.replace(/[^A-Za-z\s]/g, "");
+                    e.target.value = e.target.value.replace(/[^A-Za-z0-9\s]/g, "");
                   }}
-                  maxLength={25}
+                  maxLength={50}
                   style={{ marginTop: "5px", marginBottom: "4px" }}
                 />
                 <Form.Control.Feedback type="invalid">
@@ -182,9 +182,9 @@ const Users = () => {
                   onChange={handleChange}
                   isInvalid={!!errors.last_name}
                   onInput={(e) => {
-                    e.target.value = e.target.value.replace(/[^A-Za-z\s]/g, "");
+                    e.target.value = e.target.value.replace(/[^A-Za-z0-9\s]/g, "");
                   }}
-                  maxLength={25}
+                  maxLength={50}
                   style={{ marginTop: "5px", marginBottom: "4px" }}
                 />
                 <Form.Control.Feedback type="invalid">

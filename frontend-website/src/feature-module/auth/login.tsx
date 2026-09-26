@@ -29,6 +29,7 @@ const Login = () => {
   const [mobileApiError, setMobileApiError] = useState("");
   const [otpApiError, setOtpApiError] = useState("");
   const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [termsError, setTermsError] = useState(false);
   const [deliveryChannel, setDeliveryChannel] = useState<"whatsapp" | "sms">("whatsapp");
 
   const { URL } = location.state || {};
@@ -123,8 +124,14 @@ const Login = () => {
       return;
     }
 
+    if (step === "MOBILE" && !agreedToTerms) {
+      setTermsError(true);
+      return;
+    }
+
     setLoading(true);
     setMobileApiError("");
+    setTermsError(false);
     setDeliveryChannel(channel);
 
     axios
@@ -294,7 +301,14 @@ const Login = () => {
               )}
             </div>
 
-            <div className="mb-3 mt-2">
+            <div
+              className="mb-3 mt-2 p-2 rounded"
+              style={{
+                border: termsError ? "1px solid #FCA5A5" : "1px solid transparent",
+                backgroundColor: termsError ? "#FEF2F2" : "transparent",
+                transition: "all 0.2s ease-in-out",
+              }}
+            >
               <label
                 htmlFor="terms-checkbox"
                 style={{
@@ -303,15 +317,21 @@ const Login = () => {
                   gap: "10px",
                   cursor: "pointer",
                   fontSize: "12px",
-                  color: "#64748B",
+                  color: termsError ? "#991B1B" : "#64748B",
                   lineHeight: "1.5",
+                  margin: 0,
                 }}
               >
                 <input
                   id="terms-checkbox"
                   type="checkbox"
                   checked={agreedToTerms}
-                  onChange={(e) => setAgreedToTerms(e.target.checked)}
+                  onChange={(e) => {
+                    setAgreedToTerms(e.target.checked);
+                    if (e.target.checked) {
+                      setTermsError(false);
+                    }
+                  }}
                   style={{
                     width: "16px",
                     height: "16px",
@@ -328,6 +348,11 @@ const Login = () => {
                   <Link to="/contact-us" style={{ color: "#22C55E", fontWeight: 600 }}>Privacy Policy</Link>.
                 </span>
               </label>
+              {termsError && (
+                <div className="text-danger small mt-1 fw-semibold ps-1" style={{ fontSize: "11.5px" }}>
+                  <i className="fas fa-exclamation-circle me-1" /> Please accept the Terms of Service &amp; Privacy Policy to continue
+                </div>
+              )}
             </div>
 
             <div className="d-grid gap-2">

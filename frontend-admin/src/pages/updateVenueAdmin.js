@@ -194,10 +194,10 @@ const UpdateVenueAdmin = () => {
                   placeholder="Enter First Name"
                   name="first_name"
                   value={formData.first_name}
-                  maxLength={25}
+                  maxLength={50}
                   onChange={handleChange}
                   onInput={(e) => {
-                    e.target.value = e.target.value.replace(/[^A-Za-z]/g, "");
+                    e.target.value = e.target.value.replace(/[^A-Za-z0-9\s]/g, "");
                   }}
                   isInvalid={!!errors.first_name}
                 />
@@ -219,9 +219,9 @@ const UpdateVenueAdmin = () => {
                   name="last_name"
                   value={formData.last_name}
                   onChange={handleChange}
-                  maxLength={25}
+                  maxLength={50}
                   onInput={(e) => {
-                    e.target.value = e.target.value.replace(/[^A-Za-z]/g, "");
+                    e.target.value = e.target.value.replace(/[^A-Za-z0-9\s]/g, "");
                   }}
                   isInvalid={!!errors.last_name}
                 />
@@ -340,8 +340,8 @@ const UpdateVenueAdmin = () => {
 
                 <Form.Control
                   type="text"
-                  placeholder="Enter State"
-                  name="state"
+                  placeholder="Enter City"
+                  name="city"
                   value={formData.city}
                   onChange={(e) => {
                     setFormData({ ...formData, city: e.target.value });

@@ -1847,7 +1847,7 @@ const CoachDetail = (props: any) => {
                       </div>
                     </div>
                   ) : null}
-                  <MembershipPlans providerType="coach" providerId={id} plans={coachData?.membership_plans || []} />
+                  <MembershipPlans providerType="coach" providerId={id} plans={coachData?.membership_plans || []} providerData={coachData} />
                   <div className="d-grid mt-3 gap-2">
                     <button
                       onClick={() => checkToken(id)}

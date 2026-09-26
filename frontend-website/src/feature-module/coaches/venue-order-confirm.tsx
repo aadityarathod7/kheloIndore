@@ -237,6 +237,7 @@ const VenueOrderConfirm = () => {
         if (response?.data?.payment_session_id) {
           sessionStorage.removeItem("pendingBooking");
           sessionStorage.removeItem("activeBookingConfirmation");
+          sessionStorage.setItem("lastBookingType", "memberships");
           await openCashfreeCheckout(response.data.payment_session_id);
         } else {
           throw new Error(response?.data?.message || "Unable to start Cashfree checkout.");
@@ -254,6 +255,7 @@ const VenueOrderConfirm = () => {
         if (response?.data?.paymentSessionId) {
           sessionStorage.removeItem("pendingBooking");
           sessionStorage.removeItem("activeBookingConfirmation");
+          sessionStorage.setItem("lastBookingType", "venue");
           await openCashfreeCheckout(response.data.paymentSessionId);
         } else {
           throw new Error(response?.data?.message || "Unable to start Cashfree checkout.");

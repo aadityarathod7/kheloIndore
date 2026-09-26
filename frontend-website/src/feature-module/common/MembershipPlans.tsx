@@ -4,7 +4,17 @@ import Swal from "sweetalert2";
 
 type Plan = { name: string; months: number; price: number; priority?: string; discount?: string; support?: string };
 
-export default function MembershipPlans({ providerType, providerId, plans = [] }: { providerType: "coach" | "trainer"; providerId?: string; plans?: Plan[] }) {
+export default function MembershipPlans({
+  providerType,
+  providerId,
+  plans = [],
+  providerData,
+}: {
+  providerType: "coach" | "trainer";
+  providerId?: string;
+  plans?: Plan[];
+  providerData?: Record<string, unknown> | null;
+}) {
   const navigate = useNavigate();
   const validPlans = plans.filter((plan) => plan?.name && Number(plan.months) > 0 && Number(plan.price) > 0);
   if (!providerId || !validPlans.length) return null;
@@ -18,6 +28,9 @@ export default function MembershipPlans({ providerType, providerId, plans = [] }
       isMembership: true,
       providerType,
       providerId,
+      providerData,
+      coachData: providerType === "coach" ? providerData : undefined,
+      trainerData: providerType === "trainer" ? providerData : undefined,
       planIndex,
       membershipPlan: plan,
       plan,
