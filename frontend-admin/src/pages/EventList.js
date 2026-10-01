@@ -7,9 +7,10 @@ import { Table, Form, Row, Col } from "react-bootstrap"; // Import Bootstrap com
 import { ColorRing } from "react-loader-spinner";
 import { CSVLink } from "react-csv";
 import { API_URL } from "../utils/ApiUrl";
-import { Pagination, Tooltip } from "antd";
+import { Pagination, Tooltip, Switch } from "antd";
 import { Popover, Input, Select } from "antd";
 import { FilterOutlined } from "@ant-design/icons";
+import axios from "axios";
 import "../Style/List.css";
 
 function EventList() {
@@ -185,6 +186,35 @@ function EventList() {
         "An error occurred while deleting the event.",
         "error"
       );
+    }
+  };
+
+  const handleActive = async (row) => {
+    try {
+      const response = await axios.put(
+        `${API_URL}/event/update/${row._id}`,
+        {
+          event_name: row.event_name,
+          status: true,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      if (response.data && response.data.success) {
+        Swal.fire({
+          icon: "success",
+          title: "Activated!",
+          text: "Event activated successfully.",
+        });
+        fetchData();
+      } else {
+        Swal.fire("Error", "Failed to activate event.", "error");
+      }
+    } catch (error) {
+      Swal.fire("Error", "An error occurred while activating the event.", "error");
     }
   };
 
@@ -398,18 +428,18 @@ function EventList() {
                           />
                         </Link>
                         </Tooltip>
-                        <Tooltip
-                          title={
-                            <span style={{ whiteSpace: "pre-line" }}>
-                            {`Delete`}
-                            </span>
-                          }
-                          arrow
-                        >
-                        <DeleteOutlined
-                          className="delete_icon"
-                          onClick={() => handleDelete(row)}
-                        />
+                        <Tooltip title={row.status ? "Active (Click to Deactivate)" : "Inactive (Click to Activate)"} arrow>
+                          <Switch
+                            checked={Boolean(row.status)}
+                            className="status-toggle-switch"
+                            onChange={(checked) => {
+                              if (checked) {
+                                handleActive(row);
+                              } else {
+                                handleDelete(row);
+                              }
+                            }}
+                          />
                         </Tooltip>
                       </div>
                     </td>

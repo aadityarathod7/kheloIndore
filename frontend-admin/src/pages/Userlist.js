@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Table, Form, Row, Col } from "react-bootstrap";
 import { Link } from "react-router-dom";
-import { Tooltip, Pagination, Select } from "antd";
+import { Tooltip, Pagination, Select, Switch } from "antd";
 import { Popover, Input } from "antd";
 import {
   EditOutlined,
@@ -277,19 +277,19 @@ function Userlist() {
                           {role === 'Super Admin' && <PasswordResetLinkButton accountType="user" account={user} />}
                           {role === 'Super Admin' && <ManagedPasswordButton accountType="user" account={user} />}
                           {role === 'Super Admin' && (
-                            user.status ?
-                              <Tooltip title={`Archive profile (data retained)`} arrow>
-                                <DeleteOutlined
-                                  className="delete_icon"
-                                  onClick={() => handleDelete(user)}
-                                />
-                              </Tooltip>
-                              :
-                              <Tooltip title={`Activate`} arrow>
-                                <button type="button" className="approval-action approval-action--activate" onClick={() => handleActive(user)}>
-                                  <ReloadOutlined /> Activate
-                                </button>
-                              </Tooltip>
+                            <Tooltip title={user.status ? "Active (Click to Deactivate)" : "Inactive (Click to Activate)"} arrow>
+                              <Switch
+                                checked={Boolean(user.status)}
+                                className="status-toggle-switch"
+                                onChange={(checked) => {
+                                  if (checked) {
+                                    handleActive(user);
+                                  } else {
+                                    handleDelete(user);
+                                  }
+                                }}
+                              />
+                            </Tooltip>
                           )}
                         </div>
                       </td>

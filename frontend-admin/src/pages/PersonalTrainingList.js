@@ -19,7 +19,7 @@ import { Table, Form, Row, Col, Button } from "react-bootstrap";
 //import '../../Userlist.css';
 import { PDFDownloadLink, Document, Page, Text } from "@react-pdf/renderer";
 import { API_URL } from "../utils/ApiUrl";
-import { Pagination, Tooltip } from "antd";
+import { Pagination, Tooltip, Switch } from "antd";
 import { Popover, Input, Select } from "antd";
 import { FilterOutlined } from "@ant-design/icons";
 import PasswordResetLinkButton from "../components/PasswordResetLinkButton";
@@ -511,14 +511,19 @@ function PersonalTraininglist() {
                           </Link>
                         </Tooltip>
                         {isSuperAdmin && (
-                          row.status ?
-                            <Tooltip title={`Archive profile (data retained)`} arrow>
-                              <button type="button" className="coach-action-button coach-action-delete" aria-label={`Archive ${row.first_name}`} onClick={() => handleDeactivate(row)}><DeleteOutlined aria-hidden="true" /></button>
-                            </Tooltip>
-                            :
-                            <Tooltip title={`Activate`} arrow>
-                              <button type="button" className="coach-action-button coach-action-activate" aria-label={`Activate ${row.first_name}`} onClick={() => handleUpdateAccess(1, row._id)}><ReloadOutlined aria-hidden="true" /></button>
-                            </Tooltip>
+                          <Tooltip title={row.status ? "Active (Click to Deactivate)" : "Inactive (Click to Activate)"} arrow>
+                            <Switch
+                              checked={Boolean(row.status)}
+                              className="status-toggle-switch"
+                              onChange={(checked) => {
+                                if (checked) {
+                                  handleActive(row);
+                                } else {
+                                  handleDeactivate(row);
+                                }
+                              }}
+                            />
+                          </Tooltip>
                         )}
                       </div>
                     </td>

@@ -765,7 +765,24 @@ exports.completeCoachProfile = async (req, res) => {
       }
     });
     coach.is_profile_completed = true;
+    coach.awaiting_approval = true;
     await coach.save();
+
+    try {
+      const superAdmins = await User.find({ role: "Super Admin" });
+      const Notification = require("../models/NotificationModel");
+      for (const admin of superAdmins) {
+        await Notification.create({
+          user_id: admin._id,
+          title: "Coach Approval Required",
+          message: `Coach ${coach.first_name} ${coach.last_name || ""} has completed onboarding and is awaiting approval.`,
+          type: "coach_approval",
+          entity_id: coach._id
+        });
+      }
+    } catch (err) {
+      console.error("Failed to notify super admin on coach profile completion:", err);
+    }
     return res.status(200).json({ success: true, message: "Profile completed successfully", coach });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
@@ -928,6 +945,37 @@ exports.submitCoachForApproval = async (req, res) => {
     // Mark as awaiting approval; do NOT flip status yet
     coach.awaiting_approval = true;
     await coach.save();
+
+    try {
+      const superAdmins = await User.find({ role: "Super Admin" });
+      const { sendMailHelper } = require("./NodeMailerController");
+      const Notification = require("../models/NotificationModel");
+
+      for (const admin of superAdmins) {
+        if (admin.email) {
+          try {
+            await sendMailHelper(
+              admin.email,
+              `Coach Profile Verification Request`,
+              `
+              <h3>Coach Profile Submitted for Approval</h3>
+              <p>Coach <strong>${coach.first_name} ${coach.last_name || ""}</strong> (Mobile: ${coach.mobile}) has submitted their profile for approval.</p>
+              <p>Please log in to the admin panel to review and approve their profile.</p>
+              `
+            );
+          } catch (e) {}
+        }
+        await Notification.create({
+          user_id: admin._id,
+          title: "Coach Approval Required",
+          message: `Coach ${coach.first_name} ${coach.last_name || ""} has submitted profile for approval.`,
+          type: "coach_approval",
+          entity_id: coach._id
+        });
+      }
+    } catch (err) {
+      console.error("Failed to send admin notification for coach submission:", err);
+    }
 
     return res.status(200).json({ success: true, message: "Profile submitted for Super Admin approval. You will be notified once approved." });
   } catch (error) {

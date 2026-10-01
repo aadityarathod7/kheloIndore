@@ -676,7 +676,24 @@ exports.completeTrainerProfile = async (req, res) => {
       }
     });
     trainer.is_profile_completed = true;
+    trainer.awaiting_approval = true;
     await trainer.save();
+
+    try {
+      const superAdmins = await User.find({ role: "Super Admin" });
+      const Notification = require("../models/NotificationModel");
+      for (const admin of superAdmins) {
+        await Notification.create({
+          user_id: admin._id,
+          title: "Trainer Approval Required",
+          message: `Personal Trainer ${trainer.first_name} ${trainer.last_name || ""} has completed onboarding and is awaiting approval.`,
+          type: "trainer_approval",
+          entity_id: trainer._id
+        });
+      }
+    } catch (err) {
+      console.error("Failed to notify super admin on trainer profile completion:", err);
+    }
     return res.status(200).json({ success: true, message: "Profile completed successfully", personalTrainer: withoutPrivateTrainerDetails(trainer) });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
@@ -889,6 +906,37 @@ exports.submitTrainerForApproval = async (req, res) => {
     // Mark as awaiting approval; do NOT flip status yet
     trainer.awaiting_approval = true;
     await trainer.save();
+
+    try {
+      const superAdmins = await User.find({ role: "Super Admin" });
+      const { sendMailHelper } = require("./NodeMailerController");
+      const Notification = require("../models/NotificationModel");
+
+      for (const admin of superAdmins) {
+        if (admin.email) {
+          try {
+            await sendMailHelper(
+              admin.email,
+              `Personal Trainer Profile Verification Request`,
+              `
+              <h3>Trainer Profile Submitted for Approval</h3>
+              <p>Personal Trainer <strong>${trainer.first_name} ${trainer.last_name || ""}</strong> (Mobile: ${trainer.mobile}) has submitted their profile for approval.</p>
+              <p>Please log in to the admin panel to review and approve their profile.</p>
+              `
+            );
+          } catch (e) {}
+        }
+        await Notification.create({
+          user_id: admin._id,
+          title: "Trainer Approval Required",
+          message: `Personal Trainer ${trainer.first_name} ${trainer.last_name || ""} has submitted profile for approval.`,
+          type: "trainer_approval",
+          entity_id: trainer._id
+        });
+      }
+    } catch (err) {
+      console.error("Failed to send admin notification for trainer submission:", err);
+    }
 
     return res.status(200).json({ success: true, message: "Profile submitted for Super Admin approval. You will be notified once approved." });
   } catch (error) {

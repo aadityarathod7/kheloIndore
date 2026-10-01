@@ -11,6 +11,7 @@ import {
   SearchOutlined,
 } from "@ant-design/icons";
 import { Spinner } from "react-bootstrap";
+import { Tooltip, Switch } from "antd";
 import Swal from "sweetalert2";
 import { API_URL, Image_URL } from "../utils/ApiUrl";
 
@@ -270,26 +271,20 @@ export default function Blog() {
                             <EditOutlined />
                           </Link>
 
-                          {/* Activate / Deactivate */}
-                          {blog.status === "active" ? (
-                            <button
-                              type="button"
-                              className="blog-action-btn deactivate"
-                              onClick={() => handleDelete(blog.slug_url)}
-                              title="Deactivate Blog"
-                            >
-                              <DeleteOutlined />
-                            </button>
-                          ) : (
-                            <button
-                              type="button"
-                              className="blog-action-btn activate"
-                              onClick={() => handleActive(blog.slug_url)}
-                              title="Activate Blog"
-                            >
-                              <ReloadOutlined />
-                            </button>
-                          )}
+                          {/* Status Toggle (Activate / Deactivate) */}
+                          <Tooltip title={blog.status === "active" ? "Active (Click to Deactivate)" : "Inactive (Click to Activate)"} arrow>
+                            <Switch
+                              checked={blog.status === "active"}
+                              className="status-toggle-switch"
+                              onChange={(checked) => {
+                                if (checked) {
+                                  handleActive(blog.slug_url);
+                                } else {
+                                  handleDelete(blog.slug_url);
+                                }
+                              }}
+                            />
+                          </Tooltip>
                         </div>
                       </td>
                     </tr>

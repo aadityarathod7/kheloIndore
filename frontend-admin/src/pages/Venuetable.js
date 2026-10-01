@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { DownloadOutlined, EditOutlined, DeleteOutlined, InfoOutlined, AppstoreAddOutlined, CheckOutlined, CloseOutlined, ReloadOutlined } from '@ant-design/icons';
 import Swal from 'sweetalert2';
 import { CSVLink } from 'react-csv';
-import { Pagination, Tooltip } from 'antd';
+import { Pagination, Tooltip, Switch } from 'antd';
 import { PDFDownloadLink, Document, Page, Text } from '@react-pdf/renderer';
 import '../Style/List.css';
 import { API_URL } from '../utils/ApiUrl';
@@ -527,20 +527,19 @@ function VenueList() {
                           </Link>
                         </Tooltip>
                         {isSuperAdmin && (
-                          venue.status ?
-                            <Tooltip title={`Deactivate`} arrow>
-                              {undefined}
-                              <DeleteOutlined
-                                className="delete_icon"
-                                onClick={() => handleDelete(venue)}
-                              />
-                            </Tooltip>
-                            :
-                            <Tooltip title={`Activate`} arrow>
-                              <button type="button" className="approval-action approval-action--activate" onClick={() => handleActive(venue)}>
-                                <ReloadOutlined /> Activate
-                              </button>
-                            </Tooltip>
+                          <Tooltip title={venue.status ? "Active (Click to Deactivate)" : "Inactive (Click to Activate)"} arrow>
+                            <Switch
+                              checked={Boolean(venue.status)}
+                              className="status-toggle-switch"
+                              onChange={(checked) => {
+                                if (checked) {
+                                  handleActive(venue);
+                                } else {
+                                  handleDelete(venue);
+                                }
+                              }}
+                            />
+                          </Tooltip>
                         )}
                         {isSuperAdmin && venue.awaiting_approval && (
                           <button type="button" className="approval-action approval-action--approve" onClick={() => approvePendingUpdate(venue)}>

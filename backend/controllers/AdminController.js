@@ -417,6 +417,26 @@ exports.signup = async (req, res, next) => {
     }
     // Check for Venue Admin role
     if (["Venue Admin", "Coach", "Personal Trainer"].includes(role)) {
+      // Create Super Admin in-app notification
+      try {
+        const Notification = require("../models/NotificationModel");
+        const superAdmins = await User.find({ role: "Super Admin" });
+        const notifType = role === "Coach" ? "coach_approval" : role === "Personal Trainer" ? "trainer_approval" : "venue_admin_approval";
+        const notifTitle = `${role} Approval Required`;
+        const notifMsg = `New ${role} registration: ${first_name} ${last_name || ""} (${mobile}) has registered and requires verification.`;
+        for (const admin of superAdmins) {
+          await Notification.create({
+            user_id: admin._id,
+            title: notifTitle,
+            message: notifMsg,
+            type: notifType,
+            entity_id: roleSpecificId
+          });
+        }
+      } catch (e) {
+        console.error("Failed to create super admin registration notification:", e);
+      }
+
       // Notify Super Admin for approval (can send email, create a notification, etc.)  
       const superAdminEmail = process.env.SUPER_ADMIN_EMAIL; // Ensure SUPER_ADMIN_EMAIL is set in your environment
       const approvalLink = `https://kheloindore.in/admin/approve-coach-trainer/${roleSpecificId}`; // Approval link // Example approval link
@@ -536,7 +556,7 @@ exports.signup = async (req, res, next) => {
 
     // Generate JWT token for non-Venue Admin users
     const payload = { mobile, email, role };
-    const token = jwt.sign(payload, process.env.JWT_AUTH, { expiresIn: "5m" });
+    const token = jwt.sign(payload, process.env.JWT_AUTH, { expiresIn: "7d" });
 
     // Prepare OTP verification email for the user
     req.body.mail = {
@@ -888,7 +908,7 @@ exports.loginWithPassword = async (req, res) => {
       role: user.role,
     };
 
-    const token = jwt.sign(payload, process.env.JWT_AUTH, { expiresIn: "1d" });
+    const token = jwt.sign(payload, process.env.JWT_AUTH, { expiresIn: "7d" });
 
     // Send success response
     return res.status(200).json({
@@ -984,7 +1004,7 @@ exports.loginUserWithMobile = async (req, res) => {
       mobile: mobile,
       role: checkCoach ? checkCoach.role : (checkUser ? (checkUser.role === "Venue Admin" ? "User" : checkUser.role) : "User"),
     };
-    const token = jwt.sign(payload, process.env.JWT_AUTH, { expiresIn: "5m" });
+    const token = jwt.sign(payload, process.env.JWT_AUTH, { expiresIn: "7d" });
 
     let delivery;
     try {
@@ -1101,7 +1121,7 @@ exports.loginCheckOTP = async (req, res) => {
       role: user.role === "Venue Admin" ? "User" : (user.role || "User"),
       profileCompleted: isProfileCompleted,
     };
-    const token = jwt.sign(payload, process.env.JWT_AUTH, { expiresIn: "1d" });
+    const token = jwt.sign(payload, process.env.JWT_AUTH, { expiresIn: "7d" });
 
     return res.status(200).json({
       success: true,
@@ -1986,6 +2006,15 @@ exports.updateAdminStatus = async (req, res) => {
     } else {
       return res.status(400).json({ success: false, message: "Invalid role provided." });
     }
+
+    try {
+      const Notification = require("../models/NotificationModel");
+      const notifType = role === "Coach" ? "coach_approval" : role === "Personal Trainer" ? "trainer_approval" : "venue_admin_approval";
+      await Notification.updateMany(
+        { entity_id: id, type: notifType },
+        { is_read: true }
+      );
+    } catch (e) {}
 
     // Email content for admin access approval or denial
     const subject =

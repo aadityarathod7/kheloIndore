@@ -44,6 +44,21 @@ exports.approveTrainer = async (req, res) => {
     if (!updated) {
       return res.status(404).json({ success: false, message: 'Trainer not found' });
     }
+
+    try {
+      const Notification = require('../models/NotificationModel');
+      await Notification.updateMany(
+        { entity_id: id, type: 'trainer_approval' },
+        { is_read: true }
+      );
+    } catch (e) {}
+
+    // Sync is_admin_access with the User record
+    await User.findOneAndUpdate(
+      { mobile: updated.mobile },
+      { is_admin_access: 1, status: true }
+    );
+
     return res.status(200).json({ success: true, message: 'Trainer approved successfully', data: updated });
   } catch (error) {
     console.error('Error approving trainer:', error);
@@ -66,8 +81,8 @@ exports.rejectTrainer = async (req, res) => {
       id,
       {
         status: false,
-        is_admin_access: 0,
-        verification_status: 0,
+        is_admin_access: 2,
+        verification_status: 2,
         awaiting_approval: false,
         rejection_reason: reason || '',
       },
@@ -76,6 +91,21 @@ exports.rejectTrainer = async (req, res) => {
     if (!updated) {
       return res.status(404).json({ success: false, message: 'Trainer not found' });
     }
+
+    try {
+      const Notification = require('../models/NotificationModel');
+      await Notification.updateMany(
+        { entity_id: id, type: 'trainer_approval' },
+        { is_read: true }
+      );
+    } catch (e) {}
+
+    // Sync is_admin_access with the User record
+    await User.findOneAndUpdate(
+      { mobile: updated.mobile },
+      { is_admin_access: 2, status: false }
+    );
+
     return res.status(200).json({ success: true, message: 'Trainer profile rejected. Trainer can re-edit and resubmit.', data: updated });
   } catch (error) {
     console.error('Error rejecting trainer:', error);
@@ -125,6 +155,14 @@ exports.approveCoach = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Coach not found' });
     }
 
+    try {
+      const Notification = require('../models/NotificationModel');
+      await Notification.updateMany(
+        { entity_id: id, type: 'coach_approval' },
+        { is_read: true }
+      );
+    } catch (e) {}
+
     // Sync is_admin_access with the User record
     await User.findOneAndUpdate(
       { mobile: updated.mobile },
@@ -163,6 +201,14 @@ exports.rejectCoach = async (req, res) => {
     if (!updated) {
       return res.status(404).json({ success: false, message: 'Coach not found' });
     }
+
+    try {
+      const Notification = require('../models/NotificationModel');
+      await Notification.updateMany(
+        { entity_id: id, type: 'coach_approval' },
+        { is_read: true }
+      );
+    } catch (e) {}
 
     // Sync is_admin_access with the User record
     await User.findOneAndUpdate(

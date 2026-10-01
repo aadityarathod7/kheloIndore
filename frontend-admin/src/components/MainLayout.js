@@ -30,7 +30,7 @@ import "../../src/MainLayout.css";
 import axios from "axios";
 import { API_URL } from "../utils/ApiUrl";
 
-// Auto-logout after 15 minutes of inactivity
+// Auto-logout after 24 hours of total inactivity (resets on any user interaction)
 const useAutoLogout = () => {
   const timerRef = useRef(null);
   const navigateToLogin = () => {
@@ -45,9 +45,9 @@ const useAutoLogout = () => {
     const resetTimer = () => {
       if (timerRef.current) clearTimeout(timerRef.current);
       if (!localStorage.getItem("token")) return;
-      timerRef.current = setTimeout(navigateToLogin, 15 * 60 * 1000);
+      timerRef.current = setTimeout(navigateToLogin, 24 * 60 * 60 * 1000); // 24 hours
     };
-    const events = ["mousemove", "mousedown", "keydown", "scroll", "touchstart", "click"];
+    const events = ["mousemove", "mousedown", "keydown", "scroll", "touchstart", "click", "input", "change", "focus", "wheel"];
     events.forEach((event) => window.addEventListener(event, resetTimer, { passive: true }));
     resetTimer();
     return () => {
@@ -138,10 +138,10 @@ const notificationSection = (notification) => {
     .join(" ")
     .toLowerCase();
   if (searchableText.includes("booking")) return "bookings";
-  if (searchableText.includes("venue admin")) return "venue-admin";
-  if (searchableText.includes("venue")) return "venues";
+  if (searchableText.includes("venue admin") || searchableText.includes("venue_admin") || searchableText.includes("venue-admin")) return "venue-admin";
+  if (searchableText.includes("trainer") || searchableText.includes("personal training") || searchableText.includes("personal_training") || searchableText.includes("personal-training")) return "personal-training";
   if (searchableText.includes("coach")) return "coaches";
-  if (searchableText.includes("trainer")) return "personal-training";
+  if (searchableText.includes("venue")) return "venues";
   if (searchableText.includes("enquir")) return "enquiries";
   if (searchableText.includes("event")) return "events";
   if (searchableText.includes("blog")) return "blog";

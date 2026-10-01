@@ -7,11 +7,12 @@ import { Table, Form, Row, Col, Button } from 'react-bootstrap'; // Import Boots
 import { PDFDownloadLink, Document, Page, Text } from '@react-pdf/renderer';
 import '../Style/List.css';
 import { CSVLink } from 'react-csv';
-import { Pagination, Tooltip } from 'antd';
+import { Pagination, Tooltip, Switch } from 'antd';
 import { API_URL } from '../utils/ApiUrl';
 import { ColorRing } from 'react-loader-spinner';
 import { Popover, Input, Select } from 'antd';
 import { FilterOutlined } from '@ant-design/icons';
+import axios from 'axios';
 
 function Categorylist() {
   const [data, setData] = useState([]);
@@ -194,6 +195,35 @@ function Categorylist() {
     }
   };
 
+  const handleActive = async (row) => {
+    try {
+      const response = await axios.put(
+        `${API_URL}/category/update/${row._id}`,
+        {
+          category_name: row.category_name,
+          status: true,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      if (response.status === 200) {
+        Swal.fire({
+          icon: "success",
+          title: "Activated!",
+          text: "Category activated successfully.",
+        });
+        fetchData();
+      } else {
+        Swal.fire("Error", "Failed to activate category.", "error");
+      }
+    } catch (error) {
+      Swal.fire("Error", "An error occurred while activating the category.", "error");
+    }
+  };
+
   const handleSearch = () => {
     setSearchQuery(searchText);
     setCurrentPage(1); // Reset to first page when searching
@@ -365,17 +395,18 @@ function Categorylist() {
                           />
                         </Link>
                         </Tooltip>
-                       <Tooltip
-                        title={
-                          <span style={{ whiteSpace: 'pre-line' }}>
-                            {`Delete`}
-                          </span>
-                        }
-                        arrow
-                      >
-                     <DeleteOutlined
-                          className='delete_icon'
-                          onClick={() => handleDelete(row)}
+                      <Tooltip title={row.status ? "Active (Click to Deactivate)" : "Inactive (Click to Activate)"} arrow>
+                        <Switch
+                          checked={Boolean(row.status)}
+                          className="status-toggle-switch"
+                          style={{ marginLeft: '6px' }}
+                          onChange={(checked) => {
+                            if (checked) {
+                              handleActive(row);
+                            } else {
+                              handleDelete(row);
+                            }
+                          }}
                         />
                       </Tooltip>
                       </div>

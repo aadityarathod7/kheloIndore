@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Table, Form, Row, Col } from "react-bootstrap";
 import { EditOutlined, DeleteOutlined, InfoOutlined, DownloadOutlined, CheckOutlined, CloseOutlined, ReloadOutlined, FilterOutlined } from "@ant-design/icons";
 import { API_URL } from "../utils/ApiUrl";
-import { Tooltip, Pagination, Popover, Select } from "antd";
+import { Tooltip, Pagination, Popover, Select, Switch } from "antd";
 import { Link } from "react-router-dom";
 import { ColorRing } from "react-loader-spinner";
 import Swal from "sweetalert2";
@@ -340,19 +340,19 @@ export default function VenueAdminList() {
                                                 {role === 'Super Admin' && <ManagedPasswordButton accountType="user" account={row} />}
                                                 {role === 'Super Admin' && <CashfreeVendorButton providerType="venue" account={row} />}
                                                 {role === 'Super Admin' && (
-                                                    row.status ?
-                                                        <Tooltip title={`Archive profile (data retained)`} arrow>
-                                                            <DeleteOutlined
-                                                                className="delete_icon"
-                                                                onClick={() => handleDelete(row)}
-                                                            />
-                                                        </Tooltip>
-                                                        :
-                                                        <Tooltip title={`Activate`} arrow>
-                                                            <button type="button" className="approval-action approval-action--activate" onClick={() => handleActive(row)}>
-                                                                <ReloadOutlined /> Activate
-                                                            </button>
-                                                        </Tooltip>
+                                                    <Tooltip title={row.status ? "Active (Click to Deactivate)" : "Inactive (Click to Activate)"} arrow>
+                                                        <Switch
+                                                            checked={Boolean(row.status)}
+                                                            className="status-toggle-switch"
+                                                            onChange={(checked) => {
+                                                                if (checked) {
+                                                                    handleActive(row);
+                                                                } else {
+                                                                    handleDelete(row);
+                                                                }
+                                                            }}
+                                                        />
+                                                    </Tooltip>
                                                 )}
                                             </div>
                                         </td>

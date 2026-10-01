@@ -6,7 +6,7 @@ import 'bootstrap/dist/css/bootstrap.min.css'; // Import Bootstrap CSS
 import { Table, Form, Row, Col, Button } from 'react-bootstrap'; // Import Bootstrap components
 import { ColorRing } from 'react-loader-spinner';
 import '../Style/List.css';
-import { Pagination, Tooltip } from 'antd';
+import { Pagination, Tooltip, Switch } from 'antd';
 import { PDFDownloadLink, Document, Page, Text } from '@react-pdf/renderer';
 import { CSVLink } from 'react-csv';
 import { API_URL } from '../utils/ApiUrl';
@@ -454,28 +454,19 @@ function Coachlist() {
                           </Link>
                         </Tooltip>
                         {isSuperAdmin && (
-                          row.status ?
-                            <Tooltip title={`Archive profile (data retained)`} arrow>
-                              <button
-                                type="button"
-                                className="coach-action-button coach-action-delete"
-                                aria-label={`Deactivate ${row.full_name || row.first_name}`}
-                                onClick={() => handleDelete(row)}
-                              >
-                                <DeleteOutlined aria-hidden="true" />
-                              </button>
-                            </Tooltip>
-                            :
-                            <Tooltip title={`Activate`} arrow>
-                              <button
-                                type="button"
-                                className="coach-action-button coach-action-activate"
-                                aria-label={`Activate ${row.full_name || row.first_name}`}
-                                onClick={() => handleUpdateAccess(1, row._id)}
-                              >
-                                <ReloadOutlined aria-hidden="true" />
-                              </button>
-                            </Tooltip>
+                          <Tooltip title={row.status ? "Active (Click to Deactivate)" : "Inactive (Click to Activate)"} arrow>
+                            <Switch
+                              checked={Boolean(row.status)}
+                              className="status-toggle-switch"
+                              onChange={(checked) => {
+                                if (checked) {
+                                  handleActive(row);
+                                } else {
+                                  handleDelete(row);
+                                }
+                              }}
+                            />
+                          </Tooltip>
                         )}
                       </div>
                     </td>

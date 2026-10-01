@@ -155,7 +155,7 @@ exports.signup = async (req, res, next) => {
     }
 
     const payload = { mobile: mobile, email: email };
-    const token = jwt.sign(payload, process.env.JWT_AUTH, { expiresIn: "5m" });
+    const token = jwt.sign(payload, process.env.JWT_AUTH, { expiresIn: "7d" });
 
     req.body.mail = {
       senderEmail: "mailto:sanjay2795744@gmail.com",
@@ -331,7 +331,7 @@ exports.loginWithPassword = async (req, res) => {
       };
 
       const token = jwt.sign(payload, process.env.JWT_AUTH, {
-        expiresIn: "5h",
+        expiresIn: "7d",
       });
 
       res.status(200).json({
@@ -403,7 +403,7 @@ exports.loginUserWithMobile = async (req, res) => {
     const payload = {
       mobile: mobile,
     };
-    const token = jwt.sign(payload, process.env.JWT_AUTH, { expiresIn: "5m" });
+    const token = jwt.sign(payload, process.env.JWT_AUTH, { expiresIn: "7d" });
 
     return res.status(200).json({
       success: true,
@@ -485,7 +485,7 @@ exports.loginCheckOTP = async (req, res) => {
       last_name: check.last_name,
       role: check.role === "Venue Admin" ? "User" : check.role,
     };
-    const token = jwt.sign(payload, process.env.JWT_AUTH, { expiresIn: "5h" });
+    const token = jwt.sign(payload, process.env.JWT_AUTH, { expiresIn: "7d" });
 
     return res.status(200).json({
       success: true,
